@@ -5,34 +5,34 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="{{ asset('images/icons/favicon.png')}}"/>
+	<link rel="icon" type="image/png" href="{{ asset('frontend/images/icons/favicon.png')}}"/>
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/bootstrap/css/bootstrap.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/bootstrap/css/bootstrap.min.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('fonts/font-awesome-4.7.0/css/font-awesome.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/fonts/font-awesome-4.7.0/css/font-awesome.min.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('fonts/iconic/css/material-design-iconic-font.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/fonts/iconic/css/material-design-iconic-font.min.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('fonts/linearicons-v1.0.0/icon-font.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/fonts/linearicons-v1.0.0/icon-font.min.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/animate/animate.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/animate/animate.css')}}">
 <!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/css-hamburgers/hamburgers.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/css-hamburgers/hamburgers.min.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/animsition/css/animsition.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/animsition/css/animsition.min.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/select2/select2.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/select2/select2.min.css')}}">
 <!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/daterangepicker/daterangepicker.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/daterangepicker/daterangepicker.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/slick/slick.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/slick/slick.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/MagnificPopup/magnific-popup.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/MagnificPopup/magnific-popup.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('vendor/perfect-scrollbar/perfect-scrollbar.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/vendor/perfect-scrollbar/perfect-scrollbar.css')}}">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="{{ asset('css/util.css')}}">
-	<link rel="stylesheet" type="text/css" href="{{ asset('css/main.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/css/util.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{ asset('frontend/css/main.css')}}">
 <!--===============================================================================================-->
 </head>
 <body class="animsition">
@@ -207,14 +207,14 @@
 	</div>
 
 <!--===============================================================================================-->	
-	<script src="{{ asset('vendor/jquery/jquery-3.2.1.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/jquery/jquery-3.2.1.min.js')}}"></script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/animsition/js/animsition.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/animsition/js/animsition.min.js')}}"></script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/bootstrap/js/popper.js')}}"></script>
-	<script src="{{ asset('vendor/bootstrap/js/bootstrap.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/bootstrap/js/popper.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/select2/select2.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/select2/select2.min.js')}}"></script>
 	<script>
 		$(".js-select2").each(function(){
 			$(this).select2({
@@ -224,18 +224,18 @@
 		})
 	</script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/daterangepicker/moment.min.js')}}"></script>
-	<script src="{{ asset('vendor/daterangepicker/daterangepicker.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/daterangepicker/moment.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/daterangepicker/daterangepicker.js')}}"></script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/slick/slick.min.js')}}"></script>
-	<script src="{{ asset('js/slick-custom.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/slick/slick.min.js')}}"></script>
+	<script src="{{ asset('frontend/js/slick-custom.js')}}"></script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/parallax100/parallax100.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/parallax100/parallax100.js')}}"></script>
 	<script>
         $('.parallax100').parallax100();
 	</script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/MagnificPopup/jquery.magnific-popup.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/MagnificPopup/jquery.magnific-popup.min.js')}}"></script>
 	<script>
 		$('.gallery-lb').each(function() { // the containers for all your galleries
 			$(this).magnificPopup({
@@ -249,9 +249,9 @@
 		});
 	</script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/isotope/isotope.pkgd.min.js"')}}></script>
+	<script src="{{ asset('frontend/vendor/isotope/isotope.pkgd.min.js"')}}></script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/sweetalert/sweetalert.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/sweetalert/sweetalert.min.js')}}"></script>
 	<script>
 		$('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
 			e.preventDefault();
@@ -289,7 +289,7 @@
 	
 	</script>
 <!--===============================================================================================-->
-	<script src="{{ asset('vendor/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
+	<script src="{{ asset('frontend/vendor/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
 	<script>
 		$('.js-pscroll').each(function(){
 			$(this).css('position','relative');
@@ -306,7 +306,7 @@
 		});
 	</script>
 <!--===============================================================================================-->
-	<script src="{{ asset('js/main.js')}}"></script>
+	<script src="{{ asset('frontend/js/main.js')}}"></script>
 
 </body>
 </html>

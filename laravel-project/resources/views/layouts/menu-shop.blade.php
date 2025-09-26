@@ -6,24 +6,12 @@
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
 					<div class="left-top-bar">
-						Free shipping for standard order over $100
+						<!-- Free shipping for standard order over $100 -->
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
-						</a>
-
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
+							Hỗ Trợ
 						</a>
 					</div>
 				</div>
@@ -34,14 +22,14 @@
 					
 					<!-- Logo desktop -->		
 					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+						StyleX
 					</a>
 
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li>
-								<a href="index.html">Home</a>
+								<a href="index.html">Trang chủ</a>
 								<ul class="sub-menu">
 									<li><a href="index.html">Homepage 1</a></li>
 									<li><a href="home-02.html">Homepage 2</a></li>
@@ -50,23 +38,20 @@
 							</li>
 
 							<li class="active-menu">
-								<a href="product.html">Shop</a>
+								<a href="product.html">Sản Phẩm</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="shoping-cart.html">Mới ra mắt</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.html">Tin Tức</a>
 							</li>
 
-							<li>
-								<a href="about.html">About</a>
-							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.html">Liên Hệ</a>
 							</li>
 						</ul>
 					</div>	
@@ -97,7 +82,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
+				<a href="index.html" class="logo">StyleX</a>
 			</div>
 
 			<!-- Icon header -->
