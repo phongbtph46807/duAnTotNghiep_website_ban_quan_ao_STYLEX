@@ -41,6 +41,10 @@
     <script src="{{ asset('backend/assets/js/pages/dashboard.js') }}"></script>
 
     <script src="{{ asset('backend/assets/js/main.js') }}"></script>
+    <script src="{{ asset('backend/assets/vendors/feather-icons/feather.min.js') }}"></script>
+<script>
+    feather.replace();
+</script>
 </body>
 
 </html>
