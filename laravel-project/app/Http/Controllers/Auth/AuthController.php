@@ -39,7 +39,7 @@ class AuthController extends Controller
             $user->save();
 
             $this->sendVerificationMail($user);
-            return back()->with('success', 'Đăng Kí Thành Công. Hãy check mail của bạn nhé !!');
+            return back()->with('success', 'Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -79,7 +79,7 @@ class AuthController extends Controller
                     return redirect()->route('user.dashboard');
                 }
             }else{
-                 return back()->with('error', 'Username và Password không hợp lệ!');
+                 return back()->with('error', 'Email hoặc mật khẩu không hợp lệ!');
             }
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

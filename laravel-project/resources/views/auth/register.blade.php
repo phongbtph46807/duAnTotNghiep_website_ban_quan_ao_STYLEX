@@ -49,7 +49,7 @@
                 <div class="mb-3">
                     <label for="phone" class="form-label">
                         Số điện thoại
-                        <i class="fa fa-question-circle" data-bs-toggle="tooltip" title="Nhập số mà không có số 0 ở đầu. Ví dụ: 912345678"></i>
+                        <i class="fa fa-question-circle" data-bs-toggle="tooltip" title="Nhập số mà có số 0 ở đầu. Ví dụ: 012345678"></i>
                     </label>
 
                     <input id="phone"
@@ -101,7 +101,7 @@
                     Đăng ký
                 </button>
 
-                <p class="text-center mt-3" style="font-size: 14px; color: #666;"> Đã có tài khoản? <a href=""
+                <p class="text-center mt-3" style="font-size: 14px; color: #666;"> Đã có tài khoản? <a href="{{ route('login') }}"
                         style="color: #111; font-weight: 500;">Đăng nhập</a> </p>
             </form>
         </div>

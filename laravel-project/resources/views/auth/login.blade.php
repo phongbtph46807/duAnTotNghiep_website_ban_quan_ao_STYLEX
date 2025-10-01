@@ -22,6 +22,22 @@
                 });
             </script>
             @endif
+
+            @if(Session::has('error'))
+            <script>
+                window.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: "{{ Session::get('error') }}",
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                });
+            </script>
+            @endif
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
@@ -61,7 +77,7 @@
                     Đăng nhập
                 </button>
 
-                <p class="text-center mt-3" style="font-size: 14px; color: #666;"> Chưa có tài khoản? <a href=""
+                <p class="text-center mt-3" style="font-size: 14px; color: #666;"> Chưa có tài khoản? <a href="{{ route('register') }}"
                         style="color: #111; font-weight: 500;">Đăng kí</a> </p>
             </form>
         </div>
