@@ -6,22 +6,34 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
-    return view('auth.login');
+    return view('welcome');
 });
 
+Route::group(['middleware' => ['isAuthenticated']], function() {
 
-Route::get('/register', [AuthController::class,'registerView'])->name('registerView');
-Route::post('/register', [AuthController::class,'register'])->name('register');
+    Route::get('/register', [AuthController::class,'registerView'])->name('registerView');
+    Route::post('/register', [AuthController::class,'register'])->name('register');
 
-Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
+    Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
 
-Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
-Route::post('/login', [AuthController::class,'login'])->name('login');
+    Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
+    Route::post('/login', [AuthController::class,'login'])->name('login');
+});
 
-Route::get('/dashboard', function(){
-    return 'User Dashboard';
-})->name('user.dashboard');
+Route::group(['middleware' => ['onlyAuthenticated']], function() {
 
-Route::get('/admin/dashboard', function(){
-    return 'Admin Dashboard';
-})->name('admin.dashboard');
+    Route::get('/dashboard', function(){
+        return 'User Dashboard';
+    })->name('user.dashboard');
+
+    Route::get('/admin/dashboard', function(){
+        return 'Admin Dashboard';
+    })->name('admin.dashboard');
+});
+
+Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
+
+    Route::get('/admin/dashboard', function(){
+        return 'Admin Dashboard';
+    })->name('admin.dashboard');
+});
