@@ -70,7 +70,7 @@
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
 												
-						<a href="login.html" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+						<a href="{{ route('login') }}" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
 							<i class="zmdi zmdi-account"></i>
 						</a>
 					</div>
@@ -82,7 +82,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="index.html" class="logo">StyleX</a>
+				<a href="#" class="logo">StyleX</a>
 			</div>
 
 			<!-- Icon header -->
@@ -99,9 +99,9 @@
 					<i class="zmdi zmdi-favorite-outline"></i>
 				</a>
 										
-						<a href="login.html" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
-							<i class="zmdi zmdi-account"></i>
-						</a>
+				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+					<i class="zmdi zmdi-account"></i>
+				</a>
 				
 			</div>
 
