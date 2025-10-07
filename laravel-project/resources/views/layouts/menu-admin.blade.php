@@ -1,32 +1,53 @@
 <div id="sidebar" class="active">
-            <div class="sidebar-wrapper active">
-                <div class="sidebar-header">
-                    <div class="d-flex justify-content-between">
-                        <div class="logo">
-                            <a href="index.html">StyleX</a>
-                        </div>
-                        <div class="toggler">
-                            <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
-                        </div>
-                    </div>
+    <div class="sidebar-wrapper active">
+        <div class="sidebar-header">
+            <div class="d-flex justify-content-between">
+                <div class="logo">
+                    <a href="index.html">StyleX</a>
                 </div>
-                <div class="sidebar-menu">
-                    <ul class="menu">
-                        <li class="sidebar-title">Menu</li>
+                <div class="toggler">
+                    <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <ul class="menu">
+                <li class="sidebar-title">Menu</li>
 
-                        <li class="sidebar-item active ">
-                            <a href="index.html" class='sidebar-link'>
-                                <i class="bi bi-grid-fill"></i>
-                                <span>Bảng Điều Khiển</span>
-                            </a>
-                        </li>
+                <li class="sidebar-item active ">
+                    <a href="index.html" class='sidebar-link'>
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Bảng Điều Khiển</span>
+                    </a>
+                </li>
 
-                        <li class="sidebar-item  has-sub">
-                            <a href="#" class='sidebar-link'>
-                                <i class="bi bi-box-seam"></i>
-                                <span>Quản Lí Sản Phẩm</span>
-                            </a>
-                            <!-- <ul class="submenu ">
+                <li class="sidebar-item  has-sub">
+                    <a href="#" class='sidebar-link'>
+                        <i class="bi bi-box-seam"></i>
+                        <span>Quản Lí Sản Phẩm</span>
+                    </a>
+                <li class="sidebar-item">
+                    <a href="{{ route('admin.colors.index') }}" class="sidebar-link">
+                        <i class="bi bi-palette"></i>
+                        <span>Màu sắc</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('admin.sizes.index') }}" class="sidebar-link">
+                        <i class="bi bi-aspect-ratio"></i>
+                        <span>Kích thước</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('admin.textures.index') }}" class="sidebar-link">
+                        <i class="bi bi-bricks"></i>
+                        <span>Chất liệu</span>
+                    </a>
+                </li>
+
+                <!-- <ul class="submenu ">
                                 <li class="submenu-item ">
                                     <a href="component-alert.html">Alert</a>
                                 </li>
@@ -70,8 +91,8 @@
                                     <a href="component-tooltip.html">Tooltip</a>
                                 </li>
                             </ul> -->
-                        </li>
-<!-- 
+                </li>
+                <!--
                         <li class="sidebar-item  has-sub">
                             <a href="#" class='sidebar-link'>
                                 <i class="bi bi-collection-fill"></i>
@@ -353,13 +374,13 @@
                         </li>
 
                     </ul> -->
-                </div>
-                <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
-            </div>
         </div>
-        <div id="main">
-        <header class="mb-3">
-                <a href="#" class="burger-btn d-block d-xl-none">
-                    <i class="bi bi-justify fs-3"></i>
-                </a>
-            </header>
+        <button class="sidebar-toggler btn x"><i data-feather="x"></i></button>
+    </div>
+</div>
+<div id="main">
+    <header class="mb-3">
+        <a href="#" class="burger-btn d-block d-xl-none">
+            <i class="bi bi-justify fs-3"></i>
+        </a>
+    </header>
