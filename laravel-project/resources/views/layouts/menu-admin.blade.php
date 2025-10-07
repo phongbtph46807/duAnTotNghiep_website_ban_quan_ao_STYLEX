@@ -3,8 +3,8 @@
                 <div class="sidebar-header position-relative">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="logo">
-                            <a href="index.html">
-                               <p>StyleX</p>
+                            <a href="{{ route('admin.dashboard') }}">
+                                <p>StyleX</p>
                             </a>
                         </div>
                         <div class="theme-toggle d-flex gap-2  align-items-center mt-2">
@@ -46,7 +46,7 @@
 
                         <li
                             class="sidebar-item active ">
-                            <a href="index.html" class='sidebar-link'>
+                            <a href="{{ route('admin.dashboard' )}}" class='sidebar-link'>
                                 <i class="bi bi-grid-fill"></i>
                                 <span>Bảng Điều Khiểm</span>
                             </a>
@@ -58,23 +58,24 @@
                             class="sidebar-item  has-sub">
                             <a href="#" class='sidebar-link'>
                                 <i class="bi bi-stack"></i>
-                                <span>Components</span>
+                                <span>Quản Lý Sản Phẩm</span>
                             </a>
 
                             <ul class="submenu ">
 
                                 <li class="submenu-item  ">
-                                    <a href="component-accordion.html" class="submenu-link">Accordion</a>
+                                    <a href="{{ route('admin.categories') }}" class="submenu-link">Danh mục</a>
 
                                 </li>
 
                                 <li class="submenu-item  ">
-                                    <a href="component-alert.html" class="submenu-link">Alert</a>
+                                    <a href="component-alert.html" class="submenu-link">Sản phẩm</a>
 
                                 </li>
 
                             </ul>
                         </li>
+                        
                     </ul>
                 </div>
             </div>

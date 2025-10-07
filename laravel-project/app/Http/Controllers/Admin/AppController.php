@@ -14,6 +14,7 @@ class AppController extends Controller
             //code...
             $data = AppData::first();
             return view('admin.home-admin', compact('data'));
+
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn");
         }

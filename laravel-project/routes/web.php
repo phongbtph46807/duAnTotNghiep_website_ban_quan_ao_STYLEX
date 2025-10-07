@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use Illuminate\Support\Facades\Route;
@@ -32,4 +33,8 @@ Route::group(['middleware' => ['onlyAuthenticated']], function() {
 Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
 
     Route::get('/admin/dashboard', [AppController::class, 'index'])->name('admin.dashboard');
+
+    //Categories route
+    Route::get('/admin/categories', [CategoryController::class, 'index'])->name('admin.categories');
+    Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('admin.category.store');
 });

@@ -16,13 +16,14 @@
     <link rel="stylesheet" href="{{ asset('backend/assets/compiled/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/assets/compiled/css/app-dark.css') }}">
     <link rel="stylesheet" href="{{ asset('backend/assets/compiled/css/iconly.css') }}">
-</head>
+     <meta name="csrf-token" content="{{ csrf_token() }}">
+</head >
 
 <body>
     <script src="{{ asset('backend/assets/static/js/initTheme.js') }}"></script>
     <div id="app">
-    <!-- menu -->
-     @include('layouts.menu-admin')
+        <!-- menu -->
+        @include('layouts.menu-admin')
 
         <div id="main">
             <header class="mb-3">
@@ -32,14 +33,51 @@
             </header>
 
             <div class="page-content">
+
+                <div class="page-heading">
+                    <div class="page-title">
+                        <div class="row">
+                            <div class="col-12 col-md-6 order-md-1 order-last">
+                                <h3></h3>
+                                <p class="text-subtitle text-muted"></p>
+                            </div>
+                            <div class="col-12 col-md-6 order-md-2 order-first">
+                                <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
+                                    <div class="header-top-right">
+                                        <div class="dropdown">
+                                            <a href="#" id="topbarUserDropdown" class="user-dropdown d-flex align-items-center dropend dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false">
+                                                <div class="avatar avatar-md2">
+                                                    <img src="{{ asset('backend/assets/compiled/jpg/1.jpg') }}" alt="Avatar">
+                                                </div>
+                                                <div class="text">
+                                                    <h6 class="user-dropdown-name">{{ auth()->user()->name }}</h6>
+                                                    <p class="user-dropdown-status text-sm text-muted">{{ auth()->user()->email }}</p>
+                                                </div>
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="topbarUserDropdown">
+                                                <li><a class="dropdown-item" href="#">Tài Khoản Của Tôi</a></li>
+                                                <li><a class="dropdown-item" href="#">Cài đặt</a></li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item" href="auth-login.html">Đăng xuất</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <section class="row">
-                    <!-- content-trong-nay -->
-                        @yield('content')
+                    <!-- content -->
+                    @yield('content')
                 </section>
             </div>
 
-        <!-- footer -->
-         @include('layouts.footer-admin')
+            <!-- footer -->
+            @include('layouts.footer-admin')
         </div>
     </div>
     <script src="{{  asset('backend/assets/static/js/components/dark.js') }}"></script>
@@ -54,6 +92,9 @@
     <script src="{{  asset('backend/assets/extensions/apexcharts/apexcharts.min.js') }}"></script>
     <script src="{{  asset('backend/assets/static/js/pages/dashboard.js') }}"></script>
 
+    <script src="{{ asset('backend/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    @stack('script')
 </body>
 
 </html>
