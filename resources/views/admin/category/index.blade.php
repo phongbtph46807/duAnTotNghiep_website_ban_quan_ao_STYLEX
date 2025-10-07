@@ -38,7 +38,7 @@
                                         <!-- Tên danh mục -->
                                         <div class="mb-4">
                                             <label for="categoryName" class="form-label fw-semibold">
-                                                <i class="bi bi-tag-fill me-2 text-primary"></i> Tên danh mục
+                                                <i class="bi bi-tag-fill me-2 text-primary"></i> Tên danh mục mới
                                             </label>
                                             <input
                                                 type="text"
