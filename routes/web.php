@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -32,10 +33,26 @@ Route::group(['middleware' => ['onlyAuthenticated']], function() {
 });
 
 Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
-
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::prefix('admin')->as('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     //Categories route
-    Route::get('/admin/categories', [CategoryController::class, 'index'])->name('admin.categories.index');
-    Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('admin.category.store');
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('category.store');
+    //Route Users   
+    Route::prefix('users')->as('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/trash', [UserController::class, 'trash'])->name('trash');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::get('/{user}', [UserController::class, 'show'])->name('show');
+        Route::post('/store', [UserController::class, 'store'])->name('store');
+        Route::post('/filter', [UserController::class, 'filter'])->name('filter');
+        Route::get('/edit/{user}', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::put('/updateEmailVerified/{user}', [UserController::class, 'updateEmailVerified'])->name('updateEmailVerified');
+        Route::patch('/{id}/restore', [UserController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
+    });
+});
 });
