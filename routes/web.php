@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\AppController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ColorController;
+use App\Http\Controllers\Admin\SizeController;
+use App\Http\Controllers\Admin\TextureController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -38,4 +41,10 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
     //Categories route
     Route::get('/admin/categories', [CategoryController::class, 'index'])->name('admin.categories.index');
     Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('admin.category.store');
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('colors', ColorController::class);
+    Route::resource('sizes', SizeController::class);
+    Route::resource('textures', TextureController::class);
 });
