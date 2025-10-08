@@ -1,1 +1,4 @@
-# "Đang phát triển bởi phongbth46807 - 24/09/2025 commnent".
+# "24/09/2025 commnent".
+Quản trị viên
+Email: admin@gmail.com | 
+Password: password
