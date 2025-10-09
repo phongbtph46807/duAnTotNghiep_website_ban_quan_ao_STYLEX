@@ -45,4 +45,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    // Quan hệ với LoyaltyTier (người dùng thuộc một hạng thành viên)
+    public function loyaltyTier()
+    {
+        return $this->belongsTo(LoyaltyTier::class);
+
+    }
 }
