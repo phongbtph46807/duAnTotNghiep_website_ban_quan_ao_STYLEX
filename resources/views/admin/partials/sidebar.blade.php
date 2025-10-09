@@ -118,12 +118,60 @@
                         </ul>
                     </div>
                 </li>
+
+                <!-- Nav Thuế và Vận chuyển -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarLookups" data-bs-toggle="collapse" role="button"
+                        aria-expanded="{{ request()->routeIs('admin.tax_rates.*','admin.shipping_carriers.*') ? 'true' : 'false' }}"
+                        aria-controls="sidebarLookups">
+                        <i class="ri-apps-2-line"></i> <span data-key="t-apps">Thuế & Vận chuyển</span>
+                    </a>
+
+                    <div class="collapse menu-dropdown {{ request()->routeIs('admin.tax_rates.*','admin.shipping_carriers.*') ? 'show' : '' }}"
+                        id="sidebarLookups">
+                        <ul class="nav nav-sm flex-column">
+                            {{-- Thuế --}}
+                            <li class="nav-item">
+                                <a href="{{ route('admin.tax_rates.index') }}"
+                                    class="nav-link {{ request()->routeIs('admin.tax_rates.index') ? 'active' : '' }}"
+                                    data-key="t-analytics">
+                                    Danh sách thuế
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.tax_rates.create') }}"
+                                    class="nav-link {{ request()->routeIs('admin.tax_rates.create') ? 'active' : '' }}"
+                                    data-key="t-analytics">
+                                    Thêm mức thuế
+                                </a>
+                            </li>
+
+                            {{-- Nhà vận chuyển --}}
+                            <li class="nav-item">
+                                <a href="{{ route('admin.shipping_carriers.index') }}"
+                                    class="nav-link {{ request()->routeIs('admin.shipping_carriers.index') ? 'active' : '' }}"
+                                    data-key="t-analytics">
+                                    Nhà vận chuyển
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.shipping_carriers.create') }}"
+                                    class="nav-link {{ request()->routeIs('admin.shipping_carriers.create') ? 'active' : '' }}"
+                                    data-key="t-analytics">
+                                    Thêm nhà vận chuyển
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <!-- /////////////////////////////////////// -->
+
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarInventory" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarInventory">
                         <i class="ri-store-3-line"></i>
                         <span data-key="t-inventory">Quản lý kho hàng</span>
-                      
+
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarInventory">
                         <ul class="nav nav-sm flex-column">
