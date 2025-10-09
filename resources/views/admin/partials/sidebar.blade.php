@@ -516,17 +516,17 @@
                     <div class="collapse menu-dropdown" id="sidebarUI">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics">
+                                <a href="{{ route('admin.users.index') }}" class="nav-link" data-key="t-analytics">
                                     Danh sách người dùng
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link"
+                                <a href="{{ route('admin.users.create') }}" class="nav-link"
                                     data-key="t-analytics"> Thêm mới người dùng
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics">
+                                <a href="{{ route('admin.users.trash') }}" class="nav-link" data-key="t-analytics">
                                     Danh sách người dùng đã xóa
                                 </a>
                             </li>
