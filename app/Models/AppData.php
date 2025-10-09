@@ -16,8 +16,4 @@ class AppData extends Model
         'facebook',
         'instagram'
     ];
-<<<<<<< HEAD:laravel-project/app/Models/AppData.php
 }
-=======
-}
->>>>>>> origin/main:app/Models/AppData.php

@@ -19,8 +19,4 @@ class Category extends Model
     public function children(){
         return $this->hasMany(Category::class, 'parent_id');
     }
-<<<<<<< HEAD:laravel-project/app/Models/Category.php
 }
-=======
-}
->>>>>>> origin/main:app/Models/Category.php

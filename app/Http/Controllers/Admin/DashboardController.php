@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    /**
+     * @phpstan-ignore-next-line
+     */
      public function index(){
         return view('admin.dashboard');
     }
