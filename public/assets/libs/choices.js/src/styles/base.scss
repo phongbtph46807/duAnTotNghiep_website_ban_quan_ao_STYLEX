@@ -1,0 +1,219 @@
+/* =============================================
+=            Generic styling                  =
+============================================= */
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+========
+
+$global-guttering: 24px;
+$global-font-size-h1: 32px;
+$global-font-size-h2: 24px;
+$global-font-size-h3: 20px;
+$global-font-size-h4: 18px;
+$global-font-size-h5: 16px;
+$global-font-size-h6: 14px;
+
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #fff;
+  background-color: #333;
+  overflow-x: hidden;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+hr {
+  display: block;
+  margin: $global-guttering * 1.25 0;
+  border: 0;
+  border-bottom: 1px solid #eaeaea;
+  height: 1px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+  margin-bottom: $global-guttering * 0.5;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+a,
+a:visited,
+a:focus {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 2.5px;
+  font-size: 14px;
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  -webkit-appearance: none;
+          appearance: none;
+  margin-bottom: 24px;
+========
+  appearance: none;
+  margin-bottom: $global-guttering;
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
+}
+
+h1,
+.h1 {
+  font-size: $global-font-size-h1;
+}
+
+h2,
+.h2 {
+  font-size: $global-font-size-h2;
+}
+
+h3,
+.h3 {
+  font-size: $global-font-size-h3;
+}
+
+h4,
+.h4 {
+  font-size: $global-font-size-h4;
+}
+
+h5,
+.h5 {
+  font-size: $global-font-size-h5;
+}
+
+h6,
+.h6 {
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  font-size: 14px;
+========
+  font-size: $global-font-size-h6;
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
+}
+
+label + p {
+  margin-top: -4px;
+}
+
+.container {
+  display: block;
+  margin: auto;
+  max-width: 40em;
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  padding: 48px;
+}
+@media (max-width: 620px) {
+  .container {
+========
+  padding: $global-guttering * 2;
+
+  @media (max-width: 620px) {
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
+    padding: 0;
+  }
+}
+
+.section {
+  background-color: #fff;
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  padding: 24px;
+  color: #333;
+}
+.section a,
+.section a:visited,
+.section a:focus {
+  color: #00bcd4;
+========
+  padding: $global-guttering;
+  color: #333;
+
+  a,
+  a:visited,
+  a:focus {
+    color: #00bcd4;
+  }
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
+}
+
+.logo {
+  display: block;
+  margin-bottom: $global-guttering * 0.5;
+}
+
+.logo-img {
+  width: 100%;
+  height: auto;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+  padding: $global-guttering * 0.25 0;
+}
+
+.visible-ie {
+  display: none;
+}
+
+.push-bottom {
+  margin-bottom: $global-guttering;
+}
+
+.zero-bottom {
+  margin-bottom: 0;
+}
+
+.zero-top {
+  margin-top: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+[data-test-hook] {
+  margin-bottom: $global-guttering;
+}
+
+/* =====  End of Section comment block  ====== */
