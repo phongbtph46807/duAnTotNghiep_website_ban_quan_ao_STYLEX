@@ -65,17 +65,17 @@
                     <div class="collapse menu-dropdown" id="sidebarApps">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics">
+                                <a href="{{route('admin.products.index')}}" class="nav-link" data-key="t-analytics">
                                     Danh sách sản phẩm
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics">
+                                <a href="{{route('admin.products.create')}}" class="nav-link" data-key="t-analytics">
                                     Thêm mới sản phẩm
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics">
+                                <a href="{{route('admin.products.trash')}}" class="nav-link" data-key="t-analytics">
                                     Danh sách sản phẩm đã xóa
                                 </a>
                             </li>

@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Danh sách người dùng')
+@section('title', 'Danh sách sản phẩm đã xóa')
 @push('page-css')
     <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
 
@@ -38,61 +38,17 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lí người dùng</h4>
+                <h4 class="mb-sm-0">Quản lí sản phẩm</h4>
 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lí người dùng</a></li>
-                        <li class="breadcrumb-item">Danh sách người dùng</li>
+                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lí sản phẩm</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.products.trash') }}">Danh sách sản phẩm đã
+                                xóa</a>
+                        </li>
                     </ol>
                 </div>
 
-            </div>
-        </div>
-    </div>
-    <div class="row cursor-pointer">
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card total-card">
-                <div class="card-body text-center">
-                    <div class="stat-icon text-primary">
-                        <i class="ri-user-3-line"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Tổng số người dùng</h5>
-                    <h3 class="card-text fw-bold">{{ $userCounts->total_users ?? 0 }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card approved-card">
-                <div class="card-body text-center">
-                    <div class="stat-icon text-success">
-                        <i class="ri-user-follow-line"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng hoạt động</h5>
-                    <h3 class="card-text fw-bold text-success">{{ $userCounts->active_users ?? 0 }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card pending-card">
-                <div class="card-body text-center">
-                    <div class="stat-icon text-warning">
-                        <i class="ri-user-unfollow-line"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng không hoạt động</h5>
-                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->inactive_users ?? 0 }}</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card rejected-card">
-                <div class="card-body text-center">
-                    <div class="stat-icon text-danger">
-                        <i class="ri-lock-line"></i>
-                    </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng bị khóa</h5>
-                    <h3 class="card-text fw-bold text-danger">{{ $userCounts->blocked_users ?? 0 }}</h3>
-                </div>
             </div>
         </div>
     </div>
@@ -100,7 +56,7 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h4 class="card-title mb-0">Danh sách người dùng</h4>
+                    <h4 class="card-title mb-0">Danh sách sản phẩm đã xóa</h4>
                     <button class="btn btn-outline-primary btn-sm" id="toggleFilterBtn">
                         <i class="ri-filter-3-line"></i> Bộ lọc
                     </button>
@@ -108,27 +64,27 @@
 
                 {{-- Form lọc --}}
                 <div class="card-body" id="filterForm" style="display: none;">
-                    <form action="{{ route('admin.users.index') }}" method="GET">
+                    <form action="{{ route('admin.products.index') }}" method="GET">
                         <div class="row g-3">
                             {{-- Họ tên --}}
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Tên</label>
                                 <input type="text" name="name" value="{{ request('name') }}" class="form-control"
-                                    placeholder="Nhập tên người dùng">
+                                    placeholder="Nhập tên sản phẩm">
                             </div>
 
-                            {{-- Email --}}
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">Email</label>
-                                <input type="text" name="email" value="{{ request('email') }}" class="form-control"
-                                    placeholder="Nhập email">
-                            </div>
-
-                            {{-- Số điện thoại --}}
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">Số điện thoại</label>
-                                <input type="text" name="phone_number" value="{{ request('phone_number') }}"
-                                    class="form-control" placeholder="Nhập số điện thoại">
+                            {{-- Danh mục --}}
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">Danh mục</label>
+                                <select name="category_id" class="form-select">
+                                    <option value="">-- Tất cả --</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}"
+                                            {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             {{-- Trạng thái --}}
@@ -140,28 +96,28 @@
                                     </option>
                                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Ngừng
                                         hoạt động</option>
-                                    <option value="blocked" {{ request('status') == 'blocked' ? 'selected' : '' }}>Bị Khóa</option>
                                 </select>
                             </div>
 
-                            {{-- Vai trò --}}
+                            {{-- Sản phẩm nổi bật --}}
                             <div class="col-md-2">
-                                <label class="form-label fw-semibold">Vai trò</label>
-                                <select name="is_admin" class="form-select">
+                                <label class="form-label fw-semibold">Sản phẩm nổi bật</label>
+                                <select name="is_featured" class="form-select">
                                     <option value="">-- Tất cả --</option>
-                                    <option value="1" {{ request('is_admin') == 1 ? 'selected' : '' }}>Quản trị viên
+                                    <option value="1" {{ request('is_featured') == '1' ? 'selected' : '' }}>Có
                                     </option>
-                                    <option value="0" {{ request('is_admin') == 0 ? 'selected' : '' }}>Người dùng
+                                    <option value="0" {{ request('is_featured') == '0' ? 'selected' : '' }}>Không
                                     </option>
                                 </select>
                             </div>
+
 
                             {{-- Nút lọc và reset --}}
                             <div class="col-md-12 d-flex justify-content-end gap-2 mt-2">
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     <i class="ri-search-line"></i> Lọc
                                 </button>
-                                <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-sm">
+                                <a href="{{ route('admin.products.index') }}" class="btn btn-secondary btn-sm">
                                     <i class="ri-refresh-line"></i> Đặt lại
                                 </a>
                             </div>
@@ -173,10 +129,12 @@
                         <div class="row g-4 mb-3">
                             <div class="col-sm-auto">
                                 <div>
-                                    <a href="{{ route('admin.users.create') }}" class="btn btn-success add-btn"><i
-                                            class="ri-add-line align-bottom me-1"></i> Thêm mới</a>
-                                    <button class="btn btn-soft-danger" onClick="deleteMultiple()"><i
-                                            class="ri-delete-bin-2-line"></i></button>
+                                    <button class="btn btn-success" id="restoreSelected">
+                                        <i class=" ri-restart-line"> Khôi phục</i>
+                                    </button>
+                                    <button class="btn btn-danger" id="deleteSelected">
+                                        <i class="ri-delete-bin-2-line"> Xóa nhiều</i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="col-sm">
@@ -200,19 +158,16 @@
                                             </div>
                                         </th>
                                         <th data-sort="customer_id">ID</th>
-                                        <th data-sort="customer_name">Tên người dùng</th>
+                                        <th data-sort="customer_name">Tên sản phẩm</th>
                                         <th data-sort="email">Ảnh</th>
-                                        <th data-sort="cate">Email</th>
-                                        <th data-sort="phone">Số điện thoại</th>
-                                        <th data-sort="phone">Xác minh Email</th>
-                                        <th data-sort="phone">Vai trò</th>
+                                        <th data-sort="cate">Danh mục</th>
+                                        <th data-sort="phone">Sản phẩm nổi bật</th>
                                         <th data-sort="date">Trạng thái</th>
-                                        <th data-sort="phone">Ngày tham gia</th>
                                         <th data-sort="action">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody class="list form-check-all">
-                                    @foreach ($items as $item)
+                                    @foreach ($productsDeleted as $item)
                                         <tr>
                                             <th scope="row">
                                                 <div class="form-check">
@@ -223,65 +178,49 @@
                                             <td class="customer_id">{{ $item->id }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                <img src="{{ $item->avatar ? Storage::url($item->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
+                                                <img src="{{ Storage::url($item->thumbnail) ?? 'Không có ảnh' }}"
                                                     width="50">
                                             </td>
-                                            <td class="customer_name">{{ $item->email }}</td>
-                                            <td class="phone">{{ $item->phone_number ?? 'Chưa có thông tin' }}</td>
+                                            <td class="customer_name">{{ $item->category->name }}</td>
                                             <td>
                                                 <div class="form-check form-switch form-switch-warning">
-                                                    <input class="form-check-input" type="checkbox" role="switch"
-                                                        name="email_verified" value="{{ $item->id }}"
-                                                        @checked($item->email_verified_at != null)>
+                                                    <input disabled class="form-check-input" type="checkbox" role="switch"
+                                                        name="is_featured" @checked($item->is_featured)
+                                                        onchange="toggleFeature({{ $item->id }}, this.checked)">
                                                 </div>
                                             </td>
-                                            <td class="phone">{{ $item->is_admin ? 'Quản trị viên' : 'Người dùng' }}</td>
                                             <td class="status">
                                                 @if ($item->status == 'active')
                                                     <span
                                                         class="badge bg-success-subtle text-success text-uppercase">Active</span>
-                                                @elseif($item->status == 'inactive')
-                                                    <span
-                                                        class="badge bg-warning-subtle text-warning text-uppercase">Inactive</span>
                                                 @else
                                                     <span
-                                                        class="badge bg-warning-subtle text-warning text-uppercase">Block</span>
+                                                        class="badge bg-warning-subtle text-warning text-uppercase">Inactive</span>
                                                 @endif
-                                            </td>
-                                            <td>
-                                                {{ optional($item->created_at)->format('d/m/Y') ?? 'NULL' }}
                                             </td>
                                             <td>
                                                 <div class="d-flex gap-1">
                                                     <div class="edit">
-                                                        <form action="{{ route('admin.users.edit', $item->id) }}"
-                                                            method="get">
+                                                        <form action="{{ route('admin.products.restore', $item->id) }}"
+                                                            method="post">
                                                             @csrf
-                                                            <button class="btn btn-sm btn-warning edit-item-btn">
-                                                                <span class="ri-edit-box-line"></span>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                    <div class="show">
-                                                        <form action="{{ route('admin.users.show', $item->id) }}"
-                                                            method="get">
-                                                            @csrf
-                                                            <button class="btn btn-sm btn-info show-item-btn"
-                                                                data-bs-toggle="modal" data-bs-target="#showModal">
-                                                                <i class="las la-eye"></i>
+                                                            @method('PATCH')
+                                                            <button class="btn btn-sm btn-success edit-item-btn btn-remove"
+                                                                data-bs-toggle="modal" data-bs-target="#showModal" data-name="{{ $item->name }}">
+                                                                <i class="las la-redo-alt"></i>
                                                             </button>
                                                         </form>
                                                     </div>
                                                     <div class="remove">
                                                         <form method="POST"
-                                                            action="{{ route('admin.users.destroy', $item->id) }}"
+                                                            action="{{ route('admin.products.force-delete', $item->id) }}"
                                                             class="d-inline delete-form">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="button"
-                                                                class="btn btn-sm btn-danger remove-item-btn btn-delete"
+                                                                class="btn btn-sm btn-danger remove-item-btn btn-forcedelete"
                                                                 data-name="{{ $item->name }}">
-                                                                <span class="ri-delete-bin-7-line"></span>
+                                                                <i class="ri-delete-bin-2-line"></i>
                                                             </button>
                                                         </form>
 
@@ -308,25 +247,25 @@
                             <div class="pagination-wrap hstack gap-2">
 
                                 {{-- Nút Previous --}}
-                                @if ($items->onFirstPage())
+                                @if ($productsDeleted->onFirstPage())
                                     <a class="page-item pagination-prev disabled" href="javascript:void(0);">Previous</a>
                                 @else
                                     <a class="page-item pagination-prev"
-                                        href="{{ $items->previousPageUrl() }}">Previous</a>
+                                        href="{{ $productsDeleted->previousPageUrl() }}">Previous</a>
                                 @endif
 
                                 {{-- Các số trang --}}
                                 <ul class="pagination listjs-pagination mb-0">
-                                    @foreach ($items->getUrlRange(1, $items->lastPage()) as $page => $url)
-                                        <li class="page-item {{ $page == $items->currentPage() ? 'active' : '' }}">
+                                    @foreach ($productsDeleted->getUrlRange(1, $productsDeleted->lastPage()) as $page => $url)
+                                        <li class="page-item {{ $page == $productsDeleted->currentPage() ? 'active' : '' }}">
                                             <a class="page-link" href="{{ $url }}">{{ $page }}</a>
                                         </li>
                                     @endforeach
                                 </ul>
 
                                 {{-- Nút Next --}}
-                                @if ($items->hasMorePages())
-                                    <a class="page-item pagination-next" href="{{ $items->nextPageUrl() }}">Next</a>
+                                @if ($productsDeleted->hasMorePages())
+                                    <a class="page-item pagination-next" href="{{ $productsDeleted->nextPageUrl() }}">Next</a>
                                 @else
                                     <a class="page-item pagination-next disabled" href="javascript:void(0);">Next</a>
                                 @endif
@@ -344,38 +283,30 @@
 @endsection
 @push('scripts')
     <script>
-        $(document).on('change', 'input[name="email_verified"]', function() {
-            var userID = $(this).val();
-            var isChecked = $(this).is(':checked');
+        function toggleFeature(productId, isChecked) {
+            const url = "{{ route('admin.products.toggleFeature', ':id') }}".replace(':id', productId);
 
-            var updateUrl = "{{ route('admin.users.updateEmailVerified', ':userID') }}".replace(
-                ':userID', userID);
-
-            $.ajax({
-                type: "PUT",
-                url: updateUrl,
-                data: {
-                    email_verified: isChecked ? userID : ''
-                },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.status === 'success') {
-                        toastr.success(response.message);
-                    } else if (response.status === 'warning') {
-                        toastr.warning(response.message);
-                        $('input[value="' + userID + '"]').prop('checked', true);
-                    } else {
-                        toastr.error(response.message);
-                    }
-                },
-                error: function() {
-                    toastr.error('Có lỗi xảy ra khi cập nhật.');
-                }
-            });
-        });
+            fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        is_featured: isChecked ? 1 : 0
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    toastr.success(data.message);
+                })
+                .catch(err => {
+                    toastr.error('Lỗi cập nhật trạng thái sản phẩm!');
+                    console.error('Toggle failed:', err);
+                });
+        }
     </script>
+
     <script>
         $(document).ready(function() {
             $('#toggleFilterBtn').on('click', function() {

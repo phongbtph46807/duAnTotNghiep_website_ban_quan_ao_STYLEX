@@ -18,7 +18,7 @@ return new class extends Migration
             $table->tinyInteger('is_verified')->default(0); 
             $table->decimal('salary', 10, 2)->nullable();
             $table->date('hire_date')->nullable();
-            $table->softDeletes(); 
+            $table->softDeletes(); // tạo trường deleted_at
                 });
     }
 

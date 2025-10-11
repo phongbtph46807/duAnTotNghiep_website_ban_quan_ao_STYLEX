@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,20 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
         Route::put('/updateEmailVerified/{user}', [UserController::class, 'updateEmailVerified'])->name('updateEmailVerified');
         Route::patch('/{id}/restore', [UserController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::prefix('products')->as('products.')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('index');
+        Route::get('/trash', [ProductController::class, 'trash'])->name('trash');
+        Route::get('/create', [ProductController::class, 'create'])->name('create');
+        Route::get('/{product}', [ProductController::class, 'show'])->name('show');
+        Route::post('/store', [ProductController::class, 'store'])->name('store');
+        Route::post('/filter', [ProductController::class, 'filter'])->name('filter');
+        Route::get('/edit/{product}', [ProductController::class, 'edit'])->name('edit');
+        Route::put('/{product}', [ProductController::class, 'update'])->name('update');
+        Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
+        Route::post('/{product}/toggle-feature', [ProductController::class, 'toggleFeature'])->name('toggleFeature');
+        Route::patch('/{id}/restore', [ProductController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('force-delete');
     });
 });
 });
