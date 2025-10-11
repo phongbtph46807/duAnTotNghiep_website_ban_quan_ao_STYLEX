@@ -1,11 +1,10 @@
-@extends('admin.layouts.app')
+@extends('auth.layout')
 
 @section('title', 'Đăng ký')
+@section('page-title', 'Đăng ký')
+@section('page-subtitle', 'Tạo tài khoản mới')
+
 @section('content')
-<div class="row justify-content-center mt-5 mb-5">
-    <div class="col-md-6 col-lg-5">
-        <div class="p-4 shadow-sm" style=" max-width: 600px; background: #fff; border: 1px solid #e5e5e5; border-radius: 10px;">
-            <h4 class="text-center mb-4" style="font-weight: 600; color: #333;">ĐĂNG KÝ TÀI KHOẢN</h4>
     @if(Session::has('success'))
     <script>
         window.addEventListener("DOMContentLoaded", function() {
@@ -38,84 +37,81 @@
     </script>
     @endif
 
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
 
-                <div class="mb-3">
-                    <label for="name" class="form-label">Họ và tên</label>
-                    <input id="name" type="text" class="form-control @error('name') is-invalid @enderror"
-                        name="name" value="{{ old('name') }}" placeholder="Nhập họ và tên" autofocus>
-                    @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
-                        name="email" value="{{ old('email') }}" placeholder="Nhập email của bạn">
-                    @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="phone_number" class="form-label">Số điện thoại</label>
-                    <input id="phone_number" type="tel" class="form-control @error('phone_number') is-invalid @enderror"
-                        name="phone_number" value="{{ old('phone_number') }}" placeholder="Nhập số điện thoại">
-                    @error('phone_number')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label">Mật khẩu</label>
-                    <div class="input-group">
-                        <input id="password" type="password"
-                            class="form-control @error('password') is-invalid @enderror" name="password" placeholder="Nhập mật khẩu">
-                        <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                    </div>
-                    @error('password')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="password_confirmation" class="form-label">Xác nhận mật khẩu</label>
-                    <div class="input-group">
-                        <input id="password_confirmation" type="password"
-                            class="form-control @error('password_confirmation') is-invalid @enderror" name="password_confirmation" placeholder="Nhập lại mật khẩu">
-                        <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password_confirmation">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                    </div>
-                    @error('password_confirmation')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
-                    <label class="form-check-label" for="terms">
-                        Tôi đồng ý với <a href="#" class="text-primary">điều khoản sử dụng</a>
-                    </label>
-                </div>
-
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        Đăng ký
-                    </button>
-                </div>
-            </form>
-            
-            <p class="text-center mt-3" style="font-size: 14px; color: #666;"> 
-                Đã có tài khoản? <a href="{{ route('loginView') }}" style="color: #111; font-weight: 500;">Đăng nhập</a> 
-            </p>
+        <div class="mb-3">
+            <label for="name" class="form-label">Họ và tên</label>
+            <input id="name" type="text" class="form-control @error('name') is-invalid @enderror"
+                name="name" value="{{ old('name') }}" placeholder="Nhập họ và tên" autofocus>
+            @error('name')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
-    </div>
-</div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                name="email" value="{{ old('email') }}" placeholder="Nhập email của bạn">
+            @error('email')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="phone_number" class="form-label">Số điện thoại</label>
+            <input id="phone_number" type="tel" class="form-control @error('phone_number') is-invalid @enderror"
+                name="phone_number" value="{{ old('phone_number') }}" placeholder="Nhập số điện thoại">
+            @error('phone_number')
+            <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu</label>
+            <div class="input-group">
+                <input id="password" type="password"
+                    class="form-control @error('password') is-invalid @enderror" name="password" placeholder="Nhập mật khẩu">
+                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+            @error('password')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="password_confirmation" class="form-label">Xác nhận mật khẩu</label>
+            <div class="input-group">
+                <input id="password_confirmation" type="password"
+                    class="form-control @error('password_confirmation') is-invalid @enderror" name="password_confirmation" placeholder="Nhập lại mật khẩu">
+                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password_confirmation">
+                    <i class="fa fa-eye"></i>
+                </button>
+            </div>
+            @error('password_confirmation')
+            <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+            <label class="form-check-label" for="terms">
+                Tôi đồng ý với <a href="#" class="text-primary">điều khoản sử dụng</a>
+            </label>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">
+                Đăng ký
+            </button>
+        </div>
+    </form>
+@endsection
+
+@section('footer')
+    <p class="mb-0">Đã có tài khoản? <a href="{{ route('loginView') }}">Đăng nhập ngay</a></p>
 @endsection
 
 @push('scripts')
