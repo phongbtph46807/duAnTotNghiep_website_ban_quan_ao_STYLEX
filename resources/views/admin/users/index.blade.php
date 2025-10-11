@@ -223,8 +223,8 @@
                                             <td class="customer_id">{{ $item->id }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                <img src="{{ $item->avatar ? Storage::url($item->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
-                                                    width="50">
+                                                <img src="{{ $item->avatar ? asset('storage/' . $item->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
+                                                    width="50" height="50" class="user-avatar" alt="Avatar">
                                             </td>
                                             <td class="customer_name">{{ $item->email }}</td>
                                             <td class="phone">{{ $item->phone_number ?? 'Chưa có thông tin' }}</td>

@@ -14,15 +14,113 @@ class CategoryController extends Controller
     public function index(){
         try {
             //code...
-            $categories = Category::with('children')->whereNull('parent_id')->get();
-            $allCategories = Category::with('parent')->paginate(5);
+            // Paginate parent categories and eager-load children for display
+            $parentCategories = Category::with('children')->whereNull('parent_id')->paginate(5);
+            // Full list for the parent select in the add/edit forms
+            $selectableCategories = Category::all();
 
-            return view('admin.category.index', compact(['categories', 'allCategories']));
+            return view('admin.category.index', compact(['parentCategories', 'selectableCategories']));
         } catch (\Exception $e) {
-            return abort(404, "có gì đó không ổn");
+            $this->logError($e);
+            return view('admin.category.index', [
+                'parentCategories' => collect(),
+                'selectableCategories' => collect(),
+                'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ]);
         }
     }
 
+    public function edit($id){
+        try {
+            $category = Category::findOrFail($id);
+            $selectableCategories = Category::where('id', '!=', $id)->get();
+            return view('admin.category.edit', compact('category', 'selectableCategories'));
+        } catch (\Exception $e) {
+            return redirect()->route('admin.categories.index')->with('error', 'Không tìm thấy danh mục!');
+        }
+    }
+
+    public function show($id){
+        try {
+            $category = Category::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'category' => $category
+            ]);
+        } catch (\Exception $e) {
+            $this->logError($e);
+            return response()->json([
+                'success' => false,
+                'msg' => 'Không tìm thấy danh mục!'
+            ]);
+        }
+    }
+
+    public function update(Request $request, $id){
+        try {
+            $category = Category::findOrFail($id);
+            
+            $request->validate([
+                'category_name' => 'required|unique:categories,name,' . $id,
+                'parent_id' => 'nullable|exists:categories,id|not_in:' . $id,
+                'status' => 'required|in:0,1'
+            ]);
+
+            $oldStatus = $category->status;
+            $newStatus = $request->status;
+
+            $category->update([
+                'name' => $request->category_name,
+                'parent_id' => $request->parent_id ?: null,
+                'status' => $newStatus
+            ]);
+
+            // Nếu tắt trạng thái hoạt động của danh mục cha, tắt luôn tất cả danh mục con
+            if ($oldStatus == 1 && $newStatus == 0) {
+                $this->deactivateChildren($category->id);
+            }
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Cập nhật danh mục thành công!'
+            ]);
+        } catch (\Exception $e) {
+            $this->logError($e);
+            return response()->json([
+                'success' => false,
+                'msg' => 'Có lỗi xảy ra khi cập nhật danh mục: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function destroy($id){
+        try {
+            $category = Category::findOrFail($id);
+            $childrenCount = $category->children()->count();
+            
+            // Xóa tất cả danh mục con trước
+            if ($childrenCount > 0) {
+                $category->children()->delete();
+            }
+            
+            $category->delete();
+
+            $message = $childrenCount > 0 
+                ? "Xóa danh mục và {$childrenCount} danh mục con thành công!" 
+                : "Xóa danh mục thành công!";
+
+            return response()->json([
+                'success' => true,
+                'msg' => $message
+            ]);
+        } catch (\Exception $e) {
+            $this->logError($e);
+            return response()->json([
+                'success' => false,
+                'msg' => 'Có lỗi xảy ra khi xóa danh mục: ' . $e->getMessage()
+            ]);
+        }
+    }
     public function store(Request $request){
         try {
             //code...
@@ -47,6 +145,20 @@ class CategoryController extends Controller
                 'success' => false,
                 'msg' => $e->getMessage()
            ]);
+        }
+    }
+
+    /**
+     * Tắt trạng thái hoạt động của tất cả danh mục con
+     */
+    private function deactivateChildren($parentId)
+    {
+        $children = Category::where('parent_id', $parentId)->get();
+        
+        foreach ($children as $child) {
+            $child->update(['status' => 0]);
+            // Đệ quy để tắt cả danh mục con của danh mục con
+            $this->deactivateChildren($child->id);
         }
     }
 }

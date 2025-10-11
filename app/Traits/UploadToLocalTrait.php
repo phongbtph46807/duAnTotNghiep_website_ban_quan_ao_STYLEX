@@ -15,20 +15,19 @@ trait UploadToLocalTrait
     {
         try {
             if (!$file->isValid()) {
-                return response()->json([
-                    'message' => 'Invalid file',
-                ], Response::HTTP_BAD_REQUEST);
+                throw new \Exception('File không hợp lệ');
             }
 
-            $path = $file->store($directory, 'public');
+            // Tạo tên file unique
+            $fileName = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+            
+            // Lưu file vào storage/app/public
+            $path = $file->storeAs($directory, $fileName, 'public');
 
             return $path;
         } catch (\Exception $e) {
             $this->logError($e);
-
-            return response()->json([
-                'message' => 'Có lỗi xảy ra, vui lòng thử lại sau',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            throw new \Exception('Có lỗi xảy ra khi upload file: ' . $e->getMessage());
         }
     }
 
@@ -68,19 +67,20 @@ trait UploadToLocalTrait
     public function deleteFromLocal($filePath, $directory = 'uploads')
     {
         try {
-            if (Storage::exists($filePath)) {
-                return Storage::delete($filePath);
+            // Nếu filePath là URL đầy đủ, không xóa
+            if (filter_var($filePath, FILTER_VALIDATE_URL)) {
+                return true;
             }
 
-            return response()->json([
-                'message' => 'File not found',
-            ], Response::HTTP_NOT_FOUND);
+            // Xóa file từ storage/app/public
+            if (Storage::disk('public')->exists($filePath)) {
+                return Storage::disk('public')->delete($filePath);
+            }
+
+            return true; // File không tồn tại, coi như đã xóa thành công
         } catch (\Exception $e) {
             $this->logError($e);
-
-            return response()->json([
-                'message' => 'Có lỗi xảy ra, vui lòng thử lại sau',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return false;
         }
     }
 }

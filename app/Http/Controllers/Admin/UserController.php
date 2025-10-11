@@ -92,31 +92,36 @@ class UserController extends Controller
     public function updateEmailVerified(Request $request, User $user)
     {
         try {
-            $isChecked = !empty($request->input('email_verified'));
-
-            // Nếu user đã xác thực mà admin cố tắt
-            if ($user->email_verified_at && !$isChecked) {
-                return response()->json([
-                    'status' => 'warning',
-                    'message' => 'Email đã xác thực, không thể hủy xác thực.'
-                ]);
-            }
+            $isChecked = $request->input('email_verified') == '1' || $request->input('email_verified') === true;
 
             // Nếu admin bật xác thực cho user chưa xác thực
             if (!$user->email_verified_at && $isChecked) {
                 $user->update(['email_verified_at' => now()]);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Email đã được xác thực thành công.'
+                ]);
+            }
+
+            // Nếu admin tắt xác thực cho user đã xác thực
+            if ($user->email_verified_at && !$isChecked) {
+                $user->update(['email_verified_at' => null]);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Email đã được hủy xác thực.'
+                ]);
             }
 
             return response()->json([
-                'status' => 'success',
-                'message' => 'Cập nhật thành công.'
+                'status' => 'info',
+                'message' => 'Không có thay đổi nào.'
             ]);
         } catch (\Exception $e) {
             $this->logError($e);
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Cập nhật thất bại.'
+                'message' => 'Cập nhật thất bại: ' . $e->getMessage()
             ]);
         }
     }
@@ -143,6 +148,11 @@ class UserController extends Controller
 
             if ($request->hasFile('avatar')) {
                 $data['avatar'] = $this->uploadToLocal($request->file('avatar'), self::FOLDER);
+                
+                // Xóa avatar cũ nếu có
+                if (!empty($currencyAvatar) && $currencyAvatar !== self::URLIMAGEDEFAULT) {
+                    $this->deleteFromLocal($currencyAvatar, self::FOLDER);
+                }
             }
 
             $user->update($data);
@@ -155,13 +165,6 @@ class UserController extends Controller
                     $oldRole = $user->is_admin;
                     $user->update(['is_admin' => $newRole]);
                 }
-            }
-            if (
-                isset($data['avatar']) && !empty($data['avatar'])
-                && filter_var($data['avatar'], FILTER_VALIDATE_URL)
-                && !empty($currencyAvatar) && $currencyAvatar !== self::URLIMAGEDEFAULT
-            ) {
-                $this->deleteFromLocal($currencyAvatar, self::FOLDER);
             }
             // dd($data);
             DB::commit();

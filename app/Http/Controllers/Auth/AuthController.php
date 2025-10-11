@@ -23,7 +23,7 @@ class AuthController extends Controller
     public function registerView(){
         try {
             //code...
-            return view('admin.auth.register');
+            return view('auth.register');
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn!");
         }
@@ -61,7 +61,7 @@ class AuthController extends Controller
         public function loginView(){
         try {
             //code...
-            return view('admin.auth.login');
+            return view('auth.login');
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn!");
         }

@@ -15,6 +15,12 @@
 </div>
 
 <section class="section">
+    @if(isset($error))
+        <div class="alert alert-danger">
+            <strong>Lỗi:</strong> {{ $error }}
+        </div>
+    @endif
+    
     <div class="row" id="table-striped">
         <div class="col-12">
             <div class="card">
@@ -56,7 +62,7 @@
                                                 class="form-select border-0 shadow-sm theme-input"
                                                 name="parent_id">
                                                 <option selected value="">Không có (Mặc định)</option>
-                                                @foreach ($allCategories as $cat)
+                                                @foreach ($selectableCategories as $cat)
                                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                                 @endforeach
                                             </select>
@@ -93,48 +99,63 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($allCategories as $category)
-                                                @if ($category->parent_id === null)
-                                                    <tr class=" parent-row" data-parent-id="{{ $category->id }}" style="cursor:pointer;">
-                                                        <td><strong><i class="bi bi-caret-right-fill toggle-icon me-2"></i>{{ $category->name }}</strong></td>
-                                                        <td>—</td>
+                                            @if($parentCategories->count() == 0)
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        <div class="alert alert-info">
+                                                            <strong>Thông báo:</strong> Chưa có danh mục nào. Hãy thêm danh mục đầu tiên!
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                            @foreach ($parentCategories as $category)
+                                                <tr class=" parent-row" data-parent-id="{{ $category->id }}" style="cursor:pointer;">
+                                                    <td><strong><i class="bi bi-caret-right-fill toggle-icon me-2"></i>{{ $category->name }}</strong></td>
+                                                    <td>—</td>
+                                                    <td>
+                                                        @if($category->status == 1)
+                                                            <span class="badge bg-success">Hoạt động</span>
+                                                        @else
+                                                            <span class="badge bg-secondary">Không hoạt động</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ route('admin.category.edit', $category->id) }}" title="Sửa"><i data-feather="edit"></i></a>
+                                                        <a href="#" title="Xóa" class="delete-category" data-id="{{ $category->id }}" data-name="{{ $category->name }}" data-children="{{ $category->children->count() }}"><i data-feather="trash-2"></i></a>
+                                                        <form id="delete-cat-{{ $category->id }}" action="{{ route('admin.category.destroy', $category->id) }}" method="POST" class="d-none">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                        </form>
+                                                    </td>
+                                                </tr>
+
+                                                {{-- Các danh mục con --}}
+                                                @foreach ($category->children as $child)
+                                                    <tr class="child-row child-of-{{ $category->id }}" style="display:none;">
+                                                        <td style="padding-left: 40px;">↳ {{ $child->name }}</td>
+                                                        <td>{{ $category->name }}</td>
                                                         <td>
-                                                            @if($category->status == 1)
+                                                            @if($child->status == 1)
                                                                 <span class="badge bg-success">Hoạt động</span>
                                                             @else
                                                                 <span class="badge bg-secondary">Không hoạt động</span>
                                                             @endif
                                                         </td>
-                                                        <td>
-                                                            <a href="#" data-id="{{ $category->id }}"><i data-feather="edit"></i></a>
-                                                            <a href="#" data-id="{{ $category->id }}"><i data-feather="trash-2"></i></a>
-                                                        </td>
+                                                            <td>
+                                                                <a href="{{ route('admin.category.edit', $child->id) }}" title="Sửa"><i data-feather="edit"></i></a>
+                                                                <a href="#" title="Xóa" class="delete-category" data-id="{{ $child->id }}" data-name="{{ $child->name }}" data-children="0"><i data-feather="trash-2"></i></a>
+                                                                <form id="delete-cat-{{ $child->id }}" action="{{ route('admin.category.destroy', $child->id) }}" method="POST" class="d-none">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                </form>
+                                                            </td>
                                                     </tr>
-
-                                                    {{-- Các danh mục con --}}
-                                                    @foreach ($category->children as $child)
-                                                        <tr class="child-row child-of-{{ $category->id }}" style="display:none;">
-                                                            <td style="padding-left: 40px;">↳ {{ $child->name }}</td>
-                                                            <td>{{ $category->name }}</td>
-                                                            <td>
-                                                                @if($child->status == 1)
-                                                                    <span class="badge bg-success">Hoạt động</span>
-                                                                @else
-                                                                    <span class="badge bg-secondary">Không hoạt động</span>
-                                                                @endif
-                                                            </td>
-                                                            <td>
-                                                                <a href="#" data-id="{{ $child->id }}"><i data-feather="edit"></i></a>
-                                                                <a href="#" data-id="{{ $child->id }}"><i data-feather="trash-2"></i></a>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                @endif
+                                                @endforeach
                                             @endforeach
                                         </tbody>
                                     </table>
                                 </div>
-                                    {{ $allCategories->links('pagination::bootstrap-5') }}
+                                    {{ $parentCategories->links('pagination::bootstrap-5') }}
                             </div>
                         </div>
                     </section>
@@ -181,6 +202,40 @@
             } else {
                 children.show();
                 icon.removeClass('bi-caret-right-fill').addClass('bi-caret-down-fill');
+            }
+        });
+
+        // Xóa danh mục
+        $(document).on('click', '.delete-category', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            const childrenCount = parseInt($(this).data('children'));
+            
+            let confirmMessage = `Bạn có chắc chắn muốn xóa danh mục "${name}"?`;
+            if (childrenCount > 0) {
+                confirmMessage += `\n\nCảnh báo: Danh mục này có ${childrenCount} danh mục con. Tất cả danh mục con cũng sẽ bị xóa!`;
+            }
+            
+            if (confirm(confirmMessage)) {
+                $.ajax({
+                    url: `/admin/category/${id}`,
+                    type: "DELETE",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            alert(res.msg);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + res.msg);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Có lỗi xảy ra khi xóa danh mục');
+                    }
+                });
             }
         });
     });

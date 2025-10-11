@@ -245,7 +245,7 @@
                             <!-- User Avatar Column -->
                             <div class="col-lg-3 col-md-4">
                                 <div class="user-avatar-container">
-                                    <img src="{{ $user->avatar ? Storage::url($user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" alt="Avatar của {{ $user->name }}"
+                                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" alt="Avatar của {{ $user->name }}"
                                         class="img-fluid rounded-circle user-avatar">
                                     <h5 class="user-name">{{ $user->name }}</h5>
 

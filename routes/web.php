@@ -13,6 +13,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Test route để kiểm tra
+Route::get('/test-categories', function () {
+    $categories = App\Models\Category::with('children')->whereNull('parent_id')->get();
+    return response()->json([
+        'count' => $categories->count(),
+        'categories' => $categories
+    ]);
+});
+
 Route::group(['middleware' => ['isAuthenticated']], function() {
 
     Route::get('/register', [AuthController::class,'registerView'])->name('registerView');
@@ -39,6 +48,11 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
     //Categories route
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('category.store');
+    Route::get('/category/{id}/edit', [CategoryController::class, 'edit'])->name('category.edit');
+    Route::put('/category/{id}', [CategoryController::class, 'update'])->name('category.update');
+    Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
+
+    
     //Route Users   
     Route::prefix('users')->as('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
