@@ -22,7 +22,7 @@
 }
 
 .x-text {
-    color: #f59e0b;
+    color: #000000;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     position: relative;
 }
@@ -38,7 +38,7 @@
 }
 
 .logo-dark .x-text {
-    color: #f59e0b;
+    color: #000000;
 }
 
 /* Light mode styles */
@@ -47,26 +47,17 @@
 }
 
 .logo-light .x-text {
-    color: #fbbf24;
+    color: #000000;
 }
 
 /* Hover effects */
-.navbar-brand-box a:hover .style-text {
-    color: #4f46e5;
-    transition: color 0.3s ease;
-}
-
 .navbar-brand-box a:hover .x-text {
-    color: #d97706;
+    color: #333333;
     transition: color 0.3s ease;
-}
-
-.logo-light:hover .style-text {
-    color: #e5e7eb;
 }
 
 .logo-light:hover .x-text {
-    color: #f59e0b;
+    color: #333333;
 }
 
 /* Animation for logo */

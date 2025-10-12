@@ -214,8 +214,8 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        <a href="{{ route('admin.category.edit', $category->id) }}" title="Sửa"><i data-feather="edit"></i></a>
-                                                        <a href="#" title="Xóa" class="delete-category" data-id="{{ $category->id }}" data-name="{{ $category->name }}" data-children="{{ $category->children->count() }}"><i data-feather="trash-2"></i></a>
+                                                        <a href="{{ route('admin.category.edit', $category->id) }}" title="Sửa" class="btn btn-sm btn-warning me-1"><i class="ri-edit-box-line"></i></a>
+                                                        <a href="#" title="Xóa" class="btn btn-sm btn-danger delete-category" data-id="{{ $category->id }}" data-name="{{ $category->name }}" data-children="{{ $category->children->count() }}"><i class="ri-delete-bin-7-line"></i></a>
                                                         <form id="delete-cat-{{ $category->id }}" action="{{ route('admin.category.destroy', $category->id) }}" method="POST" class="d-none">
                                                             @csrf
                                                             @method('DELETE')
@@ -236,8 +236,8 @@
                                                             @endif
                                                         </td>
                                                             <td>
-                                                                <a href="{{ route('admin.category.edit', $child->id) }}" title="Sửa"><i data-feather="edit"></i></a>
-                                                                <a href="#" title="Xóa" class="delete-category" data-id="{{ $child->id }}" data-name="{{ $child->name }}" data-children="0"><i data-feather="trash-2"></i></a>
+                                                                <a href="{{ route('admin.category.edit', $child->id) }}" title="Sửa" class="btn btn-sm btn-warning me-1"><i class="ri-edit-box-line"></i></a>
+                                                                <a href="#" title="Xóa" class="btn btn-sm btn-danger delete-category" data-id="{{ $child->id }}" data-name="{{ $child->name }}" data-children="0"><i class="ri-delete-bin-7-line"></i></a>
                                                                 <form id="delete-cat-{{ $child->id }}" action="{{ route('admin.category.destroy', $child->id) }}" method="POST" class="d-none">
                                                                     @csrf
                                                                     @method('DELETE')

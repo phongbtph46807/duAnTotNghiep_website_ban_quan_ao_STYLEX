@@ -500,7 +500,7 @@
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarUI" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarUI">
-                        <i class="ri-pencil-ruler-2-line"></i> <span data-key="t-base-ui">Quản lí người dùng</span>
+                        <i class="ri-account-circle-line"></i> <span data-key="t-base-ui">Quản lí người dùng</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarUI">
                         <ul class="nav nav-sm flex-column">

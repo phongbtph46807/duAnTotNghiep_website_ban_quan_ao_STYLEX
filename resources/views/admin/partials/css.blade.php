@@ -17,6 +17,8 @@
     <link href="{{ asset('assets/css/app.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- custom Css-->
     <link href="{{ asset('assets/css/custom.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Style X Logo CSS -->
+    <link href="{{ asset('assets/css/style-x-logo.css') }}" rel="stylesheet" type="text/css" />
         <!-- Plugins css -->
     <link href="{{ asset('assets/libs/dropzone/dropzone.css')}}" rel="stylesheet" type="text/css" />
     <!-- Thêm vào phần <head> -->

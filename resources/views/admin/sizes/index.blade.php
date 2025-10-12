@@ -136,14 +136,14 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('admin.sizes.edit', $size) }}" class="btn btn-sm btn-outline-primary me-1" title="Sửa">
-                                            <i class="ri-edit-line"></i>
+                                        <a href="{{ route('admin.sizes.edit', $size) }}" class="btn btn-sm btn-warning me-1" title="Sửa">
+                                            <i class="ri-edit-box-line"></i>
                                         </a>
                                         <form method="POST" action="{{ route('admin.sizes.destroy', $size) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa kích thước này?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa">
-                                                <i class="ri-delete-bin-line"></i>
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="ri-delete-bin-7-line"></i>
                                             </button>
                                         </form>
                                     </td>

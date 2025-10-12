@@ -16,14 +16,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Test route để kiểm tra
-Route::get('/test-categories', function () {
-    $categories = App\Models\Category::with('children')->whereNull('parent_id')->get();
-    return response()->json([
-        'count' => $categories->count(),
-        'categories' => $categories
-    ]);
-});
 
 Route::group(['middleware' => ['isAuthenticated']], function() {
 
