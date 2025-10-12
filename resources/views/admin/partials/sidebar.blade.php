@@ -81,43 +81,35 @@
                             </li>
                         </ul>
                     </div>
-                </li>
+                </li> <!-- end Apps Menu -->
+                
+                <!-- Quản lý thuộc tính sản phẩm -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarAppss" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarAppss">
-                        <i class="ri-apps-2-line"></i> <span data-key="t-apps">Quản lí sản phẩm biến thể</span>
+                    <a class="nav-link menu-link" href="#sidebarAttributes" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarAttributes">
+                        <i class="ri-palette-line"></i> <span data-key="t-attributes">Thuộc tính sản phẩm</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarAppss">
+                    <div class="collapse menu-dropdown" id="sidebarAttributes">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="#" class="nav-link"
-                                    data-key="t-analytics">
-                                    Danh sách biến thể sản phẩm
+                                <a href="{{route('admin.colors.index')}}" class="nav-link" data-key="t-colors">
+                                    <i class="ri-palette-line me-1"></i> Quản lý màu sắc
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link"
-                                    data-key="t-analytics"> Thêm mới biến thể sản phẩm
+                                <a href="{{route('admin.sizes.index')}}" class="nav-link" data-key="t-sizes">
+                                    <i class="ri-ruler-line me-1"></i> Quản lý kích thước
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link"
-                                    data-key="t-analytics"> Danh sách thuộc tính sản phẩm
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link"
-                                    data-key="t-analytics"> Thêm mới thuộc tính sản phẩm
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link"
-                                    data-key="t-analytics"> Danh sách biến thể đã xóa
+                                <a href="{{route('admin.textures.index')}}" class="nav-link" data-key="t-textures">
+                                    <i class="ri-scissors-line me-1"></i> Quản lý chất liệu
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarInventory" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarInventory">
