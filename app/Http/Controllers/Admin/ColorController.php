@@ -22,9 +22,9 @@ class ColorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'hex_code' => 'nullable',
-            
+            'name' => 'required|string|max:255',
+            'hex_code' => 'nullable|string|max:7',
+            'status' => 'required|in:0,1',
         ]);
 
         Color::create($request->all());
@@ -40,7 +40,9 @@ class ColorController extends Controller
     public function update(Request $request, Color $color)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
+            'hex_code' => 'nullable|string|max:7',
+            'status' => 'required|in:0,1',
         ]);
 
         $color->update($request->all());

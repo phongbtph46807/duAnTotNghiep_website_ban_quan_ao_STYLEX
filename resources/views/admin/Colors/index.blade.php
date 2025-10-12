@@ -25,14 +25,6 @@
     .color-table td {
         vertical-align: middle;
     }
-
-    .color-preview {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        border: 2px solid #ddd;
-        display: inline-block;
-    }
 </style>
 @endpush
 @section('content')
@@ -72,7 +64,7 @@
                     <i class="ri-checkbox-circle-line"></i>
                 </div>
                 <h5 class="card-title text-muted mb-2">Màu hoạt động</h5>
-                <h3 class="card-text fw-bold text-success">{{ $colors->where('status', 1)->count() ?? 0 }}</h3>
+                <h3 class="card-text fw-bold text-success">{{ $colors->where('status', 1)->count() }}</h3>
             </div>
         </div>
     </div>
@@ -83,18 +75,7 @@
                     <i class="ri-pause-circle-line"></i>
                 </div>
                 <h5 class="card-title text-muted mb-2">Màu không hoạt động</h5>
-                <h3 class="card-text fw-bold text-warning">{{ $colors->where('status', 0)->count() ?? 0 }}</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-md-3 mb-3">
-        <div class="card stats-card parent-card">
-            <div class="card-body text-center">
-                <div class="stat-icon text-info">
-                    <i class="ri-palette-line"></i>
-                </div>
-                <h5 class="card-title text-muted mb-2">Màu có preview</h5>
-                <h3 class="card-text fw-bold text-info">{{ $colors->whereNotNull('hex_code')->count() ?? 0 }}</h3>
+                <h3 class="card-text fw-bold text-warning">{{ $colors->where('status', 0)->count() }}</h3>
             </div>
         </div>
     </div>
@@ -123,18 +104,13 @@
                             @forelse($colors as $color)
                             <tr>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        @if($color->hex_code)
-                                        <div class="color-preview me-2" style="background-color: {{ $color->hex_code }}"></div>
-                                        @endif
-                                        <span>{{ $color->name }}</span>
-                                    </div>
+                                    <span>{{ $color->name }}</span>
                                 </td>
                                 <td>
                                     @if($color->status == 1)
-                                    <span class="badge bg-success">Hoạt động</span>
+                                        <span class="badge bg-success">Hoạt động</span>
                                     @else
-                                    <span class="badge bg-secondary">Không hoạt động</span>
+                                        <span class="badge bg-danger">Không hoạt động</span>
                                     @endif
                                 </td>
                                 <td>

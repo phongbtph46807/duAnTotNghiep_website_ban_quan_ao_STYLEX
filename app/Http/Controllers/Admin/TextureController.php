@@ -22,7 +22,9 @@ class TextureController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|in:0,1',
         ]);
 
         Texture::create($request->all());
@@ -37,7 +39,9 @@ class TextureController extends Controller
     public function update(Request $request, Texture $texture)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|in:0,1',
         ]);
 
         $texture->update($request->all());

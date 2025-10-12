@@ -139,12 +139,27 @@
                                             </label>
                                             <select
                                                 class="form-select border-0 shadow-sm theme-input"
-                                                name="parent_id">
+                                                name="parent_id" id="parentCategorySelect">
                                                 <option selected value="">Không có (Mặc định)</option>
-                                                @foreach ($selectableCategories as $cat)
+                                                @foreach ($parentCategories as $cat)
                                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                                 @endforeach
                                             </select>
+                                        </div>
+
+                                        <!-- Danh mục con -->
+                                        <div class="mb-3" id="childCategoriesSection" style="display: none;">
+                                            <label class="form-label fw-semibold">
+                                                <i class="bi bi-list-nested me-2 text-info"></i> Danh mục con
+                                            </label>
+                                            <div class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
+                                                <div id="childCategoriesHeader" class="mb-3">
+                                                    <!-- Header sẽ hiển thị danh mục cha được chọn -->
+                                                </div>
+                                                <div id="childCategoriesList">
+                                                    <!-- Danh mục con sẽ được load ở đây -->
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <!-- Nút hành động -->
@@ -327,6 +342,60 @@
                 });
             }
         });
+    });
+
+    // Function để mở modal thêm danh mục từ sidebar
+    function openAddCategoryModal() {
+        $('#createCategoryModal').modal('show');
+    }
+
+    // Load danh mục con khi chọn danh mục cha
+    $('#parentCategorySelect').change(function() {
+        const parentId = $(this).val();
+        const childSection = $('#childCategoriesSection');
+        const childHeader = $('#childCategoriesHeader');
+        const childList = $('#childCategoriesList');
+        
+        if (parentId) {
+            // Sử dụng dữ liệu đã có từ server
+            const categories = @json($parentCategories->items());
+            const selectedCategory = categories.find(cat => cat.id == parentId);
+            
+            if (selectedCategory) {
+                // Hiển thị header với thông tin danh mục cha
+                childHeader.html(`
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Danh mục cha:</strong> ${selectedCategory.name}
+                        <span class="badge ${selectedCategory.status == 1 ? 'bg-success' : 'bg-danger'} ms-2">
+                            ${selectedCategory.status == 1 ? 'Hoạt động' : 'Không hoạt động'}
+                        </span>
+                    </div>
+                `);
+                
+                if (selectedCategory.children && selectedCategory.children.length > 0) {
+                    let html = '<div class="mt-3"><h6 class="text-muted mb-2"><i class="bi bi-list-ul me-1"></i> Danh sách danh mục con:</h6>';
+                    selectedCategory.children.forEach(child => {
+                        html += `
+                            <div class="d-flex align-items-center mb-2 p-2 bg-white rounded border">
+                                <i class="bi bi-arrow-right me-2 text-muted"></i>
+                                <span class="text-dark">${child.name}</span>
+                                <span class="badge ${child.status == 1 ? 'bg-success' : 'bg-danger'} ms-auto">
+                                    ${child.status == 1 ? 'Hoạt động' : 'Không hoạt động'}
+                                </span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    childList.html(html);
+                } else {
+                    childList.html('<div class="mt-3"><p class="text-muted text-center mb-0"><i class="bi bi-inbox me-1"></i> Chưa có danh mục con</p></div>');
+                }
+                childSection.show();
+            }
+        } else {
+            childSection.hide();
+        }
     });
 </script>
 @endpush

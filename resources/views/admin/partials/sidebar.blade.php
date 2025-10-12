@@ -2,21 +2,33 @@
     <!-- LOGO -->
     <div class="navbar-brand-box">
         <!-- Dark Logo-->
-        <a href="index.html" class="logo logo-dark">
+        <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
             <span class="logo-sm">
-                <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="22">
+                <div class="style-x-logo-sm">
+                    <span class="style-text">S</span>
+                    <span class="x-text">X</span>
+                </div>
             </span>
             <span class="logo-lg">
-                <img src="{{ asset('assets/images/logo-dark.png') }}" alt="" height="17">
+                <div class="style-x-logo-lg">
+                    <span class="style-text">Style</span>
+                    <span class="x-text">X</span>
+                </div>
             </span>
         </a>
         <!-- Light Logo-->
-        <a href="index.html" class="logo logo-light">
+        <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
             <span class="logo-sm">
-                <img src="{{ asset('assets/images/logo-sm.png') }}" alt="" height="22">
+                <div class="style-x-logo-sm">
+                    <span class="style-text">S</span>
+                    <span class="x-text">X</span>
+                </div>
             </span>
             <span class="logo-lg">
-                <img src="{{ asset('assets/images/logo-white.png') }}" alt="" height="60">
+                <div class="style-x-logo-lg">
+                    <span class="style-text">Style</span>
+                    <span class="x-text">X</span>
+                </div>
             </span>
         </a>
         <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"
@@ -45,13 +57,8 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link"
-                                    data-key="t-analytics"> Thêm mới danh mục
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics">
-                                    Danh sách danh mục đã xóa
+                                <a href="#" class="nav-link" data-key="t-analytics" onclick="openAddCategoryModal()">
+                                    Thêm mới danh mục
                                 </a>
                             </li>
                         </ul>
@@ -873,5 +880,9 @@
         <!-- Sidebar -->
     </div>
 
-    <div class="sidebar-background"></div>
+    <div class="sidebar-background">    </div>
 </div>
+
+
+<link rel="stylesheet" href="{{ asset('assets/css/style-x-logo.css') }}">
+<script src="{{ asset('assets/js/sidebar-menu.js') }}"></script>

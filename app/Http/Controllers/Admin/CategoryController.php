@@ -47,7 +47,10 @@ class CategoryController extends Controller
     public function edit($id){
         try {
             $category = Category::findOrFail($id);
-            $selectableCategories = Category::where('id', '!=', $id)->get();
+            // Chỉ lấy danh mục cha (parent_id = null) và loại trừ danh mục hiện tại
+            $selectableCategories = Category::where('id', '!=', $id)
+                ->whereNull('parent_id')
+                ->get();
             return view('admin.category.edit', compact('category', 'selectableCategories'));
         } catch (\Exception $e) {
             return redirect()->route('admin.categories.index')->with('error', 'Không tìm thấy danh mục!');

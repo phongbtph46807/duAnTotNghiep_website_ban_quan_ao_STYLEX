@@ -64,7 +64,7 @@
                         <i class="ri-checkbox-circle-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Chất liệu hoạt động</h5>
-                    <h3 class="card-text fw-bold text-success">{{ $textures->where('status', 1)->count() ?? 0 }}</h3>
+                    <h3 class="card-text fw-bold text-success">{{ $textures->where('status', 1)->count() }}</h3>
                 </div>
             </div>
         </div>
@@ -75,7 +75,7 @@
                         <i class="ri-pause-circle-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Chất liệu không hoạt động</h5>
-                    <h3 class="card-text fw-bold text-warning">{{ $textures->where('status', 0)->count() ?? 0 }}</h3>
+                    <h3 class="card-text fw-bold text-warning">{{ $textures->where('status', 0)->count() }}</h3>
                 </div>
             </div>
         </div>
@@ -86,7 +86,7 @@
                         <i class="ri-scissors-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Có mô tả</h5>
-                    <h3 class="card-text fw-bold text-info">{{ $textures->whereNotNull('description')->count() ?? 0 }}</h3>
+                    <h3 class="card-text fw-bold text-info">{{ $textures->whereNotNull('description')->count() }}</h3>
                 </div>
             </div>
         </div>
@@ -132,7 +132,7 @@
                                         @if($texture->status == 1)
                                             <span class="badge bg-success">Hoạt động</span>
                                         @else
-                                            <span class="badge bg-secondary">Không hoạt động</span>
+                                            <span class="badge bg-danger">Không hoạt động</span>
                                         @endif
                                     </td>
                                     <td>

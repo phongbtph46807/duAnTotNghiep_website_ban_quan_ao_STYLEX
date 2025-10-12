@@ -1,0 +1,80 @@
+/* Style X Logo CSS */
+.style-x-logo-sm {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+}
+
+.style-x-logo-lg {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: -0.5px;
+}
+
+.style-text {
+    color: #6366f1;
+    margin-right: 2px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.x-text {
+    color: #f59e0b;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+}
+
+/* Bỏ dấu gạch dưới */
+.x-text::after {
+    display: none;
+}
+
+/* Dark mode styles */
+.logo-dark .style-text {
+    color: #6366f1;
+}
+
+.logo-dark .x-text {
+    color: #f59e0b;
+}
+
+/* Light mode styles */
+.logo-light .style-text {
+    color: #ffffff;
+}
+
+.logo-light .x-text {
+    color: #fbbf24;
+}
+
+/* Hover effects */
+.navbar-brand-box a:hover .style-text {
+    color: #4f46e5;
+    transition: color 0.3s ease;
+}
+
+.navbar-brand-box a:hover .x-text {
+    color: #d97706;
+    transition: color 0.3s ease;
+}
+
+.logo-light:hover .style-text {
+    color: #e5e7eb;
+}
+
+.logo-light:hover .x-text {
+    color: #f59e0b;
+}
+
+/* Animation for logo */
+.style-x-logo-sm, .style-x-logo-lg {
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand-box a:hover .style-x-logo-sm,
+.navbar-brand-box a:hover .style-x-logo-lg {
+    transform: scale(1.05);
+}

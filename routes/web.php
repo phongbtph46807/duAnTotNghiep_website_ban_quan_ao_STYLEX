@@ -58,6 +58,11 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
     Route::put('/category/{id}', [CategoryController::class, 'update'])->name('category.update');
     Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
 
+    // Colors, Sizes, Textures routes
+    Route::resource('colors', ColorController::class);
+    Route::resource('sizes', SizeController::class);
+    Route::resource('textures', TextureController::class);
+
     
     //Route Users   
     Route::prefix('users')->as('users.')->group(function () {
@@ -77,8 +82,3 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
 });
 });
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('colors', ColorController::class);
-    Route::resource('sizes', SizeController::class);
-    Route::resource('textures', TextureController::class);
-});

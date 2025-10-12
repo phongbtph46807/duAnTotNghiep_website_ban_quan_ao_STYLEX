@@ -229,11 +229,15 @@
                                             <td class="customer_name">{{ $item->email }}</td>
                                             <td class="phone">{{ $item->phone_number ?? 'Chưa có thông tin' }}</td>
                                             <td>
-                                                <div class="form-check form-switch form-switch-warning">
-                                                    <input class="form-check-input" type="checkbox" role="switch"
-                                                        name="email_verified" value="{{ $item->id }}"
-                                                        @checked($item->email_verified_at != null)>
-                                                </div>
+                                                @if($item->email_verified_at != null)
+                                                    <span class="badge bg-success">
+                                                        <i class="ri-check-line me-1"></i>Đã xác minh
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-danger">
+                                                        <i class="ri-close-line me-1"></i>Chưa xác minh
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td class="phone">{{ $item->is_admin ? 'Quản trị viên' : 'Người dùng' }}</td>
                                             <td class="status">
@@ -344,38 +348,7 @@
 @endsection
 @push('scripts')
     <script>
-        $(document).on('change', 'input[name="email_verified"]', function() {
-            var userID = $(this).val();
-            var isChecked = $(this).is(':checked');
-
-            var updateUrl = "{{ route('admin.users.updateEmailVerified', ':userID') }}".replace(
-                ':userID', userID);
-
-            $.ajax({
-                type: "PUT",
-                url: updateUrl,
-                data: {
-                    email_verified: isChecked ? userID : ''
-                },
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.status === 'success') {
-                        toastr.success(response.message);
-                    } else if (response.status === 'warning') {
-                        toastr.warning(response.message);
-                        // Bật lại checkbox nếu bị chặn
-                        $('input[value="' + userID + '"]').prop('checked', true);
-                    } else {
-                        toastr.error(response.message);
-                    }
-                },
-                error: function() {
-                    toastr.error('Có lỗi xảy ra khi cập nhật.');
-                }
-            });
-        });
+        // Đã bỏ chức năng thay đổi trạng thái xác minh email
     </script>
     <script>
         $(document).ready(function() {
