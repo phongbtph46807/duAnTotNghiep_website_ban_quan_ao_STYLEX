@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\AppController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ColorController;
+use App\Http\Controllers\Admin\SizeController;
+use App\Http\Controllers\Admin\TextureController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -72,4 +75,10 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
         Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
     });
 });
+});
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('colors', ColorController::class);
+    Route::resource('sizes', SizeController::class);
+    Route::resource('textures', TextureController::class);
 });
