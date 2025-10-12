@@ -88,4 +88,15 @@ class AuthController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
+    public function logout(Request $request){
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('loginView')->with('success', 'Đăng xuất thành công!');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }

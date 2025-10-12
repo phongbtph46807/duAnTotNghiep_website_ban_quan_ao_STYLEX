@@ -19,12 +19,26 @@ class CategoryController extends Controller
             // Full list for the parent select in the add/edit forms
             $selectableCategories = Category::all();
 
-            return view('admin.category.index', compact(['parentCategories', 'selectableCategories']));
+            // Thống kê danh mục
+            $categoryStats = [
+                'total_categories' => Category::count(),
+                'active_categories' => Category::where('status', 1)->count(),
+                'inactive_categories' => Category::where('status', 0)->count(),
+                'parent_categories' => Category::whereNull('parent_id')->count()
+            ];
+
+            return view('admin.category.index', compact(['parentCategories', 'selectableCategories', 'categoryStats']));
         } catch (\Exception $e) {
             $this->logError($e);
             return view('admin.category.index', [
                 'parentCategories' => collect(),
                 'selectableCategories' => collect(),
+                'categoryStats' => [
+                    'total_categories' => 0,
+                    'active_categories' => 0,
+                    'inactive_categories' => 0,
+                    'parent_categories' => 0
+                ],
                 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ]);
         }
@@ -75,9 +89,28 @@ class CategoryController extends Controller
                 'status' => $newStatus
             ]);
 
-            // Nếu tắt trạng thái hoạt động của danh mục cha, tắt luôn tất cả danh mục con
-            if ($oldStatus == 1 && $newStatus == 0) {
-                $this->deactivateChildren($category->id);
+            // Xử lý logic thay đổi trạng thái
+            if ($oldStatus != $newStatus) {
+                if ($oldStatus == 1 && $newStatus == 0) {
+                    // Nếu tắt trạng thái hoạt động của danh mục cha, tắt luôn tất cả danh mục con
+                    $this->deactivateChildren($category->id);
+                } elseif ($oldStatus == 0 && $newStatus == 1) {
+                    // Nếu bật trạng thái hoạt động của danh mục cha, kiểm tra danh mục cha của nó
+                    if ($category->parent_id) {
+                        $parent = Category::find($category->parent_id);
+                        if ($parent && $parent->status == 0) {
+                            // Nếu danh mục cha không hoạt động, không cho phép bật danh mục con
+                            return response()->json([
+                                'success' => false,
+                                'msg' => 'Không thể kích hoạt danh mục con khi danh mục cha đang không hoạt động!'
+                            ]);
+                        }
+                    }
+                    // Nếu là danh mục cha (không có parent_id), kích hoạt lại các danh mục con
+                    if (!$category->parent_id) {
+                        $this->activateChildren($category->id);
+                    }
+                }
             }
 
             return response()->json([
@@ -159,6 +192,22 @@ class CategoryController extends Controller
             $child->update(['status' => 0]);
             // Đệ quy để tắt cả danh mục con của danh mục con
             $this->deactivateChildren($child->id);
+        }
+    }
+
+    /**
+     * Kích hoạt lại các danh mục con khi danh mục cha được kích hoạt
+     */
+    private function activateChildren($parentId)
+    {
+        $children = Category::where('parent_id', $parentId)->get();
+        
+        foreach ($children as $child) {
+            // Chỉ kích hoạt nếu danh mục con trước đó đang hoạt động
+            // hoặc nếu không có thông tin về trạng thái trước đó
+            $child->update(['status' => 1]);
+            // Đệ quy để kích hoạt cả danh mục con của danh mục con
+            $this->activateChildren($child->id);
         }
     }
 }

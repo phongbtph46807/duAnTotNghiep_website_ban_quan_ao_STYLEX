@@ -102,14 +102,16 @@
                 data: formData,
                 success: function(res) {
                     if (res.success) {
-                        alert(res.msg);
-                        window.location.href = "{{ route('admin.categories.index') }}";
+                        toastr.success(res.msg);
+                        setTimeout(function() {
+                            window.location.href = "{{ route('admin.categories.index') }}";
+                        }, 1500);
                     } else {
-                        alert('Lỗi: ' + res.msg);
+                        toastr.error(res.msg);
                     }
                 },
                 error: function(xhr) {
-                    alert('Có lỗi xảy ra khi cập nhật danh mục');
+                    toastr.error('Có lỗi xảy ra khi cập nhật danh mục');
                 },
                 complete: function() {
                     $('#updateBtn').prop('disabled', false);
@@ -129,14 +131,16 @@
                 },
                 success: function(res) {
                     if (res.success) {
-                        alert(res.msg);
-                        window.location.href = "{{ route('admin.categories.index') }}";
+                        toastr.success(res.msg);
+                        setTimeout(function() {
+                            window.location.href = "{{ route('admin.categories.index') }}";
+                        }, 1500);
                     } else {
-                        alert('Lỗi: ' + res.msg);
+                        toastr.error(res.msg);
                     }
                 },
                 error: function(xhr) {
-                    alert('Có lỗi xảy ra khi xóa danh mục');
+                    toastr.error('Có lỗi xảy ra khi xóa danh mục');
                 }
             });
         }

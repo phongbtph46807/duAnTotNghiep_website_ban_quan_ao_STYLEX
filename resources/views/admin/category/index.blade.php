@@ -1,18 +1,96 @@
 @extends('admin.layouts.app')
+@section('title', 'Quản lí danh mục')
+@push('page-css')
+    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
+
+    <style>
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 150px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .category-table th,
+        .category-table td {
+            vertical-align: middle;
+        }
+    </style>
+@endpush
 @section('content')
-<div class="page-title">
-    <h1>Danh mục</h1>
     <div class="row">
-        <div class="col-12 col-md-6 order-md-1 order-last">
-            <nav aria-label="breadcrumb" class="breadcrumb-header">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Danh mục</li>
-                </ol>
-            </nav>
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">Quản lí danh mục</h4>
+
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lí danh mục</a></li>
+                        <li class="breadcrumb-item">Danh sách danh mục</li>
+                    </ol>
+                </div>
+
+            </div>
         </div>
     </div>
-</div>
+    
+    <!-- Thống kê danh mục -->
+    <div class="row cursor-pointer">
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="card stats-card total-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-primary">
+                        <i class="ri-folder-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Tổng số danh mục</h5>
+                    <h3 class="card-text fw-bold">{{ $categoryStats['total_categories'] ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="card stats-card approved-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-success">
+                        <i class="ri-checkbox-circle-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Danh mục hoạt động</h5>
+                    <h3 class="card-text fw-bold text-success">{{ $categoryStats['active_categories'] ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="card stats-card pending-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-warning">
+                        <i class="ri-pause-circle-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Danh mục không hoạt động</h5>
+                    <h3 class="card-text fw-bold text-warning">{{ $categoryStats['inactive_categories'] ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3 mb-3">
+            <div class="card stats-card parent-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-info">
+                        <i class="ri-folder-open-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Danh mục cha</h5>
+                    <h3 class="card-text fw-bold text-info">{{ $categoryStats['parent_categories'] ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <section class="section">
     @if(isset($error))
@@ -24,9 +102,10 @@
     <div class="row" id="table-striped">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
-                        Thêm Danh Mục
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Danh sách danh mục</h4>
+                    <button type="button" class="btn btn-success add-btn" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+                        <i class="ri-add-line align-bottom me-1"></i> Thêm mới
                     </button>
                     <!-- form add -->
                     <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModal" aria-hidden="true">
@@ -89,7 +168,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive datatable-minimal">
-                                    <table class="table table-hover table-lg ">
+                                    <table class="table table-hover table-lg category-table">
                                         <thead>
                                             <tr>
                                                 <th>Danh Mục</th>
@@ -180,11 +259,19 @@
                 type: "POST",
                 data: formData,
                 success: function(res) {
-                    alert(res.msg);
-                    $('.addBtn').prop('disabled', false);
                     if (res.success) {
-                        location.reload();
+                        toastr.success(res.msg);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        toastr.error(res.msg);
                     }
+                    $('.addBtn').prop('disabled', false);
+                },
+                error: function() {
+                    toastr.error('Có lỗi xảy ra khi thêm danh mục');
+                    $('.addBtn').prop('disabled', false);
                 }
             });
         });
@@ -226,14 +313,16 @@
                     },
                     success: function(res) {
                         if (res.success) {
-                            alert(res.msg);
-                            location.reload();
+                            toastr.success(res.msg);
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
                         } else {
-                            alert('Lỗi: ' + res.msg);
+                            toastr.error(res.msg);
                         }
                     },
                     error: function(xhr) {
-                        alert('Có lỗi xảy ra khi xóa danh mục');
+                        toastr.error('Có lỗi xảy ra khi xóa danh mục');
                     }
                 });
             }

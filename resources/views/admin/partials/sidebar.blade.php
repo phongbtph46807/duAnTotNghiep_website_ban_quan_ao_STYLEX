@@ -318,23 +318,13 @@
                             </li>
 
                             <li class="nav-item">
-                                <a href="#sidebarLogout" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarLogout" data-key="t-logout"> Logout
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarLogout">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-logout-basic.html" class="nav-link" data-key="t-basic">
-                                                Basic
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-logout-cover.html" class="nav-link" data-key="t-cover">
-                                                Cover
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start" data-key="t-logout">
+                                        <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> 
+                                        <span class="align-middle">Logout</span>
+                                    </button>
+                                </form>
                             </li>
                             <li class="nav-item">
                                 <a href="#sidebarSuccessMsg" class="nav-link" data-bs-toggle="collapse"

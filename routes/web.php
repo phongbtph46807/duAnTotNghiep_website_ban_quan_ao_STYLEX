@@ -33,6 +33,9 @@ Route::group(['middleware' => ['isAuthenticated']], function() {
     Route::post('/login', [AuthController::class,'login'])->name('login');
 });
 
+// Logout route - cần middleware auth để đảm bảo user đã đăng nhập
+Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->name('logout');
+
 Route::group(['middleware' => ['onlyAuthenticated']], function() {
 
     Route::get('/dashboard', function(){
