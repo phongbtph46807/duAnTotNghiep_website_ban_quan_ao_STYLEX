@@ -19,6 +19,13 @@ return new class extends Migration
             $table->string('phone_number')->nullable();
             $table->integer('is_verified')->default(0)->comment('0 -> Unverified, 1 -> Verified');
             $table->timestamp('email_verified_at')->nullable();
+
+            // Cột : is_admin
+            $table->boolean('is_admin')->default(false);
+
+            // Cột : is_verified
+            $table->boolean('is_verified')->default(false);
+
             $table->string('password');
             $table->text('verification_token')->nullable();
             $table->timestamp('token_expires_at')->nullable();

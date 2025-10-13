@@ -175,8 +175,6 @@
                                 <div>
                                     <a href="{{ route('admin.users.create') }}" class="btn btn-success add-btn"><i
                                             class="ri-add-line align-bottom me-1"></i> Thêm mới</a>
-                                    <button class="btn btn-soft-danger" onClick="deleteMultiple()"><i
-                                            class="ri-delete-bin-2-line"></i></button>
                                 </div>
                             </div>
                             <div class="col-sm">
@@ -193,13 +191,7 @@
                             <table class="table align-middle table-nowrap" id="customerTable">
                                 <thead class="table-light">
                                     <tr>
-                                        <th scope="col" style="width: 50px;">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="checkAll"
-                                                    value="option">
-                                            </div>
-                                        </th>
-                                        <th data-sort="customer_id">ID</th>
+                                        <th>STT</th>
                                         <th data-sort="customer_name">Tên người dùng</th>
                                         <th data-sort="email">Ảnh</th>
                                         <th data-sort="cate">Email</th>
@@ -211,16 +203,11 @@
                                         <th data-sort="action">Hành động</th>
                                     </tr>
                                 </thead>
-                                <tbody class="list form-check-all">
+                                <tbody class="list">
+                                    @php $stt = ($items->currentPage() - 1) * $items->perPage(); @endphp
                                     @foreach ($items as $item)
                                         <tr>
-                                            <th scope="row">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="chk_child"
-                                                        value="{{ $item->id }}">
-                                                </div>
-                                            </th>
-                                            <td class="customer_id">{{ $item->id }}</td>
+                                            <td>{{ ++$stt }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
                                                 <img src="{{ $item->avatar ? asset('storage/' . $item->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"

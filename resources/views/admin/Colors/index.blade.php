@@ -95,14 +95,17 @@
                     <table class="table table-hover table-lg color-table">
                         <thead>
                             <tr>
+                                <th>STT</th>
                                 <th>Màu sắc</th>
                                 <th>Trạng thái</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @php $stt = ($colors->currentPage() - 1) * $colors->perPage(); @endphp
                             @forelse($colors as $color)
                             <tr>
+                                <td>{{ ++$stt }}</td>
                                 <td>
                                     <span>{{ $color->name }}</span>
                                 </td>
@@ -128,7 +131,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="text-center text-muted">Chưa có màu sắc nào</td>
+                                <td colspan="4" class="text-center text-muted">Chưa có màu sắc nào</td>
                             </tr>
                             @endforelse
                         </tbody>

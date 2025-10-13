@@ -106,6 +106,7 @@
                         <table class="table table-hover table-lg size-table">
                             <thead>
                                 <tr>
+                                    <th>STT</th>
                                     <th>Tên kích thước</th>
                                     <th>Mô tả</th>
                                     <th>Trạng thái</th>
@@ -113,8 +114,10 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $stt = ($sizes->currentPage() - 1) * $sizes->perPage(); @endphp
                                 @forelse($sizes as $size)
                                 <tr>
+                                    <td>{{ ++$stt }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <i class="ri-ruler-line me-2 text-primary"></i>
@@ -150,7 +153,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Chưa có kích thước nào</td>
+                                    <td colspan="5" class="text-center text-muted">Chưa có kích thước nào</td>
                                 </tr>
                                 @endforelse
                             </tbody>
