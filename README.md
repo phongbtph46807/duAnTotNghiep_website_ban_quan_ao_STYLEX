@@ -10,7 +10,5 @@
 
 ### 3) Tài khoản mặc định
 - Admin: `admin@example.com` / `password`
-
-
 ```
 
