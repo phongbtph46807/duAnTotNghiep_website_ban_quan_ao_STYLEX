@@ -23,7 +23,7 @@ class AuthController extends Controller
     public function registerView(){
         try {
             //code...
-            return view('admin.auth.register');
+            return view('auth.register');
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn!");
         }
@@ -61,7 +61,7 @@ class AuthController extends Controller
         public function loginView(){
         try {
             //code...
-            return view('admin.auth.login');
+            return view('auth.login');
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn!");
         }
@@ -84,6 +84,17 @@ class AuthController extends Controller
             }else{
                  return back()->with('error', 'Email hoặc mật khẩu không hợp lệ!');
             }
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function logout(Request $request){
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('loginView')->with('success', 'Đăng xuất thành công!');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

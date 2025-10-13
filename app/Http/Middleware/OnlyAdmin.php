@@ -20,6 +20,6 @@ class OnlyAdmin
             return $next($request);
         }
         
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('loginView')->with('error', 'Bạn không có quyền truy cập trang này!');
     }
 }

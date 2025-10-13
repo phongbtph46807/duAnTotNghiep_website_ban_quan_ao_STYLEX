@@ -1,6 +1,8 @@
 /* =============================================
 =            Generic styling                  =
 ============================================= */
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+========
 
 $global-guttering: 24px;
 $global-font-size-h1: 32px;
@@ -10,6 +12,7 @@ $global-font-size-h4: 18px;
 $global-font-size-h5: 16px;
 $global-font-size-h6: 14px;
 
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -87,8 +90,14 @@ a:focus {
   border: 1px solid #ddd;
   border-radius: 2.5px;
   font-size: 14px;
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  -webkit-appearance: none;
+          appearance: none;
+  margin-bottom: 24px;
+========
   appearance: none;
   margin-bottom: $global-guttering;
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
 }
 
 h1,
@@ -118,7 +127,11 @@ h5,
 
 h6,
 .h6 {
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  font-size: 14px;
+========
   font-size: $global-font-size-h6;
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
 }
 
 label + p {
@@ -129,15 +142,31 @@ label + p {
   display: block;
   margin: auto;
   max-width: 40em;
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  padding: 48px;
+}
+@media (max-width: 620px) {
+  .container {
+========
   padding: $global-guttering * 2;
 
   @media (max-width: 620px) {
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
     padding: 0;
   }
 }
 
 .section {
   background-color: #fff;
+<<<<<<<< HEAD:laravel-project/public/backend/assets/extensions/choices.js/public/assets/styles/base.css
+  padding: 24px;
+  color: #333;
+}
+.section a,
+.section a:visited,
+.section a:focus {
+  color: #00bcd4;
+========
   padding: $global-guttering;
   color: #333;
 
@@ -146,6 +175,7 @@ label + p {
   a:focus {
     color: #00bcd4;
   }
+>>>>>>>> origin/main:public/assets/libs/choices.js/src/styles/base.scss
 }
 
 .logo {
