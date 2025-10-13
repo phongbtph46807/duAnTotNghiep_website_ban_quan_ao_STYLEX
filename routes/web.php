@@ -10,6 +10,9 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\LoyaltyTierController;
+use App\Http\Controllers\Admin\TaxRateController;
+use App\Http\Controllers\Admin\ShippingCarrierController;
 
 
 Route::get('/', function () {
@@ -55,7 +58,18 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
     Route::resource('sizes', SizeController::class);
     Route::resource('textures', TextureController::class);
 
-    
+    // Loyalty Tiers
+    Route::resource('loyalty-tiers', LoyaltyTierController::class)
+        ->parameters(['loyalty-tiers' => 'loyaltyTier']);
+
+    // Tax & Shipping
+    // Snake_case routes (khớp view route names)
+    Route::resource('tax_rates', TaxRateController::class);
+    Route::resource('shipping_carriers', ShippingCarrierController::class);
+    // Hỗ trợ thêm đường dẫn dạng kebab-case để truy cập trực tiếp URL
+    Route::resource('tax-rates', TaxRateController::class)->names('tax-rates');
+    Route::resource('shipping-carriers', ShippingCarrierController::class)->names('shipping-carriers');
+
     //Route Users   
     Route::prefix('users')->as('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');

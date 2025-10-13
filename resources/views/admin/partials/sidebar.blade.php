@@ -205,6 +205,28 @@
                     </div>
                     <!-- end Dashboard Menu -->
 
+                <!-- Thuế & Vận chuyển -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarTaxShip" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarTaxShip">
+                        <i class="ri-truck-line"></i> <span>Thuế & Vận chuyển</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarTaxShip">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.tax_rates.index') }}" class="nav-link">
+                                    <i class="ri-bill-line me-1"></i> Thuế (Tax Rates)
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.shipping_carriers.index') }}" class="nav-link">
+                                    <i class="ri-truck-line me-1"></i> Đơn vị vận chuyển
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Giao diện/Truyền
                         Thông</span></li>
 
