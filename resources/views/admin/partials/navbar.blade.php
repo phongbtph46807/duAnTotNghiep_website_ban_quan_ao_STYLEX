@@ -93,7 +93,7 @@
             <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown"
                 aria-haspopup="true" aria-expanded="false">
                 <span class="d-flex align-items-center">
-                    <img class="rounded-circle header-profile-user" src="{{Storage::url(Auth::user()->avatar ?? null)}}"
+                    <img class="rounded-circle header-profile-user" src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
                         alt="Header Avatar">
                     <span class="text-start ms-xl-2">
                         <span
