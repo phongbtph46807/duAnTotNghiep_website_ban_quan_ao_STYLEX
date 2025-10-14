@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AppController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\TextureController;
 use App\Http\Controllers\Auth\AuthController;
@@ -70,7 +71,7 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
     Route::resource('tax-rates', TaxRateController::class)->names('tax-rates');
     Route::resource('shipping-carriers', ShippingCarrierController::class)->names('shipping-carriers');
 
-    //Route Users   
+    //Route Users
     Route::prefix('users')->as('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/trash', [UserController::class, 'trash'])->name('trash');
@@ -84,6 +85,14 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
         Route::put('/updateEmailVerified/{user}', [UserController::class, 'updateEmailVerified'])->name('updateEmailVerified');
         Route::patch('/{id}/restore', [UserController::class, 'restore'])->name('restore');
         Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
+    });
+    Route::prefix('post')->as('post.')->group(function () {
+        Route::get('/', [PostController::class, 'index'])->name('index');
+        Route::get('/create', [PostController::class, 'create'])->name('create');
+        Route::post('/store', [PostController::class, 'store'])->name('store');
+        Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PostController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
     });
 });
 });
