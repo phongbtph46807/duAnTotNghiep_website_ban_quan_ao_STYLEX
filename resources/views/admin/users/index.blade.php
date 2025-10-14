@@ -371,6 +371,9 @@
                     }
                 },
                 error: function() {
+                    console.error('AJAX Error:', error);
+                    console.log('Status:', status);
+                    console.log('Response:', xhr.responseText);
                     toastr.error('Có lỗi xảy ra khi cập nhật.');
                 }
             });
