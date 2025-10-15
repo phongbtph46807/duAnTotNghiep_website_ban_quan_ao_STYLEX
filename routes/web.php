@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SizeController;
+use App\Http\Controllers\Admin\SpinPrizeController;
 use App\Http\Controllers\Admin\TextureController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
@@ -94,6 +95,7 @@ Route::group(['middleware' => ['onlyAuthenticated','onlyAdmin']], function() {
         Route::put('/{id}', [PostController::class, 'update'])->name('update');
         Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
     });
-});
+        Route::resource('spin', SpinPrizeController::class);
+    });
 });
 
