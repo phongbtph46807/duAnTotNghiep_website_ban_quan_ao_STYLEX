@@ -546,6 +546,27 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarLoyalty" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarLoyalty">
+                        <i class="ri-vip-crown-line"></i> <span data-key="t-loyalty">Cấp độ thành viên</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarLoyalty">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.loyalty-tiers.index') }}" class="nav-link" data-key="t-loyalty-list">
+                                    Danh sách cấp độ
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.loyalty-tiers.create') }}" class="nav-link" data-key="t-loyalty-create">
+                                    Thêm cấp độ mới
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarAdvanceUI" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarAdvanceUI">
                         <i class="ri-stack-line"></i> <span data-key="t-advance-ui">Quản lí đơn hàng</span>
