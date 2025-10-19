@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\UserStatusChanged;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\User\StoreUserRequest;
 use App\Http\Requests\Admin\User\UpdateUserRequest;
@@ -136,44 +137,44 @@ class UserController extends Controller
     }
     public function update(UpdateUserRequest $request, User $user)
     {
+        $validator = $request->validated();
+        $data = $request->except('avatar', 'email', 'email_verified');
+
+        DB::beginTransaction();
+
         try {
-
-            $validator = $request->validated();
-
-            $data = $request->except('avatar', 'email', 'email_verified');
-
-            DB::beginTransaction();
-
-            $currencyAvatar = $user->avatar;
+            $oldAvatar = $user->avatar;
+            $oldRole = $user->is_admin ? "Quản trị viên" :'Người dùng';
+            $oldStatus = $user->status;
 
             if ($request->hasFile('avatar')) {
-                $data['avatar'] = $this->uploadToLocal($request->file('avatar'), self::FOLDER);
-                
-                // Xóa avatar cũ nếu có
-                if (!empty($currencyAvatar) && $currencyAvatar !== self::URLIMAGEDEFAULT) {
-                    $this->deleteFromLocal($currencyAvatar, self::FOLDER);
-                }
+
+                $avatarFile = $request->file('avatar');
+                $data['avatar'] = $this->uploadToLocal($avatarFile, self::FOLDER);
             }
 
             $user->update($data);
-            $mailData = null;
 
-            if ($request->has('is_admin')) {
-                $newRole = $request->input('is_admin');
+            $newRole = $user->is_admin ? "Quản trị viên" :'Người dùng' ;
+            $newStatus = $user->status;
 
-                if ($user->is_admin !== $newRole) {
-                    $oldRole = $user->is_admin;
-                    $user->update(['is_admin' => $newRole]);
-                }
+            if ($oldRole !== $newRole || $oldStatus !== $newStatus) {
+                event(new UserStatusChanged($user, $oldStatus, $newStatus, $oldRole, $newRole));
             }
-            // dd($data);
+
+
+            if (!empty($data['avatar']) && !empty($oldAvatar) && $oldAvatar !== self::URLIMAGEDEFAULT) {
+                $this->deleteFromLocal($oldAvatar, self::FOLDER);
+            }
+
+
             DB::commit();
             return redirect()->route('admin.users.edit', $user)->with('success', 'Cập nhật thành công');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            if (isset($data['avatar']) && !empty($data['avatar']) && filter_var($data['avatar'], FILTER_VALIDATE_URL)) {
-                $this->deleteFromLocal($data['avatar']);
+            if (!empty($data['avatar'])) {
+                $this->deleteFromLocal($data['avatar'], self::FOLDER);
             }
 
             $this->logError($e);

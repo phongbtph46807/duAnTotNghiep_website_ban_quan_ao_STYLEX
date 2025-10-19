@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('parent_id')->nullable()->constrained('categories')->onDelete('cascade');
-             $table->boolean('status')->default(1); // 1 = Hoạt động, 0 = Tạm ẩn
+            $table->boolean('status')->default(1); // 1 = Hoạt động, 0 = Tạm ẩn
+            $table->softDeletes();
             $table->timestamps();
         });
     }
