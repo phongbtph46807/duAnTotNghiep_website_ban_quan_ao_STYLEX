@@ -66,10 +66,10 @@
             <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-success">
-                        <i class="ri-user-follow-line"></i>
+                        <i class="ri-user-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng hoạt động</h5>
-                    <h3 class="card-text fw-bold text-success">{{ $userCounts->active_users ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Số User</h5>
+                    <h3 class="card-text fw-bold text-success">{{ $userCounts->user_count ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -77,10 +77,10 @@
             <div class="card stats-card pending-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-warning">
-                        <i class="ri-user-unfollow-line"></i>
+                        <i class="ri-user-settings-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng không hoạt động</h5>
-                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->inactive_users ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Số Staff</h5>
+                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->staff_count ?? 0 }}</h3>
                 </div>
             </div>
         </div>
@@ -88,14 +88,31 @@
             <div class="card stats-card rejected-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-danger">
-                        <i class="ri-lock-line"></i>
+                        <i class="ri-admin-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng bị khóa</h5>
-                    <h3 class="card-text fw-bold text-danger">{{ $userCounts->blocked_users ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Số Admin</h5>
+                    <h3 class="card-text fw-bold text-danger">{{ $userCounts->admin_count ?? 0 }}</h3>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Instructions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning border-0" role="alert">
+                <h6 class="alert-heading">
+                    <i class="ri-information-line me-2"></i>Lưu ý quan trọng
+                </h6>
+                <p class="mb-0">
+                    <strong>Trang này chỉ tạo tài khoản User.</strong> 
+                    Để tạo Admin hoặc Staff, vui lòng sử dụng trang 
+                    <a href="{{ route('admin.roles.index') }}" class="alert-link fw-bold">Phân quyền người dùng</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -147,12 +164,11 @@
                             {{-- Vai trò --}}
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Vai trò</label>
-                                <select name="is_admin" class="form-select">
+                                <select name="role" class="form-select">
                                     <option value="">-- Tất cả --</option>
-                                    <option value="1" {{ request('is_admin') == 1 ? 'selected' : '' }}>Quản trị viên
-                                    </option>
-                                    <option value="0" {{ request('is_admin') == 0 ? 'selected' : '' }}>Người dùng
-                                    </option>
+                                    <option value="1" {{ request('role') == '1' ? 'selected' : '' }}>Admin</option>
+                                    <option value="2" {{ request('role') == '2' ? 'selected' : '' }}>Staff</option>
+                                    <option value="0" {{ request('role') == '0' ? 'selected' : '' }}>User</option>
                                 </select>
                             </div>
 
@@ -226,7 +242,15 @@
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td class="phone">{{ $item->is_admin ? 'Quản trị viên' : 'Người dùng' }}</td>
+                                            <td class="phone">
+                                                @if($item->role == 1)
+                                                    <span class="badge bg-danger">Admin</span>
+                                                @elseif($item->role == 2)
+                                                    <span class="badge bg-warning">Staff</span>
+                                                @else
+                                                    <span class="badge bg-info">User</span>
+                                                @endif
+                                            </td>
                                             <td class="status">
                                                 @if ($item->status == 'active')
                                                     <span

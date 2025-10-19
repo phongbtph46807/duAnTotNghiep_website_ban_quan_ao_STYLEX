@@ -21,33 +21,24 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
- return [
-            
-            'email' => ['required', 'string','email'],
-            'password' => ['required', 'string'],
-        ];
-    }
-   // Thông báo lỗi tiếng Việt chỉ áp dụng cho request này
-    public function messages(): array
-    {
         return [
-           
-            'email.required'        => 'Email không được để trống.',
-            'email.email'           => 'Email không hợp lệ.',
-            
-            'password.required'     => 'Mật khẩu không được để trống.',
-            
+            'email' => 'required|email',
+            'password' => 'required|min:6',
         ];
     }
 
-    // Gán tên hiển thị cho các field
-    public function attributes(): array
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
     {
         return [
-            
-            'email'        => 'Email',
-            'password'     => 'Mật khẩu',
+            'email.required' => 'Email là bắt buộc.',
+            'email.email' => 'Email không hợp lệ.',
+            'password.required' => 'Mật khẩu là bắt buộc.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ];
     }
-    
 }

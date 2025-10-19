@@ -65,30 +65,30 @@
                     </div>
                 </li> <!-- end Dashboard Menu -->
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarApps">
-                        <i class="ri-apps-2-line"></i> <span data-key="t-apps">Quản lí sản phẩm</span>
+                    <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarProducts">
+                        <i class="ri-shopping-bag-line"></i> <span>Quản lý sản phẩm</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarApps">
+                    <div class="collapse menu-dropdown" id="sidebarProducts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{route('admin.products.index')}}" class="nav-link" data-key="t-analytics">
-                                    Danh sách sản phẩm
+                                <a href="{{route('admin.products.index')}}" class="nav-link">
+                                    <i class="ri-list-check me-1"></i> Danh sách sản phẩm
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{route('admin.products.create')}}" class="nav-link" data-key="t-analytics">
-                                    Thêm mới sản phẩm
+                                <a href="{{route('admin.products.create')}}" class="nav-link">
+                                    <i class="ri-add-circle-line me-1"></i> Thêm sản phẩm mới
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{route('admin.products.trash')}}" class="nav-link" data-key="t-analytics">
-                                    Danh sách sản phẩm đã xóa
+                                <a href="{{route('admin.products.trash')}}" class="nav-link">
+                                    <i class="ri-delete-bin-line me-1"></i> Sản phẩm đã xóa
                                 </a>
                             </li>
                         </ul>
                     </div>
-                </li> <!-- end Apps Menu -->
+                </li>
                 
                 <!-- Quản lý thuộc tính sản phẩm -->
                 <li class="nav-item">
@@ -205,7 +205,8 @@
                     </div>
                     <!-- end Dashboard Menu -->
 
-                <!-- Thuế & Vận chuyển -->
+                <!-- Thuế & Vận chuyển - CHỈ ADMIN -->
+                @if(auth()->user()->role == 1)
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarTaxShip" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarTaxShip">
@@ -226,6 +227,7 @@
                         </ul>
                     </div>
                 </li>
+                @endif
 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Giao diện/Truyền
                         Thông</span></li>
@@ -519,6 +521,8 @@
                         hàng</span>
                 </li>
 
+                <!-- Quản lí người dùng - CHỈ ADMIN -->
+                @if(auth()->user()->role == 1)
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarUI" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarUI">
@@ -528,12 +532,14 @@
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
                                 <a href="{{ route('admin.users.index') }}" class="nav-link" data-key="t-analytics">
-                                    Danh sách người dùng
+                                    <i class="ri-user-line me-1"></i> Danh sách người dùng
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.users.create') }}" class="nav-link"
-                                    data-key="t-analytics"> Thêm mới người dùng
+                                    data-key="t-analytics">
+                                    <i class="ri-user-add-line me-1"></i> Tạo User mới
+                                    <small class="text-muted d-block">(Chỉ tạo User)</small>
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -544,7 +550,40 @@
                         </ul>
                     </div>
                 </li>
+                @endif
 
+                <!-- Quản lý phân quyền - CHỈ ADMIN -->
+                @if(auth()->user()->role == 1)
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarManagement" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarManagement">
+                        <i class="ri-settings-3-line"></i> <span>Quản lý</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarManagement">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.roles.index') }}" class="nav-link">
+                                    <i class="ri-user-settings-line me-1"></i> Phân quyền người dùng
+                                    <small class="text-muted d-block">(Gán role cho user)</small>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.rbac.roles.index') }}" class="nav-link">
+                                    <i class="ri-shield-star-line me-1"></i> Quản lý Roles (Entity)
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.rbac.permissions.index') }}" class="nav-link">
+                                    <i class="ri-key-2-line me-1"></i> Quản lý Permissions (Entity)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endif
+
+                <!-- Cấp độ thành viên - CHỈ ADMIN -->
+                @if(auth()->user()->role == 1)
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarLoyalty" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarLoyalty">
@@ -565,6 +604,7 @@
                         </ul>
                     </div>
                 </li>
+                @endif
 
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarAdvanceUI" data-bs-toggle="collapse" role="button"

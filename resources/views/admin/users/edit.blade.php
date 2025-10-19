@@ -400,20 +400,11 @@
                                     <div class="col-md-6">
                                         <div class="form-floating position-relative">
                                             <i class="ri-shield-user-line input-icon"></i>
-                                            <select name="is_admin"
-                                                class="form-select @error('is_admin') is-invalid @enderror" id="userRole"
-                                                style="padding-left: 2.5rem;">
-                                                <option value="">Chọn vai trò</option>
-                                                <option {{ $user->is_admin == 1 ? 'selected' : '' }} value="1">
-                                        admin</option>
-                                         <option {{ $user->is_admin == 0 ? 'selected' : '' }} value="0">
-                                        user</option>
-                                            </select>
-                                            <label for="userRole" style="padding-left: 2.5rem;">Vai trò người
-                                                dùng</label>
-                                            @error('is_admin')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                            <input readonly type="text"
+                                                class="form-control" 
+                                                value="{{ $user->role == 1 ? 'Admin' : ($user->role == 2 ? 'Staff' : 'User') }}"
+                                                style="padding-left: 2.5rem; background-color: #f8f9fa;">
+                                            <label style="padding-left: 2.5rem;">Vai trò người dùng</label>
                                         </div>
                                     </div>
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Product\StoreProductRequest;
 use App\Http\Requests\Admin\Product\UpdateProductRequest;
-use App\Http\Requests\Admin\Product\StoreProductRequest;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Product;
@@ -98,7 +97,7 @@ class ProductController extends Controller
                         $variant['sku'] = Str::upper(Str::random(12));
 
                         if (isset($variant['image'])) {
-                            $variant['image'] = Storage::put(self::FOLDER, $variant['image']);
+                            $variant['image'] = Storage::disk('public')->put(self::FOLDER, $variant['image']);
                         } else {
                             $variant['image'] = null;
                         }
@@ -161,7 +160,7 @@ class ProductController extends Controller
         $sizes = Size::query()->where('status', 1)->get();
         return view('admin.products.edit', compact('categories', 'product', 'colors', 'textures', 'sizes'));
     }
-    public function update(ProductRequest $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
         try {
             DB::transaction(function () use ($request, $product) {
@@ -195,7 +194,7 @@ class ProductController extends Controller
                     // Ảnh biến thể mới
                     $newImagePath = null;
                     if (!empty($row['image'])) {
-                        $newImagePath = Storage::put(self::FOLDER, $row['image']);
+                        $newImagePath = Storage::disk('public')->put(self::FOLDER, $row['image']);
                         $payload['image'] = $newImagePath;
                     }
 
@@ -206,7 +205,7 @@ class ProductController extends Controller
                         if ($variant) {
                             // Nếu có ảnh mới → xoá ảnh cũ
                             if ($newImagePath && $variant->image) {
-                                Storage::delete($variant->image);
+                                Storage::disk('public')->delete($variant->image);
                             }
                             $variant->update($payload);
                         }

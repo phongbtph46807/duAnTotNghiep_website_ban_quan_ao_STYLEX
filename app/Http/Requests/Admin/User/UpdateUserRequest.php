@@ -26,10 +26,6 @@ class UpdateUserRequest extends FormRequest
             'name'       => ['required', 'string', 'min:2', 'max:255'],
             'avatar'     => ['nullable', 'image', 'max:2000'],
             'status'     => ['required', 'in:active,inactive,blocked'],
-            'is_admin' => [
-                'required',
-                'in:1,0',
-            ],
         ];
     }
     public function messages()
@@ -49,9 +45,6 @@ class UpdateUserRequest extends FormRequest
             'status.required' => 'Trạng thái là bắt buộc.',
             'status.in' => 'Trạng thái phải là một trong các giá trị: active, inactive, hoặc blocked.',
 
-            // Vai trò
-            'is_admin.required' => 'Vai trò là bắt buộc.',
-            'is_admin.in'       => 'Vai trò không hợp lệ.',
         ];
     }
 }
