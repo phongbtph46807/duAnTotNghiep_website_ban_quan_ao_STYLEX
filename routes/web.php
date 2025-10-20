@@ -23,6 +23,23 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Test route để debug middleware
+Route::get('/test-auth', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        return response()->json([
+            'authenticated' => true,
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            'user_role' => $user->role,
+            'is_admin' => $user->is_admin,
+            'can_access_admin_users' => $user->role == 1
+        ]);
+    }
+    return response()->json(['authenticated' => false]);
+});
+
 
 Route::group(['middleware' => ['isAuthenticated']], function(){
 
@@ -86,11 +103,28 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
     });
 });
 
-// Routes chỉ dành cho Admin (role=1)
+// Users management - CHUNG cho cả ADMIN và STAFF
+Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
+    Route::prefix('admin')->as('admin.')->group(function () {
+        Route::prefix('users')->as('users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::get('/edit/{user}', [UserController::class, 'edit'])->name('edit');
+            Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        });
+    });
+});
+
+// Routes chỉ dành cho Admin (role=1) - Bổ sung thêm chức năng
 Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
     Route::prefix('admin')->as('admin.')->group(function () {
         // Role Management - CHỈ ADMIN
         Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
+        Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::get('/roles/{user}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+        Route::put('/roles/{user}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{user}', [RoleController::class, 'destroy'])->name('roles.destroy');
+        Route::get('/roles/check-admin-count', [RoleController::class, 'checkAdminCount'])->name('roles.check-admin-count');
         Route::post('/roles/{user}/update-role', [RoleController::class, 'updateRole'])->name('roles.update-role');
         Route::post('/roles/bulk-update', [RoleController::class, 'bulkUpdateRoles'])->name('roles.bulk-update');
         
@@ -108,16 +142,13 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
         
-        //Route Users - CHỈ ADMIN
+        //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
-            Route::get('/', [UserController::class, 'index'])->name('index');
             Route::get('/trash', [UserController::class, 'trash'])->name('trash');
             Route::get('/create', [UserController::class, 'create'])->name('create');
             Route::get('/{user}', [UserController::class, 'show'])->name('show');
             Route::post('/store', [UserController::class, 'store'])->name('store');
             Route::post('/filter', [UserController::class, 'filter'])->name('filter');
-            Route::get('/edit/{user}', [UserController::class, 'edit'])->name('edit');
-            Route::put('/{user}', [UserController::class, 'update'])->name('update');
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
             Route::put('/updateEmailVerified/{user}', [UserController::class, 'updateEmailVerified'])->name('updateEmailVerified');
             Route::patch('/{id}/restore', [UserController::class, 'restore'])->name('restore');

@@ -116,11 +116,11 @@
 
                 <h6 class="dropdown-header">
                     @if(Auth::user()->role == 1)
-                        Xin chào Admin {{ Auth::user()->name ?? null }}! 👑
+                        Xin chào Admin {{ Auth::user()->name ?? null }}! 
                     @elseif(Auth::user()->role == 2)
-                        Xin chào Staff {{ Auth::user()->name ?? null }}! 👨‍💼
+                        Xin chào Staff {{ Auth::user()->name ?? null }}! 
                     @else
-                        Xin chào {{ Auth::user()->name ?? null }}! 👤
+                        Xin chào {{ Auth::user()->name ?? null }}! 
                     @endif
                 </h6>
                 <a class="dropdown-item" href="{{ route('admin.profile') }}"><i

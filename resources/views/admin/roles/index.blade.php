@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Quản lý phân quyền')
+@section('title', 'Quản lý Admin & Staff')
 
 @section('content')
 <div class="container-fluid">
@@ -8,11 +8,11 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lý phân quyền</h4>
+                <h4 class="mb-sm-0">Quản lý Admin & Staff</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Quản lý phân quyền</li>
+                        <li class="breadcrumb-item active">Quản lý Admin & Staff</li>
                     </ol>
                 </div>
             </div>
@@ -25,15 +25,16 @@
         <div class="col-12">
             <div class="alert alert-info border-0" role="alert">
                 <h5 class="alert-heading">
-                    <i class="ri-information-line me-2"></i>Hướng dẫn phân quyền
+                    <i class="ri-information-line me-2"></i>Hướng dẫn quản lý Admin & Staff
                 </h5>
                 <p class="mb-2">
-                    <strong>Quy trình tạo tài khoản:</strong>
+                    <strong>Quy trình quản lý Admin & Staff:</strong>
                 </p>
                 <ol class="mb-0">
-                    <li><strong>Tạo User:</strong> Sử dụng nút "Tạo User mới" → Tất cả tài khoản mới đều là User</li>
-                    <li><strong>Nâng cấp quyền:</strong> Chọn User → "Thay đổi quyền" → Chọn Admin hoặc Staff</li>
-                    <li><strong>Cập nhật hàng loạt:</strong> Chọn nhiều User → "Cập nhật hàng loạt" → Chọn vai trò mới</li>
+                    <li><strong>Quản lý Admin:</strong> Tạo và quản lý tài khoản Admin</li>
+                    <li><strong>Quản lý Staff:</strong> Tạo và quản lý tài khoản Staff</li>
+                    <li><strong>Thay đổi quyền:</strong> Chọn người dùng → "Thay đổi quyền" → Chọn Admin hoặc Staff</li>
+                    <li><strong>Cập nhật hàng loạt:</strong> Chọn nhiều người dùng → "Cập nhật hàng loạt" → Chọn vai trò mới</li>
                 </ol>
             </div>
         </div>
@@ -46,10 +47,10 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1 overflow-hidden">
-                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Tổng người dùng</p>
+                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Tổng cộng</p>
                         </div>
                         <div class="flex-shrink-0">
-                            <h5 class="text-success fs-14 mb-0">
+                            <h5 class="text-primary fs-14 mb-0">
                                 <i class="ri-arrow-up-s-line fs-13 align-middle"></i>
                             </h5>
                         </div>
@@ -107,27 +108,6 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card card-animate">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1 overflow-hidden">
-                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">User</p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <h5 class="text-info fs-14 mb-0">
-                                <i class="ri-arrow-up-s-line fs-13 align-middle"></i>
-                            </h5>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center mt-3">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-22 fw-semibold ff-secondary mb-0">{{ $roleStats->user_count ?? 0 }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Filter and Search -->
@@ -145,7 +125,6 @@
                         <div class="col-md-3">
                             <select class="form-select" id="roleFilter">
                                 <option value="">Tất cả quyền</option>
-                                <option value="0" {{ request('role') == '0' ? 'selected' : '' }}>User</option>
                                 <option value="1" {{ request('role') == '1' ? 'selected' : '' }}>Admin</option>
                                 <option value="2" {{ request('role') == '2' ? 'selected' : '' }}>Staff</option>
                             </select>
@@ -160,8 +139,8 @@
                         </div>
                         <div class="col-md-3">
                             <div class="d-flex gap-2">
-                                <a href="{{ route('admin.users.create') }}" class="btn btn-success">
-                                    <i class="ri-add-line me-1"></i> Tạo User mới
+                                <a href="{{ route('admin.roles.create') }}" class="btn btn-success">
+                                    <i class="ri-add-line me-1"></i> Tạo tài khoản mới
                                 </a>
                                 <button class="btn btn-primary" id="bulkUpdateBtn" disabled>
                                     <i class="ri-settings-3-line me-1"></i> Cập nhật hàng loạt
@@ -180,7 +159,7 @@
                                             <input class="form-check-input fs-15" type="checkbox" id="checkAll">
                                         </div>
                                     </th>
-                                    <th scope="col">ID</th>
+                                    <th scope="col">STT</th>
                                     <th scope="col">Tên</th>
                                     <th scope="col">Email</th>
                                     <th scope="col">Quyền hiện tại</th>
@@ -189,6 +168,7 @@
                                 </tr>
                             </thead>
                             <tbody class="list form-check-all">
+                                @php $stt = 0; @endphp
                                 @foreach ($users as $user)
                                 <tr>
                                     <td scope="row">
@@ -196,17 +176,15 @@
                                             <input class="form-check-input fs-15" type="checkbox" name="user_ids[]" value="{{ $user->id }}">
                                         </div>
                                     </td>
-                                    <td class="id">{{ $user->id }}</td>
+                                    <td class="id">{{ ++$stt }}</td>
                                     <td class="customer_name">{{ $user->name }}</td>
                                     <td class="email">{{ $user->email }}</td>
                                     <td>
-                                        <span class="badge bg-{{ $user->role == 1 ? 'danger' : ($user->role == 2 ? 'warning' : 'info') }}-subtle text-{{ $user->role == 1 ? 'danger' : ($user->role == 2 ? 'warning' : 'info') }}">
+                                        <span class="badge bg-{{ $user->role == 1 ? 'danger' : 'warning' }}-subtle text-{{ $user->role == 1 ? 'danger' : 'warning' }}">
                                             @if($user->role == 1)
                                                 Admin
                                             @elseif($user->role == 2)
                                                 Staff
-                                            @else
-                                                User
                                             @endif
                                         </span>
                                     </td>
@@ -228,8 +206,18 @@
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
                                                 <li>
+                                                    <a href="{{ route('admin.roles.edit', $user->id) }}" class="dropdown-item">
+                                                        <i class="ri-edit-line align-bottom me-2 text-primary"></i> Sửa thông tin
+                                                    </a>
+                                                </li>
+                                                <li>
                                                     <button class="dropdown-item change-role" data-user-id="{{ $user->id }}" data-current-role="{{ $user->role }}">
                                                         <i class="ri-settings-3-line align-bottom me-2 text-muted"></i> Thay đổi quyền
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item text-danger delete-user" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-user-role="{{ $user->role }}">
+                                                        <i class="ri-delete-bin-line align-bottom me-2 text-danger"></i> Xóa tài khoản
                                                     </button>
                                                 </li>
                                             </ul>
@@ -270,7 +258,6 @@
                     <div class="mb-3">
                         <label for="newRole" class="form-label">Chọn quyền mới</label>
                         <select class="form-select" id="newRole" name="role" required>
-                            <option value="0">User</option>
                             <option value="1">Admin</option>
                             <option value="2">Staff</option>
                         </select>
@@ -298,7 +285,6 @@
                     <div class="mb-3">
                         <label for="bulkRole" class="form-label">Chọn quyền mới cho tất cả người dùng đã chọn</label>
                         <select class="form-select" id="bulkRole" name="role" required>
-                            <option value="0">User</option>
                             <option value="1">Admin</option>
                             <option value="2">Staff</option>
                         </select>
@@ -308,6 +294,38 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                 <button type="button" class="btn btn-primary" id="confirmBulkUpdate">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger" id="deleteUserModalLabel">
+                    <i class="ri-delete-bin-line me-2"></i>Xác nhận xóa tài khoản
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="ri-alert-line me-2"></i>
+                    <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+                </div>
+                <p>Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteUserName"></strong>?</p>
+                <p class="text-muted mb-0">Tài khoản sẽ bị xóa hoàn toàn khỏi database và không thể khôi phục.</p>
+                <div class="alert alert-info mt-2 mb-0" id="adminWarning" style="display: none;">
+                    <i class="ri-information-line me-2"></i>
+                    <strong>Lưu ý:</strong> Đây là admin cuối cùng, không thể xóa!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteUser">
+                    <i class="ri-delete-bin-line me-1"></i>Xóa tài khoản
+                </button>
             </div>
         </div>
     </div>
@@ -394,6 +412,72 @@ $(document).ready(function() {
             },
             error: function() {
                 alert('Có lỗi xảy ra, vui lòng thử lại sau');
+            }
+        });
+    });
+
+    // Delete user functionality
+    let userIdToDelete = null;
+    
+    $(document).on('click', '.delete-user', function() {
+        userIdToDelete = $(this).data('user-id');
+        const userName = $(this).data('user-name');
+        const userRole = $(this).data('user-role');
+        
+        $('#deleteUserName').text(userName);
+        
+        // Kiểm tra nếu là admin cuối cùng
+        if (userRole == 1) { // Admin
+            $.ajax({
+                url: '/admin/roles/check-admin-count',
+                type: 'GET',
+                success: function(response) {
+                    if (response.admin_count <= 1) {
+                        $('#adminWarning').show();
+                        $('#confirmDeleteUser').prop('disabled', true).text('Không thể xóa admin cuối cùng');
+                    } else {
+                        $('#adminWarning').hide();
+                        $('#confirmDeleteUser').prop('disabled', false).html('<i class="ri-delete-bin-line me-1"></i>Xóa tài khoản');
+                    }
+                }
+            });
+        } else {
+            $('#adminWarning').hide();
+            $('#confirmDeleteUser').prop('disabled', false).html('<i class="ri-delete-bin-line me-1"></i>Xóa tài khoản');
+        }
+        
+        $('#deleteUserModal').modal('show');
+    });
+
+    $('#confirmDeleteUser').on('click', function() {
+        if (!userIdToDelete) {
+            alert('Không tìm thấy ID user để xóa!');
+            return;
+        }
+        
+        console.log('Deleting user ID:', userIdToDelete);
+        console.log('CSRF Token:', $('meta[name="csrf-token"]').attr('content'));
+        
+        $.ajax({
+            url: `/admin/roles/${userIdToDelete}`,
+            type: 'DELETE',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log('Response:', response);
+                if (response.success) {
+                    $('#deleteUserModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('Error:', xhr.responseText);
+                console.log('Status:', status);
+                console.log('Error:', error);
+                alert('Có lỗi xảy ra: ' + xhr.responseText);
             }
         });
     });

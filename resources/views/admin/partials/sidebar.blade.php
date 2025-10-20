@@ -517,12 +517,13 @@
                     </div>
                 </li>
 
+                {{-- END HIDE BLOCK --}}
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Khách hàng và đơn
                         hàng</span>
                 </li>
 
-                <!-- Quản lí người dùng - CHỈ ADMIN -->
-                @if(auth()->user()->role == 1)
+                <!-- Quản lí người dùng - ADMIN và STAFF -->
+                @if(auth()->user()->role == 1 || auth()->user()->role == 2)
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarUI" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarUI">
@@ -535,6 +536,7 @@
                                     <i class="ri-user-line me-1"></i> Danh sách người dùng
                                 </a>
                             </li>
+                            @if(auth()->user()->role == 1)
                             <li class="nav-item">
                                 <a href="{{ route('admin.users.create') }}" class="nav-link"
                                     data-key="t-analytics">
@@ -547,6 +549,7 @@
                                     Danh sách người dùng đã xóa
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </div>
                 </li>

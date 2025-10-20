@@ -24,6 +24,13 @@ class UserController extends Controller
     {
         $queryUsers = User::query()->latest('id');
 
+        // Staff chỉ được xem User (role = 0), Admin xem User và Staff (role = 0,2)
+        if (auth()->user() && auth()->user()->role === User::ROLE_STAFF) {
+            $queryUsers->where('role', User::ROLE_USER);
+        } elseif (auth()->user() && auth()->user()->role === User::ROLE_ADMIN) {
+            $queryUsers->whereIn('role', [User::ROLE_USER, User::ROLE_STAFF]);
+        }
+
         if ($request->filled('name')) {
             $queryUsers->where('name', 'like', '%' . $request->name . '%');
         }
@@ -40,8 +47,15 @@ class UserController extends Controller
             $queryUsers->where('role', $request->role);
         }
 
-        $queryUserCounts = User::query()
-            ->selectRaw('
+        // Thống kê - Admin xem đầy đủ, Staff chỉ xem users thường
+        $queryUserCounts = User::query();
+        
+        // Staff chỉ được xem thống kê User (role = 0)
+        if (auth()->user() && auth()->user()->role === User::ROLE_STAFF) {
+            $queryUserCounts->where('role', User::ROLE_USER);
+        }
+        
+        $queryUserCounts->selectRaw('
                     count(id) as total_users,
                     sum(status = "active") as active_users,
                     sum(status = "inactive") as inactive_users,
@@ -143,6 +157,20 @@ class UserController extends Controller
     }
     public function update(UpdateUserRequest $request, User $user)
     {
+        // Nếu là Staff: chỉ được cập nhật trạng thái user
+        if (auth()->user() && auth()->user()->role === User::ROLE_STAFF) {
+            $validated = \request()->validate([
+                'status' => ['required', 'in:active,inactive,blocked'],
+            ]);
+
+            $oldStatus = $user->status;
+            $user->update(['status' => $validated['status']]);
+            if ($oldStatus !== $user->status) {
+                event(new UserStatusChanged($user, $oldStatus, $user->status, 'Người dùng', 'Người dùng'));
+            }
+            return redirect()->route('admin.users.edit', $user)->with('success', 'Cập nhật trạng thái thành công');
+        }
+
         $validator = $request->validated();
         $data = $request->except('avatar', 'email', 'email_verified', 'is_admin', 'role');
 

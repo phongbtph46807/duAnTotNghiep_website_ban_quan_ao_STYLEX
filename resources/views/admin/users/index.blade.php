@@ -51,47 +51,82 @@
         </div>
     </div>
     <div class="row cursor-pointer">
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card total-card">
+        <!-- Tổng số người dùng (không bao gồm admin) -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-primary">
-                        <i class="ri-user-3-line"></i>
+                        <i class="ri-group-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Tổng số người dùng</h5>
-                    <h3 class="card-text fw-bold">{{ $userCounts->total_users ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Tổng cộng</h5>
+                    <h3 class="card-text fw-bold text-primary">{{ ($userCounts->user_count ?? 0) + ($userCounts->staff_count ?? 0) }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
+
+        <!-- Số Staff -->
+        @if(auth()->user()->role == 1)
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-warning">
+                        <i class="ri-team-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Staff</h5>
+                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->staff_count ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Số User thường -->
+        <div class="col-6 col-md-2 mb-3">
             <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-success">
                         <i class="ri-user-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số User</h5>
+                    <h5 class="card-title text-muted mb-2">User</h5>
                     <h3 class="card-text fw-bold text-success">{{ $userCounts->user_count ?? 0 }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card pending-card">
+
+        <!-- Trạng thái hoạt động -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
                 <div class="card-body text-center">
-                    <div class="stat-icon text-warning">
-                        <i class="ri-user-settings-line"></i>
+                    <div class="stat-icon text-success">
+                        <i class="ri-checkbox-circle-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số Staff</h5>
-                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->staff_count ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Hoạt động</h5>
+                    <h3 class="card-text fw-bold text-success">{{ $userCounts->active_users ?? 0 }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card rejected-card">
+
+        <!-- Trạng thái không hoạt động -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-secondary">
+                        <i class="ri-pause-circle-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Tạm dừng</h5>
+                    <h3 class="card-text fw-bold text-secondary">{{ $userCounts->inactive_users ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trạng thái bị khóa -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-danger">
-                        <i class="ri-admin-line"></i>
+                        <i class="ri-lock-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số Admin</h5>
-                    <h3 class="card-text fw-bold text-danger">{{ $userCounts->admin_count ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Bị khóa</h5>
+                    <h3 class="card-text fw-bold text-danger">{{ $userCounts->blocked_users ?? 0 }}</h3>
                 </div>
             </div>
         </div>
