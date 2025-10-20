@@ -51,51 +51,103 @@
         </div>
     </div>
     <div class="row cursor-pointer">
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card total-card">
+        <!-- Tổng số người dùng (không bao gồm admin) -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-primary">
-                        <i class="ri-user-3-line"></i>
+                        <i class="ri-group-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Tổng số người dùng</h5>
-                    <h3 class="card-text fw-bold">{{ $userCounts->total_users ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Tổng cộng</h5>
+                    <h3 class="card-text fw-bold text-primary">{{ ($userCounts->user_count ?? 0) + ($userCounts->staff_count ?? 0) }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
+
+        <!-- Số Staff -->
+        @if(auth()->user()->role == 1)
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-warning">
+                        <i class="ri-team-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Staff</h5>
+                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->staff_count ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Số User thường -->
+        <div class="col-6 col-md-2 mb-3">
             <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-success">
-                        <i class="ri-user-follow-line"></i>
+                        <i class="ri-user-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng hoạt động</h5>
+                    <h5 class="card-title text-muted mb-2">User</h5>
+                    <h3 class="card-text fw-bold text-success">{{ $userCounts->user_count ?? 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trạng thái hoạt động -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-success">
+                        <i class="ri-checkbox-circle-line"></i>
+                    </div>
+                    <h5 class="card-title text-muted mb-2">Hoạt động</h5>
                     <h3 class="card-text fw-bold text-success">{{ $userCounts->active_users ?? 0 }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card pending-card">
+
+        <!-- Trạng thái không hoạt động -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
                 <div class="card-body text-center">
-                    <div class="stat-icon text-warning">
-                        <i class="ri-user-unfollow-line"></i>
+                    <div class="stat-icon text-secondary">
+                        <i class="ri-pause-circle-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng không hoạt động</h5>
-                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->inactive_users ?? 0 }}</h3>
+                    <h5 class="card-title text-muted mb-2">Tạm dừng</h5>
+                    <h3 class="card-text fw-bold text-secondary">{{ $userCounts->inactive_users ?? 0 }}</h3>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-md-3 mb-3">
-            <div class="card stats-card rejected-card">
+
+        <!-- Trạng thái bị khóa -->
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-danger">
                         <i class="ri-lock-line"></i>
                     </div>
-                    <h5 class="card-title text-muted mb-2">Số người dùng bị khóa</h5>
+                    <h5 class="card-title text-muted mb-2">Bị khóa</h5>
                     <h3 class="card-text fw-bold text-danger">{{ $userCounts->blocked_users ?? 0 }}</h3>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Instructions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning border-0" role="alert">
+                <h6 class="alert-heading">
+                    <i class="ri-information-line me-2"></i>Lưu ý quan trọng
+                </h6>
+                <p class="mb-0">
+                    <strong>Trang này chỉ tạo tài khoản User.</strong> 
+                    Để tạo Admin hoặc Staff, vui lòng sử dụng trang 
+                    <a href="{{ route('admin.roles.index') }}" class="alert-link fw-bold">Phân quyền người dùng</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -147,12 +199,11 @@
                             {{-- Vai trò --}}
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Vai trò</label>
-                                <select name="is_admin" class="form-select">
+                                <select name="role" class="form-select">
                                     <option value="">-- Tất cả --</option>
-                                    <option value="1" {{ request('is_admin') == 1 ? 'selected' : '' }}>Quản trị viên
-                                    </option>
-                                    <option value="0" {{ request('is_admin') == 0 ? 'selected' : '' }}>Người dùng
-                                    </option>
+                                    <option value="1" {{ request('role') == '1' ? 'selected' : '' }}>Admin</option>
+                                    <option value="2" {{ request('role') == '2' ? 'selected' : '' }}>Staff</option>
+                                    <option value="0" {{ request('role') == '0' ? 'selected' : '' }}>User</option>
                                 </select>
                             </div>
 
@@ -226,7 +277,15 @@
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td class="phone">{{ $item->is_admin ? 'Quản trị viên' : 'Người dùng' }}</td>
+                                            <td class="phone">
+                                                @if($item->role == 1)
+                                                    <span class="badge bg-danger">Admin</span>
+                                                @elseif($item->role == 2)
+                                                    <span class="badge bg-warning">Staff</span>
+                                                @else
+                                                    <span class="badge bg-info">User</span>
+                                                @endif
+                                            </td>
                                             <td class="status">
                                                 @if ($item->status == 'active')
                                                     <span
@@ -335,7 +394,40 @@
 @endsection
 @push('scripts')
     <script>
-        // Đã bỏ chức năng thay đổi trạng thái xác minh email
+        $(document).on('change', 'input[name="email_verified"]', function() {
+            var userID = $(this).val();
+            var isChecked = $(this).is(':checked');
+
+            var updateUrl = "{{ route('admin.users.updateEmailVerified', ':userID') }}".replace(
+                ':userID', userID);
+
+            $.ajax({
+                type: "PUT",
+                url: updateUrl,
+                data: {
+                    email_verified: isChecked ? userID : ''
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        toastr.success(response.message);
+                    } else if (response.status === 'warning') {
+                        toastr.warning(response.message);
+                        $('input[value="' + userID + '"]').prop('checked', true);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    console.error('AJAX Error:', error);
+                    console.log('Status:', status);
+                    console.log('Response:', xhr.responseText);
+                    toastr.error('Có lỗi xảy ra khi cập nhật.');
+                }
+            });
+        });
     </script>
     <script>
         $(document).ready(function() {
