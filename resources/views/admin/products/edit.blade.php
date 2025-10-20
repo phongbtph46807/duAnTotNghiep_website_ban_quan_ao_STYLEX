@@ -1,196 +1,506 @@
 @extends('admin.layouts.app')
 @section('title', 'Cập nhật sản phẩm')
+
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
+    <style>
+        .card {
+            border-width: 2px
+        }
+
+        .card-header {
+            background: #eef7ff
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545
+        }
+
+        .input-price {
+            text-align: right
+        }
+
+        .select2-container--bootstrap-5 .select2-selection {
+            min-height: 38px
+        }
+
+        .select2-container--bootstrap-5 .select2-selection.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .1)
+        }
+
+        .variant-thumb {
+            height: 44px;
+            width: 44px;
+            object-fit: cover;
+            border-radius: .25rem;
+            border: 1px solid #eee
+        }
+    </style>
+@endpush
+
 @section('content')
-    <div class="row">
+    @php
+        // Select2: set mặc định theo biến thể đang có (unique id)
+        $selectedColorIds = old(
+            'attr_colors',
+            $product->productVariants->pluck('color_id')->unique()->filter()->values()->all(),
+        );
+        $selectedSizeIds = old(
+            'attr_sizes',
+            $product->productVariants->pluck('size_id')->unique()->filter()->values()->all(),
+        );
+        $selectedTextureIds = old(
+            'attr_textures',
+            $product->productVariants->pluck('texture_id')->unique()->filter()->values()->all(),
+        );
+
+        // Giá hiển thị
+        $oldPrice = old('price', $product->price ?? 0);
+        $oldPriceSale = old('price_sale', $product->price_sale ?? 0);
+
+        // Biến thể để render bảng: ưu tiên old(), nếu không có thì map từ DB (kèm image_url)
+        $oldVariants = old('variants');
+        if (is_null($oldVariants)) {
+            $oldVariants = $product->productVariants
+                ->map(function ($v) {
+                    return [
+                        'id' => $v->id,
+                        'color_id' => $v->color_id,
+                        'size_id' => $v->size_id,
+                        'texture_id' => $v->texture_id,
+                        'price' => $v->price,
+                        'quantity' => $v->quantity ?? 1,
+                        'status' => $v->status,
+                        'image_url' => $v->image ? Storage::url($v->image) : null,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+    @endphp
+
+    <div class="row mb-3">
         <div class="col-12">
-            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lí sản phẩm</h4>
-
-                <div class="page-title-right">
-                    <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="javascript: void(0);">Quản lí sản phẩm</a></li>
-                        <li class="breadcrumb-item active">Cập nhật sản phẩm</li>
-                    </ol>
-                </div>
-
+            <div class="page-title-box d-flex align-items-center justify-content-between">
+                <h4 class="mb-0">Cập nhật sản phẩm</h4>
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="#">Quản lí sản phẩm</a></li>
+                    <li class="breadcrumb-item active">Cập nhật</li>
+                </ol>
             </div>
         </div>
     </div>
-    <!-- end page title -->
-    <div class="card">
-        <div class="card-header">
-            <h4 class="card-title mb-0">Cập nhật sản phẩm: {{ $product->name }}</h4>
-        </div><!-- end card header -->
-        <div class="card-body">
-            <form id="product-form" method="POST" action="{{ route('admin.products.update', $product->id) }}"
-                enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <div class="row">
-                    <div class="col-lg-7">
-                        <div class="card" style="border-width: 2px;">
-                            <div class="card-header" style="background-color:aliceblue">
-                                <h5 class="card-title mb-0">Thông tin chung</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label" for="product-title-input">Tên sản phẩm</label>
-                                    <input type="text" class="form-control" name="name" id="product-title-input"
-                                        value="{{ old('name', $product->name) }}" placeholder="Nhập tên sản phẩm">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="product-title-input">Tiêu đề SEO</label>
-                                    <input type="text" class="form-control" name="meta_title"
-                                        value="{{ old('meta_title', $product->meta_title) }}"
-                                        placeholder="Nhập tiêu đề SEO">
-                                </div>
-                                <div class="mb-3 d-flex">
-                                    <div class="col-6 pe-2">
-                                        <label for="choices-publish-status-input" class="form-label">Trạng thái</label>
 
-                                        <select class="form-select" id="choices-publish-status-input" name="status">
-                                            <option value="active"
-                                                {{ old('status', $product->status) == 'active' ? 'selected' : '' }}>Active
-                                            </option>
-                                            <option value="inactive"
-                                                {{ old('status', $product->status) == 'inactive' ? 'selected' : '' }}>
-                                                Inactive</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-6">
-                                        <label for="">Danh mục</label>
-                                        <select class="form-select" id="choices-category-input" name="category_id">
-                                            <option value="#" selected>Chọn danh mục</option>
-                                            @foreach ($categories as $cate)
-                                                <option value="{{ $cate->id }}"
-                                                    {{ old('category_id', $product->category_id) == $cate->id ? 'selected' : '' }}>
-                                                    {{ $cate->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- end card -->
+    <form id="product-form" method="POST" action="{{ route('admin.products.update', $product) }}"
+        enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
+
+        {{-- Thông tin sản phẩm --}}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Thông tin sản phẩm</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {{-- Hàng 1 --}}
+                    <div class="col-md-6">
+                        <label class="form-label required">Tên sản phẩm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="product-name" name="name"
+                            value="{{ old('name', $product->name) }}" placeholder="Nhập tên sản phẩm">
                     </div>
-                    <!-- end col -->
+                    <div class="col-md-6">
+                        <label class="form-label required">Slug <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="product-slug" name="slug"
+                            value="{{ old('slug', $product->slug) }}" placeholder="Tự sinh theo tên sản phẩm">
+                    </div>
 
-                    <div class="col-lg-5">
-                        <div class="card" style="border-width: 2px;">
-                            <div class="card-header d-flex align-items-center justify-content-between"
-                                style="background-color:aliceblue">
-                                <h5 class="card-title mb-0">Sản phẩm nổi bật</h5>
-                                <div class="form-check form-switch form-switch-warning">
-                                    <input type="hidden" name="is_featured" value="0">
-                                    <input class="form-check-input" type="checkbox" role="switch" name="is_featured"
-                                        value="1" @checked($product->is_featured)>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="card" style="border-width: 2px;">
-                            <div class="card-header" style="background-color:aliceblue">
-                                <h5 class="card-title mb-0">Ảnh sản phẩm</h5>
-                            </div>
-                            <div class="card-body" style="height: 193px">
-                                <div class="mb-4">
-                                    <h5 class="fs-14 mb-1">Ảnh chính</h5>
-                                        <div class="text-center position-relative" style="width: 100px; height: 100px;">
-                                            <!-- Ảnh cũ -->
-                                            <img src="{{ asset('storage/' . $product->thumbnail) }}" id="old-image"
-                                                class="img-fluid rounded"
-                                                style="width: 100px; height: 100px; object-fit: cover;position:absolute; top:0 ;left:170px">
-
-                                            <!-- Ảnh preview mới, ban đầu ẩn -->
-                                            <img id="preview-image" src=""
-                                                class="img-fluid rounded"
-                                                style="width: 100px; height: 100px; object-fit: cover; opacity: 0; transition: opacity 0.3s;position:absolute; top:0 ;left:170px">
-
-                                            <!-- Nút chọn file tùy chỉnh -->
-                                            <label for="product-image-input"
-                                                class="btn btn-sm position-absolute m-1"
-                                                style="cursor: pointer;position:absolute;left:260px;bottom:-15px;">
-                                                <i class="ri-image-fill me-1"></i>
-                                            </label>
-
-                                            <input type="file" name="thumbnail" id="product-image-input"
-                                                accept="image/*" style="display: none;">
-                                        </div>
-
-
-                                        <!-- Nút chọn file tùy chỉnh -->
-                                        <label for="product-image-input" class="btn btn-sm"
-                                            style="cursor: pointer; margin-top:150px">
-                                            <i class="ri-image-fill me-1"></i>
-                                        </label>
-
-                                        <!-- input file ẩn -->
-                                        <input type="file" name="thumbnail" id="product-image-input" accept="image/*"
-                                            style="display: none;" />
-                                    </div>
-                            </div>
-
+                    {{-- Hàng 2 --}}
+                    <div class="col-md-6">
+                        <label class="form-label required">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select" name="category_id" required>
+                            <option value="">Chọn danh mục</option>
+                            @foreach ($categories as $cate)
+                                <option value="{{ $cate->id }}"
+                                    {{ old('category_id', $product->category_id) == $cate->id ? 'selected' : '' }}>
+                                    {{ $cate->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh đại diện</label>
+                        <input type="file" id="product-image-input" name="thumbnail" class="form-control"
+                            accept="image/*">
+                        <div class="d-flex align-items-center gap-3 mt-2">
+                            <img id="product-img" class="rounded" style="max-height:150px;"
+                                src="{{ $product->thumbnail ? Storage::url($product->thumbnail) : '' }}">
+                            @if ($product->thumbnail)
+                                <small class="text-muted">Ảnh hiện tại</small>
+                            @endif
                         </div>
                     </div>
-                    <!-- end col -->
-                    <div>
-                        <div class="card" style="border-width: 2px;">
-                            <div class="card-header" style="background-color:aliceblue">
-                                <h5 class="card-title mb-0">Mô tả sản phẩm</h5>
-                            </div>
-                            <div class="card-body">
-                                <textarea name="description" id="description" class="form-control">
-                                        {{ old('description', $product->description) }}
-                                    </textarea>
-                                <textarea name="description" id="description" hidden></textarea>
-                            </div>
-                            <!-- end card body -->
+
+                    {{-- Hàng 3: giá --}}
+                    <div class="col-md-6">
+                        <label class="form-label required">Giá gốc (VND)</label>
+                        <input type="text" class="form-control input-price" name="price"
+                            value="{{ is_numeric($oldPrice) ? number_format((int) $oldPrice, 0, ',', '.') : $oldPrice }}"
+                            required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Giá khuyến mãi (VND)</label>
+                        <input type="text" class="form-control input-price" name="price_sale"
+                            value="{{ is_numeric($oldPriceSale) ? number_format((int) $oldPriceSale, 0, ',', '.') : $oldPriceSale }}">
+                    </div>
+
+                    {{-- Hàng 4: 2 công tắc 3v3 --}}
+                    <div class="col-md-3">
+                        <label class="form-label d-block">Trạng thái</label>
+                        <input type="hidden" name="is_active" value="0">
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" name="is_active" value="1"
+                                {{ old('is_active', $product->is_active) == 1 ? 'checked' : '' }}>
+                            <label class="form-check-label">Hoạt động</label>
                         </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label d-block">Nổi bật</label>
+                        <input type="hidden" name="is_featured" value="0">
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" name="is_featured" value="1"
+                                {{ old('is_featured', $product->is_featured) == 1 ? 'checked' : '' }}>
+                            <label class="form-check-label">Gắn “Đặc biệt”</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tiêu đề SEO</label>
+                        <input type="text" class="form-control" name="meta_title"
+                            value="{{ old('meta_title', $product->meta_title) }}" placeholder="Tiêu đề SEO">
+                    </div>
+
+                    {{-- Hàng 5: mô tả --}}
+                    <div class="col-12">
+                        <label class="form-label">Mô tả sản phẩm</label>
+                        <textarea name="description" class="form-control" rows="5" placeholder="Nhập mô tả">{{ old('description', $product->description) }}</textarea>
                     </div>
                 </div>
-                <!-- end row -->
-                <div class="text-end mb-3">
-                    <button type="submit" class="btn btn-success w-sm">Submit</button>
-                    {{-- <button type="button" onclick="console.log(new FormData(this.form));">Test Form</button> --}}
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+
+        {{-- Biến thể --}}
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Biến thể sản phẩm</h5>
+                <div>
+                    <button type="button" id="btn-generate-variants" class="btn btn-primary btn-sm">Sinh biến
+                        thể</button>
+                    {{-- YÊU CẦU: KHÔNG cho xoá, nên bỏ nút Xoá tất cả --}}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Màu sắc</label>
+                        <select id="attr-colors" class="select2" name="attr_colors[]" multiple
+                            data-placeholder="Chọn màu sắc">
+                            @foreach ($colors as $c)
+                                <option value="{{ $c->id }}" data-name="{{ $c->name }}"
+                                    {{ in_array($c->id, $selectedColorIds ?? []) ? 'selected' : '' }}>
+                                    {{ $c->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Kích cỡ</label>
+                        <select id="attr-sizes" class="select2" name="attr_sizes[]" multiple
+                            data-placeholder="Chọn kích cỡ">
+                            @foreach ($sizes as $s)
+                                <option value="{{ $s->id }}" data-name="{{ $s->name }}"
+                                    {{ in_array($s->id, $selectedSizeIds ?? []) ? 'selected' : '' }}>
+                                    {{ $s->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Chất liệu</label>
+                        <select id="attr-textures" class="select2" name="attr_textures[]" multiple
+                            data-placeholder="Chọn chất liệu">
+                            @foreach ($textures as $t)
+                                <option value="{{ $t->id }}" data-name="{{ $t->name }}"
+                                    {{ in_array($t->id, $selectedTextureIds ?? []) ? 'selected' : '' }}>
+                                    {{ $t->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle" id="variants-table">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Màu</th>
+                                <th>Size</th>
+                                <th>Chất liệu</th>
+                                {{-- <th>SKU</th> --}}
+                                <th>Giá (VND)</th>
+                                <th>Số lượng</th>
+                                <th>Ảnh</th>
+                                <th>Trạng thái</th>
+                                {{-- KHÔNG có cột thao tác xoá --}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($oldVariants ?? [] as $i => $v)
+                                @php
+                                    $vPrice = $v['price'] ?? 0;
+                                    $qty = $v['quantity'] ?? 1;
+                                    $status = (int) ($v['status'] ?? 1);
+                                    $cName = optional($colors->firstWhere('id', $v['color_id'] ?? null))->name;
+                                    $sName = optional($sizes->firstWhere('id', $v['size_id'] ?? null))->name;
+                                    $tName = optional($textures->firstWhere('id', $v['texture_id'] ?? null))->name;
+                                    $imgUrl = $v['image_url'] ?? null;
+                                @endphp
+                                <tr>
+                                    {{-- id biến thể (nếu có) --}}
+                                    @if (!empty($v['id']))
+                                        <input type="hidden" name="variants[{{ $i }}][id]"
+                                            value="{{ $v['id'] }}">
+                                    @endif
+
+                                    <td>
+                                        <input type="hidden" name="variants[{{ $i }}][color_id]"
+                                            value="{{ $v['color_id'] ?? '' }}">
+                                        <span class="badge bg-light text-dark">{{ $cName ?? '—' }}</span>
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="variants[{{ $i }}][size_id]"
+                                            value="{{ $v['size_id'] ?? '' }}">
+                                        <span class="badge bg-light text-dark">{{ $sName ?? '—' }}</span>
+                                    </td>
+                                    <td>
+                                        <input type="hidden" name="variants[{{ $i }}][texture_id]"
+                                            value="{{ $v['texture_id'] ?? '' }}">
+                                        <span class="badge bg-light text-dark">{{ $tName ?? '—' }}</span>
+                                    </td>
+                                    {{-- <td><input type="text" class="form-control form-control-sm" value="{{ $v['sku'] ?? '' }}" disabled></td> --}}
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm input-price"
+                                            name="variants[{{ $i }}][price]"
+                                            value="{{ is_numeric($vPrice) ? number_format((int) $vPrice, 0, ',', '.') : $vPrice }}">
+                                    </td>
+                                    <td>
+                                        <input type="number" step="1" class="form-control form-control-sm"
+                                            name="variants[{{ $i }}][quantity]" value="{{ $qty }}">
+                                    </td>
+                                    <td>
+                                        @if ($imgUrl)
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <img src="{{ $imgUrl }}" alt="variant-image"
+                                                    class="variant-thumb" style="width: 100px">
+                                                <small class="text-muted">Ảnh hiện tại</small>
+                                            </div>
+                                        @endif
+                                        <input type="file" class="form-control form-control-sm"
+                                            name="variants[{{ $i }}][image]" accept="image/*">
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="hidden" name="variants[{{ $i }}][status]"
+                                            value="0">
+                                        <div class="form-check form-switch d-inline-block">
+                                            <input class="form-check-input" type="checkbox"
+                                                name="variants[{{ $i }}][status]" value="1"
+                                                {{ $status == 1 ? 'checked' : '' }}>
+                                        </div>
+                                    </td>
+                                    {{-- KHÔNG có nút xoá dòng --}}
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <small class="text-muted d-block mt-2">Lưu ý: Không thể xoá biến thể đã có. Bạn chỉ có thể thêm biến thể
+                    mới.</small>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-success w-sm mb-3">Cập nhật sản phẩm</button>
+        </div>
+    </form>
 @endsection
+
 @push('scripts')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        @once
-        let myEditor;
-        ClassicEditor.create(document.querySelector('#description'))
-            .then(editor => {
-                myEditor = editor;
+        $(function() {
+            /* === Select2 === */
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                closeOnSelect: false,
+                placeholder: function() {
+                    return $(this).data('placeholder') || 'Chọn';
+                }
             });
 
-        document.querySelector('#product-form').addEventListener('submit', function() {
-            document.querySelector('#description').value = myEditor.getData();
-        });
-        @endonce
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const input = document.getElementById("product-image-input");
-            const preview = document.getElementById("preview-image");
+            /* === Slug realtime (không ghi đè khi user đã sửa tay) === */
+            $('#product-slug').data('touched', {{ old('slug') ? 'true' : 'false' }});
+            $('#product-name').on('input', function() {
+                const slug = $(this).val().toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                if (!$('#product-slug').data('touched')) $('#product-slug').val(slug);
+            });
+            $('#product-slug').on('input', function() {
+                $(this).data('touched', true);
+            });
 
-            input.addEventListener("change", function() {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
+            /* === Giá có dấu . === */
+            function fmt(v) {
+                return v.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+            $(document).on('input', '.input-price', function() {
+                this.value = fmt(this.value);
+            });
+            $('#product-form').on('submit', function() {
+                $('.input-price').each(function() {
+                    $(this).val($(this).val().replace(/\./g, ''));
+                });
+            });
 
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        preview.style.opacity = 1; // hiện ảnh preview lên trên
+            /* === Preview thumbnail === */
+            $('#product-image-input').on('change', function() {
+                const f = this.files?.[0];
+                if (!f) return $('#product-img').attr('src', '');
+                const r = new FileReader();
+                r.onload = e => $('#product-img').attr('src', e.target.result);
+                r.readAsDataURL(f);
+            });
+
+            /* === Validate 3 nhóm thuộc tính === */
+            function markInvalid($el, invalid) {
+                $el.next('.select2').find('.select2-selection').toggleClass('is-invalid', !!invalid);
+            }
+
+            function picks($el) {
+                return ($el.val() || []).filter(Boolean);
+            }
+
+            function validateAttr() {
+                const $c = $('#attr-colors'),
+                    $s = $('#attr-sizes'),
+                    $t = $('#attr-textures');
+                const hasC = picks($c).length > 0,
+                    hasS = picks($s).length > 0,
+                    hasT = picks($t).length > 0;
+                const pickedAny = hasC || hasS || hasT,
+                    full = hasC && hasS && hasT;
+                markInvalid($c, false);
+                markInvalid($s, false);
+                markInvalid($t, false);
+                if (pickedAny && !full) {
+                    if (!hasC) markInvalid($c, true);
+                    if (!hasS) markInvalid($s, true);
+                    if (!hasT) markInvalid($t, true);
+                    return {
+                        ok: false,
+                        msg: 'Vui lòng chọn đủ 3 nhóm: Màu sắc, Kích cỡ và Chất liệu.'
                     };
+                }
+                return {
+                    ok: true
+                };
+            }
+            $('#attr-colors,#attr-sizes,#attr-textures').on('change', validateAttr);
 
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.src = "";
-                    preview.style.opacity = 0; // ẩn ảnh preview nếu bỏ chọn
+            /* === Tránh tạo trùng khi Sinh biến thể === */
+            function rowKeyFromTr($tr) {
+                const c = $tr.find('input[name*="[color_id]"]').val() || '';
+                const s = $tr.find('input[name*="[size_id]"]').val() || '';
+                const t = $tr.find('input[name*="[texture_id]"]').val() || '';
+                return [c, s, t].join('|');
+            }
+
+            function collectExistingKeys() {
+                const set = new Set();
+                $('#variants-table tbody tr').each(function() {
+                    set.add(rowKeyFromTr($(this)));
+                });
+                return set;
+            }
+
+            function opts($el) {
+                return ($el.val() || []).map(id => ({
+                    id,
+                    name: $el.find('option[value="' + id + '"]').data('name')
+                }));
+            }
+
+            $('#btn-generate-variants').on('click', function() {
+                const ck = validateAttr();
+                if (!ck.ok) {
+                    (window.toastr ? toastr.error(ck.msg) : alert(ck.msg));
+                    return;
+                }
+
+                const C = opts($('#attr-colors')),
+                    S = opts($('#attr-sizes')),
+                    T = opts($('#attr-textures'));
+                const $tb = $('#variants-table tbody');
+                let i = $tb.find('tr').length;
+
+                // khoá (color|size|texture) đã có trong bảng (bao gồm biến thể cũ & các dòng mới vừa thêm)
+                const exists = collectExistingKeys();
+
+                C.forEach(c => S.forEach(s => T.forEach(t => {
+                    const key = [c.id, s.id, t.id].join('|');
+                    if (exists.has(key)) return; // đã tồn tại → bỏ qua
+
+                    $tb.append(`
+        <tr>
+          <td><input type="hidden" name="variants[${i}][color_id]" value="${c.id}"><span class="badge bg-light text-dark">${c.name}</span></td>
+          <td><input type="hidden" name="variants[${i}][size_id]" value="${s.id}"><span class="badge bg-light text-dark">${s.name}</span></td>
+          <td><input type="hidden" name="variants[${i}][texture_id]" value="${t.id}"><span class="badge bg-light text-dark">${t.name}</span></td>
+          <td><input type="text" class="form-control form-control-sm input-price" name="variants[${i}][price]" value="0"></td>
+          <td><input type="number" step="1" class="form-control form-control-sm" name="variants[${i}][quantity]" value="1"></td>
+          <td><input type="file" class="form-control form-control-sm" name="variants[${i}][image]" accept="image/*"></td>
+          <td class="text-center">
+            <input type="hidden" name="variants[${i}][status]" value="0">
+            <div class="form-check form-switch d-inline-block">
+              <input class="form-check-input" type="checkbox" name="variants[${i}][status]" value="1" checked>
+            </div>
+          </td>
+        </tr>
+      `);
+
+                    exists.add(key);
+                    i++;
+                })));
+            });
+
+            /* === KHÔNG có xoá dòng, KHÔNG có xoá tất cả theo yêu cầu === */
+
+            // Chặn submit nếu thiếu nhóm
+            $('#product-form').on('submit', function(e) {
+                const ck = validateAttr();
+                if (!ck.ok) {
+                    e.preventDefault();
+                    (window.toastr ? toastr.error(ck.msg) : alert(ck.msg));
+                    document.querySelector('#attr-colors').closest('.card').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    return false;
                 }
             });
         });

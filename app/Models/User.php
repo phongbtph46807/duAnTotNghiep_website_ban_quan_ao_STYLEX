@@ -8,10 +8,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
+
+    // Role constants
+    const ROLE_USER = 0;
+    const ROLE_ADMIN = 1;
+    const ROLE_STAFF = 2;
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +34,7 @@ class User extends Authenticatable
         'avatar',
         'status',
         'is_admin',
+        'role',
         'verification_token',
         'token_expires_at',
         'is_verified', 
@@ -58,7 +65,43 @@ class User extends Authenticatable
         ];
     }
     public function getRoleNameAttribute()
-{
-    return $this->is_admin ? 'Admin' : 'User';
-}
+    {
+        return match($this->role) {
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_STAFF => 'Staff',
+            self::ROLE_USER => 'User',
+            default => 'User'
+        };
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isStaff()
+    {
+        return $this->role === self::ROLE_STAFF;
+    }
+
+    public function isUser()
+    {
+        return $this->role === self::ROLE_USER;
+    }
+
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
+
+    // Dynamic RBAC relations (Phase 2)
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user', 'user_id', 'permission_id');
+    }
 }

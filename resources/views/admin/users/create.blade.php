@@ -105,17 +105,17 @@
                             @enderror
                         </div>
                         <div class="col-md-12">
-                            <label for="">Vai trò</label>
-                            <select name="is_admin" id="" class="form-select mb-2">
-                                <option value="">Chọn vai trò</option>
-                                    <option {{ old('is_admin') == 1 ? 'selected' : '' }} value="1">
-                                        admin</option>
-                                         <option {{ old('is_admin') == 0 ? 'selected' : '' }} value="0">
-                                        user</option>
-                            </select>
-                            @error('is_admin')
-                            <span class="text-danger mt-2">{{ $message }}</span>
-                            @enderror
+                            <label class="form-label">Vai trò</label>
+                            <div class="form-control-plaintext">
+                                <span class="badge bg-info">User</span>
+                                <small class="text-muted ms-2">Tất cả tài khoản được tạo đều là User</small>
+                                <br>
+                                <small class="text-warning">
+                                    <i class="ri-information-line me-1"></i>
+                                    Để tạo Admin/Staff, vui lòng sử dụng trang 
+                                    <a href="{{ route('admin.roles.index') }}" class="text-primary fw-bold">Phân quyền người dùng</a>
+                                </small>
+                            </div>
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">Thêm mới</button>

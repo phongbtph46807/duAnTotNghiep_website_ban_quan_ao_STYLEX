@@ -15,21 +15,69 @@
     <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- App Css-->
     <link href="{{ asset('assets/css/app.min.css') }}" rel="stylesheet" type="text/css" />
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
+
     <!-- custom Css-->
     <link href="{{ asset('assets/css/custom.min.css') }}" rel="stylesheet" type="text/css" />
-        <!-- Plugins css -->
-    <link href="{{ asset('assets/libs/dropzone/dropzone.css')}}" rel="stylesheet" type="text/css" />
+    <!-- Style X Logo CSS -->
+    <link href="{{ asset('assets/css/style-x-logo.css') }}" rel="stylesheet" type="text/css" />
+    <!-- Plugins css -->
+    <link href="{{ asset('assets/libs/dropzone/dropzone.css') }}" rel="stylesheet" type="text/css" />
     <!-- Thêm vào phần <head> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <!-- Thêm 3 dòng này để nhúng Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-        <style>
+    <style>
         /* Import Animate.css nếu chưa có */
         @import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 
         /* Custom Popup Styles */
+        /* --- Select2 custom style (Bootstrap 5 theme) --- */
+        .select2-container--bootstrap-5 .select2-selection {
+            min-height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: .375rem;
+            background-color: #fff;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection__choice {
+            background-color: #0d6efd !important;
+            /* Màu nền xanh Bootstrap */
+            color: #fff !important;
+            /* Chữ trắng */
+            border: none !important;
+            border-radius: .3rem;
+            padding: 4px 10px !important;
+            margin-top: 4px;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        /* Nút “×” khi xoá tag */
+        .select2-container--bootstrap-5 .select2-selection__choice__remove {
+            color: #fff !important;
+            margin-right: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection__choice__remove:hover {
+            color: #ffe082 !important;
+            /* chuyển vàng nhạt khi hover */
+        }
+
+        /* Placeholder màu nhẹ hơn */
+        .select2-container--bootstrap-5 .select2-selection__placeholder {
+            color: #6c757d !important;
+        }
+
+
         .swal-custom-popup {
             border-radius: 20px !important;
             padding: 0 !important;
