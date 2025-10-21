@@ -3,25 +3,18 @@
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
 					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					Khi mua đơn hàng 200k sẽ được free ship 
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
+							Trợ giúp & FAQs
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
+							Tài Khoản
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
-						</a>
 					</div>
 				</div>
 			</div>
@@ -38,7 +31,7 @@
                    					<div class="menu-desktop">
 					    <ul class="main-menu">
 					        <li>
-					            <a href="index.html">Home</a>
+					            <a href="index.html">Trang Chủ</a>
 					            <ul class="sub-menu">
 					                <li><a href="index.html">Homepage 1</a></li>
 					                <li><a href="home-02.html">Homepage 2</a></li>
@@ -47,11 +40,11 @@
 					        </li>
 
 					        <li class="active-menu">
-					            <a href="#">Shop</a>
+					            <a href="#">Sản Phẩm</a>
 					        </li>
 
 					        <li class="label1" data-label1="hot">
-					            <a href="shoping-cart.html">Features</a>
+					            <a href="shoping-cart.html">Sắp Ra Mắt</a>
 					        </li>
 
 					        <li>
@@ -59,16 +52,12 @@
 					        </li>
 
 					        <li>
-					            <a href="about.html">About</a>
-					        </li>
-
-					        <li>
-					            <a href="contact.html">Contact</a>
+					            <a href="contact.html">Liên Hệ</a>
 					        </li>
 					    </ul>
 					</div>
                     
-                    <!-- Icon header -->
+					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
 							<i class="zmdi zmdi-search"></i>
@@ -81,11 +70,71 @@
 						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
-												
-						<a href="{{ route('loginView') }}" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
-							<i class="zmdi zmdi-account"></i>
-						</a>
+						
+						@auth
+							<!-- User đã đăng nhập -->
+							<div class="dropdown">
+								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown">
+									<i class="zmdi zmdi-account"></i>
+									<span class="ml-2">{{ Auth::user()->name }}</span>
+								</a>
+								<div class="dropdown-menu dropdown-menu-end">
+									<div class="dropdown-header">
+										<div class="user-info">
+											<div class="user-name">{{ Auth::user()->name }}</div>
+											<div class="user-email">{{ Auth::user()->email }}</div>
+										</div>
+									</div>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="#">
+										<i class="zmdi zmdi-account-circle me-2"></i>
+										Hồ sơ cá nhân
+									</a>
+									<a class="dropdown-item" href="#">
+										<i class="zmdi zmdi-shopping-cart me-2"></i>
+										Đơn hàng của tôi
+									</a>
+									<a class="dropdown-item" href="#">
+										<i class="zmdi zmdi-favorite me-2"></i>
+										Yêu thích
+									</a>
+									<a class="dropdown-item" href="#">
+										<i class="zmdi zmdi-settings me-2"></i>
+										Cài đặt
+									</a>
+									<div class="dropdown-divider"></div>
+									<form method="POST" action="{{ route('logout') }}">
+										@csrf
+										<button type="submit" class="dropdown-item logout-btn">
+											<i class="zmdi zmdi-power me-2"></i>
+											Đăng xuất
+										</button>
+									</form>
+								</div>
+							</div>
+						@else
+							<!-- User chưa đăng nhập -->
+							<a href="{{ route('loginView') }}" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+								<i class="zmdi zmdi-account"></i>
+							</a>
+						@endauth
 					</div>
 				</nav>
 			</div>	
+		</div>
+
+		 <!-- Modal Search -->
+		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
+			<div class="container-search-header">
+				<button class="flex-c-m btn-hide-modal-search trans-04 js-hide-modal-search">
+					<img src="{{ asset('client/images/icons/icon-close2.png') }}" alt="CLOSE">
+				</button>
+
+				<form class="wrap-search-header flex-w p-l-15">
+					<button class="flex-c-m trans-04">
+						<i class="zmdi zmdi-search"></i>
+					</button>
+					<input class="plh3" type="text" name="search" placeholder="Search...">
+				</form>
+			</div>
 		</div>

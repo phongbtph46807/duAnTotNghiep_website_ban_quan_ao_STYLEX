@@ -41,7 +41,7 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
 
     Route::get('/dashboard', function(){
-        return view('client.layout.layout');
+        return view('client.index');
     })->name('user.dashboard');
 
 });

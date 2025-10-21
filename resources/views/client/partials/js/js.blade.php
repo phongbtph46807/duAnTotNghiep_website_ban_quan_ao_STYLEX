@@ -99,3 +99,47 @@
 	</script>
 <!--===============================================================================================-->
 	<script src="{{ asset('client/js/main.js') }}"></script>
+	
+	<!-- Custom JavaScript for User Dropdown -->
+	<script>
+		// Dropdown functionality
+		document.addEventListener('DOMContentLoaded', function() {
+			const dropdownToggle = document.querySelector('.dropdown-toggle');
+			const dropdownMenu = document.querySelector('.dropdown-menu');
+			
+			if (dropdownToggle && dropdownMenu) {
+				// Toggle dropdown
+				dropdownToggle.addEventListener('click', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					dropdownMenu.classList.toggle('show');
+				});
+				
+				// Close dropdown when clicking outside
+				document.addEventListener('click', function(e) {
+					if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+						dropdownMenu.classList.remove('show');
+					}
+				});
+				
+				// Prevent dropdown from closing when clicking inside
+				dropdownMenu.addEventListener('click', function(e) {
+					e.stopPropagation();
+				});
+				
+				// Handle dropdown item clicks
+				const dropdownItems = dropdownMenu.querySelectorAll('.dropdown-item');
+				dropdownItems.forEach(function(item) {
+					item.addEventListener('click', function(e) {
+						// If it's a logout button, let the form submit
+						if (this.classList.contains('text-danger')) {
+							return;
+						}
+						// For other items, prevent default and close dropdown
+						e.preventDefault();
+						dropdownMenu.classList.remove('show');
+					});
+				});
+			}
+		});
+	</script>
