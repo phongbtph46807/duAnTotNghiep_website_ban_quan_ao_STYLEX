@@ -20,26 +20,8 @@ use App\Http\Controllers\Admin\ShippingCarrierController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('client.index');
 });
-
-// Test route để debug middleware
-Route::get('/test-auth', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
-        return response()->json([
-            'authenticated' => true,
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_email' => $user->email,
-            'user_role' => $user->role,
-            'is_admin' => $user->is_admin,
-            'can_access_admin_users' => $user->role == 1
-        ]);
-    }
-    return response()->json(['authenticated' => false]);
-});
-
 
 Route::group(['middleware' => ['isAuthenticated']], function(){
 
@@ -58,7 +40,7 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
 
     Route::get('/dashboard', function(){
-        return 'User Dashboard';
+        return view('client.layout.layout');
     })->name('user.dashboard');
 
 });
