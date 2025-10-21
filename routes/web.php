@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\TextureController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -82,6 +83,16 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+
+        // Post routes
+        Route::prefix('post')->as('post.')->group(function () {
+            Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/create', [PostController::class, 'create'])->name('create');
+            Route::post('/store', [PostController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [PostController::class, 'update'])->name('update');
+            Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
+        });
     });
 });
 
