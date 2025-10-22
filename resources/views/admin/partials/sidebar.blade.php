@@ -52,12 +52,13 @@
                     <div class="collapse menu-dropdown" id="sidebarDashboards">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{route('admin.categories.index')}}" class="nav-link" data-key="t-analytics">
+                                <a href="{{ route('admin.categories.index') }}" class="nav-link" data-key="t-analytics">
                                     Danh sách danh mục
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics" onclick="openAddCategoryModal()">
+                                <a href="#" class="nav-link" data-key="t-analytics"
+                                    onclick="openAddCategoryModal()">
                                     Thêm mới danh mục
                                 </a>
                             </li>
@@ -72,24 +73,24 @@
                     <div class="collapse menu-dropdown" id="sidebarProducts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{route('admin.products.index')}}" class="nav-link">
+                                <a href="{{ route('admin.products.index') }}" class="nav-link">
                                     <i class="ri-list-check me-1"></i> Danh sách sản phẩm
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{route('admin.products.create')}}" class="nav-link">
+                                <a href="{{ route('admin.products.create') }}" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Thêm sản phẩm mới
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{route('admin.products.trash')}}" class="nav-link">
+                                <a href="{{ route('admin.products.trash') }}" class="nav-link">
                                     <i class="ri-delete-bin-line me-1"></i> Sản phẩm đã xóa
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </li>
-                
+
                 <!-- Quản lý thuộc tính sản phẩm -->
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarAttributes" data-bs-toggle="collapse" role="button"
@@ -99,17 +100,17 @@
                     <div class="collapse menu-dropdown" id="sidebarAttributes">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{route('admin.colors.index')}}" class="nav-link" data-key="t-colors">
+                                <a href="{{ route('admin.colors.index') }}" class="nav-link" data-key="t-colors">
                                     <i class="ri-palette-line me-1"></i> Quản lý màu sắc
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{route('admin.sizes.index')}}" class="nav-link" data-key="t-sizes">
+                                <a href="{{ route('admin.sizes.index') }}" class="nav-link" data-key="t-sizes">
                                     <i class="ri-ruler-line me-1"></i> Quản lý kích thước
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{route('admin.textures.index')}}" class="nav-link" data-key="t-textures">
+                                <a href="{{ route('admin.textures.index') }}" class="nav-link" data-key="t-textures">
                                     <i class="ri-scissors-line me-1"></i> Quản lý chất liệu
                                 </a>
                             </li>
@@ -122,7 +123,7 @@
                         aria-expanded="false" aria-controls="sidebarInventory">
                         <i class="ri-store-3-line"></i>
                         <span data-key="t-inventory">Quản lý kho hàng</span>
-                      
+
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarInventory">
                         <ul class="nav nav-sm flex-column">
@@ -205,8 +206,8 @@
                     </div>
                     <!-- end Dashboard Menu -->
 
-                <!-- Thuế & Vận chuyển - CHỈ ADMIN -->
-                @if(auth()->user()->role == 1)
+                    <!-- Thuế & Vận chuyển - CHỈ ADMIN -->
+                    @if (auth()->user()->role == 1)
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarTaxShip" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarTaxShip">
@@ -240,185 +241,24 @@
                     <div class="collapse menu-dropdown" id="sidebarAuth">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="#sidebarSignIn" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarSignIn" data-key="t-signin"> Sign In
+                                <a href="{{ route('admin.banners.index') }}" class="nav-link"
+                                    data-key="t-analytics">
+                                    <i class="ri-list-check me-1"></i> Danh sách banner
                                 </a>
-                                <div class="collapse menu-dropdown" id="sidebarSignIn">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-signin-basic.html" class="nav-link" data-key="t-basic">
-                                                Basic
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-signin-cover.html" class="nav-link" data-key="t-cover">
-                                                Cover
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
                             <li class="nav-item">
-                                <a href="#sidebarSignUp" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarSignUp" data-key="t-signup"> Sign Up
+                                <a href="{{ route('admin.banners.create') }}" class="nav-link"
+                                    data-key="t-analytics"> 
+                                     <i class="ri-add-circle-line me-1"></i>
+                                    Thêm mới banner
                                 </a>
-                                <div class="collapse menu-dropdown" id="sidebarSignUp">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-signup-basic.html" class="nav-link" data-key="t-basic">
-                                                Basic
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-signup-cover.html" class="nav-link" data-key="t-cover">
-                                                Cover
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <li class="nav-item">
-                                <a href="#sidebarResetPass" class="nav-link" data-bs-toggle="collapse"
-                                    role="button" aria-expanded="false" aria-controls="sidebarResetPass"
-                                    data-key="t-password-reset">
-                                    Password Reset
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarResetPass">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-pass-reset-basic.html" class="nav-link" data-key="t-basic">
-                                                Basic </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-pass-reset-cover.html" class="nav-link" data-key="t-cover">
-                                                Cover </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <li class="nav-item">
-                                <a href="#sidebarchangePass" class="nav-link" data-bs-toggle="collapse"
-                                    role="button" aria-expanded="false" aria-controls="sidebarchangePass"
-                                    data-key="t-password-create">
-                                    Password Create
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarchangePass">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-pass-change-basic.html" class="nav-link"
-                                                data-key="t-basic">
-                                                Basic </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-pass-change-cover.html" class="nav-link"
-                                                data-key="t-cover">
-                                                Cover </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <li class="nav-item">
-                                <a href="#sidebarLockScreen" class="nav-link" data-bs-toggle="collapse"
-                                    role="button" aria-expanded="false" aria-controls="sidebarLockScreen"
-                                    data-key="t-lock-screen">
-                                    Lock Screen
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarLockScreen">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-lockscreen-basic.html" class="nav-link" data-key="t-basic">
-                                                Basic </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-lockscreen-cover.html" class="nav-link" data-key="t-cover">
-                                                Cover </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-
-                            <li class="nav-item">
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start" data-key="t-logout">
-                                        <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> 
-                                        <span class="align-middle">Logout</span>
-                                    </button>
-                                </form>
                             </li>
                             <li class="nav-item">
-                                <a href="#sidebarSuccessMsg" class="nav-link" data-bs-toggle="collapse"
-                                    role="button" aria-expanded="false" aria-controls="sidebarSuccessMsg"
-                                    data-key="t-success-message"> Success Message
+                                <a href="{{ route('admin.banners.trash') }}" class="nav-link"
+                                    data-key="t-analytics"> 
+                                     <i class="ri-delete-bin-line me-1"></i>
+                                     Danh sách banner đã xóa
                                 </a>
-                                <div class="collapse menu-dropdown" id="sidebarSuccessMsg">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-success-msg-basic.html" class="nav-link"
-                                                data-key="t-basic">
-                                                Basic </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-success-msg-cover.html" class="nav-link"
-                                                data-key="t-cover">
-                                                Cover </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#sidebarTwoStep" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarTwoStep"
-                                    data-key="t-two-step-verification"> Two Step Verification
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarTwoStep">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-twostep-basic.html" class="nav-link" data-key="t-basic">
-                                                Basic
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-twostep-cover.html" class="nav-link" data-key="t-cover">
-                                                Cover
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#sidebarErrors" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarErrors" data-key="t-errors"> Errors
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarErrors">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="auth-404-basic.html" class="nav-link" data-key="t-404-basic">
-                                                404
-                                                Basic </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-404-cover.html" class="nav-link" data-key="t-404-cover">
-                                                404
-                                                Cover </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-404-alt.html" class="nav-link" data-key="t-404-alt"> 404
-                                                Alt
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-500.html" class="nav-link" data-key="t-500"> 500 </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="auth-offline.html" class="nav-link" data-key="t-offline-page">
-                                                Offline Page </a>
-                                        </li>
-                                    </ul>
-                                </div>
                             </li>
                         </ul>
                     </div>
@@ -523,90 +363,95 @@
                 </li>
 
                 <!-- Quản lí người dùng - ADMIN và STAFF -->
-                @if(auth()->user()->role == 1 || auth()->user()->role == 2)
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarUI" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarUI">
-                        <i class="ri-account-circle-line"></i> <span data-key="t-base-ui">Quản lí người dùng</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarUI">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.users.index') }}" class="nav-link" data-key="t-analytics">
-                                    <i class="ri-user-line me-1"></i> Danh sách người dùng
-                                </a>
-                            </li>
-                            @if(auth()->user()->role == 1)
-                            <li class="nav-item">
-                                <a href="{{ route('admin.users.create') }}" class="nav-link"
-                                    data-key="t-analytics">
-                                    <i class="ri-user-add-line me-1"></i> Tạo User mới
-                                    <small class="text-muted d-block">(Chỉ tạo User)</small>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.users.trash') }}" class="nav-link" data-key="t-analytics">
-                                    Danh sách người dùng đã xóa
-                                </a>
-                            </li>
-                            @endif
-                        </ul>
-                    </div>
-                </li>
+                @if (auth()->user()->role == 1 || auth()->user()->role == 2)
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarUI" data-bs-toggle="collapse" role="button"
+                            aria-expanded="false" aria-controls="sidebarUI">
+                            <i class="ri-account-circle-line"></i> <span data-key="t-base-ui">Quản lí người
+                                dùng</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarUI">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.users.index') }}" class="nav-link"
+                                        data-key="t-analytics">
+                                        <i class="ri-user-line me-1"></i> Danh sách người dùng
+                                    </a>
+                                </li>
+                                @if (auth()->user()->role == 1)
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.users.create') }}" class="nav-link"
+                                            data-key="t-analytics">
+                                            <i class="ri-user-add-line me-1"></i> Tạo User mới
+                                            <small class="text-muted d-block">(Chỉ tạo User)</small>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.users.trash') }}" class="nav-link"
+                                            data-key="t-analytics">
+                                            Danh sách người dùng đã xóa
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </li>
                 @endif
 
                 <!-- Quản lý phân quyền - CHỈ ADMIN -->
-                @if(auth()->user()->role == 1)
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarManagement" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarManagement">
-                        <i class="ri-settings-3-line"></i> <span>Quản lý</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarManagement">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.roles.index') }}" class="nav-link">
-                                    <i class="ri-user-settings-line me-1"></i> Phân quyền người dùng
-                                    <small class="text-muted d-block">(Gán role cho user)</small>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.rbac.roles.index') }}" class="nav-link">
-                                    <i class="ri-shield-star-line me-1"></i> Quản lý Roles (Entity)
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.rbac.permissions.index') }}" class="nav-link">
-                                    <i class="ri-key-2-line me-1"></i> Quản lý Permissions (Entity)
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+                @if (auth()->user()->role == 1)
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarManagement" data-bs-toggle="collapse"
+                            role="button" aria-expanded="false" aria-controls="sidebarManagement">
+                            <i class="ri-settings-3-line"></i> <span>Quản lý</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarManagement">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.roles.index') }}" class="nav-link">
+                                        <i class="ri-user-settings-line me-1"></i> Phân quyền người dùng
+                                        <small class="text-muted d-block">(Gán role cho user)</small>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.rbac.roles.index') }}" class="nav-link">
+                                        <i class="ri-shield-star-line me-1"></i> Quản lý Roles (Entity)
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.rbac.permissions.index') }}" class="nav-link">
+                                        <i class="ri-key-2-line me-1"></i> Quản lý Permissions (Entity)
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                 @endif
 
                 <!-- Cấp độ thành viên - CHỈ ADMIN -->
-                @if(auth()->user()->role == 1)
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarLoyalty" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarLoyalty">
-                        <i class="ri-vip-crown-line"></i> <span data-key="t-loyalty">Cấp độ thành viên</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarLoyalty">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.loyalty-tiers.index') }}" class="nav-link" data-key="t-loyalty-list">
-                                    Danh sách cấp độ
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.loyalty-tiers.create') }}" class="nav-link" data-key="t-loyalty-create">
-                                    Thêm cấp độ mới
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+                @if (auth()->user()->role == 1)
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarLoyalty" data-bs-toggle="collapse"
+                            role="button" aria-expanded="false" aria-controls="sidebarLoyalty">
+                            <i class="ri-vip-crown-line"></i> <span data-key="t-loyalty">Cấp độ thành viên</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarLoyalty">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.loyalty-tiers.index') }}" class="nav-link"
+                                        data-key="t-loyalty-list">
+                                        Danh sách cấp độ
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.loyalty-tiers.create') }}" class="nav-link"
+                                        data-key="t-loyalty-create">
+                                        Thêm cấp độ mới
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                 @endif
 
                 <li class="nav-item">
@@ -966,7 +811,7 @@
         <!-- Sidebar -->
     </div>
 
-    <div class="sidebar-background">    </div>
+    <div class="sidebar-background"> </div>
 </div>
 
 

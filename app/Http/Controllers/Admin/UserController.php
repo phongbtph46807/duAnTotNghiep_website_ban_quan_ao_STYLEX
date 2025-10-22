@@ -17,7 +17,6 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
     use LoggableTrait, UploadToLocalTrait;
-
     const FOLDER = 'users';
     const URLIMAGEDEFAULT = "https://res.cloudinary.com/dvrexlsgx/image/upload/v1732148083/Avatar-trang-den_apceuv_pgbce6.png";
     public function index(Request $request)
