@@ -1,16 +1,76 @@
 @extends('admin.layouts.app')
 
 @section('content')
-<div class="page-title">
-    <h1>Thuế</h1>
-    <div class="row">
-        <div class="col-12 col-md-6 order-md-1 order-last">
-            <nav aria-label="breadcrumb" class="breadcrumb-header">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Thuế</li>
+@push('page-css')
+    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
+
+    <style>
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 150px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+    </style>
+@endpush
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Quản lý thuế</h4>
+
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item active"><a href="javascript: void(0);">Thuế</a></li>
+                    <li class="breadcrumb-item">Danh sách thuế</li>
                 </ol>
-            </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="row cursor-pointer">
+    <div class="col-12 col-sm-6 col-md-3 mb-3">
+        <div class="card stats-card total-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary">
+                    <i class="ri-bill-line"></i>
+                </div>
+                <h5 class="card-title text-muted mb-2">Tổng số mức thuế</h5>
+                <h3 class="card-text fw-bold">{{ $taxRates->total() ?? 0 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3 mb-3">
+        <div class="card stats-card approved-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-success">
+                    <i class="ri-percent-line"></i>
+                </div>
+                <h5 class="card-title text-muted mb-2">Thuế <= 10%</h5>
+                <h3 class="card-text fw-bold text-success">{{ $taxRates->where('rate','<=',0.10)->count() }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3 mb-3">
+        <div class="card stats-card pending-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-warning">
+                    <i class="ri-percent-line"></i>
+                </div>
+                <h5 class="card-title text-muted mb-2">Thuế > 10%</h5>
+                <h3 class="card-text fw-bold text-warning">{{ $taxRates->where('rate','>',0.10)->count() }}</h3>
+            </div>
         </div>
     </div>
 </div>
@@ -29,19 +89,20 @@
             </a>
         </div>
         <div class="card-body table-responsive">
-            <table class="table align-middle">
+            <table class="table align-middle table-nowrap">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th>STT</th>
                         <th>Tên</th>
                         <th>Tỷ lệ</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php $stt = ($taxRates->currentPage() - 1) * $taxRates->perPage(); @endphp
                     @forelse($taxRates as $item)
                     <tr>
-                        <td>{{ $item->id }}</td>
+                        <td>{{ ++$stt }}</td>
                         <td>{{ $item->name }}</td>
                         <td>{{ rtrim(rtrim(number_format($item->rate * 100, 2, '.', ''), '0'), '.') }}%</td>
                         <td class="text-end">

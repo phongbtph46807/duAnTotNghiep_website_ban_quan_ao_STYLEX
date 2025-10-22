@@ -9,21 +9,24 @@ class ShippingCarrierSeeder extends Seeder
 {
     public function run(): void
     {
-        $names = [
-            'Giao Hàng Nhanh (GHN)',
-            'Giao Hàng Tiết Kiệm (GHTK)',
-            'Viettel Post',
-            'VNPost',
-            'J&T Express',
-            'Ninja Van',
-            'Best Express',
-            'DHL',
-            'FedEx',
-            'UPS',
+        $rows = [
+            ['name' => 'Giao Hàng Nhanh (GHN)',       'code' => 'GHN'],
+            ['name' => 'Giao Hàng Tiết Kiệm (GHTK)', 'code' => 'GHTK'],
+            ['name' => 'Viettel Post',                'code' => 'VIETTEL'],
+            ['name' => 'VNPost',                      'code' => 'VNPOST'],
+            ['name' => 'J&T Express',                 'code' => 'JT'],
+            ['name' => 'Ninja Van',                   'code' => 'NINJA'],
+            ['name' => 'Best Express',                'code' => 'BEST'],
+            ['name' => 'DHL',                         'code' => 'DHL'],
+            ['name' => 'FedEx',                       'code' => 'FEDEX'],
+            ['name' => 'UPS',                         'code' => 'UPS'],
         ];
 
-        foreach ($names as $name) {
-            ShippingCarrier::firstOrCreate(['name' => $name]);
+        foreach ($rows as $row) {
+            ShippingCarrier::updateOrCreate(
+                ['code' => $row['code']],
+                ['name' => $row['name'], 'active' => true]
+            );
         }
 
         // Nếu muốn random thêm vài hãng giả lập:

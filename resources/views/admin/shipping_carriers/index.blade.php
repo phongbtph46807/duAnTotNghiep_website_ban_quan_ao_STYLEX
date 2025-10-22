@@ -1,16 +1,65 @@
 @extends('admin.layouts.app')
 
 @section('content')
-<div class="page-title">
-    <h1>Hãng vận chuyển</h1>
-    <div class="row">
-        <div class="col-12 col-md-6 order-md-1 order-last">
-            <nav aria-label="breadcrumb" class="breadcrumb-header">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Hãng vận chuyển</li>
+@push('page-css')
+    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
+
+    <style>
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 150px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+    </style>
+@endpush
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <h4 class="mb-sm-0">Quản lý hãng vận chuyển</h4>
+
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item active"><a href="javascript: void(0);">Vận chuyển</a></li>
+                    <li class="breadcrumb-item">Danh sách hãng</li>
                 </ol>
-            </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="row cursor-pointer">
+    <div class="col-12 col-sm-6 col-md-3 mb-3">
+        <div class="card stats-card total-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-primary">
+                    <i class="ri-truck-line"></i>
+                </div>
+                <h5 class="card-title text-muted mb-2">Tổng số hãng</h5>
+                <h3 class="card-text fw-bold">{{ $carriers->total() ?? 0 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-3 mb-3">
+        <div class="card stats-card approved-card">
+            <div class="card-body text-center">
+                <div class="stat-icon text-success">
+                    <i class="ri-checkbox-circle-line"></i>
+                </div>
+                <h5 class="card-title text-muted mb-2">Đang hoạt động</h5>
+                <h3 class="card-text fw-bold text-success">{{ $carriers->where('active', true)->count() }}</h3>
+            </div>
         </div>
     </div>
 </div>
@@ -31,19 +80,28 @@
         </div>
 
         <div class="card-body table-responsive">
-            <table class="table align-middle">
+            <table class="table align-middle table-nowrap">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th>STT</th>
                         <th>Tên hãng</th>
+                        <th>Trạng thái</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php $stt = ($carriers->currentPage() - 1) * $carriers->perPage(); @endphp
                     @forelse($carriers as $item)
                     <tr>
-                        <td>{{ $item->id }}</td>
+                        <td>{{ ++$stt }}</td>
                         <td>{{ $item->name }}</td>
+                        <td>
+                            @if($item->active)
+                                <span class="badge bg-success">Hoạt động</span>
+                            @else
+                                <span class="badge bg-danger">Không hoạt động</span>
+                            @endif
+                        </td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-warning"
                                 href="{{ route('admin.shipping_carriers.edit', $item) }}">
@@ -62,7 +120,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="3" class="text-center text-muted">Không có dữ liệu</td>
+                        <td colspan="4" class="text-center text-muted">Không có dữ liệu</td>
                     </tr>
                     @endforelse
                 </tbody>

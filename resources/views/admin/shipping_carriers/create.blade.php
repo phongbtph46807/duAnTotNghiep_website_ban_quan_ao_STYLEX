@@ -19,9 +19,21 @@
                            name="name"
                            class="form-control @error('name') is-invalid @enderror"
                            value="{{ old('name') }}"
-                           placeholder="VD: GHTK, GHN, VNPost...">
+                           placeholder="VD: Giao Hàng Nhanh">
                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mã hãng (code) <span class="text-danger">*</span></label>
+                    <input type="text"
+                           name="code"
+                           class="form-control @error('code') is-invalid @enderror"
+                           value="{{ old('code') }}"
+                           placeholder="VD: GHN, GHTK, VNPOST">
+                    @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                
 
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.shipping_carriers.index') }}" class="btn btn-secondary">Quay lại</a>

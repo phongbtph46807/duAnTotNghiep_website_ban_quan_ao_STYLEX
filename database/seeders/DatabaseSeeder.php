@@ -2,27 +2,25 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
-        // Tạo/cập nhật user cố định, tránh trùng email khi seed nhiều lần
-        User::updateOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password'), // đổi nếu cần
-            ]
-        );
+        // User::factory(10)->create();
 
         $this->call([
-            TaxRateSeeder::class,
-            ShippingCarrierSeeder::class,
+            UserSeeder::class,
+            CategorySeeder::class,
+            ProductSeeder::class,
+            ProductImageSeeder::class,
+            TextureSeeder::class,
         ]);
     }
 }

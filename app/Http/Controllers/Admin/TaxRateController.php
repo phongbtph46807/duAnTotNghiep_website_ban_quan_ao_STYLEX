@@ -16,7 +16,7 @@ class TaxRateController extends Controller
         $taxRates = TaxRate::query()
             ->when($q, fn($x)=>$x->where('name','like',"%$q%"))
             ->orderByDesc('id')
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return view('admin.tax_rates.index', compact('taxRates','q'));

@@ -23,7 +23,7 @@ class AuthController extends Controller
     public function registerView(){
         try {
             //code...
-            return view('admin.auth.register');
+            return view('auth.register');
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn!");
         }
@@ -61,7 +61,7 @@ class AuthController extends Controller
         public function loginView(){
         try {
             //code...
-            return view('admin.auth.login');
+            return view('auth.login');
         } catch (\Exception $e) {
             return abort(404, "Có gì đó không ổn!");
         }
@@ -72,11 +72,11 @@ class AuthController extends Controller
             //code...
             $userLogin = $request->only('email', 'password');
             if(Auth::attempt($userLogin)){
-                if(Auth::user()->is_verified == 0){
+                if(Auth::user()->email_verified_at == null){
                     Auth::logout();
                     return back()->with('error', 'Hãy xác thực tài khoản của bạn!');
                 }
-                if(Auth::user()->is_admin == 1){
+                if(Auth::user()->role == 1 || Auth::user()->role == 2){
                     return redirect()->route('admin.dashboard');
                 }else{
                     return redirect()->route('user.dashboard');
@@ -84,6 +84,17 @@ class AuthController extends Controller
             }else{
                  return back()->with('error', 'Email hoặc mật khẩu không hợp lệ!');
             }
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function logout(Request $request){
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('loginView')->with('success', 'Đăng xuất thành công!');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

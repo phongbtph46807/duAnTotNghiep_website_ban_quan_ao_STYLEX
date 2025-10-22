@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ShippingCarrierRequest;
 use App\Models\ShippingCarrier;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ShippingCarrierController extends Controller
 {
@@ -16,7 +17,7 @@ class ShippingCarrierController extends Controller
         $carriers = ShippingCarrier::query()
             ->when($q, fn($x)=>$x->where('name','like',"%$q%"))
             ->orderByDesc('id')
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return view('admin.shipping_carriers.index', compact('carriers','q'));
@@ -29,7 +30,15 @@ class ShippingCarrierController extends Controller
 
     public function store(ShippingCarrierRequest $request)
     {
-        ShippingCarrier::create($request->validated());
+        $data = $request->validated();
+        // Chuẩn hóa code và active
+        $data['code'] = isset($data['code']) && $data['code'] !== ''
+            ? Str::upper($data['code'])
+            : Str::upper(Str::slug($data['name'], ''));
+        // Nếu form không gửi 'active' (đã bỏ checkbox), mặc định true
+        $data['active'] = $request->has('active') ? $request->boolean('active') : true;
+
+        ShippingCarrier::create($data);
         return redirect()->route('admin.shipping_carriers.index')
             ->with('success','Tạo đơn vị vận chuyển thành công');
     }
@@ -41,7 +50,13 @@ class ShippingCarrierController extends Controller
 
     public function update(ShippingCarrierRequest $request, ShippingCarrier $shipping_carrier)
     {
-        $shipping_carrier->update($request->validated());
+        $data = $request->validated();
+        $data['code'] = isset($data['code']) && $data['code'] !== ''
+            ? Str::upper($data['code'])
+            : $shipping_carrier->code; // giữ nguyên nếu không nhập
+        $data['active'] = $request->boolean('active');
+
+        $shipping_carrier->update($data);
         return redirect()->route('admin.shipping_carriers.index')
             ->with('success','Cập nhật đơn vị vận chuyển thành công');
     }
