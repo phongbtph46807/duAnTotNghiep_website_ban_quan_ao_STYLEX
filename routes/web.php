@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\TextureController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -20,26 +21,8 @@ use App\Http\Controllers\Admin\ShippingCarrierController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('client.index');
 });
-
-// Test route để debug middleware
-Route::get('/test-auth', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
-        return response()->json([
-            'authenticated' => true,
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_email' => $user->email,
-            'user_role' => $user->role,
-            'is_admin' => $user->is_admin,
-            'can_access_admin_users' => $user->role == 1
-        ]);
-    }
-    return response()->json(['authenticated' => false]);
-});
-
 
 Route::group(['middleware' => ['isAuthenticated']], function(){
 
@@ -58,7 +41,7 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
 
     Route::get('/dashboard', function(){
-        return 'User Dashboard';
+        return view('client.index');
     })->name('user.dashboard');
 
 });
@@ -100,6 +83,16 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+
+        // Post routes
+        Route::prefix('post')->as('post.')->group(function () {
+            Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/create', [PostController::class, 'create'])->name('create');
+            Route::post('/store', [PostController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [PostController::class, 'update'])->name('update');
+            Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
+        });
     });
 });
 
