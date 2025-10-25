@@ -54,4 +54,25 @@ class Product extends Model
     {
         return $this->hasOne(ProductImage::class)->where('is_primary', true);
     }
+
+    // Accessor để lấy URL ảnh thumbnail
+    public function getThumbnailUrlAttribute()
+    {
+        if ($this->thumbnail && file_exists(storage_path('app/public/' . $this->thumbnail))) {
+            return asset('storage/' . $this->thumbnail);
+        }
+        return asset('client/images/banner-01.jpg'); // Ảnh mặc định
+    }
+
+    // Accessor để lấy URL ảnh chính
+    public function getDefaultImageUrlAttribute()
+    {
+        if ($this->primaryImage) {
+            return asset('storage/' . $this->primaryImage->image_path);
+        }
+        if ($this->thumbnail) {
+            return asset('storage/' . $this->thumbnail);
+        }
+        return asset('client/images/no-image.jpg'); // Ảnh mặc định
+    }
 }

@@ -212,16 +212,7 @@
                                             <td class="customer_id">{{ $item->id }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                @if($item->thumbnail)
-                                                    <img src="{{ asset('storage/' . $item->thumbnail) }}" width="50" height="50" class="rounded" alt="Product Image" style="object-fit: cover; background-color: #f8f9fa;">
-                                                @elseif($item->productImages && $item->productImages->count() > 0)
-                                                    @php $primaryImage = $item->productImages->where('is_primary', true)->first() ?? $item->productImages->first(); @endphp
-                                                    <img src="{{ asset('storage/' . $primaryImage->image_path) }}" width="50" height="50" class="rounded" alt="{{ $primaryImage->alt_text }}" style="object-fit: cover; background-color: #f8f9fa;">
-                                                @else
-                                                    <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width: 50px; height: 50px; border: 1px solid #dee2e6;">
-                                                        <i class="ri-image-line text-muted"></i>
-                                                    </div>
-                                                @endif
+                                                <img src="{{ $item->thumbnail_url }}" width="50" height="50" class="rounded" alt="Product Image" style="object-fit: cover; background-color: #f8f9fa;">
                                             </td>
                                             <td class="customer_name">{{ $item->category->name }}</td>
                                             <td class="text-center">
