@@ -23,7 +23,7 @@
 				<nav class="limiter-menu-desktop container">
 						
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
+					<a href="{{ route('home') }}" class="logo">
 					STYLE<span>X</span>
 					</a>
 

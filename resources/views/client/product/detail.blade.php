@@ -2,6 +2,30 @@
 
 @section('title', $product->name . ' - ' . env('APP_NAME'))
 
+@push('styles')
+<style>
+    .product-image {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        -ms-interpolation-mode: nearest-neighbor;
+    }
+    
+    .wrap-pic-w img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        object-fit: contain !important;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        -ms-interpolation-mode: nearest-neighbor;
+    }
+</style>
+@endpush
+
 @section('content')
 
 	<!-- breadcrumb -->
@@ -36,11 +60,11 @@
 							<div class="slick3 gallery-lb">
 								@if($product->productImages && $product->productImages->count() > 0)
 									@foreach($product->productImages as $image)
-									<div class="item-slick3" data-thumb="{{ asset('storage/' . $image->image_path) }}">
+									<div class="item-slick3" data-thumb="{{ Storage::url($image->image_path) }}">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $product->name }}">
+											<img src="{{ Storage::url($image->image_path) }}" alt="{{ $product->name }}" class="product-image">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ asset('storage/' . $image->image_path) }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ Storage::url($image->image_path) }}">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
@@ -49,7 +73,7 @@
 								@else
 									<div class="item-slick3" data-thumb="{{ $product->default_image_url }}">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}">
+											<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}" class="product-image">
 
 											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ $product->default_image_url }}">
 												<i class="fa fa-expand"></i>
