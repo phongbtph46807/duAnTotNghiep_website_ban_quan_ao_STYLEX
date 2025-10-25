@@ -132,7 +132,7 @@
 				dropdownItems.forEach(function(item) {
 					item.addEventListener('click', function(e) {
 						// If it's a logout button, let the form submit
-						if (this.classList.contains('text-danger')) {
+						if (this.classList.contains('logout-btn') || this.querySelector('button.logout-btn')) {
 							return;
 						}
 						// For other items, prevent default and close dropdown

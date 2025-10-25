@@ -137,6 +137,8 @@
 			text-align: left;
 			padding: 0;
 			cursor: pointer;
+			font-size: inherit;
+			font-family: inherit;
 		}
 		
 		/* Dropdown Header */
@@ -197,6 +199,26 @@
 		
 		.logout-btn:hover i {
 			color: white !important;
+		}
+		
+		/* Admin Link */
+		.admin-link {
+			background-color: #f8f9fa !important;
+			font-weight: 600 !important;
+			color: #495057 !important;
+		}
+		
+		.admin-link:hover {
+			background-color: #e9ecef !important;
+			color: #212529 !important;
+		}
+		
+		.admin-link i {
+			color: #6c757d !important;
+		}
+		
+		.admin-link:hover i {
+			color: #495057 !important;
 		}
 		
 		/* Divider */
