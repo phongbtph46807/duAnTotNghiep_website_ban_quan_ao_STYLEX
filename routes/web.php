@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LoyaltyTierController;
 use App\Http\Controllers\Admin\RoleController;
@@ -22,6 +23,13 @@ use App\Http\Controllers\Admin\ShippingCarrierController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Client Product routes
+Route::prefix('products')->as('client.products.')->group(function () {
+    Route::get('/', [ClientProductController::class, 'index'])->name('index');
+    Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
+});
+
 Route::group(['middleware' => ['isAuthenticated']], function(){
 
     Route::get('/register', [AuthController::class,'registerView'])->name('registerView');

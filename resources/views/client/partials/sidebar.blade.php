@@ -30,12 +30,12 @@
 					<!-- Menu desktop -->
                    					<div class="menu-desktop">
 					    <ul class="main-menu">
-					        <li class="active-menu">
+					        <li>
 					            <a href="{{ route('home') }}">Trang Chủ</a>
 					        </li>
 
 					        <li>
-					            <a href="#">Sản Phẩm</a>
+					            <a href="{{ route('client.products.index') }}">Sản Phẩm</a>
 					        </li>
 
 					        <li class="label1" data-label1="hot">
