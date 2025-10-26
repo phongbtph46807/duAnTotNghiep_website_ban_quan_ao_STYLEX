@@ -43,7 +43,13 @@
 											<div class="how-itemcart1">
 												@php
 													$firstImage = $item['product']->productImages->first();
-													$imageUrl = $firstImage ? Storage::url($firstImage->image_path) : asset('client/images/product/default.jpg');
+													if ($firstImage) {
+														// Check if image exists in uploads folder
+														$imagePath = public_path($firstImage->image_path);
+														$imageUrl = file_exists($imagePath) ? asset($firstImage->image_path) : asset('client/images/product-01.jpg');
+													} else {
+														$imageUrl = asset('client/images/product-01.jpg');
+													}
 												@endphp
 												<img src="{{ $imageUrl }}" alt="{{ $item['product']->name }}">
 											</div>

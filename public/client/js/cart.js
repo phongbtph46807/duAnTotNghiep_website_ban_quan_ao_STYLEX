@@ -58,12 +58,7 @@ function updateCartUI(data) {
     $('#totalAmount').text(formatCurrency(data.total));
     cartFooter.show();
     
-    // Add click event for delete buttons
-    $('.delete-item').on('click', function(e) {
-        e.preventDefault();
-        const productId = $(this).data('id');
-        removeFromCart(productId);
-    });
+    // Delete button events are handled globally in document ready
 }
 
 // Add to cart
@@ -156,6 +151,14 @@ function formatCurrency(amount) {
 // Initialize on page load
 $(document).ready(function() {
     loadCart();
+    
+    // Global event delegation for delete buttons
+    $(document).on('click', '.delete-item', function(e) {
+        e.preventDefault();
+        const productId = $(this).data('id');
+        console.log('Delete button clicked for product:', productId);
+        removeFromCart(productId);
+    });
     
     // Watch for cart panel opening via mutation observer
     const cartPanel = $('.js-panel-cart');

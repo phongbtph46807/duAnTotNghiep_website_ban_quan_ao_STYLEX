@@ -19,8 +19,8 @@ class CartController extends Controller
         $cartData = [];
         $total = 0;
 
-        foreach ($cart as $id => $item) {
-            $product = Product::with('productImages')->find($id);
+        foreach ($cart as $productId => $item) {
+            $product = Product::with('productImages')->find($productId);
             if ($product) {
                 $cartData[] = [
                     'product' => $product,
@@ -157,15 +157,26 @@ class CartController extends Controller
         $cartData = [];
         $total = 0;
 
-        foreach ($cart as $id => $item) {
-            $product = Product::with('productImages')->find($id);
+        foreach ($cart as $productId => $item) {
+            $product = Product::with('productImages')->find($productId);
             if ($product) {
                 $itemTotal = $product->price * $item['quantity'];
                 $total += $itemTotal;
                 
-                // Get image URL
+                // Get image URL from database
                 $firstImage = $product->productImages->first();
-                $image = $firstImage ? \Storage::url($firstImage->image_path) : 'client/images/product/default.jpg';
+                if ($firstImage) {
+                    // Check if image exists in uploads folder
+                    $imagePath = public_path($firstImage->image_path);
+                    if (file_exists($imagePath)) {
+                        $image = asset($firstImage->image_path);
+                    } else {
+                        // Fallback to sample image if not found
+                        $image = asset('client/images/product-01.jpg');
+                    }
+                } else {
+                    $image = asset('client/images/product-01.jpg');
+                }
                 
                 $cartData[] = [
                     'id' => $product->id,
@@ -174,6 +185,8 @@ class CartController extends Controller
                     'image' => $image,
                     'quantity' => $item['quantity'],
                     'total' => $itemTotal,
+                    'size' => $item['size'] ?? null,
+                    'color' => $item['color'] ?? null,
                 ];
             }
         }
