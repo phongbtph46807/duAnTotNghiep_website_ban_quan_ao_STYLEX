@@ -72,12 +72,7 @@
 
 		/*---------------------------------------------*/
 
-		$('.js-addcart-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to cart !", "success");
-			});
-		});
+	// Add to cart functionality - now handled by cart.js
 	
 	</script>
 <!--===============================================================================================-->
@@ -99,6 +94,7 @@
 	</script>
 <!--===============================================================================================-->
 	<script src="{{ asset('client/js/main.js') }}"></script>
+	<script src="{{ asset('client/js/cart.js') }}"></script>
 	
 	<!-- Custom JavaScript for User Dropdown -->
 	<script>

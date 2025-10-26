@@ -23,6 +23,11 @@ class ProductController extends Controller
         $query = Product::with(['category', 'primaryImage'])
             ->where('is_active', 1);
         
+        // Filter theo danh mục
+        if ($request->has('category') && $request->category) {
+            $query->where('category_id', $request->category);
+        }
+        
         // Sắp xếp mặc định
         $query->orderBy('created_at', 'desc');
         
@@ -32,6 +37,7 @@ class ProductController extends Controller
         return view('client.product.index', [
             'products' => $products,
             'categories' => $categories,
+            'selectedCategory' => $request->category,
         ]);
     }
     

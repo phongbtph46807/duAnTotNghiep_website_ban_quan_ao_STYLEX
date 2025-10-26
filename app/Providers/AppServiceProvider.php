@@ -3,6 +3,8 @@
 namespace App\Providers;
 use Illuminate\Pagination\Paginator;    
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Session;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         Paginator::useBootstrapFive();
+        Paginator::useBootstrapFive();
+        
+        // Share cart count to all views
+        View::composer('*', function ($view) {
+            $cart = Session::get('cart', []);
+            $cartCount = 0;
+            
+            foreach ($cart as $item) {
+                $cartCount += $item['quantity'];
+            }
+            
+            $view->with('cartCount', $cartCount);
+        });
     }
 }

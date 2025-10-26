@@ -30,23 +30,23 @@
 					<!-- Menu desktop -->
                    					<div class="menu-desktop">
 					    <ul class="main-menu">
-					        <li>
+					        <li class="{{ request()->routeIs('home') ? 'active-menu' : '' }}">
 					            <a href="{{ route('home') }}">Trang Chủ</a>
 					        </li>
 
-					        <li>
+					        <li class="{{ request()->routeIs('client.products.*') ? 'active-menu' : '' }}">
 					            <a href="{{ route('client.products.index') }}">Sản Phẩm</a>
 					        </li>
 
-					        <li class="label1" data-label1="hot">
+					        <li class="label1 {{ request()->is('shoping-cart') ? 'active-menu' : '' }}" data-label1="hot">
 					            <a href="shoping-cart.html">Sắp Ra Mắt</a>
 					        </li>
 
-					        <li>
+					        <li class="{{ request()->is('blog') ? 'active-menu' : '' }}">
 					            <a href="blog.html">Blog</a>
 					        </li>
 
-					        <li>
+					        <li class="{{ request()->is('contact') ? 'active-menu' : '' }}">
 					            <a href="contact.html">Liên Hệ</a>
 					        </li>
 					    </ul>
@@ -58,7 +58,7 @@
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="2">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="{{ $cartCount }}">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 

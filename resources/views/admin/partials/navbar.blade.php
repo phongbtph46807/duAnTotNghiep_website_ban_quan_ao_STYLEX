@@ -133,7 +133,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="dropdown-item" type="submit">
-                        <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> Logout
+                        <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> Đăng xuất
                     </button>
                 </form>
             </div>
