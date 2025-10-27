@@ -2,7 +2,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="{{ route('home') }}"><img src="{{ asset('client/images/icons/logo-01.png') }}" alt="IMG-LOGO"></a>
+				<a href="<?php echo e(route('home')); ?>"><img src="<?php echo e(asset('client/images/icons/logo-01.png')); ?>" alt="IMG-LOGO"></a>
 			</div>
 
 			<!-- Icon header -->
@@ -98,3 +98,4 @@
 				</li>
 			</ul>
 		</div>
+<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/partials/mobile.blade.php ENDPATH**/ ?>

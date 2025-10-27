@@ -46,7 +46,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'productImages', 'productVariants'])
+        $product = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
             ->where('is_active', 1)
             ->findOrFail($id);
         

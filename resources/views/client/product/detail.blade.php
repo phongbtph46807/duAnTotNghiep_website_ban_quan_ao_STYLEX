@@ -111,6 +111,7 @@
 								@php
 									$sizes = $product->productVariants->pluck('size.name')->unique()->filter();
 									$colors = $product->productVariants->pluck('color.name')->unique()->filter();
+									$textures = $product->productVariants->pluck('texture.name')->unique()->filter();
 								@endphp
 								
 								@if($sizes->count() > 0)
@@ -121,10 +122,10 @@
 
 									<div class="size-204 respon6-next">
 										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="size">
-												<option>Chọn kích thước</option>
+											<select class="js-select2" name="size" id="size-select">
+												<option value="">Chọn kích thước</option>
 												@foreach($sizes as $size)
-												<option>{{ $size }}</option>
+												<option value="{{ $size }}">{{ $size }}</option>
 												@endforeach
 											</select>
 											<div class="dropDownSelect2"></div>
@@ -141,10 +142,10 @@
 
 									<div class="size-204 respon6-next">
 										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="color">
-												<option>Chọn màu sắc</option>
+											<select class="js-select2" name="color" id="color-select">
+												<option value="">Chọn màu sắc</option>
 												@foreach($colors as $color)
-												<option>{{ $color }}</option>
+												<option value="{{ $color }}">{{ $color }}</option>
 												@endforeach
 											</select>
 											<div class="dropDownSelect2"></div>
@@ -152,9 +153,36 @@
 									</div>
 								</div>
 								@endif
+
+								@if($textures->count() > 0)
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">
+										Chất Liệu
+									</div>
+
+									<div class="size-204 respon6-next">
+										<div class="rs1-select2 bor8 bg0">
+											<select class="js-select2" name="texture" id="texture-select">
+												<option value="">Chọn chất liệu</option>
+												@foreach($textures as $texture)
+												<option value="{{ $texture }}">{{ $texture }}</option>
+												@endforeach
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+									</div>
+								</div>
+								@endif
+
+								<!-- Hidden field để lưu variant_id -->
+								<input type="hidden" id="selected-variant-id" name="variant_id" value="">
 							@endif
 
-							<div class="flex-w flex-r-m p-b-10" data-product-id="{{ $product->id }}">
+							<div class="flex-w flex-r-m p-b-10" 
+								 data-product-id="{{ $product->id }}"
+								 data-variants="{{ json_encode($product->productVariants) }}"
+								 data-original-price="{{ $product->price }}"
+								 data-original-price-sale="{{ $product->price_sale }}">
 								<div class="size-204 flex-w flex-m respon6-next">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
@@ -416,3 +444,127 @@
 	</section>
 	@endif
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Lấy dữ liệu từ data attributes
+    const productContainer = $('[data-product-id]');
+    const variants = JSON.parse(productContainer.data('variants') || '[]');
+    const originalPrice = parseFloat(productContainer.data('original-price') || 0);
+    const originalPriceSale = parseFloat(productContainer.data('original-price-sale') || 0);
+    const hasPriceSale = originalPriceSale && originalPriceSale < originalPrice;
+    
+    // Function để tìm variant dựa trên size, color, texture
+    function findVariant(size, color, texture) {
+        return variants.find(variant => {
+            const variantSize = variant.size ? variant.size.name : null;
+            const variantColor = variant.color ? variant.color.name : null;
+            const variantTexture = variant.texture ? variant.texture.name : null;
+            
+            return variantSize === size && 
+                   variantColor === color && 
+                   variantTexture === texture;
+        });
+    }
+    
+    // Function để cập nhật giá khi chọn variant
+    function updatePrice() {
+        const size = $('#size-select').val();
+        const color = $('#color-select').val();
+        const texture = $('#texture-select').val();
+        
+        const variant = findVariant(size, color, texture);
+        
+        if (variant && variant.price > 0) {
+            // Cập nhật giá hiển thị
+            $('.mtext-106').html('<span class="fw-bold">' + 
+                new Intl.NumberFormat('vi-VN').format(variant.price) + 'đ</span>');
+            
+            // Lưu variant_id
+            $('#selected-variant-id').val(variant.id);
+        } else {
+            // Reset về giá gốc của product
+            if (hasPriceSale) {
+                $('.mtext-106').html('<span class="fw-bold">' + 
+                    new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
+                    '<span style="text-decoration: line-through; color: red;">' + 
+                    new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
+            } else {
+                $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
+            }
+            
+            $('#selected-variant-id').val('');
+        }
+    }
+    
+    // Event listeners cho các dropdown
+    $('#size-select, #color-select, #texture-select').on('change', function() {
+        updatePrice();
+    });
+    
+    // Quantity controls
+    $('.btn-num-product-down').on('click', function() {
+        const input = $(this).siblings('.num-product');
+        const currentValue = parseInt(input.val());
+        if (currentValue > 1) {
+            input.val(currentValue - 1);
+        }
+    });
+    
+    $('.btn-num-product-up').on('click', function() {
+        const input = $(this).siblings('.num-product');
+        const currentValue = parseInt(input.val());
+        input.val(currentValue + 1);
+    });
+    
+    // Add to cart
+    $('.js-addcart-detail').on('click', function(e) {
+        e.preventDefault();
+        
+        const productId = $(this).data('product-id');
+        const quantity = $('.num-product').val();
+        const variantId = $('#selected-variant-id').val();
+        
+        // Kiểm tra nếu có variants nhưng chưa chọn
+        if (variants.length > 0 && !variantId) {
+            alert('Vui lòng chọn đầy đủ thông tin sản phẩm (kích thước, màu sắc, chất liệu)');
+            return;
+        }
+        
+        // Gửi AJAX request
+        $.ajax({
+            url: '/cart/add',
+            method: 'POST',
+            data: {
+                product_id: productId,
+                quantity: quantity,
+                variant_id: variantId || null,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Hiển thị thông báo thành công
+                    alert(response.message);
+                    
+                    // Có thể cập nhật số lượng trong giỏ hàng ở header
+                    if (response.cart_count) {
+                        $('.cart-count').text(response.cart_count);
+                    }
+                } else {
+                    alert('Có lỗi xảy ra: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                if (response && response.message) {
+                    alert('Có lỗi xảy ra: ' + response.message);
+                } else {
+                    alert('Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng');
+                }
+            }
+        });
+    });
+});
+</script>
+@endpush

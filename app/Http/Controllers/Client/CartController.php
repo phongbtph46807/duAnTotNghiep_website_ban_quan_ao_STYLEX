@@ -3,74 +3,165 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display cart page
      */
     public function index()
     {
-        $cart = Session::get('cart', []);
+        $userId = Auth::id();
+        
+        $cartItems = Cart::with([
+            'product.productImages',
+            'product.primaryImage',
+            'variant.color',
+            'variant.size',
+            'variant.texture'
+        ])
+        ->where('user_id', $userId)
+        ->get();
+
         $cartData = [];
         $total = 0;
 
-        foreach ($cart as $productId => $item) {
-            $product = Product::with('productImages')->find($productId);
-            if ($product) {
-                $cartData[] = [
-                    'product' => $product,
-                    'quantity' => $item['quantity'],
-                    'size' => $item['size'] ?? null,
-                    'color' => $item['color'] ?? null,
-                ];
-                $total += $product->price * $item['quantity'];
+        foreach ($cartItems as $item) {
+            $price = 0;
+            $size = null;
+            $color = null;
+            $texture = null;
+            
+            if ($item->variant && $item->variant->price) {
+                $price = $item->variant->price;
+                $size = $item->variant->size ? $item->variant->size->name : null;
+                $color = $item->variant->color ? $item->variant->color->name : null;
+                $texture = $item->variant->texture ? $item->variant->texture->name : null;
+            } elseif ($item->product) {
+                $price = $item->product->price_sale ?? $item->product->price;
             }
+            
+            $cartData[] = [
+                'id' => $item->id,
+                'product' => $item->product,
+                'variant_id' => $item->variant_id,
+                'quantity' => $item->quantity,
+                'price' => $price,
+                'size' => $size,
+                'color' => $color,
+                'texture' => $texture,
+                'image_url' => $item->product->default_image_url
+            ];
+            
+            $total += $price * $item->quantity;
         }
 
-        return view('client.cart.index', compact('cartData', 'total'));
+        return view('client.cart.index', [
+            'cartData' => $cartData,
+            'total' => $total
+        ]);
     }
 
     /**
-     * Add product to cart
+     * Add item to cart
      */
     public function addToCart(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:products,id',
+            'variant_id' => 'nullable|exists:product_variants,id',
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $productId = $request->product_id;
-        $quantity = $request->quantity;
-        $size = $request->size;
-        $color = $request->color;
-
-        $cart = Session::get('cart', []);
-
-        // Check if product already in cart
-        if (isset($cart[$productId])) {
-            $cart[$productId]['quantity'] += $quantity;
-        } else {
-            $cart[$productId] = [
-                'quantity' => $quantity,
-                'size' => $size,
-                'color' => $color,
-            ];
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        Session::put('cart', $cart);
+        $product = Product::findOrFail($request->product_id);
+        
+        // Kiểm tra variant nếu có
+        if ($request->variant_id) {
+            $variant = ProductVariant::findOrFail($request->variant_id);
+            if ($variant->product_id != $product->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Variant không thuộc sản phẩm này'
+                ], 422);
+            }
+        }
 
-        $cartCount = $this->getCartCount();
+        $userId = Auth::id();
+        
+        // Tìm cart item hiện có với cùng user, product, và variant
+        $cartItem = Cart::where('user_id', $userId)
+            ->where('product_id', $request->product_id)
+            ->where('variant_id', $request->variant_id)
+            ->first();
+
+        if ($cartItem) {
+            // Cập nhật số lượng nếu item đã tồn tại
+            $cartItem->quantity += $request->quantity;
+            $cartItem->save();
+        } else {
+            // Tạo mới cart item
+            $cartItem = Cart::create([
+                'user_id' => $userId,
+                'product_id' => $request->product_id,
+                'variant_id' => $request->variant_id,
+                'quantity' => $request->quantity,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Sản phẩm đã được thêm vào giỏ hàng',
-            'cart_count' => $cartCount,
+            'cart_item' => $cartItem->load(['product', 'variant'])
+        ]);
+    }
+
+    /**
+     * Get cart items
+     */
+    public function getCart()
+    {
+        $userId = Auth::id();
+        
+        $cartItems = Cart::with([
+            'product.productImages',
+            'product.primaryImage',
+            'variant.color',
+            'variant.size',
+            'variant.texture'
+        ])
+        ->where('user_id', $userId)
+        ->get();
+
+        $totalAmount = 0;
+        
+        foreach ($cartItems as $item) {
+            if ($item->variant && $item->variant->price) {
+                $totalAmount += $item->variant->price * $item->quantity;
+            } elseif ($item->product) {
+                $price = $item->product->price_sale ?? $item->product->price;
+                $totalAmount += $price * $item->quantity;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'cart_items' => $cartItems,
+            'total_amount' => $totalAmount,
+            'item_count' => $cartItems->count()
         ]);
     }
 
@@ -79,125 +170,59 @@ class CartController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'quantity' => 'required|integer|min:1',
         ]);
 
-        $cart = Session::get('cart', []);
-
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] = $request->quantity;
-            Session::put('cart', $cart);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        $cartCount = $this->getCartCount();
+        $cartItem = Cart::where('user_id', Auth::id())
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $cartItem->quantity = $request->quantity;
+        $cartItem->save();
 
         return response()->json([
             'success' => true,
-            'message' => 'Giỏ hàng đã được cập nhật',
-            'cart_count' => $cartCount,
+            'message' => 'Đã cập nhật giỏ hàng',
+            'cart_item' => $cartItem->load(['product', 'variant'])
         ]);
     }
 
     /**
-     * Remove item from cart
+     * Remove cart item
      */
     public function remove($id)
     {
-        $cart = Session::get('cart', []);
+        $cartItem = Cart::where('user_id', Auth::id())
+            ->where('id', $id)
+            ->firstOrFail();
 
-        if (isset($cart[$id])) {
-            unset($cart[$id]);
-            Session::put('cart', $cart);
-        }
-
-        $cartCount = $this->getCartCount();
+        $cartItem->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Sản phẩm đã được xóa khỏi giỏ hàng',
-            'cart_count' => $cartCount,
+            'message' => 'Đã xóa sản phẩm khỏi giỏ hàng'
         ]);
     }
 
     /**
-     * Clear all cart
+     * Clear cart
      */
     public function clear()
     {
-        Session::forget('cart');
+        Cart::where('user_id', Auth::id())->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Giỏ hàng đã được xóa',
-        ]);
-    }
-
-    /**
-     * Get cart count
-     */
-    public function getCartCount()
-    {
-        $cart = Session::get('cart', []);
-        $count = 0;
-
-        foreach ($cart as $item) {
-            $count += $item['quantity'];
-        }
-
-        return $count;
-    }
-
-    /**
-     * Get cart data for AJAX
-     */
-    public function getCart()
-    {
-        $cart = Session::get('cart', []);
-        $cartData = [];
-        $total = 0;
-
-        foreach ($cart as $productId => $item) {
-            $product = Product::with('productImages')->find($productId);
-            if ($product) {
-                $itemTotal = $product->price * $item['quantity'];
-                $total += $itemTotal;
-                
-                // Get image URL from database
-                $firstImage = $product->productImages->first();
-                if ($firstImage) {
-                    // Check if image exists in uploads folder
-                    $imagePath = public_path($firstImage->image_path);
-                    if (file_exists($imagePath)) {
-                        $image = asset($firstImage->image_path);
-                    } else {
-                        // Fallback to sample image if not found
-                        $image = asset('client/images/product-01.jpg');
-                    }
-                } else {
-                    $image = asset('client/images/product-01.jpg');
-                }
-                
-                $cartData[] = [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'image' => $image,
-                    'quantity' => $item['quantity'],
-                    'total' => $itemTotal,
-                    'size' => $item['size'] ?? null,
-                    'color' => $item['color'] ?? null,
-                ];
-            }
-        }
-
-        $cartCount = $this->getCartCount();
-
-        return response()->json([
-            'cart' => $cartData,
-            'count' => $cartCount,
-            'total' => $total,
+            'message' => 'Đã xóa toàn bộ giỏ hàng'
         ]);
     }
 }
-
