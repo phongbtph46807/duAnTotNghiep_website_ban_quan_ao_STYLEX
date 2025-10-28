@@ -68,26 +68,38 @@ class ProductController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 $data = $request->validated();
-                if (!empty($data['thumbnail'])) {
-                    $urlThumbnail = Storage::put(self::FOLDER, $data['thumbnail']);
-                } else {
-                    $urlThumbnail = null;
+                
+                // Tự động tạo slug nếu không có
+                if (empty($data['slug'])) {
+                    $data['slug'] = Str::slug($data['name']);
                 }
-                $data['thumbnail'] = $urlThumbnail;
+                
+                if (!empty($data['thumbnail'])) {
+                    $urlThumbnail = Storage::disk('public')->put(self::FOLDER, $data['thumbnail']);
+                    if ($urlThumbnail) {
+                        $data['thumbnail'] = $urlThumbnail;
+                    } else {
+                        $data['thumbnail'] = null;
+                    }
+                } else {
+                    $data['thumbnail'] = null;
+                }
 
                 $product = Product::query()->create($data);
 
                 // Xử lý product images
                 if (!empty($data['product_images'])) {
                     foreach ($data['product_images'] as $index => $image) {
-                        $imagePath = Storage::put(self::FOLDER, $image);
-                        $product->productImages()->create([
-                            'image_path' => $imagePath,
-                            'image_url' => $imagePath,
-                            'alt_text' => $data['alt_texts'][$index] ?? "Hình ảnh " . ($index + 1) . " của " . $product->name,
-                            'sort_order' => $index,
-                            'is_primary' => $index === 0,
-                        ]);
+                        $imagePath = Storage::disk('public')->put(self::FOLDER, $image);
+                        if ($imagePath) {
+                            $product->productImages()->create([
+                                'image_path' => $imagePath,
+                                'image_url' => $imagePath,
+                                'alt_text' => $data['alt_texts'][$index] ?? "Hình ảnh " . ($index + 1) . " của " . $product->name,
+                                'sort_order' => $index,
+                                'is_primary' => $index === 0,
+                            ]);
+                        }
                     }
                 }
 

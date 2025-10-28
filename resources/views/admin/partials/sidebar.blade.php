@@ -265,72 +265,21 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarPages" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarPages">
-                        <i class="ri-pages-line"></i> <span data-key="t-pages">Quản lí bài viết</span>
+                    <a class="nav-link menu-link" href="#sidebarPosts" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarPosts">
+                        <i class="ri-pages-line"></i> <span>Quản lí bài viết</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarPages">
+                    <div class="collapse menu-dropdown" id="sidebarPosts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="pages-starter.html" class="nav-link" data-key="t-starter"> Starter </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#sidebarProfile" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarProfile" data-key="t-profile">
-                                    Profile
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarProfile">
-                                    <ul class="nav nav-sm flex-column">
-                                        <li class="nav-item">
-                                            <a href="pages-profile.html" class="nav-link" data-key="t-simple-page">
-                                                Simple Page </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a href="pages-profile-settings.html" class="nav-link"
-                                                data-key="t-settings"> Settings </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-team.html" class="nav-link" data-key="t-team"> Team </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-timeline.html" class="nav-link" data-key="t-timeline"> Timeline </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-faqs.html" class="nav-link" data-key="t-faqs"> FAQs </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-pricing.html" class="nav-link" data-key="t-pricing"> Pricing </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-gallery.html" class="nav-link" data-key="t-gallery"> Gallery </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-maintenance.html" class="nav-link" data-key="t-maintenance">
-                                    Maintenance
+                                <a href="{{ route('admin.post.index') }}" class="nav-link">
+                                    <i class="ri-list-check me-1"></i> Danh sách bài viết
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="pages-coming-soon.html" class="nav-link" data-key="t-coming-soon"> Coming
-                                    Soon
+                                <a href="{{ route('admin.post.create') }}" class="nav-link">
+                                    <i class="ri-add-circle-line me-1"></i> Thêm bài viết mới
                                 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-sitemap.html" class="nav-link" data-key="t-sitemap"> Sitemap </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-search-results.html" class="nav-link" data-key="t-search-results">
-                                    Search Results </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-privacy-policy.html" class="nav-link"
-                                    data-key="t-privacy-policy">Privacy Policy</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="pages-term-conditions.html" class="nav-link"
-                                    data-key="t-term-conditions">Term & Conditions</a>
                             </li>
                         </ul>
                     </div>
@@ -399,33 +348,33 @@
                 @endif
 
                 <!-- Quản lý phân quyền - CHỈ ADMIN -->
-                @if (auth()->user()->role == 1)
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" href="#sidebarManagement" data-bs-toggle="collapse"
-                            role="button" aria-expanded="false" aria-controls="sidebarManagement">
-                            <i class="ri-settings-3-line"></i> <span>Quản lý</span>
-                        </a>
-                        <div class="collapse menu-dropdown" id="sidebarManagement">
-                            <ul class="nav nav-sm flex-column">
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.roles.index') }}" class="nav-link">
-                                        <i class="ri-user-settings-line me-1"></i> Phân quyền người dùng
-                                        <small class="text-muted d-block">(Gán role cho user)</small>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.rbac.roles.index') }}" class="nav-link">
-                                        <i class="ri-shield-star-line me-1"></i> Quản lý Roles (Entity)
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.rbac.permissions.index') }}" class="nav-link">
-                                        <i class="ri-key-2-line me-1"></i> Quản lý Permissions (Entity)
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
+                @if(auth()->user()->role == 1)
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarManagement" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarManagement">
+                        <i class="ri-settings-3-line"></i> <span>Quản Lý Quyền Hạn</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarManagement">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.roles.index') }}" class="nav-link">
+                                    <i class="ri-user-settings-line me-1"></i> Phân quyền người dùng
+                                    <small class="text-muted d-block">(Gán role cho user)</small>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.rbac.roles.index') }}" class="nav-link">
+                                    <i class="ri-shield-star-line me-1"></i> Quản lý Roles (Entity)
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.rbac.permissions.index') }}" class="nav-link">
+                                    <i class="ri-key-2-line me-1"></i> Quản lý Permissions (Entity)
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
                 @endif
 
                 <!-- Cấp độ thành viên - CHỈ ADMIN -->

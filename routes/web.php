@@ -6,11 +6,14 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\TextureController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ProductController as ClientProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LoyaltyTierController;
 use App\Http\Controllers\Admin\RoleController;
@@ -20,29 +23,15 @@ use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
 
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Client Product routes
+Route::prefix('products')->as('client.products.')->group(function () {
+    Route::get('/', [ClientProductController::class, 'index'])->name('index');
+    Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
 });
 
-// Test route để debug middleware
-Route::get('/test-auth', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
-        return response()->json([
-            'authenticated' => true,
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_email' => $user->email,
-            'user_role' => $user->role,
-            'is_admin' => $user->is_admin,
-            'can_access_admin_users' => $user->role == 1
-        ]);
-    }
-    return response()->json(['authenticated' => false]);
-});
-
-
-Route::group(['middleware' => ['isAuthenticated']], function () {
+Route::group(['middleware' => ['isAuthenticated']], function(){
 
     Route::get('/register', [AuthController::class, 'registerView'])->name('registerView');
     Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -58,9 +47,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 Route::group(['middleware' => ['onlyAuthenticated']], function () {
 
-    Route::get('/dashboard', function () {
-        return 'User Dashboard';
-    })->name('user.dashboard');
+    Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
+
 });
 
 // Admin và Staff routes - cả hai đều có thể truy cập
@@ -113,6 +101,16 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+
+        // Post routes
+        Route::prefix('post')->as('post.')->group(function () {
+            Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/create', [PostController::class, 'create'])->name('create');
+            Route::post('/store', [PostController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [PostController::class, 'update'])->name('update');
+            Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
+        });
     });
     Route::prefix('products')->as('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
