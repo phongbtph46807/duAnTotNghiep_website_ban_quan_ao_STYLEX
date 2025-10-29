@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 19, 2025 at 07:22 AM
+-- Generation Time: Oct 25, 2025 at 10:03 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.20
 
@@ -20,6 +20,24 @@ SET time_zone = "+00:00";
 --
 -- Database: `laravel-stylex`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_reports`
+--
+
+CREATE TABLE `admin_reports` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `report_date` date NOT NULL COMMENT 'Ngày báo cáo, thường là ngày cuối tháng',
+  `total_salary_paid` decimal(10,2) NOT NULL,
+  `total_commission` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `orders_processed_count` int NOT NULL DEFAULT '0',
+  `inventory_transactions_count` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -101,12 +119,12 @@ CREATE TABLE `categories` (
 --
 
 INSERT INTO `categories` (`id`, `name`, `parent_id`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Áo Nam', NULL, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(2, 'Áo Nữ', NULL, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(3, 'Quần Nam', NULL, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
+(1, 'Nam', NULL, 1, '2025-10-13 20:21:24', '2025-10-21 10:38:10', NULL),
+(2, 'Nữ', NULL, 1, '2025-10-13 20:21:24', '2025-10-21 10:38:30', NULL),
+(3, 'Phụ Kiện', NULL, 1, '2025-10-13 20:21:24', '2025-10-21 10:39:25', NULL),
 (4, 'Quần Nữ', NULL, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
 (5, 'Giày Dép', NULL, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(6, 'Phụ Kiện', NULL, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
+(6, 'Phụ Kiện 1', NULL, 1, '2025-10-13 20:21:24', '2025-10-21 11:09:04', '2025-10-21 11:09:04'),
 (7, 'Áo Sơ Mi', 1, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
 (8, 'Áo Thun', 1, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
 (9, 'Áo Khoác', 1, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
@@ -127,10 +145,10 @@ INSERT INTO `categories` (`id`, `name`, `parent_id`, `status`, `created_at`, `up
 (24, 'Giày Tây', 5, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
 (25, 'Giày Cao Gót', 5, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
 (26, 'Dép', 5, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(27, 'Túi Xách', 6, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(28, 'Ví', 6, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(29, 'Đồng Hồ', 6, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
-(30, 'Trang Sức', 6, 1, '2025-10-13 20:21:24', '2025-10-13 20:21:24', NULL),
+(27, 'Túi Xách', 6, 1, '2025-10-13 20:21:24', '2025-10-21 11:09:04', '2025-10-21 11:09:04'),
+(28, 'Ví', 6, 1, '2025-10-13 20:21:24', '2025-10-21 11:09:04', '2025-10-21 11:09:04'),
+(29, 'Đồng Hồ', 6, 1, '2025-10-13 20:21:24', '2025-10-21 11:09:04', '2025-10-21 11:09:04'),
+(30, 'Trang Sức', 6, 1, '2025-10-13 20:21:24', '2025-10-21 11:09:04', '2025-10-21 11:09:04'),
 (31, 'Váy', NULL, 1, '2025-10-18 22:21:11', '2025-10-18 22:21:11', NULL),
 (32, 'Đầm', NULL, 1, '2025-10-18 22:21:11', '2025-10-18 22:21:11', NULL);
 
@@ -232,6 +250,13 @@ CREATE TABLE `jobs` (
   `created_at` int UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `jobs`
+--
+
+INSERT INTO `jobs` (`id`, `queue`, `payload`, `attempts`, `reserved_at`, `available_at`, `created_at`) VALUES
+(1, 'default', '{\"uuid\":\"b295b16d-5d2a-4466-867a-a7de6b9d077c\",\"displayName\":\"App\\\\Jobs\\\\SendAccountUnblockedMail\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\SendAccountUnblockedMail\",\"command\":\"O:33:\\\"App\\\\Jobs\\\\SendAccountUnblockedMail\\\":1:{s:4:\\\"user\\\";O:45:\\\"Illuminate\\\\Contracts\\\\Database\\\\ModelIdentifier\\\":5:{s:5:\\\"class\\\";s:15:\\\"App\\\\Models\\\\User\\\";s:2:\\\"id\\\";i:19;s:9:\\\"relations\\\";a:0:{}s:10:\\\"connection\\\";s:5:\\\"mysql\\\";s:15:\\\"collectionClass\\\";N;}}\"},\"createdAt\":1760888252,\"delay\":null}', 0, NULL, 1760888252, 1760888252);
+
 -- --------------------------------------------------------
 
 --
@@ -318,7 +343,12 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (24, '2025_10_19_051219_add_is_featured_to_products_table', 10),
 (25, '2025_10_19_060000_add_sample_data_to_tables', 11),
 (26, '2025_10_19_052120_add_sample_data_to_tables', 12),
-(27, '2025_10_19_071508_add_columns_to_product_images_table', 13);
+(27, '2025_10_19_071508_add_columns_to_product_images_table', 13),
+(28, '2025_10_19_090000_add_role_to_users_table', 14),
+(29, '2025_10_19_120000_create_roles_table', 15),
+(30, '2025_10_19_120100_create_permissions_table', 15),
+(31, '2025_10_19_120200_create_permission_role_table', 15),
+(34, '2025_10_02_162443_2025_10_02_09_create_posts_and_admin_reports', 16);
 
 -- --------------------------------------------------------
 
@@ -330,6 +360,62 @@ CREATE TABLE `password_reset_tokens` (
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `permissions`
+--
+
+CREATE TABLE `permissions` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `permissions`
+--
+
+INSERT INTO `permissions` (`id`, `name`, `description`, `created_at`, `updated_at`) VALUES
+(2, 'Xem trang chủ', 'views.dashboard', '2025-10-19 07:08:59', '2025-10-19 23:20:41');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `permission_role`
+--
+
+CREATE TABLE `permission_role` (
+  `role_id` bigint UNSIGNED NOT NULL,
+  `permission_id` bigint UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `permission_role`
+--
+
+INSERT INTO `permission_role` (`role_id`, `permission_id`) VALUES
+(2, 2),
+(3, 2);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `posts`
+--
+
+CREATE TABLE `posts` (
+  `id` bigint UNSIGNED NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `author_id` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -370,7 +456,10 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `sku`, `name`, `slug`, `thumbnail`, `short_description`, `description`, `meta_title`, `price`, `price_sale`, `brand_id`, `category_id`, `default_image`, `base_price`, `cost_price`, `total_stock`, `weight`, `is_active`, `is_featured`, `visibility`, `additional`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(11, NULL, 'Bui Tuan Phong', 'bui-tuan-phong', 'products/oSjeOdjU1VVBWtEve3HaKwsPyphrlaOl9dtRIsf1.jpg', NULL, '123', 'seo', 12000, 10000, NULL, 1, NULL, 0.00, NULL, 0, NULL, 1, 1, 'both', NULL, '2025-10-19 00:07:32', '2025-10-19 00:19:50', NULL);
+(20, NULL, 'Bui Tuan Phong12233', 'bui-tuan-phong12233', 'products/75fFp16VGpt0sTEava5gq1p9ZETCG53X3LqWpsJW.jpg', NULL, '13122222312321', NULL, 12000, 10000, NULL, 2, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-19 01:55:17', '2025-10-20 23:45:40', NULL),
+(21, NULL, 'Esprit Ruffle Shirt', 'esprit-ruffle-shirt', 'products/rDlSibrRMCjprTjsmL4iKqqzjJow51KxSLLYeMWu.jpg', NULL, NULL, NULL, 200000, 150000, NULL, 2, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 10:53:22', '2025-10-21 11:03:16', '2025-10-21 11:03:16'),
+(22, NULL, 'Esprit Ruffle Shirtdd', 'esprit-ruffle-shirtdd', 'products/rdnvAy7Rm3nh2buQM2eotpdwtXHXlnXIB0od0E5m.jpg', NULL, NULL, NULL, 44444, 222, NULL, 4, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 11:02:01', '2025-10-21 11:02:01', NULL),
+(23, NULL, 'Esprit Ruffle Shirtd', 'esprit-ruffle-shirtd', 'products/FVSirzL47oEHWYw9HNxMchCKU4twxu7iTXGWhJi0.jpg', NULL, NULL, NULL, 100000, 70000, NULL, 1, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 11:04:20', '2025-10-25 02:41:04', NULL);
 
 -- --------------------------------------------------------
 
@@ -391,16 +480,6 @@ CREATE TABLE `product_images` (
   `alt_text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_primary` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `product_images`
---
-
-INSERT INTO `product_images` (`id`, `product_id`, `variant_id`, `image_url`, `sort_order`, `is_main`, `created_at`, `updated_at`, `image_path`, `alt_text`, `is_primary`) VALUES
-(1, 11, NULL, 'uploads/products/bui-tuan-phong/image_1.jpg', 0, 0, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 'uploads/products/bui-tuan-phong/image_1.jpg', 'Hình ảnh 1 của Bui Tuan Phong', 1),
-(2, 11, NULL, 'uploads/products/bui-tuan-phong/image_2.jpg', 1, 0, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 'uploads/products/bui-tuan-phong/image_2.jpg', 'Hình ảnh 2 của Bui Tuan Phong', 0),
-(3, 11, NULL, 'uploads/products/bui-tuan-phong/image_3.jpg', 2, 0, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 'uploads/products/bui-tuan-phong/image_3.jpg', 'Hình ảnh 3 của Bui Tuan Phong', 0),
-(4, 11, NULL, 'uploads/products/bui-tuan-phong/image_4.jpg', 3, 0, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 'uploads/products/bui-tuan-phong/image_4.jpg', 'Hình ảnh 4 của Bui Tuan Phong', 0);
 
 -- --------------------------------------------------------
 
@@ -432,19 +511,62 @@ CREATE TABLE `product_variants` (
 --
 
 INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `color_id`, `size_id`, `price`, `quantity`, `stock_quantity`, `is_default`, `image`, `status`, `attributes`, `created_at`, `updated_at`, `texture_id`, `deleted_at`) VALUES
-(5, 11, 'AJPBX5FGZV17', 3, 4, 0.00, 1, 0, 0, 'products/1SV30Hbc010gdVdXfoOk79zb5RWHu0vXC6OHf6Ue.jpg', 1, NULL, '2025-10-19 00:07:32', '2025-10-19 00:17:15', 3, NULL),
-(6, 11, 'bui-tuan-phong-2-1-1', 2, 1, 93731.00, 73, 0, 0, 'uploads/products/bui-tuan-phong/variant_2_1_1.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 1, NULL),
-(7, 11, 'bui-tuan-phong-2-1-2', 2, 1, 41528.00, 89, 0, 0, 'uploads/products/bui-tuan-phong/variant_2_1_2.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 2, NULL),
-(8, 11, 'bui-tuan-phong-2-2-1', 2, 2, 94811.00, 31, 0, 0, 'uploads/products/bui-tuan-phong/variant_2_2_1.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 1, NULL),
-(9, 11, 'bui-tuan-phong-2-2-2', 2, 2, 81219.00, 97, 0, 0, 'uploads/products/bui-tuan-phong/variant_2_2_2.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 2, NULL),
-(10, 11, 'bui-tuan-phong-2-3-1', 2, 3, 14830.00, 61, 0, 0, 'uploads/products/bui-tuan-phong/variant_2_3_1.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 1, NULL),
-(11, 11, 'bui-tuan-phong-2-3-2', 2, 3, 92641.00, 12, 0, 0, 'uploads/products/bui-tuan-phong/variant_2_3_2.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 2, NULL),
-(12, 11, 'bui-tuan-phong-3-1-1', 3, 1, 102497.00, 14, 0, 0, 'uploads/products/bui-tuan-phong/variant_3_1_1.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 1, NULL),
-(13, 11, 'bui-tuan-phong-3-1-2', 3, 1, 23590.00, 30, 0, 0, 'uploads/products/bui-tuan-phong/variant_3_1_2.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 2, NULL),
-(14, 11, 'bui-tuan-phong-3-2-1', 3, 2, 52056.00, 42, 0, 0, 'uploads/products/bui-tuan-phong/variant_3_2_1.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 1, NULL),
-(15, 11, 'bui-tuan-phong-3-2-2', 3, 2, 76287.00, 51, 0, 0, 'uploads/products/bui-tuan-phong/variant_3_2_2.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 2, NULL),
-(16, 11, 'bui-tuan-phong-3-3-1', 3, 3, 110626.00, 68, 0, 0, 'uploads/products/bui-tuan-phong/variant_3_3_1.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 1, NULL),
-(17, 11, 'bui-tuan-phong-3-3-2', 3, 3, 82906.00, 93, 0, 0, 'uploads/products/bui-tuan-phong/variant_3_3_2.jpg', 1, NULL, '2025-10-19 00:15:59', '2025-10-19 00:15:59', 2, NULL);
+(20, 20, 'XNWGEGBAKRBM', 2, 1, 0.00, 12, 0, 0, 'products/xmXtGpC6ZtAkLRxuhl85eqsAyUo2x6uhFsUqLNWA.jpg', 1, NULL, '2025-10-19 01:55:17', '2025-10-19 23:15:05', 1, NULL),
+(21, 20, 'ZVRAZIV99OJD', 2, 1, 0.00, 1, 0, 0, 'products/KIRjMOcAhekXb0LIWagUphaIBZTrLST7oyIAxOct.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 23:15:05', 2, NULL),
+(22, 20, 'EVGCCPBBF0IN', 2, 2, 0.00, 1, 0, 0, 'products/IZPxHXwKQXvN7Rj8RRmJb3yT865UPI6pstpwo2zs.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 02:42:57', 1, NULL),
+(23, 20, 'KDKQJGQM5LAB', 2, 2, 0.00, 1, 0, 0, 'products/lJfyBT1X2mew7occj1kHFQHL8HSAB6CWfaoamZ1l.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 02:42:57', 2, NULL),
+(24, 20, 'I7BFNIYSJYHI', 3, 1, 0.00, 1, 0, 0, 'products/yCjCHa2S53WPBLkoPqoMTQt6UIRyHEOgYKszgLhz.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 02:42:57', 1, NULL),
+(25, 20, 'EHWJ948LFLLJ', 3, 1, 0.00, 1, 0, 0, 'products/OWwE8WNgx5zoUKQavxerHdmeOx5fN1UT9fy4bUVN.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 02:42:57', 2, NULL),
+(26, 20, 'RUUGSYZIDUK7', 3, 2, 0.00, 1, 0, 0, 'products/jtruR8XNnRR4LHStRoSLYHw7fl4WibkwpsxVDxwn.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 02:42:57', 1, NULL),
+(27, 20, 'MIBRHEPL21ZJ', 3, 2, 0.00, 1, 0, 0, 'products/huFF2cclZZ8M4xSbtlo3TvorRzQCfhxkWpXN52XO.jpg', 1, NULL, '2025-10-19 02:03:21', '2025-10-19 02:42:57', 2, NULL),
+(28, 20, 'MUG08PUM4RUQ', 2, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(29, 20, 'CMHGHPZ6JRU1', 2, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(30, 20, 'KEK8LSFKRREW', 3, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(31, 20, 'M4KGLBCEBD2F', 3, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(32, 20, 'YEG4YWPJY252', 2, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(33, 20, 'LWJQKGPB5C5N', 2, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(34, 20, 'Z2HSXFCNLLOS', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(35, 20, '4ZI3XVWWQQPP', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(36, 20, 'NHJVNRNCHLAE', 2, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(37, 20, 'IIC8GQHZO1HI', 2, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(38, 20, 'EAG6H9AJYTO4', 3, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(39, 20, 'PLQP8MU5QZIV', 3, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(40, 20, 'YYI72T97L9TS', 2, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(41, 20, 'FVWJAPQIVRYA', 2, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(42, 20, 'FJMWILZF1HIB', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 1, NULL),
+(43, 20, 'BL79U2PLSZGD', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:18', '2025-10-19 09:10:18', 2, NULL),
+(44, 20, 'VIRKZTE8IBPA', 2, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 1, NULL),
+(45, 20, '34I2KMFG8SB4', 2, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 2, NULL),
+(46, 20, 'QIIXBALEWMX2', 3, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 1, NULL),
+(47, 20, 'TSVC4U4VCQJE', 3, 10, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 2, NULL),
+(48, 20, 'P7PTPM52EFVX', 2, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 1, NULL),
+(49, 20, 'PIWJOZMFNUGS', 2, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 2, NULL),
+(50, 20, 'L5ZN8GN2UZOC', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 1, NULL),
+(51, 20, 'TOLVSCJSSLTQ', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 2, NULL),
+(52, 22, 'TGL5JDG0J3LT', 8, 11, 0.00, 1, 0, 0, 'products/9eu961G3qQEVz4N3orHSFSkEoICig52w0J0FMONn.jpg', 1, NULL, '2025-10-21 11:02:01', '2025-10-21 11:02:01', 7, NULL),
+(53, 23, 'AET7ZGAYF6NX', 7, 9, 0.00, 1, 0, 0, 'products/ymHfgo6IfqQUEsc8INZM1b9nCzricEfMh7YaPnXE.jpg', 1, NULL, '2025-10-21 11:04:20', '2025-10-21 11:04:20', 6, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `roles`
+--
+
+CREATE TABLE `roles` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `roles`
+--
+
+INSERT INTO `roles` (`id`, `name`, `description`, `created_at`, `updated_at`) VALUES
+(2, 'Admin', 'Quản Lý Toàn Bộ Website', '2025-10-19 07:12:44', '2025-10-19 23:19:24'),
+(3, 'Staff', 'Quản trị viên hệ thống', '2025-10-19 23:25:04', '2025-10-19 23:25:04');
 
 -- --------------------------------------------------------
 
@@ -466,7 +588,10 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('qilbOdYn0ZVDfBBkuMZZNgHHowD3bQ8RIubqRQZS', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoieDhaSXZmc1pJQkFyalNIUG8wdklPSXJTUXlxMU9NV1IzbEt3SlEwdSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9wcm9kdWN0cyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1760858390);
+('DGPIWs0cGLVXwp9DwGveC22fjA7Cehkspw2xTOy3', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTlVWV2lVUU1RblZaWU50bnRVRHpFZVZSUGFyMmxqbHV2ZjRUMENrUyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1761100826),
+('fHN6cMeRYkO7r5iNCIa2rOntfrDLB5yatsYRoh7r', 56, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoicnJmMTZWSTZMWVAyVTY3Q3JTTW5yUkNYZkNHNUpkN0RyS2JvSG5mciI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU2O30=', 1761068195),
+('IboZNlMCfLZdMTcX7YwUlcufmcER3XrjphoSbUHH', 56, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSFBmRklNaWluc1pJR0tWd042cGZXTUVvVUhXeDY4UmgwMjlONGtPTSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU2O30=', 1761070158),
+('YnJr6mS6B6kECOV7nR7rIKasPy5pXMlvD2OkO5lP', 57, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVXhLR3RGcEpPWmFCb0gwMmJBblFvNmNET3FBcDY0T0d0eFhxYkVWTCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo1Nzt9', 1761386433);
 
 -- --------------------------------------------------------
 
@@ -520,20 +645,20 @@ CREATE TABLE `sizes` (
 --
 
 INSERT INTO `sizes` (`id`, `name`, `description`, `status`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'S', NULL, 1, '2025-10-11 20:14:03', '2025-10-11 20:14:03', NULL),
-(2, 'L', NULL, 1, '2025-10-11 20:14:58', '2025-10-11 20:14:58', NULL),
-(3, 'M', NULL, 1, '2025-10-11 20:15:03', '2025-10-11 20:15:03', NULL),
-(4, 'XL', 'To', 1, '2025-10-11 22:07:46', '2025-10-12 00:18:34', NULL),
-(5, 'XS', NULL, 1, '2025-10-18 22:21:11', '2025-10-18 22:21:11', NULL),
-(6, 'XXL', NULL, 1, '2025-10-18 22:21:11', '2025-10-18 22:21:11', NULL),
-(7, 'XXXL', NULL, 1, '2025-10-18 22:21:11', '2025-10-18 22:21:11', NULL),
-(8, 'XS', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
+(1, 'S', NULL, 1, '2025-10-11 20:14:03', '2025-10-19 08:53:12', '2025-10-19 08:53:12'),
+(2, 'L', NULL, 1, '2025-10-11 20:14:58', '2025-10-19 08:53:08', '2025-10-19 08:53:08'),
+(3, 'M', NULL, 1, '2025-10-11 20:15:03', '2025-10-19 08:53:16', '2025-10-19 08:53:16'),
+(4, 'XL', 'To', 1, '2025-10-11 22:07:46', '2025-10-19 08:52:58', '2025-10-19 08:52:58'),
+(5, 'XS', NULL, 1, '2025-10-18 22:21:11', '2025-10-19 08:53:19', '2025-10-19 08:53:19'),
+(6, 'XXL', NULL, 1, '2025-10-18 22:21:11', '2025-10-19 08:53:04', '2025-10-19 08:53:04'),
+(7, 'XXXL', NULL, 1, '2025-10-18 22:21:11', '2025-10-19 08:52:52', '2025-10-19 08:52:52'),
+(8, 'XS', NULL, 0, '2025-10-18 22:21:47', '2025-10-19 08:53:37', NULL),
 (9, 'S', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
 (10, 'M', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
 (11, 'L', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
 (12, 'XL', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
-(13, 'XXL', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
-(14, 'XXXL', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL);
+(13, 'XXL', NULL, 1, '2025-10-18 22:21:47', '2025-10-19 08:53:26', '2025-10-19 08:53:26'),
+(14, 'XXXL', NULL, 1, '2025-10-18 22:21:47', '2025-10-19 08:53:23', '2025-10-19 08:53:23');
 
 -- --------------------------------------------------------
 
@@ -624,19 +749,22 @@ CREATE TABLE `users` (
   `status` enum('active','inactive','blocked') COLLATE utf8mb4_unicode_ci NOT NULL,
   `salary` decimal(10,2) DEFAULT NULL,
   `hire_date` date DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `role` tinyint NOT NULL DEFAULT '0' COMMENT '0: user, 1: admin, 2: staff'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `is_admin`, `phone_number`, `is_verified`, `email_verified_at`, `password`, `verification_token`, `token_expires_at`, `remember_token`, `created_at`, `updated_at`, `avatar`, `status`, `salary`, `hire_date`, `deleted_at`) VALUES
-(1, 'ADMIN', 'admin@example.com', 1, '0900000001', 1, '2025-10-09 00:06:44', '$2y$12$9Pf7QSBQ4zu84XQzeDuVeuc9hU8.NfUNWSnaIWfiHIw1IESqUsFDq', 'WF81dE5ZCtmqmIdfuYDSINOw4AVYedYs', '2025-10-16 00:06:44', NULL, '2025-10-09 00:06:44', '2025-10-18 21:25:19', 'users/1760847918_4oqVaDXPUD.jpg', 'active', NULL, NULL, NULL),
-(2, 'Trycia Hahn', 'user1@example.com', 0, '0900000002', 1, '2025-10-09 00:06:44', '$2y$12$XcJ4ajWu2YdkRPGGGeiOFubOY0ElqIwjxJVbQ3ZYJ3ZytMNPhyfVy', 'Nev1pHIStUwToRmoJ0fOu8DCNs12VuFE', '2025-10-18 00:06:44', NULL, '2025-10-09 00:06:44', '2025-10-11 18:56:59', NULL, 'active', NULL, NULL, NULL),
-(3, 'Jameson Berge', 'user2@example.com', 0, '0900000003', 1, '2025-10-09 00:06:44', '$2y$12$sflYEmOJpNqvpEG4YGIiROpIlCdCGjqJkhbgqtn137VJwgaejm82q', 'OrE8hmJSruCsQvCKHcBWXHIF7Z4YFRUn', '2025-10-15 00:06:44', NULL, '2025-10-09 00:06:44', '2025-10-11 21:38:37', 'users/1760243917_EIEcqOOHGF.jpg', 'active', NULL, NULL, NULL),
-(4, 'Dena Muller', 'user3@example.com', 0, '0900000004', 1, '2025-10-09 00:06:44', '$2y$12$ygVV.FdW6cPCoS66pGrVG.46BcqVBm21WVb1WRvUrsfmMkxmB0oRy', 'GYblKLZpcp3bLcm960IUTVNZLMVJy4eS', '2025-10-19 00:06:44', NULL, '2025-10-09 00:06:44', '2025-10-13 04:56:38', 'users/1760356548_d9kkOqB4MI.jpg', 'inactive', NULL, NULL, NULL),
-(5, 'Dr. Misty Douglas', 'user4@example.com', 0, '0900000005', 1, NULL, '$2y$12$wO9WgkprHoIN07QZ9h8HquHBw9xXAOymPXzLCGsG6PLfMl.oyuxx6', 'PD1iVG1ocLs7Zz6DsJbIJ8z1GkXOOmSg', '2025-10-19 00:06:45', NULL, '2025-10-09 00:06:45', '2025-10-18 23:21:14', 'users/1760854874_UQHoDybSM0.jpg', 'active', NULL, NULL, NULL);
+INSERT INTO `users` (`id`, `name`, `email`, `is_admin`, `phone_number`, `is_verified`, `email_verified_at`, `password`, `verification_token`, `token_expires_at`, `remember_token`, `created_at`, `updated_at`, `avatar`, `status`, `salary`, `hire_date`, `deleted_at`, `role`) VALUES
+(56, 'Phong', 'admin@example.com', 1, NULL, 0, '2025-10-19 22:30:00', '$2y$12$SsAwPgg4JUk3E2rAlBWkwOycrbHuIB5yqNRsNWhkBYtBwcKSLJiUi', NULL, NULL, NULL, '2025-10-19 22:30:00', '2025-10-19 22:30:00', NULL, 'active', NULL, NULL, NULL, 1),
+(57, 'Admin User', 'admin@test.com', 1, NULL, 0, '2025-10-19 22:30:00', '$2y$12$yng8wr/VR7agiyKH./HJLuyv0RRqMtXy0XLOcdnRWGpbcrwT4KLYC', NULL, NULL, NULL, '2025-10-19 22:30:00', '2025-10-19 22:30:00', NULL, 'active', NULL, NULL, NULL, 1),
+(58, 'Phong', 'staff@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$rRvrPByC6LTGyAMtlZEl5.gp2FUCLx/A8bmwUgYKqRtykPEoz3..m', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'active', NULL, NULL, NULL, 2),
+(59, 'Normal User', 'user@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$iZkw.TKMeiRFyHqsvwFT.Oj1ObrMHuCAflQctHb/hv1UJD9ADyqcO', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'active', NULL, NULL, NULL, 0),
+(60, 'Test User 1', 'test1@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$jEPIBmI9vRQLikbEXTSwNugVKs5w4SuCgYbtC/9plkDKIYPcJ/ecu', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'active', NULL, NULL, NULL, 0),
+(61, 'Test User 2', 'test2@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$c1glojiDnYN3rzef3xbNjeGUgX1V8bBGROxmA..pwPxdZIvdTAx0O', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'inactive', NULL, NULL, NULL, 0),
+(62, 'Test User 3', 'test3@test.com', 0, NULL, 0, '2025-10-19 22:30:02', '$2y$12$a1WQeEauGhj8dZE8cBYMdus4X9lWhVQOkrnfH3cCp.o3Z/ZxrV1aG', NULL, NULL, NULL, '2025-10-19 22:30:02', '2025-10-19 22:30:02', NULL, 'blocked', NULL, NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -656,6 +784,13 @@ CREATE TABLE `user_loyalty` (
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin_reports`
+--
+ALTER TABLE `admin_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `admin_reports_user_id_report_date_unique` (`user_id`,`report_date`);
 
 --
 -- Indexes for table `app_data`
@@ -742,6 +877,27 @@ ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
 
 --
+-- Indexes for table `permissions`
+--
+ALTER TABLE `permissions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `permissions_name_unique` (`name`);
+
+--
+-- Indexes for table `permission_role`
+--
+ALTER TABLE `permission_role`
+  ADD PRIMARY KEY (`role_id`,`permission_id`),
+  ADD KEY `permission_role_permission_id_foreign` (`permission_id`);
+
+--
+-- Indexes for table `posts`
+--
+ALTER TABLE `posts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `posts_slug_unique` (`slug`);
+
+--
 -- Indexes for table `products`
 --
 ALTER TABLE `products`
@@ -769,6 +925,13 @@ ALTER TABLE `product_variants`
   ADD KEY `product_variants_color_id_foreign` (`color_id`),
   ADD KEY `product_variants_size_id_foreign` (`size_id`),
   ADD KEY `product_variants_texture_id_foreign` (`texture_id`);
+
+--
+-- Indexes for table `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `roles_name_unique` (`name`);
 
 --
 -- Indexes for table `sessions`
@@ -824,6 +987,12 @@ ALTER TABLE `user_loyalty`
 --
 
 --
+-- AUTO_INCREMENT for table `admin_reports`
+--
+ALTER TABLE `admin_reports`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `app_data`
 --
 ALTER TABLE `app_data`
@@ -863,7 +1032,7 @@ ALTER TABLE `inventory_logs`
 -- AUTO_INCREMENT for table `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `loyalty_tiers`
@@ -875,13 +1044,25 @@ ALTER TABLE `loyalty_tiers`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+
+--
+-- AUTO_INCREMENT for table `permissions`
+--
+ALTER TABLE `permissions`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `posts`
+--
+ALTER TABLE `posts`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `product_images`
@@ -893,7 +1074,13 @@ ALTER TABLE `product_images`
 -- AUTO_INCREMENT for table `product_variants`
 --
 ALTER TABLE `product_variants`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
+
+--
+-- AUTO_INCREMENT for table `roles`
+--
+ALTER TABLE `roles`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `shipping_carriers`
@@ -923,7 +1110,7 @@ ALTER TABLE `textures`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `user_loyalty`
@@ -946,6 +1133,13 @@ ALTER TABLE `categories`
 --
 ALTER TABLE `inventory_logs`
   ADD CONSTRAINT `inventory_logs_variant_id_foreign` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `permission_role`
+--
+ALTER TABLE `permission_role`
+  ADD CONSTRAINT `permission_role_permission_id_foreign` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `permission_role_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `products`
