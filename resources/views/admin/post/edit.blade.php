@@ -25,11 +25,6 @@
             <div class="text-end mb-4">
                 <a href="{{ route('admin.post.index') }}" class="btn btn-secondary w-sm">Back</a>
                 <button type="submit" class="btn btn-success w-sm">Update</button>
-                <form action="{{ route('admin.post.destroy', $post->id) }}" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger w-sm" onclick="return confirm('Bạn có chắc muốn xóa bài viết này?');">Delete</button>
-                </form>
             </div>
         </div>
     </form>
