@@ -75,76 +75,19 @@
         .thumbnail-preview-container:hover {
             background-color: #f1f3f5;
         }
-
-        .ai-option {
-            cursor: pointer;
-            transition: all 0.2s;
-            padding: 12px 16px;
-        }
-
-        .ai-option:hover {
-            background-color: #f8f9fa;
-        }
-
-        .ai-badge {
-            background: linear-gradient(45deg, #6366F1, #8B5CF6);
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .ai-content-area {
-            background-color: #2b2d3e;
-            color: #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            height: 250px;
-            margin-top: 15px;
-            font-family: 'Courier New', monospace;
-            line-height: 1.6;
-        }
-
-        .section-divider {
-            height: 1px;
-            background-color: #e9ecef;
-            margin: 15px 0;
-        }
-
-        .prompt-suggestion {
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-        }
-
-        .prompt-suggestion:hover {
-            background-color: #e2e3e5 !important;
-        }
-
-        #custom-prompt {
+         .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #0d6efd !important;
+            /* xanh dương Bootstrap */
+            border: none !important;
+            color: #fff !important;
+            font-weight: 500;
             border-radius: 6px;
-            border: 1px solid #dee2e6;
-            resize: vertical;
-            transition: all 0.3s;
+            padding: 3px 8px;
         }
 
-        #custom-prompt:focus {
-            box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
-            border-color: #86b7fe;
-        }
-
-        #sendPromptBtn {
-            transition: all 0.2s;
-        }
-
-        .ai-content-area {
-            min-height: 250px;
-            max-height: 350px;
-            overflow-y: auto;
-            font-size: 14px;
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #fff !important;
+            margin-right: 5px;
         }
     </style>
 @endpush

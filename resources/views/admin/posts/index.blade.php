@@ -269,7 +269,7 @@
                                                                 @method('DELETE')
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-danger remove-item-btn btn-delete"
-                                                                    data-name="{{ $post->name }}">
+                                                                    data-name="{{ $post->title }}">
                                                                     <span class="ri-delete-bin-7-line"></span>
                                                                 </button>
                                                             </form>

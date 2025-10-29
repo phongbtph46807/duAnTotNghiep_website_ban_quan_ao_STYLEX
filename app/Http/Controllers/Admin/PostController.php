@@ -251,4 +251,56 @@ class PostController extends Controller
             return redirect()->back()->with('error', 'Cập nhật bài viết không thành công');
         }
     }
+            public function destroy(Post $post)
+    {
+        try {
+            $post->delete();
+
+            return redirect()
+                ->route('admin.posts.index')
+                ->with('success', 'Đã chuyển vào thùng rác!');
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+
+    public function trash()
+    {
+        try {
+            $postsDeleted = Post::onlyTrashed()->latest('id')->paginate(10);
+            return view('admin.posts.trash', compact('postsDeleted'));
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+    public function restore($id)
+    {
+        try {
+            $post = Post::withTrashed()->findOrFail($id);
+            $post->restore();
+            return redirect()->route('admin.posts.trash')->with('success', 'Khôi phục bài viết thành công');
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+    public function forceDelete($id)
+    {
+        try {
+            $post = Post::withTrashed()->findOrFail($id);
+            $post->forceDelete();
+            return redirect()->route('admin.posts.trash')->with('success', 'Xóa cứng bài viết thành công');
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
 }
