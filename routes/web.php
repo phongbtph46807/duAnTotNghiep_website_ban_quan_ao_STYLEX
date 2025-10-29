@@ -26,12 +26,12 @@ use App\Http\Controllers\Admin\ShippingCarrierController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Client Product routes
-Route::prefix('products')->as('client.products.')->group(function () {
+Route::prefix('shop')->as('shop.')->group(function () {
     Route::get('/', [ClientProductController::class, 'index'])->name('index');
     Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
 });
 
-Route::group(['middleware' => ['isAuthenticated']], function(){
+Route::group(['middleware' => ['isAuthenticated']], function () {
 
     Route::get('/register', [AuthController::class, 'registerView'])->name('registerView');
     Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -48,7 +48,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::group(['middleware' => ['onlyAuthenticated']], function () {
 
     Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
-
 });
 
 // Admin và Staff routes - cả hai đều có thể truy cập
@@ -103,13 +102,17 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
         Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
 
         // Post routes
-        Route::prefix('post')->as('post.')->group(function () {
+        Route::prefix('posts')->as('posts.')->group(function () {
             Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/trash', [PostController::class, 'trash'])->name('trash');
             Route::get('/create', [PostController::class, 'create'])->name('create');
+            Route::get('/{post}', [PostController::class, 'show'])->name('show');
             Route::post('/store', [PostController::class, 'store'])->name('store');
-            Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [PostController::class, 'update'])->name('update');
-            Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
+            Route::get('/edit/{post}', [PostController::class, 'edit'])->name('edit');
+            Route::put('/{post}', [PostController::class, 'update'])->name('update');
+            Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
+            Route::patch('/{id}/restore', [PostController::class, 'restore'])->name('restore');
+            Route::delete('/{id}/force-delete', [PostController::class, 'forceDelete'])->name('force-delete');
         });
     });
     Route::prefix('products')->as('products.')->group(function () {

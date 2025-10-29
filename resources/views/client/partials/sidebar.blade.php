@@ -35,7 +35,7 @@
 					        </li>
 
 					        <li>
-					            <a href="{{ route('client.products.index') }}">Sản Phẩm</a>
+					            <a href="{{ route('shop.index') }}">Sản Phẩm</a>
 					        </li>
 
 					        <li class="label1" data-label1="hot">

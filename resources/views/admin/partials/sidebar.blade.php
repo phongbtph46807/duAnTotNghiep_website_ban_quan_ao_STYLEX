@@ -272,13 +272,18 @@
                     <div class="collapse menu-dropdown" id="sidebarPosts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.post.index') }}" class="nav-link">
+                                <a href="{{ route('admin.posts.index') }}" class="nav-link">
                                     <i class="ri-list-check me-1"></i> Danh sách bài viết
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.post.create') }}" class="nav-link">
+                                <a href="{{ route('admin.posts.create') }}" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Thêm bài viết mới
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.posts.trash') }}" class="nav-link">
+                                    <i class="ri-add-circle-line me-1"></i> Danh sách bài viết đã xóa
                                 </a>
                             </li>
                         </ul>

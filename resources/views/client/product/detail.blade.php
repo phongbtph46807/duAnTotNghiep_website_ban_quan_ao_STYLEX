@@ -12,7 +12,7 @@
 				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 			</a>
 
-			<a href="{{ route('client.products.index') }}" class="stext-109 cl8 hov-cl1 trans-04">
+			<a href="{{ route('shop.index') }}" class="stext-109 cl8 hov-cl1 trans-04">
 				Sản Phẩm
 				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 			</a>
@@ -355,14 +355,14 @@
 							<div class="block2-pic hov-img0">
 								<img src="{{ $relatedProduct->default_image_url }}" alt="{{ $relatedProduct->name }}">
 
-								<a href="{{ route('client.products.show', $relatedProduct->id) }}" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
+								<a href="{{ route('shop.show', $relatedProduct->id) }}" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
 									Xem Chi Tiết
 								</a>
 							</div>
 
 							<div class="block2-txt flex-w flex-t p-t-14">
 								<div class="block2-txt-child1 flex-col-l ">
-									<a href="{{ route('client.products.show', $relatedProduct->id) }}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+									<a href="{{ route('shop.show', $relatedProduct->id) }}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
 										{{ $relatedProduct->name }}
 									</a>
 
