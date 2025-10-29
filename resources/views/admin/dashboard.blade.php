@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title', 'Trang quản trị')
+@section('title', 'Trang quản trị - Style X')
 @section('content')
     <div class="row">
         <div class="col">
@@ -9,8 +9,21 @@
                     <div class="col-12">
                         <div class="d-flex align-items-lg-center flex-lg-row flex-column">
                             <div class="flex-grow-1">
-                                <h4 class="fs-16 mb-1">Good Morning, Anna!</h4>
-                                <p class="text-muted mb-0">Here's what's happening with your store today.</p>
+                                <div class="d-flex align-items-center mb-1">
+                                    <h4 class="fs-16 mb-0 me-2">Chào mừng, {{ Auth::user()->name }}!</h4>
+                                    @if($userRole === 'admin')
+                                        <span class="badge bg-danger">ADMIN</span>
+                                    @elseif($userRole === 'staff')
+                                        <span class="badge bg-info">STAFF</span>
+                                    @endif
+                                </div>
+                                <p class="text-muted mb-0">
+                                    @if($userRole === 'admin')
+                                        Đây là tổng quan về cửa hàng của bạn hôm nay.
+                                    @elseif($userRole === 'staff')
+                                        Đây là các công việc cần làm hôm nay.
+                                    @endif
+                                </p>
                             </div>
                             <div class="mt-3 mt-lg-0">
                                 <form action="javascript:void(0);">

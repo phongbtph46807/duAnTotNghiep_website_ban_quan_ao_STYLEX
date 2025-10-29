@@ -106,6 +106,7 @@
                         <table class="table table-hover table-lg texture-table">
                             <thead>
                                 <tr>
+                                    <th>STT</th>
                                     <th>Tên chất liệu</th>
                                     <th>Mô tả</th>
                                     <th>Trạng thái</th>
@@ -113,8 +114,10 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $stt = ($textures->currentPage() - 1) * $textures->perPage(); @endphp
                                 @forelse($textures as $texture)
                                 <tr>
+                                    <td>{{ ++$stt }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <i class="ri-scissors-line me-2 text-primary"></i>
@@ -150,7 +153,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Chưa có chất liệu nào</td>
+                                    <td colspan="5" class="text-center text-muted">Chưa có chất liệu nào</td>
                                 </tr>
                                 @endforelse
                             </tbody>

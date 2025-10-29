@@ -28,10 +28,6 @@ class StoreUserRequest extends FormRequest
             'repassword' => ['required', 'min:8', 'same:password'],
             'avatar'     => ['nullable', 'image', 'max:2000'],
             'status'     => ['required', 'in:active,inactive,blocked'],
-            'is_admin' => [
-                'required',
-                'in:1,0',
-            ],
         ];
     }
     public function messages()
@@ -71,9 +67,6 @@ class StoreUserRequest extends FormRequest
             'status.required' => 'Trạng thái là bắt buộc.',
             'status.in' => 'Trạng thái phải là một trong các giá trị: active, inactive, hoặc blocked.',
 
-            // Role
-            'is_admin.required' => 'Vui lòng chọn vai trò của người dùng',
-            'is_admin.in'       => 'Vai trò không hợp lệ.',
         ];
     }
 }

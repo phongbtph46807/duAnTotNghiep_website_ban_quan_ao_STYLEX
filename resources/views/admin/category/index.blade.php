@@ -108,7 +108,7 @@
                         <i class="ri-add-line align-bottom me-1"></i> Thêm mới
                     </button>
                     <!-- form add -->
-                    <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModal" aria-hidden="true">
+                    <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -186,6 +186,7 @@
                                     <table class="table table-hover table-lg category-table">
                                         <thead>
                                             <tr>
+                                                <th>STT</th>
                                                 <th>Danh Mục</th>
                                                 <th>Danh Mục Cha</th>
                                                 <th>Trạng Thái</th>
@@ -193,9 +194,10 @@
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            @php $stt = ($parentCategories->currentPage() - 1) * $parentCategories->perPage(); @endphp
                                             @if($parentCategories->count() == 0)
                                                 <tr>
-                                                    <td colspan="4" class="text-center">
+                                                    <td colspan="5" class="text-center">
                                                         <div class="alert alert-info">
                                                             <strong>Thông báo:</strong> Chưa có danh mục nào. Hãy thêm danh mục đầu tiên!
                                                         </div>
@@ -204,6 +206,7 @@
                                             @endif
                                             @foreach ($parentCategories as $category)
                                                 <tr class=" parent-row" data-parent-id="{{ $category->id }}" style="cursor:pointer;">
+                                                    <td>{{ ++$stt }}</td>
                                                     <td><strong><i class="bi bi-caret-right-fill toggle-icon me-2"></i>{{ $category->name }}</strong></td>
                                                     <td>—</td>
                                                     <td>
@@ -226,6 +229,7 @@
                                                 {{-- Các danh mục con --}}
                                                 @foreach ($category->children as $child)
                                                     <tr class="child-row child-of-{{ $category->id }}" style="display:none;">
+                                                        <td></td>
                                                         <td style="padding-left: 40px;">↳ {{ $child->name }}</td>
                                                         <td>{{ $category->name }}</td>
                                                         <td>

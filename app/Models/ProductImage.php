@@ -2,34 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductImage extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'product_id',
-        'variant_id',
+        'image_path',
         'image_url',
+        'alt_text',
         'sort_order',
-        'is_main',
+        'is_primary',
     ];
 
     protected $casts = [
-        'is_main' => 'boolean',
+        'is_primary' => 'boolean',
+        'sort_order' => 'integer',
     ];
 
-    // Liên kết với sản phẩm
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    // Liên kết với biến thể sản phẩm (nếu có)
-    public function variant()
-    {
-        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 }
