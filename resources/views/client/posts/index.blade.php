@@ -5,78 +5,319 @@
     @php
         use Illuminate\Support\Str;
     @endphp
+    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url({{asset('assets/images/posts/bg-02.jpg')}});">
+        <h2 class="ltext-105 cl0 txt-center">
+            Blog
+        </h2>
+    </section>
+    <section class="bg0 p-t-62 p-b-60">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-lg-9 p-b-80">
+                    <div class="p-r-45 p-r-0-lg">
+                        @foreach($posts as $post)
+                        <div class="p-b-63">
+                            <a href="{{ route('client.posts.show', $post->slug) }}" class="hov-img0 how-pos5-parent">
+                                <img src="{{ asset('assets/images/posts/blog-04.jpg') }}" alt="IMG-BLOG">
 
-    <div class="container my-5">
-        <div class="row">
-            <div class="col-lg-12 text-center mb-4">
-                <h1 class="display-5">Tin tức & Bài viết</h1>
-                <p class="lead">Cập nhật các thông tin và bài viết mới nhất từ chúng tôi.</p>
-            </div>
-        </div>
+                                <div class="flex-col-c-m size-123 bg9 how-pos5">
+									<span class="ltext-107 cl2 txt-center">
+										{{ $post -> created_at->format('d')}}
+									</span>
 
-        <div class="row g-4">
-            @if($posts->isEmpty())
-                <div class="col-12">
-                    <div class="alert alert-warning text-center" role="alert">
-                        Hiện chưa có bài viết nào.
-                    </div>
-                </div>
-            @else
-                @foreach ($posts as $post)
-                    <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
-                        <div class="card shadow-sm border-0 rounded-3 w-100 position-relative">
-
-                            @if ($post->image)
-                                <img src="{{ $post->image }}"
-                                     class="card-img-top"
-                                     alt="{{ $post->title }}"
-                                     style="object-fit: cover; height: 220px;"
-                                     onerror="this.src='https://placehold.co/600x400/EBF2FA/7F8A9A?text=H%C3%ACnh+%E1%BA%A3nh+l%E1%BB%97i'; this.onerror=null;">
-                            @else
-                                <div class="d-flex align-items-center justify-content-center"
-                                     style="height: 220px; background-color: #f8f9fa;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#adb5bd" class="bi bi-newspaper" viewBox="0 0 16 16">
-                                        <path d="M0 2.5A1.5 1.5 0 0 1 1.5 1h11A1.5 1.5 0 0 1 14 2.5v10.528c0 .3-.05.654-.11.995l-.35.753-2.336-4.31A1.5 1.5 0 0 0 9.15 8.98l-1.622 1.956-1.39-2.78a1.5 1.5 0 0 0-1.387-.995L.11 14.249a1.5 1.5 0 0 1-.11-.995V2.5zM1.5 2a.5.5 0 0 0-.5.5v11.5a.5.5 0 0 0 .017.07l.006.014 3.68-1.55L7.29 9.82a.5.5 0 0 1 .494.007l1.35 2.7 1.12-1.31a.5.5 0 0 1 .494-.007l2.35 4.227.005.008.007.004a.5.5 0 0 0 .03.001.5.5 0 0 0 .5-.5V2.5a.5.5 0 0 0-.5-.5h-11z"/>
-                                        <path d="M3 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5zM3 5.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5zM3 7.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5z"/>
-                                    </svg>
+                                    <span class="stext-109 cl3 txt-center">
+										{{ $post -> created_at->format('M Y')}}
+									</span>
                                 </div>
-                            @endif
+                            </a>
 
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title">
-                                    <a href="{{ route('client.posts.show', $post->slug) }}" class="text-decoration-none text-dark stretched-link">
+                            <div class="p-t-32">
+                                <h4 class="p-b-15">
+                                    <a href="{{ route('client.posts.show', $post->slug) }}" class="ltext-108 cl2 hov-cl1 trans-04">
                                         {{ $post->title }}
                                     </a>
-                                </h5>
+                                </h4>
 
-                                <p class="card-text text-muted small flex-grow-1">
-                                    {{ Str::limit(strip_tags($post->content), 100, '...') }}
+                                <p class="stext-117 cl6">
+                                    {{ Str::limit(strip_tags($post->content), 150, '...') }}
                                 </p>
 
-                                <hr>
+                                <div class="flex-w flex-sb-m p-t-18">
+									<span class="flex-w flex-m stext-111 cl2 p-r-30 m-tb-10">
+										<span>
+											<span class="cl4">By</span> {{ $post->author->name ?? 'Admin'}}
+{{--											<span class="cl12 m-l-4 m-r-6">|</span>--}}
+										</span>
 
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        @if ($post->author)
-                                            Bởi: <strong>{{ $post->author->name }}</strong>
-                                        @else
-                                            Bởi: <strong>Vô danh</strong>
-                                        @endif
-                                    </small>
-                                    <small class="text-muted">
-                                        {{ $post->created_at->format('d/m/Y') }}
-                                    </small>
+{{--										<span>--}}
+{{--											StreetStyle, Fashion, Couple--}}
+{{--											<span class="cl12 m-l-4 m-r-6">|</span>--}}
+{{--										</span>--}}
+
+{{--										<span>--}}
+{{--											8 Comments--}}
+{{--										</span>--}}
+									</span>
+
+                                    <a href="{{ route('client.posts.show', $post->slug) }}" class="stext-101 cl2 hov-cl1 trans-04 m-tb-10">
+                                        Continue Reading
+
+                                        <i class="fa fa-long-arrow-right m-l-9"></i>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
-            @endif
-        </div>
+                        @endforeach
+                        <div class="flex-l-m flex-w w-full p-t-10 m-lr--7">
+                            <a href="#" class="flex-c-m how-pagination1 trans-04 m-all-7 active-pagination1">
+                                1
+                            </a>
 
-        <div class="d-flex justify-content-center mt-5">
-            {{ $posts->links() }}
+                            <a href="#" class="flex-c-m how-pagination1 trans-04 m-all-7">
+                                2
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3 p-b-80">
+                    <div class="side-menu">
+                        <div class="bor17 of-hidden pos-relative">
+                            <input class="stext-103 cl2 plh4 size-116 p-l-28 p-r-55" type="text" name="search" placeholder="Search">
+
+                            <button class="flex-c-m size-122 ab-t-r fs-18 cl4 hov-cl1 trans-04">
+                                <i class="zmdi zmdi-search"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-t-55">
+                            <h4 class="mtext-112 cl2 p-b-33">
+                                Categories
+                            </h4>
+
+                            <ul>
+                                <li class="bor18">
+                                    <a href="#" class="dis-block stext-115 cl6 hov-cl1 trans-04 p-tb-8 p-lr-4">
+                                        Fashion
+                                    </a>
+                                </li>
+
+                                <li class="bor18">
+                                    <a href="#" class="dis-block stext-115 cl6 hov-cl1 trans-04 p-tb-8 p-lr-4">
+                                        Beauty
+                                    </a>
+                                </li>
+
+                                <li class="bor18">
+                                    <a href="#" class="dis-block stext-115 cl6 hov-cl1 trans-04 p-tb-8 p-lr-4">
+                                        Street Style
+                                    </a>
+                                </li>
+
+                                <li class="bor18">
+                                    <a href="#" class="dis-block stext-115 cl6 hov-cl1 trans-04 p-tb-8 p-lr-4">
+                                        Life Style
+                                    </a>
+                                </li>
+
+                                <li class="bor18">
+                                    <a href="#" class="dis-block stext-115 cl6 hov-cl1 trans-04 p-tb-8 p-lr-4">
+                                        DIY & Crafts
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="p-t-65">
+                            <h4 class="mtext-112 cl2 p-b-33">
+                                Featured Products
+                            </h4>
+
+                            <ul>
+                                <li class="flex-w flex-t p-b-30">
+                                    <a href="#" class="wrao-pic-w size-214 hov-ovelay1 m-r-20">
+                                        <img src="images/product-min-01.jpg" alt="PRODUCT">
+                                    </a>
+
+                                    <div class="size-215 flex-col-t p-t-8">
+                                        <a href="#" class="stext-116 cl8 hov-cl1 trans-04">
+                                            White Shirt With Pleat Detail Back
+                                        </a>
+
+                                        <span class="stext-116 cl6 p-t-20">
+											$19.00
+										</span>
+                                    </div>
+                                </li>
+
+                                <li class="flex-w flex-t p-b-30">
+                                    <a href="#" class="wrao-pic-w size-214 hov-ovelay1 m-r-20">
+                                        <img src="images/product-min-02.jpg" alt="PRODUCT">
+                                    </a>
+
+                                    <div class="size-215 flex-col-t p-t-8">
+                                        <a href="#" class="stext-116 cl8 hov-cl1 trans-04">
+                                            Converse All Star Hi Black Canvas
+                                        </a>
+
+                                        <span class="stext-116 cl6 p-t-20">
+											$39.00
+										</span>
+                                    </div>
+                                </li>
+
+                                <li class="flex-w flex-t p-b-30">
+                                    <a href="#" class="wrao-pic-w size-214 hov-ovelay1 m-r-20">
+                                        <img src="images/product-min-03.jpg" alt="PRODUCT">
+                                    </a>
+
+                                    <div class="size-215 flex-col-t p-t-8">
+                                        <a href="#" class="stext-116 cl8 hov-cl1 trans-04">
+                                            Nixon Porter Leather Watch In Tan
+                                        </a>
+
+                                        <span class="stext-116 cl6 p-t-20">
+											$17.00
+										</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="p-t-55">
+                            <h4 class="mtext-112 cl2 p-b-20">
+                                Archive
+                            </h4>
+
+                            <ul>
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											July 2018
+										</span>
+
+                                        <span>
+											(9)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											June 2018
+										</span>
+
+                                        <span>
+											(39)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											May 2018
+										</span>
+
+                                        <span>
+											(29)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											April  2018
+										</span>
+
+                                        <span>
+											(35)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											March 2018
+										</span>
+
+                                        <span>
+											(22)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											February 2018
+										</span>
+
+                                        <span>
+											(32)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											January 2018
+										</span>
+
+                                        <span>
+											(21)
+										</span>
+                                    </a>
+                                </li>
+
+                                <li class="p-b-7">
+                                    <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
+										<span>
+											December 2017
+										</span>
+
+                                        <span>
+											(26)
+										</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="p-t-50">
+                            <h4 class="mtext-112 cl2 p-b-27">
+                                Tags
+                            </h4>
+
+                            <div class="flex-w m-r--5">
+                                <a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+                                    Fashion
+                                </a>
+
+                                <a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+                                    Lifestyle
+                                </a>
+
+                                <a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+                                    Denim
+                                </a>
+
+                                <a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+                                    Streetstyle
+                                </a>
+
+                                <a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+                                    Crafts
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
 @endsection
 
