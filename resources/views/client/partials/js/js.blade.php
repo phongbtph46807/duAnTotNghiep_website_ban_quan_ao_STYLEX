@@ -147,22 +147,57 @@
     $(document).on('submit', 'form[data-ajax="1"][action$="/cart/add"]', function(e){
 		e.preventDefault();
 		var $form = $(this);
+        // Require variant selection if product actually has variants (based on nearest data-variants)
+        var variantId = ($form.find('input[name="variant_id"]').val() || '').trim();
+        var $container = $form.closest('[data-variants]');
+        var requiresVariant = false;
+        var variantsArr = [];
+        if ($container.length) {
+            try { variantsArr = JSON.parse($container.attr('data-variants') || '[]'); requiresVariant = Array.isArray(variantsArr) && variantsArr.length > 0; } catch(e){ requiresVariant = false; }
+        }
+        // Last-chance resolve variant on submit using current selections
+        if (requiresVariant && !variantId) {
+            var sizeName = ($('#size-select').val() || '').trim();
+            var colorName = ($('#color-select').val() || '').trim();
+            var textureName = ($('#texture-select').val() || '').trim();
+            var found = null;
+            for (var i=0;i<variantsArr.length;i++){
+                var v = variantsArr[i];
+                var vSize = v.size && v.size.name ? String(v.size.name).trim() : '';
+                var vColor = v.color && v.color.name ? String(v.color.name).trim() : '';
+                var vTexture = v.texture && v.texture.name ? String(v.texture.name).trim() : '';
+                var okS = !sizeName || sizeName === vSize;
+                var okC = !colorName || colorName === vColor;
+                var okT = !textureName || textureName === vTexture;
+                if (okS && okC && okT) { found = v; break; }
+            }
+            if (found && found.id){
+                variantId = String(found.id);
+                $form.find('input[name="variant_id"]').val(variantId);
+            }
+        }
+        if (requiresVariant && !variantId) {
+            swal('Thông báo', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).', 'error');
+            return false;
+        }
 		var payload = $form.serialize() + '&ajax=1';
 		$.ajax({
 			url: $form.attr('action'),
 			type: 'POST',
 			headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 			data: payload
-		}).done(function(res){
-            if (!res || !res.success) { swal('Thông báo', 'Không thể thêm vào giỏ', 'error'); return; }
+        }).done(function(res){
+            if (!res || !res.success) { swal('Thông báo', (res && res.message) ? res.message : 'Không thể thêm vào giỏ', 'error'); return; }
 			var count = res.cart_count || 0;
 			$('.icon-header-noti.js-show-cart').attr('data-notify', count);
 			if (window.addHeaderCartItemFromResponse && res.cart_item) {
 				window.addHeaderCartItemFromResponse(res.cart_item, count);
 			}
             showToast('Đã thêm vào giỏ hàng');
-		}).fail(function(){
-			swal('Thông báo', 'Không thể thêm vào giỏ', 'error');
+        }).fail(function(xhr){
+            var msg = 'Không thể thêm vào giỏ';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+            swal('Thông báo', msg, 'error');
 		});
 		return false;
 	});

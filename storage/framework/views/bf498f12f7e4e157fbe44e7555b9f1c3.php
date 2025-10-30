@@ -186,6 +186,9 @@
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="product_id" value="<?php echo e($product->id); ?>">
                                     <input type="hidden" name="variant_id" value="">
+                                    <input type="hidden" name="size_name" value="">
+                                    <input type="hidden" name="color_name" value="">
+                                    <input type="hidden" name="texture_name" value="">
                                     <div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-minus"></i>
@@ -518,8 +521,20 @@ $(document).ready(function() {
         }
     }
     
+    // Đồng bộ hidden fields và variant khi mở trang (trường hợp đã có sẵn lựa chọn)
+    (function syncInitial() {
+        $('input[name="size_name"]').val($('#size-select').val() || '');
+        $('input[name="color_name"]').val($('#color-select').val() || '');
+        $('input[name="texture_name"]').val($('#texture-select').val() || '');
+        updatePrice();
+    })();
+
     // Event listeners cho các dropdown
     $('#size-select, #color-select, #texture-select').on('change', function() {
+        // update hidden attribute names
+        $('input[name="size_name"]').val($('#size-select').val() || '');
+        $('input[name="color_name"]').val($('#color-select').val() || '');
+        $('input[name="texture_name"]').val($('#texture-select').val() || '');
         updatePrice();
     });
     
@@ -538,17 +553,16 @@ $(document).ready(function() {
         input.val(currentValue + 1);
     });
     
-    // Add to cart (non-AJAX submit with simple validation)
+    // Chặn submit nếu có biến thể mà chưa chọn -> tránh lưu null
     $('#add-to-cart-form').off('submit').on('submit', function(e){
-		const variantId = $('input[name="variant_id"]').val();
-		if (variants.length > 0 && !variantId) {
-			e.preventDefault();
-			alert('Vui lòng chọn đầy đủ thông tin sản phẩm (kích thước, màu sắc, chất liệu)');
-			return false;
-		}
-		// allow normal submit to controller
-		return true;
-	});
+        const variantId = $('input[name="variant_id"]').val();
+        if (variants && variants.length > 0 && !variantId) {
+            e.preventDefault();
+            alert('Vui lòng chọn đầy đủ thông tin sản phẩm (kích thước, màu sắc, chất liệu)');
+            return false;
+        }
+        return true;
+    });
 });
 </script>
 <?php $__env->stopPush(); ?>

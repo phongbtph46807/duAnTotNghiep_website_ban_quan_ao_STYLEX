@@ -12,8 +12,6 @@ class Cart extends Model
 		'product_id',
 		'variant_id',
 		'quantity',
-		'size',
-		'color',
 		'session_id'
 	];
 
