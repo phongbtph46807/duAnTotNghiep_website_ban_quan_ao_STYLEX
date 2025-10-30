@@ -151,7 +151,7 @@
 						<div class="size-208"><span class="mtext-101 cl2">Tổng:</span></div>
 						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal"><?php echo e(number_format($total ?? 0, 0, ',', '.')); ?> ₫</span></div>
 					</div>
-					<button class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</button>
+						<a href="<?php echo e(route('client.checkout.index')); ?>" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
 				</div>
 			</div>
 		</div>

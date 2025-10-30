@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\RoleEntityController;
 use App\Http\Controllers\Admin\PermissionEntityController;
 use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
+use App\Http\Controllers\Client\CheckoutController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -40,6 +41,15 @@ Route::prefix('cart')->as('client.cart.')->group(function () {
     Route::delete('/{id}', [CartController::class, 'remove'])->name('remove');
     Route::delete('/', [CartController::class, 'clear'])->name('clear');
 });
+
+// Checkout
+Route::prefix('checkout')->as('client.checkout.')->group(function(){
+    Route::get('/', [CheckoutController::class, 'index'])->name('index');
+    Route::post('/place', [CheckoutController::class, 'place'])->name('place');
+});
+
+Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
+Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 
 Route::group(['middleware' => ['isAuthenticated']], function(){
 
