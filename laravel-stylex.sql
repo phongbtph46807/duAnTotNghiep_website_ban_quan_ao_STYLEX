@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 29, 2025 at 06:53 AM
+-- Generation Time: Oct 30, 2025 at 06:55 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.20
 
@@ -106,9 +106,25 @@ CREATE TABLE `cache_locks` (
 
 CREATE TABLE `carts` (
   `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `session_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_id` bigint UNSIGNED DEFAULT NULL,
+  `variant_id` bigint UNSIGNED DEFAULT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `size` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `color` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `carts`
+--
+
+INSERT INTO `carts` (`id`, `user_id`, `session_id`, `product_id`, `variant_id`, `quantity`, `size`, `color`, `created_at`, `updated_at`) VALUES
+(1, NULL, 'puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', 22, NULL, 1, NULL, NULL, '2025-10-29 00:00:28', '2025-10-29 00:00:28'),
+(2, NULL, 'puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', 20, NULL, 3, NULL, NULL, '2025-10-29 00:10:24', '2025-10-29 00:15:04'),
+(30, 57, NULL, 22, 52, 1, NULL, NULL, '2025-10-29 23:38:11', '2025-10-29 23:38:11');
 
 -- --------------------------------------------------------
 
@@ -362,7 +378,73 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (31, '2025_10_19_120200_create_permission_role_table', 15),
 (34, '2025_10_02_162443_2025_10_02_09_create_posts_and_admin_reports', 16),
 (35, '2025_10_27_055410_create_carts_table', 17),
-(36, '2025_10_27_055724_add_variant_id_to_carts_table', 18);
+(36, '2025_10_27_055724_add_variant_id_to_carts_table', 18),
+(37, '2025_10_29_000000_alter_carts_add_columns', 19),
+(38, '2025_10_30_000001_alter_carts_add_columns', 20),
+(39, '2025_10_30_000100_create_orders_tables', 21);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `orders`
+--
+
+CREATE TABLE `orders` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `session_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `full_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `note` text COLLATE utf8mb4_unicode_ci,
+  `subtotal` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `shipping_fee` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `discount` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `total` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `payment_method` enum('cod','online') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cod',
+  `payment_status` enum('unpaid','paid','refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
+  `status` enum('pending','processing','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `session_id`, `code`, `full_name`, `phone`, `email`, `city`, `address`, `note`, `subtotal`, `shipping_fee`, `discount`, `total`, `payment_method`, `payment_status`, `status`, `created_at`, `updated_at`) VALUES
+(1, 57, NULL, 'OD155A300616', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội', '123', 10888, 0, 0, 10888, 'cod', 'unpaid', 'pending', '2025-10-29 23:19:34', '2025-10-29 23:19:34'),
+(2, 57, NULL, 'OD74F1BD8FE0', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Xã Đông Quang, Huyện Ba Vì, Thành phố Hà Nội', '123', 222, 0, 0, 222, 'cod', 'unpaid', 'pending', '2025-10-29 23:34:19', '2025-10-29 23:34:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `id` bigint UNSIGNED NOT NULL,
+  `order_id` bigint UNSIGNED NOT NULL,
+  `product_id` bigint UNSIGNED NOT NULL,
+  `variant_id` bigint UNSIGNED DEFAULT NULL,
+  `quantity` int UNSIGNED NOT NULL DEFAULT '1',
+  `price` bigint UNSIGNED NOT NULL,
+  `line_total` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `variant_id`, `quantity`, `price`, `line_total`, `created_at`, `updated_at`) VALUES
+(1, 1, 20, 28, 1, 10000, 10000, '2025-10-29 23:19:35', '2025-10-29 23:19:35'),
+(2, 1, 22, 52, 4, 222, 888, '2025-10-29 23:19:35', '2025-10-29 23:19:35'),
+(3, 2, 22, 52, 1, 222, 222, '2025-10-29 23:34:19', '2025-10-29 23:34:19');
 
 -- --------------------------------------------------------
 
@@ -601,7 +683,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQXVMdmpXWXY5MDRsa3ViSjBMMmhXSzJmSzBOMGgzN0JJdmM1MGd1diI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9wcm9kdWN0cy8yMiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1761720763);
+('X92zbm07OxJpx4OSlCHK6hc5W0PcfSL6osVvTb20', 57, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWFFyZ0U0RzVOSjFmamxzclVuOHc3NVZpaGRjNWpsa3hlVWNkeEh6eCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU3O30=', 1761807140);
 
 -- --------------------------------------------------------
 
@@ -831,7 +913,12 @@ ALTER TABLE `cache_locks`
 -- Indexes for table `carts`
 --
 ALTER TABLE `carts`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `carts_owner_product_variant_index` (`user_id`,`session_id`,`product_id`,`variant_id`),
+  ADD KEY `carts_session_id_index` (`session_id`),
+  ADD KEY `carts_user_id_index` (`user_id`),
+  ADD KEY `carts_product_id_index` (`product_id`),
+  ADD KEY `carts_variant_id_index` (`variant_id`);
 
 --
 -- Indexes for table `categories`
@@ -885,6 +972,21 @@ ALTER TABLE `loyalty_tiers`
 --
 ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `orders_code_unique` (`code`),
+  ADD KEY `orders_session_id_index` (`session_id`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_items_order_id_index` (`order_id`);
 
 --
 -- Indexes for table `password_reset_tokens`
@@ -1024,7 +1126,7 @@ ALTER TABLE `brands`
 -- AUTO_INCREMENT for table `carts`
 --
 ALTER TABLE `carts`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -1066,7 +1168,19 @@ ALTER TABLE `loyalty_tiers`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+
+--
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1145,6 +1259,14 @@ ALTER TABLE `user_loyalty`
 --
 
 --
+-- Constraints for table `carts`
+--
+ALTER TABLE `carts`
+  ADD CONSTRAINT `carts_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `carts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `carts_variant_id_foreign` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `categories`
 --
 ALTER TABLE `categories`
@@ -1155,6 +1277,12 @@ ALTER TABLE `categories`
 --
 ALTER TABLE `inventory_logs`
   ADD CONSTRAINT `inventory_logs_variant_id_foreign` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `permission_role`
