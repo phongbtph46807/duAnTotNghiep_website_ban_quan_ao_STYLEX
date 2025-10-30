@@ -156,6 +156,16 @@ class CheckoutController extends Controller
         }
         return view('client.order.track', compact('order'));
     }
+
+    public function orderList() {
+        $userId = Auth::id();
+        $sessionId = session()->getId();
+        $orders = \App\Models\Order::query()
+            ->when($userId, function($q) use ($userId){ $q->where('user_id', $userId); })
+            ->when(!$userId, function($q) use ($sessionId){ $q->where('session_id', $sessionId); })
+            ->orderByDesc('created_at')->with(['items.product','items.variant.size','items.variant.color','items.variant.texture'])->get();
+        return view('client.order.index', compact('orders'));
+    }
 }
 
 

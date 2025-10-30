@@ -97,7 +97,7 @@
 										<i class="zmdi zmdi-account-circle me-2"></i>
 										Hồ sơ cá nhân
 									</a>
-									<a class="dropdown-item" href="#">
+									<a class="dropdown-item" href="{{ route('client.order.list') }}">
 										<i class="zmdi zmdi-shopping-cart me-2"></i>
 										Đơn hàng của tôi
 									</a>

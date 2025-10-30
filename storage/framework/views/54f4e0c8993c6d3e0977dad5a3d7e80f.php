@@ -328,9 +328,13 @@
 						if (this.classList.contains('logout-btn') || this.querySelector('button.logout-btn')) {
 							return;
 						}
-						// For other items, prevent default and close dropdown
-						e.preventDefault();
-						dropdownMenu.classList.remove('show');
+						// Only prevent default if href is empty or '#'
+						var href = this.getAttribute('href') || '';
+						if (href === '' || href === '#') {
+							e.preventDefault();
+							dropdownMenu.classList.remove('show');
+						}
+						// If có href thì vẫn cho chuyển trang bình thường
 					});
 				});
 			}
