@@ -1,7 +1,6 @@
-@extends('admin.layouts.app')
-@section('content')
-    <form action="{{ route('admin.post.store') }}" method="POST">
-        @csrf
+<?php $__env->startSection('content'); ?>
+    <form action="<?php echo e(route('admin.post.store')); ?>" method="POST">
+        <?php echo csrf_field(); ?>
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-body">
@@ -45,4 +44,6 @@
                 });
         });
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/post/create.blade.php ENDPATH**/ ?>
