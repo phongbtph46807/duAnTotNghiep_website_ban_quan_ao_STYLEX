@@ -72,7 +72,100 @@
 
 		/*---------------------------------------------*/
 
-	// Add to cart functionality - now handled by cart.js
+	// Global Add-to-cart AJAX (opt-in only). Intercepts form posting to /cart/add when data-ajax="1"
+    // Stylish toast (top-right, dark theme)
+    function showToast(message) {
+        // Create container once
+        var $container = $('#toast-container-stylex');
+        if (!$container.length) {
+            $container = $('<div id="toast-container-stylex"></div>').css({
+                position:'fixed', top:'20px', right:'20px', zIndex: 99999,
+                display:'flex', flexDirection:'column', gap:'10px', pointerEvents:'none'
+            });
+            $('body').append($container);
+        }
+
+        var $toast = $('<div class="toast-stylex"></div>').css({
+            background:'linear-gradient(135deg, #111, #1c1c1c)', color:'#fff',
+            border:'1px solid rgba(255,255,255,0.08)', borderRadius:'10px',
+            boxShadow:'0 10px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
+            padding:'12px 14px 10px 12px', minWidth:'260px', maxWidth:'360px',
+            display:'flex', alignItems:'flex-start', gap:'10px',
+            transform:'translateX(20px)', opacity:0, pointerEvents:'auto'
+        });
+
+        var $iconWrap = $('<div></div>').css({
+            width:'28px', height:'28px', borderRadius:'8px',
+            background:'#2a2a2a', display:'flex', alignItems:'center', justifyContent:'center',
+            boxShadow:'0 6px 12px rgba(0,0,0,0.35)'
+        });
+        var $icon = $('<span>✓</span>').css({ fontWeight:700, color:'#fff' });
+        $iconWrap.append($icon);
+
+        var $content = $('<div></div>').css({ flex:1 });
+        var $title = $('<div></div>').text('Thành công').css({ fontSize:'13px', opacity:.9, marginBottom:'2px' });
+        var $msg = $('<div></div>').text(message).css({ fontSize:'14px', fontWeight:600 });
+        var $bar = $('<div></div>').css({
+            position:'relative', height:'3px', borderRadius:'10px',
+            background:'rgba(255,255,255,0.08)', marginTop:'8px', overflow:'hidden'
+        });
+        var $barFill = $('<div></div>').css({ height:'100%', width:'100%', background:'rgba(255,255,255,0.85)' });
+        $bar.append($barFill);
+        $content.append($title, $msg, $bar);
+
+        var $close = $('<button aria-label="Đóng">×</button>').css({
+            background:'transparent', color:'rgba(255,255,255,0.6)', border:'none', cursor:'pointer',
+            fontSize:'18px', lineHeight:1, padding:0, marginLeft:'6px'
+        }).on('click', function(){ dismiss(true); });
+
+        $toast.append($iconWrap, $content, $close);
+        $container.append($toast);
+
+        // Animate in
+        requestAnimationFrame(function(){
+            $toast.css({ transition:'transform .25s ease, opacity .25s ease', transform:'translateX(0)', opacity:1 });
+        });
+
+        // Progress and auto-hide
+        var duration = 2000; // ms
+        var start = Date.now();
+        var timer = setInterval(function(){
+            var elapsed = Date.now() - start;
+            var pct = Math.max(0, 1 - elapsed / duration);
+            $barFill.css('width', (pct*100)+'%');
+            if (pct <= 0) dismiss();
+        }, 30);
+
+        function dismiss(immediate){
+            clearInterval(timer);
+            if (immediate) { $toast.remove(); return; }
+            $toast.css({ transform:'translateX(20px)', opacity:0 });
+            setTimeout(function(){ $toast.remove(); }, 220);
+        }
+    }
+
+    $(document).on('submit', 'form[data-ajax="1"][action$="/cart/add"]', function(e){
+		e.preventDefault();
+		var $form = $(this);
+		var payload = $form.serialize() + '&ajax=1';
+		$.ajax({
+			url: $form.attr('action'),
+			type: 'POST',
+			headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+			data: payload
+		}).done(function(res){
+            if (!res || !res.success) { swal('Thông báo', 'Không thể thêm vào giỏ', 'error'); return; }
+			var count = res.cart_count || 0;
+			$('.icon-header-noti.js-show-cart').attr('data-notify', count);
+			if (window.addHeaderCartItemFromResponse && res.cart_item) {
+				window.addHeaderCartItemFromResponse(res.cart_item, count);
+			}
+            showToast('Đã thêm vào giỏ hàng');
+		}).fail(function(){
+			swal('Thông báo', 'Không thể thêm vào giỏ', 'error');
+		});
+		return false;
+	});
 	
 	</script>
 <!--===============================================================================================-->
@@ -95,6 +188,67 @@
 <!--===============================================================================================-->
 	<script src="<?php echo e(asset('client/js/main.js')); ?>"></script>
 	<script src="<?php echo e(asset('client/js/cart.js')); ?>"></script>
+
+	<!-- Mini-cart behaviors: add to DOM, delete handler -->
+	<script>
+
+	// Function to append/update an item in the mini-cart
+	window.addHeaderCartItemFromResponse = function(cartItem, cartCount){
+		var $list = $('#cartItems');
+		$list.find('.header-cart-empty').remove();
+		var found = false;
+		$list.find('li.header-cart-item').each(function(){
+			if (String($(this).data('cart-id')) === String(cartItem.id)) {
+				$(this).find('.header-cart-item-info').text((cartItem.quantity||1) + ' x ' + new Intl.NumberFormat('vi-VN').format(cartItem.price||0) + ' ₫');
+				found = true;
+			}
+		});
+		if (!found) {
+			var imageUrl = (cartItem.product && cartItem.product.default_image_url) ? cartItem.product.default_image_url : (cartItem.product && cartItem.product.thumbnail) ? cartItem.product.thumbnail : '';
+			var attrs = [];
+			if (cartItem.variant && cartItem.variant.size) attrs.push('Size: ' + cartItem.variant.size.name);
+			if (cartItem.variant && cartItem.variant.color) attrs.push('Màu: ' + cartItem.variant.color.name);
+			$list.append(
+				'<li class="header-cart-item flex-w flex-t m-b-12" data-cart-id="'+ cartItem.id +'">' +
+					'<div class="header-cart-item-img">\
+						<img src="'+ imageUrl +'" alt="IMG" />\
+					</div>' +
+					'<div class="header-cart-item-txt p-t-8" style="flex:1;">' +
+						'<a href="#" class="header-cart-item-name m-b-5 hov-cl1 trans-04">'+ (cartItem.product ? cartItem.product.name : 'Sản phẩm') +'</a>' +
+						(attrs.length ? '<div class="stext-110" style="font-size:12px;color:#888">'+ attrs.join(' • ') +'</div>' : '') +
+						'<span class="header-cart-item-info">'+ (cartItem.quantity||1) +' x '+ new Intl.NumberFormat('vi-VN').format(cartItem.price||0) + ' ₫</span>' +
+					'</div>' +
+					'<button class="delete-item" type="button" data-cart-id="'+ cartItem.id +'" title="Xóa" style="margin-left:auto; background: none; border: none; cursor: pointer; align-self:center;">\
+						<i class="zmdi zmdi-close"></i>\
+					</button>' +
+				'</li>'
+			);
+		}
+		// Recompute totals
+		var total = 0; $('#cartItems .header-cart-item-info').each(function(){ var t=$(this).text().split(' x '); if(t.length===2){ var q=parseInt(t[0])||0; var p=parseInt((t[1]||'').replace(/[^0-9]/g,''))||0; total += q*p; }});
+		$('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(total) + ' ₫'); $('#cartFooter').show(); $('.icon-header-noti.js-show-cart').attr('data-notify', cartCount||0); $('#cartItemCount').text('(' + (cartCount||0) + ')');
+	};
+
+	// Delete item handler (centralized)
+	$(document).on('click', '#cartItems .delete-item', function(e){
+		e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+		var cartId = $(this).data('cart-id');
+		var $btn = $(this);
+		$.ajax({ url: '/cart/' + cartId, method: 'DELETE', data: { _token: $('meta[name="csrf-token"]').attr('content') }, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }} )
+		.done(function(res){
+			if (!res || !res.success) return;
+			var $list = $('#cartItems');
+			$btn.closest('li.header-cart-item').remove();
+			var total = 0, count = 0;
+			$('#cartItems .header-cart-item-info').each(function(){ var t=$(this).text().split(' x '); if(t.length===2){ var q=parseInt(t[0])||0; var p=parseInt((t[1]||'').replace(/[^0-9]/g,''))||0; total += q*p; count += q; }});
+			if (!$list.find('li.header-cart-item').length) { $list.html('<li class="header-cart-empty" style="padding: 60px 20px; text-align: center; color: #999;">\
+				<i class="zmdi zmdi-shopping-cart" style="font-size: 64px; opacity: 0.3;"></i>\
+				<p style="margin-top: 20px; font-size: 16px;">Giỏ hàng trống</p>\
+			</li>'); $('#cartFooter').hide(); }
+			$('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(total) + ' ₫'); $('.icon-header-noti.js-show-cart').attr('data-notify', count); $('#cartItemCount').text('(' + count + ')');
+		});
+	});
+	</script>
 	
 	<!-- Custom JavaScript for User Dropdown -->
 	<script>

@@ -1,8 +1,6 @@
-@extends('client.layout.layout')
+<?php $__env->startSection('title', $product->name . ' - ' . env('APP_NAME')); ?>
 
-@section('title', $product->name . ' - ' . env('APP_NAME'))
-
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <style>
     .product-image {
         width: 100%;
@@ -24,25 +22,26 @@
         -ms-interpolation-mode: nearest-neighbor;
     }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
 	<!-- breadcrumb -->
 	<div class="container">
 		<div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
-			<a href="{{ route('home') }}" class="stext-109 cl8 hov-cl1 trans-04">
+			<a href="<?php echo e(route('home')); ?>" class="stext-109 cl8 hov-cl1 trans-04">
 				Trang Chủ
 				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 			</a>
 
-			<a href="{{ route('client.products.index') }}" class="stext-109 cl8 hov-cl1 trans-04">
+			<a href="<?php echo e(route('client.products.index')); ?>" class="stext-109 cl8 hov-cl1 trans-04">
 				Sản Phẩm
 				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 			</a>
 
 			<span class="stext-109 cl4">
-				{{ $product->name }}
+				<?php echo e($product->name); ?>
+
 			</span>
 		</div>
 	</div>
@@ -58,29 +57,29 @@
 							<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
 
 							<div class="slick3 gallery-lb">
-								@if($product->productImages && $product->productImages->count() > 0)
-									@foreach($product->productImages as $image)
-									<div class="item-slick3" data-thumb="{{ Storage::url($image->image_path) }}">
+								<?php if($product->productImages && $product->productImages->count() > 0): ?>
+									<?php $__currentLoopData = $product->productImages; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $image): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+									<div class="item-slick3" data-thumb="<?php echo e(Storage::url($image->image_path)); ?>">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ Storage::url($image->image_path) }}" alt="{{ $product->name }}" class="product-image">
+											<img src="<?php echo e(Storage::url($image->image_path)); ?>" alt="<?php echo e($product->name); ?>" class="product-image">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ Storage::url($image->image_path) }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="<?php echo e(Storage::url($image->image_path)); ?>">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
 									</div>
-									@endforeach
-								@else
-									<div class="item-slick3" data-thumb="{{ $product->default_image_url }}">
+									<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+								<?php else: ?>
+									<div class="item-slick3" data-thumb="<?php echo e($product->default_image_url); ?>">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}" class="product-image">
+											<img src="<?php echo e($product->default_image_url); ?>" alt="<?php echo e($product->name); ?>" class="product-image">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ $product->default_image_url }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="<?php echo e($product->default_image_url); ?>">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
 									</div>
-								@endif
+								<?php endif; ?>
 							</div>
 						</div>
 					</div>
@@ -89,32 +88,34 @@
 				<div class="col-md-6 col-lg-5 p-b-30">
 					<div class="p-r-50 p-t-5 p-lr-0-lg">
 						<h4 class="mtext-105 cl2 js-name-detail p-b-14">
-							{{ $product->name }}
+							<?php echo e($product->name); ?>
+
 						</h4>
 
 						<span class="mtext-106 cl2">
-							@if($product->price_sale && $product->price_sale < $product->price)
-								<span class="fw-bold">{{ number_format($product->price_sale, 0, ',', '.') }}đ</span>
-								<span style="text-decoration: line-through; color: red;">{{ number_format($product->price, 0, ',', '.') }}đ</span>
-							@else
-								{{ number_format($product->price, 0, ',', '.') }}đ
-							@endif
+							<?php if($product->price_sale && $product->price_sale < $product->price): ?>
+								<span class="fw-bold"><?php echo e(number_format($product->price_sale, 0, ',', '.')); ?>đ</span>
+								<span style="text-decoration: line-through; color: red;"><?php echo e(number_format($product->price, 0, ',', '.')); ?>đ</span>
+							<?php else: ?>
+								<?php echo e(number_format($product->price, 0, ',', '.')); ?>đ
+							<?php endif; ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
-							{{ $product->description ?? 'Sản phẩm chất lượng cao với thiết kế hiện đại và phong cách độc đáo.' }}
+							<?php echo e($product->description ?? 'Sản phẩm chất lượng cao với thiết kế hiện đại và phong cách độc đáo.'); ?>
+
 						</p>
 						
 						<!-- Product Options -->
 						<div class="p-t-33">
-							@if($product->productVariants && $product->productVariants->count() > 0)
-								@php
+							<?php if($product->productVariants && $product->productVariants->count() > 0): ?>
+								<?php
 									$sizes = $product->productVariants->pluck('size.name')->unique()->filter();
 									$colors = $product->productVariants->pluck('color.name')->unique()->filter();
 									$textures = $product->productVariants->pluck('texture.name')->unique()->filter();
-								@endphp
+								?>
 								
-								@if($sizes->count() > 0)
+								<?php if($sizes->count() > 0): ?>
 								<div class="flex-w flex-r-m p-b-10">
 									<div class="size-203 flex-c-m respon6">
 										Kích Thước
@@ -124,17 +125,17 @@
 										<div class="rs1-select2 bor8 bg0">
 											<select class="js-select2" name="size" id="size-select">
 												<option value="">Chọn kích thước</option>
-												@foreach($sizes as $size)
-												<option value="{{ $size }}">{{ $size }}</option>
-												@endforeach
+												<?php $__currentLoopData = $sizes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $size): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+												<option value="<?php echo e($size); ?>"><?php echo e($size); ?></option>
+												<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 											</select>
 											<div class="dropDownSelect2"></div>
 										</div>
 									</div>
 								</div>
-								@endif
+								<?php endif; ?>
 
-								@if($colors->count() > 0)
+								<?php if($colors->count() > 0): ?>
 								<div class="flex-w flex-r-m p-b-10">
 									<div class="size-203 flex-c-m respon6">
 										Màu Sắc
@@ -144,17 +145,17 @@
 										<div class="rs1-select2 bor8 bg0">
 											<select class="js-select2" name="color" id="color-select">
 												<option value="">Chọn màu sắc</option>
-												@foreach($colors as $color)
-												<option value="{{ $color }}">{{ $color }}</option>
-												@endforeach
+												<?php $__currentLoopData = $colors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $color): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+												<option value="<?php echo e($color); ?>"><?php echo e($color); ?></option>
+												<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 											</select>
 											<div class="dropDownSelect2"></div>
 										</div>
 									</div>
 								</div>
-								@endif
+								<?php endif; ?>
 
-								@if($textures->count() > 0)
+								<?php if($textures->count() > 0): ?>
 								<div class="flex-w flex-r-m p-b-10">
 									<div class="size-203 flex-c-m respon6">
 										Chất Liệu
@@ -164,26 +165,26 @@
 										<div class="rs1-select2 bor8 bg0">
 											<select class="js-select2" name="texture" id="texture-select">
 												<option value="">Chọn chất liệu</option>
-												@foreach($textures as $texture)
-												<option value="{{ $texture }}">{{ $texture }}</option>
-												@endforeach
+												<?php $__currentLoopData = $textures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $texture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+												<option value="<?php echo e($texture); ?>"><?php echo e($texture); ?></option>
+												<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 											</select>
 											<div class="dropDownSelect2"></div>
 										</div>
 									</div>
 								</div>
-								@endif
+								<?php endif; ?>
 
-							@endif
+							<?php endif; ?>
 
 							<div class="flex-w flex-r-m p-b-10" 
-								 data-product-id="{{ $product->id }}"
-								 data-variants="{{ json_encode($product->productVariants) }}"
-								 data-original-price="{{ $product->price }}"
-								 data-original-price-sale="{{ $product->price_sale }}">
-                              <form id="add-to-cart-form" method="POST" action="{{ route('client.cart.add') }}" data-ajax="1" class="size-204 flex-w flex-m respon6-next">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+								 data-product-id="<?php echo e($product->id); ?>"
+								 data-variants="<?php echo e(json_encode($product->productVariants)); ?>"
+								 data-original-price="<?php echo e($product->price); ?>"
+								 data-original-price-sale="<?php echo e($product->price_sale); ?>">
+                              <form id="add-to-cart-form" method="POST" action="<?php echo e(route('client.cart.add')); ?>" data-ajax="1" class="size-204 flex-w flex-m respon6-next">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="hidden" name="product_id" value="<?php echo e($product->id); ?>">
                                     <input type="hidden" name="variant_id" value="">
                                     <div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
@@ -252,7 +253,8 @@
 						<div class="tab-pane fade show active" id="description" role="tabpanel">
 							<div class="how-pos2 p-lr-15-md">
 								<p class="stext-102 cl6">
-									{{ $product->description ?? 'Sản phẩm chất lượng cao với thiết kế hiện đại và phong cách độc đáo. Được làm từ những nguyên liệu tốt nhất, đảm bảo độ bền và tính thẩm mỹ cao.' }}
+									<?php echo e($product->description ?? 'Sản phẩm chất lượng cao với thiết kế hiện đại và phong cách độc đáo. Được làm từ những nguyên liệu tốt nhất, đảm bảo độ bền và tính thẩm mỹ cao.'); ?>
+
 								</p>
 							</div>
 						</div>
@@ -268,7 +270,8 @@
 											</span>
 
 											<span class="stext-102 cl6 size-206">
-												{{ $product->category->name ?? 'N/A' }}
+												<?php echo e($product->category->name ?? 'N/A'); ?>
+
 											</span>
 										</li>
 
@@ -278,40 +281,43 @@
 											</span>
 
 											<span class="stext-102 cl6 size-206">
-												{{ $product->is_active ? 'Còn hàng' : 'Hết hàng' }}
+												<?php echo e($product->is_active ? 'Còn hàng' : 'Hết hàng'); ?>
+
 											</span>
 										</li>
 
-										@if($product->productVariants && $product->productVariants->count() > 0)
-											@php
+										<?php if($product->productVariants && $product->productVariants->count() > 0): ?>
+											<?php
 												$sizes = $product->productVariants->pluck('size.name')->unique()->filter();
 												$colors = $product->productVariants->pluck('color.name')->unique()->filter();
-											@endphp
+											?>
 											
-											@if($colors->count() > 0)
+											<?php if($colors->count() > 0): ?>
 											<li class="flex-w flex-t p-b-7">
 												<span class="stext-102 cl3 size-205">
 													Màu sắc
 												</span>
 
 												<span class="stext-102 cl6 size-206">
-													{{ $colors->implode(', ') }}
+													<?php echo e($colors->implode(', ')); ?>
+
 												</span>
 											</li>
-											@endif
+											<?php endif; ?>
 
-											@if($sizes->count() > 0)
+											<?php if($sizes->count() > 0): ?>
 											<li class="flex-w flex-t p-b-7">
 												<span class="stext-102 cl3 size-205">
 													Kích thước
 												</span>
 
 												<span class="stext-102 cl6 size-206">
-													{{ $sizes->implode(', ') }}
+													<?php echo e($sizes->implode(', ')); ?>
+
 												</span>
 											</li>
-											@endif
-										@endif
+											<?php endif; ?>
+										<?php endif; ?>
 									</ul>
 								</div>
 							</div>
@@ -378,18 +384,20 @@
 
 			<div class="bg6 flex-c-m flex-w size-302 m-t-73 p-tb-15">
 				<span class="stext-107 cl6 p-lr-25">
-					SKU: {{ $product->id }}
+					SKU: <?php echo e($product->id); ?>
+
 				</span>
 
 				<span class="stext-107 cl6 p-lr-25">
-					Danh mục: {{ $product->category->name ?? 'N/A' }}
+					Danh mục: <?php echo e($product->category->name ?? 'N/A'); ?>
+
 				</span>
 			</div>
 		</div>
 	</section>
 
 	<!-- Related Products -->
-	@if($relatedProducts && $relatedProducts->count() > 0)
+	<?php if($relatedProducts && $relatedProducts->count() > 0): ?>
 	<section class="sec-relate-product bg0 p-t-45 p-b-105">
 		<div class="container">
 			<div class="p-b-45">
@@ -401,52 +409,53 @@
 			<!-- Slide2 -->
 			<div class="wrap-slick2">
 				<div class="slick2">
-					@foreach($relatedProducts as $relatedProduct)
+					<?php $__currentLoopData = $relatedProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $relatedProduct): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 					<div class="item-slick2 p-l-15 p-r-15 p-t-15 p-b-15">
 						<!-- Block2 -->
 						<div class="block2">
 							<div class="block2-pic hov-img0">
-								<img src="{{ $relatedProduct->default_image_url }}" alt="{{ $relatedProduct->name }}">
+								<img src="<?php echo e($relatedProduct->default_image_url); ?>" alt="<?php echo e($relatedProduct->name); ?>">
 
-								<a href="{{ route('client.products.show', $relatedProduct->id) }}" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
+								<a href="<?php echo e(route('client.products.show', $relatedProduct->id)); ?>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
 									Xem Chi Tiết
 								</a>
 							</div>
 
 							<div class="block2-txt flex-w flex-t p-t-14">
 								<div class="block2-txt-child1 flex-col-l ">
-									<a href="{{ route('client.products.show', $relatedProduct->id) }}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-										{{ $relatedProduct->name }}
+									<a href="<?php echo e(route('client.products.show', $relatedProduct->id)); ?>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+										<?php echo e($relatedProduct->name); ?>
+
 									</a>
 
 									<span class="stext-105 cl3">
-										@if($relatedProduct->price_sale && $relatedProduct->price_sale < $relatedProduct->price)
-											<span class="fw-bold">{{ number_format($relatedProduct->price_sale, 0, ',', '.') }}đ</span>
-											<span style="text-decoration: line-through; color: red;">{{ number_format($relatedProduct->price, 0, ',', '.') }}đ</span>
-										@else
-											{{ number_format($relatedProduct->price, 0, ',', '.') }}đ
-										@endif
+										<?php if($relatedProduct->price_sale && $relatedProduct->price_sale < $relatedProduct->price): ?>
+											<span class="fw-bold"><?php echo e(number_format($relatedProduct->price_sale, 0, ',', '.')); ?>đ</span>
+											<span style="text-decoration: line-through; color: red;"><?php echo e(number_format($relatedProduct->price, 0, ',', '.')); ?>đ</span>
+										<?php else: ?>
+											<?php echo e(number_format($relatedProduct->price, 0, ',', '.')); ?>đ
+										<?php endif; ?>
 									</span>
 								</div>
 
 								<div class="block2-txt-child2 flex-r p-t-3">
 									<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-										<img class="icon-heart1 dis-block trans-04" src="{{ asset('client/images/icons/icon-heart-01.png') }}" alt="ICON">
-										<img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{ asset('client/images/icons/icon-heart-02.png') }}" alt="ICON">
+										<img class="icon-heart1 dis-block trans-04" src="<?php echo e(asset('client/images/icons/icon-heart-01.png')); ?>" alt="ICON">
+										<img class="icon-heart2 dis-block trans-04 ab-t-l" src="<?php echo e(asset('client/images/icons/icon-heart-02.png')); ?>" alt="ICON">
 									</a>
 								</div>
 							</div>
 						</div>
 					</div>
-					@endforeach
+					<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 				</div>
 			</div>
 		</div>
 	</section>
-	@endif
-@endsection
+	<?php endif; ?>
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 $(document).ready(function() {
     // Lấy dữ liệu từ data attributes
@@ -542,4 +551,6 @@ $(document).ready(function() {
 	});
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/product/detail.blade.php ENDPATH**/ ?>

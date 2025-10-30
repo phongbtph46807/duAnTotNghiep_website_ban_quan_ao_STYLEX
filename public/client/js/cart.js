@@ -8,13 +8,8 @@ function loadCart() {
         method: 'GET',
         success: function(response) {
             console.log('Cart data:', response);
-            if (response.cart && response.cart.length > 0) {
-                console.log('First cart item:', response.cart[0]);
-                console.log('Image URL:', response.cart[0].image_url);
-                console.log('Image:', response.cart[0].image);
-            }
             updateCartUI(response);
-            updateCartCount(response.count);
+            updateCartCount(response.item_count || 0);
         },
         error: function(xhr, status, error) {
             console.error('Error loading cart:', xhr, status, error);
@@ -27,27 +22,26 @@ function updateCartUI(data) {
     const cartItems = $('#cartItems');
     const cartFooter = $('#cartFooter');
     
-    if (!data.cart || data.cart.length === 0) {
-        cartItems.html('<li class="header-cart-empty" style="padding: 20px; text-align: center;"><span>Giỏ hàng trống</span></li>');
-        cartFooter.hide();
+    var items = Array.isArray(data.cart_items) ? data.cart_items : [];
+    if (!items.length) {
+        // Do not overwrite current DOM with empty state to avoid flicker/race
         return;
     }
     
     cartItems.empty();
     
-    data.cart.forEach(function(item) {
-        // Use image_url from backend or fallback to item.image
-        const imagePath = item.image_url || item.image || '/client/images/product/product-01.jpg';
-        console.log('Cart item image path:', imagePath);
-        console.log('Item data:', item);
+    items.forEach(function(item) {
+        var imagePath = (item.product && item.product.default_image_url) ? item.product.default_image_url : (item.image_url || '/client/images/product/product-01.jpg');
+        var name = (item.product && item.product.name) ? item.product.name : (item.name || 'Sản phẩm');
+        var productId = (item.product && item.product.id) ? item.product.id : (item.product_id || item.id);
         const html = `
-            <li class="header-cart-item flex-w flex-t m-b-12">
+            <li class="header-cart-item flex-w flex-t m-b-12" data-cart-id="${item.id}">
                 <div class="header-cart-item-img">
-                    <img src="${imagePath}" alt="${item.name}">
+                    <img src="${imagePath}" alt="${name}">
                 </div>
                 <div class="header-cart-item-txt p-t-8">
-                    <a href="/products/${item.product_id || item.id}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                        ${item.name}
+                    <a href="/products/${productId}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                        ${name}
                     </a>
                     <span class="header-cart-item-info">
                         ${item.quantity} x ${formatCurrency(item.price)}
@@ -62,7 +56,7 @@ function updateCartUI(data) {
     });
     
     // Update total
-    $('#totalAmount').text(formatCurrency(data.total));
+    $('#totalAmount').text(formatCurrency(data.total_amount || 0));
     cartFooter.show();
     
     // Delete button events are handled globally in document ready
@@ -113,13 +107,39 @@ function removeFromCart(cartItemId) {
         },
         success: function(response) {
             if (response.success) {
-                // Reload cart without showing success message
-                loadCart();
+                // Remove item from DOM and recompute totals locally
+                var $list = $('#cartItems');
+                $list.find('li.header-cart-item[data-cart-id="' + cartItemId + '"]').remove();
+                // If no items left, show empty state
+                if (!$list.find('li.header-cart-item').length) {
+                    $list.html('<li class="header-cart-empty" style="padding: 60px 20px; text-align: center; color: #999;">\
+                        <i class="zmdi zmdi-shopping-cart" style="font-size: 64px; opacity: 0.3;"></i>\
+                        <p style="margin-top: 20px; font-size: 16px;">Giỏ hàng trống</p>\
+                    </li>');
+                    $('#cartFooter').hide();
+                    $('.icon-header-noti.js-show-cart').attr('data-notify', 0);
+                    $('#cartItemCount').text('(0)');
+                    return;
+                }
+                // Recompute totals and counts
+                var total = 0; var count = 0;
+                $('#cartItems .header-cart-item-info').each(function(){
+                    var parts = $(this).text().split(' x ');
+                    if (parts.length === 2) {
+                        var q = parseInt(parts[0]) || 0;
+                        var p = parseInt((parts[1]||'').replace(/[^0-9]/g,'')) || 0;
+                        total += q * p;
+                        count += q;
+                    }
+                });
+                $('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(total) + ' ₫');
+                $('#cartFooter').show();
+                $('.icon-header-noti.js-show-cart').attr('data-notify', count);
+                $('#cartItemCount').text('(' + count + ')');
             }
         },
         error: function(error) {
             console.error('Error removing from cart:', error);
-            loadCart();
         }
     });
 }
@@ -157,35 +177,14 @@ function formatCurrency(amount) {
 
 // Initialize on page load
 $(document).ready(function() {
-    loadCart();
-    
-    // Global event delegation for delete buttons
-    $(document).on('click', '.delete-item', function(e) {
-        e.preventDefault();
-        const cartItemId = $(this).data('cart-id') || $(this).data('id');
-        console.log('Delete button clicked for cart item:', cartItemId);
-        removeFromCart(cartItemId);
-    });
-    
-    // Watch for cart panel opening via mutation observer
-    const cartPanel = $('.js-panel-cart');
-    if (cartPanel.length > 0) {
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    if ($(mutation.target).hasClass('show-header-cart')) {
-                        // Panel is now open, load cart
-                        loadCart();
-                    }
-                }
-            });
-        });
-        
-        observer.observe(cartPanel[0], {
-            attributes: true,
-            attributeFilter: ['class']
-        });
-    }
+    // Global event delegation for delete buttons - disabled to avoid conflicts
+    // $(document).on('click', '.delete-item', function(e) {
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     const cartItemId = $(this).data('cart-id') || $(this).data('id');
+    //     console.log('Delete button clicked for cart item:', cartItemId);
+    //     removeFromCart(cartItemId);
+    // });
     
     // Override default add to cart button behavior
     $(document).on('click', '.js-addcart-detail', function(e) {
@@ -226,26 +225,11 @@ $(document).ready(function() {
         }
     });
     
-    // Update cart count in icon badges periodically
-    setInterval(function() {
-        updateCartCount();
-    }, 2000);
+    // Removed periodic polling to avoid conflicts
 });
 
 // Update cart count function
-function updateCartCount() {
-    $.ajax({
-        url: '/cart/get',
-        method: 'GET',
-        success: function(response) {
-            // Update all cart count badges
-            $('.js-show-cart[data-notify]').attr('data-notify', response.count);
-        },
-        error: function(error) {
-            // Silently fail
-        }
-    });
-}
+function updateCartCount() {}
 
 // Show cart notification in top right corner
 function showCartNotification(message, type) {
