@@ -11,32 +11,32 @@
 						@if(isset($categories) && $categories->count() > 0)
 							@foreach($categories->take(4) as $category)
 							<li class="p-b-10">
-								<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								<a href="{{ route('client.products.index', ['category' => $category->id]) }}" class="stext-107 cl7 hov-cl1 trans-04">
 									{{ $category->name }}
 								</a>
 							</li>
 							@endforeach
 						@else
 							<li class="p-b-10">
-								<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
 									Women
 								</a>
 							</li>
 
 							<li class="p-b-10">
-								<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
 									Men
 								</a>
 							</li>
 
 							<li class="p-b-10">
-								<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
 									Shoes
 								</a>
 							</li>
 
 							<li class="p-b-10">
-								<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
 									Watches
 								</a>
 							</li>

@@ -1,83 +1,87 @@
+	<style>
+		/* Mini-cart polish */
+		.header-cart-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px; border-radius: 8px; transition: background-color .2s ease; }
+		.header-cart-item:hover { background: #fafafa; }
+		.header-cart-item-img img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; display: block; }
+		.header-cart-item-name { font-weight: 600; color: #333; }
+		.header-cart-item-info { color: #555; font-weight: 500; }
+		.delete-item i { font-size: 18px; color: #999; }
+		.delete-item:hover i { color: #333; }
+	</style>
 	<div class="wrap-header-cart js-panel-cart">
 		<div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+		<div class="header-cart flex-col-l p-l-35 p-r-35 p-t-25">
+			<div class="header-cart-title flex-w flex-sb-m p-b-15">
+				<h4 class="mtext-103 cl2" style="font-size: 20px; font-weight: bold;">
+					Giỏ Hàng <span id="cartItemCount" style="font-weight: normal; font-size: 14px; color:#888;">({{ (int)($headerCartItemCount ?? 0) }})</span>
+				</h4>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+				<button class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart" style="background: none; border: none; cursor: pointer;">
 					<i class="zmdi zmdi-close"></i>
-				</div>
+				</button>
 			</div>
 			
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full">
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-01.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								White Shirt Pleat
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $19.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-02.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Converse All Star
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $39.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-03.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Nixon Porter Leather
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $17.00
-							</span>
-						</div>
-					</li>
+			<div class="header-cart-content flex-w js-pscroll" id="cartContent" style="flex: 1; overflow-y: auto;">
+				<ul class="header-cart-wrapitem w-full" id="cartItems">
+					@if(empty($headerCartItems) || !count($headerCartItems))
+						<li class="header-cart-empty" style="padding: 60px 20px; text-align: center; color: #999;">
+							<p style="margin-top: 20px; font-size: 16px;">Giỏ hàng trống</p>
+						</li>
+					@else
+						@foreach($headerCartItems as $it)
+						<li class="header-cart-item flex-w flex-t m-b-12" data-cart-id="{{ $it['id'] }}">
+							<div class="header-cart-item-img">
+								<img src="{{ $it['product']->default_image_url ?? '' }}" alt="IMG" />
+							</div>
+							<div class="header-cart-item-txt p-t-8" style="flex:1;">
+								<div class="d-flex justify-content-between align-items-start">
+									<a href="#" class="header-cart-item-name m-b-5 hov-cl1 trans-04">{{ $it['product']->name ?? 'Sản phẩm' }}</a>
+								</div>
+								@php
+									$v = $it['variant'] ?? null;
+									$sizeName = $it['size'] ?? ($v && $v->size ? ($v->size->name ?? null) : null);
+									$colorName = $it['color'] ?? ($v && $v->color ? ($v->color->name ?? null) : null);
+									$textureName = $it['texture'] ?? ($v && $v->texture ? ($v->texture->name ?? null) : null);
+								@endphp
+								@if($sizeName || $colorName || $textureName)
+									<div class="stext-110" style="margin: 2px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">
+										@if($sizeName)
+											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Size: {{ $sizeName }}</span>
+										@endif
+										@if($colorName)
+											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Màu: {{ $colorName }}</span>
+										@endif
+										@if($textureName)
+											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Chất liệu: {{ $textureName }}</span>
+										@endif
+									</div>
+								@endif
+								<span class="header-cart-item-info">{{ (int)($it['quantity'] ?? 1) }} x {{ number_format((float)($it['price'] ?? 0), 0, ',', '.') }} ₫</span>
+							</div>
+							<button class="delete-item" type="button" data-cart-id="{{ $it['id'] }}" title="Xóa" style="margin-left:auto; background: none; border: none; cursor: pointer; align-self:center;">
+								<i class="zmdi zmdi-close"></i>
+							</button>
+						</li>
+						@endforeach
+					@endif
 				</ul>
-				
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
+				@if(!empty($headerCartItems) && count($headerCartItems))
+				<div class="w-full" id="cartFooter">
+					<div class="header-cart-total w-full p-tb-30" id="cartTotal" style="border-top: 1px solid #e8e8e8;">
+						<div class="flex-w flex-sb-m">
+							<span class="mtext-107 cl2" style="font-size: 18px; font-weight: 600;">Tổng cộng:</span>
+							<span class="mtext-106 cl2" id="totalAmount" style="font-size: 20px; font-weight: 700; color: #666;">{{ number_format((float)($headerCartTotal ?? 0), 0, ',', '.') }} ₫</span>
+						</div>
 					</div>
-
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
-
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
+					<div class="header-cart-buttons flex-w w-full" style="gap: 10px;">
+						<a href="{{ route('client.cart.index') }}" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1;">Xem Giỏ Hàng</a>
+						<!-- <a href="{{ route('client.checkout.index') }}" class="flex-c-m stext-101 cl0 size-107 bg1 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; background: #333;">Thanh Toán</a> -->
 					</div>
 				</div>
+				@endif
 			</div>
 		</div>
 	</div>
+
+	

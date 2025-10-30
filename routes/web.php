@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
+use App\Http\Controllers\Client\CartController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LoyaltyTierController;
 use App\Http\Controllers\Admin\RoleController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Admin\RoleEntityController;
 use App\Http\Controllers\Admin\PermissionEntityController;
 use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
+use App\Http\Controllers\Client\CheckoutController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -29,6 +31,26 @@ Route::prefix('products')->as('client.products.')->group(function () {
     Route::get('/', [ClientProductController::class, 'index'])->name('index');
     Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
 });
+
+// Client Cart routes
+Route::prefix('cart')->as('client.cart.')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::post('/add', [CartController::class, 'addToCart'])->name('add');
+    Route::get('/get', [CartController::class, 'getCart'])->name('get');
+    Route::put('/{id}', [CartController::class, 'update'])->name('update');
+    Route::delete('/{id}', [CartController::class, 'remove'])->name('remove');
+    Route::delete('/', [CartController::class, 'clear'])->name('clear');
+});
+
+// Checkout
+Route::prefix('checkout')->as('client.checkout.')->group(function(){
+    Route::get('/', [CheckoutController::class, 'index'])->name('index');
+    Route::post('/place', [CheckoutController::class, 'place'])->name('place');
+});
+
+Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
+Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
+Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
 
 Route::group(['middleware' => ['isAuthenticated']], function(){
 
