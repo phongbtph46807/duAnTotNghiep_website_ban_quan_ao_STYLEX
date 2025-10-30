@@ -19,6 +19,36 @@
 		<div class="row">
 			<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
 				<div class="m-l-25 m-r--38 m-lr-0-xl">
+					<style>
+						/* Harmonize cart table columns */
+						.table-shopping-cart .table_head th { padding: 14px 12px; }
+						.table-shopping-cart .column-1 { width: 120px; }
+						.table-shopping-cart .column-2 { width: auto; padding-left: 16px; }
+						.table-shopping-cart .column-3 { width: 140px; text-align: center; }
+						.table-shopping-cart .column-4 { width: 160px; text-align: center; }
+						.table-shopping-cart .column-5 { width: 150px; text-align: right; }
+						.table-shopping-cart .column-6 { width: 100px; text-align: center; }
+
+						/* Align body cells same as headers */
+						.table-shopping-cart td.column-3,
+						.table-shopping-cart td.column-4,
+						.table-shopping-cart td.column-6 { text-align: center; }
+						.table-shopping-cart td.column-5 { text-align: right; }
+
+						/* Tidy action button */
+						.table-shopping-cart .delete-line { color: #999; }
+						.table-shopping-cart .delete-line:hover { color: #333; }
+
+						/* Product name readability */
+						.table-shopping-cart td.column-2 a.stext-104 {
+							display: -webkit-box;
+							-webkit-line-clamp: 2;
+							-webkit-box-orient: vertical;
+							overflow: hidden;
+							max-width: 420px;
+							line-height: 1.35;
+						}
+					</style>
 					<div class="wrap-table-shopping-cart">
 						<table class="table-shopping-cart">
 							<tr class="table_head">
@@ -27,6 +57,7 @@
 								<th class="column-3">Giá</th>
 								<th class="column-4">Số lượng</th>
 								<th class="column-5">Tạm tính</th>
+								<th class="column-6">Thao tác</th>
 							</tr>
 
 							<?php /* grand from controller-provided $total; avoid heavy PHP in Blade */ ?>
@@ -77,6 +108,11 @@
 										</div>
 									</td>
 									<td class="column-5 line-total"><?php echo e(number_format($line, 0, ',', '.')); ?> ₫</td>
+									<td class="column-6">
+										<button type="button" class="delete-line" data-cart-id="<?php echo e($item['id']); ?>" title="Xóa" style="background:none;border:none;cursor:pointer;">
+											<i class="zmdi zmdi-close"></i>
+										</button>
+									</td>
 								</tr>
 								<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 							<?php else: ?>
@@ -90,12 +126,12 @@
 						</table>
 					</div>
 
-					<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
+						<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
 						<div class="flex-w flex-m m-r-20 m-tb-5">
 							<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Mã giảm giá">
 							<div class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">Áp dụng mã</div>
 						</div>
-						<div class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">Cập nhật giỏ hàng</div>
+							<div id="update-cart-btn" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">Cập nhật giỏ hàng</div>
 					</div>
 				</div>
 			</div>
@@ -171,9 +207,30 @@
 			$row.removeClass('dirty').attr('data-qty', qty);
 		});
 		recalcTotals();
+		// Notify user
+		if (typeof showToast === 'function') { showToast('Đã cập nhật giỏ hàng'); }
+		else if (typeof swal === 'function') { swal('Thông báo', 'Đã cập nhật giỏ hàng', 'success'); }
+		else { alert('Đã cập nhật giỏ hàng'); }
 	});
 	// Initial totals
 	recalcTotals();
+
+	// Delete line from main cart (AJAX)
+	$(document).on('click', 'table.table-shopping-cart .delete-line', function(e){
+		e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+		var $btn = $(this);
+		var cartId = $btn.data('cart-id');
+		$.ajax({ url: '/cart/' + cartId, method: 'DELETE', data: { _token: $('meta[name="csrf-token"]').attr('content') }, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }})
+		.done(function(res){
+			if (!res || !res.success) return;
+			$btn.closest('tr.table_row').remove();
+			recalcTotals();
+			if (typeof res.cart_count !== 'undefined') {
+				$('.icon-header-noti.js-show-cart').attr('data-notify', res.cart_count);
+			}
+		});
+		return false;
+	});
 })(jQuery);
 </script>
 <?php $__env->stopPush(); ?>

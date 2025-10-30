@@ -132,12 +132,27 @@ class CartController extends Controller
         if ($request->filled('variant_id')) {
             $variant = ProductVariant::findOrFail($request->variant_id);
         } else {
-            // Fallback: resolve by attribute names to avoid nulls
+            // Hard-require each attribute if that dimension exists on any variant
+            $hasSize = ProductVariant::where('product_id', (int) $request->product_id)->whereNotNull('size_id')->exists();
+            $hasColor = ProductVariant::where('product_id', (int) $request->product_id)->whereNotNull('color_id')->exists();
+            $hasTexture = ProductVariant::where('product_id', (int) $request->product_id)->whereNotNull('texture_id')->exists();
+            $sizeNameIn = trim((string) $request->input('size_name'));
+            $colorNameIn = trim((string) $request->input('color_name'));
+            $textureNameIn = trim((string) $request->input('texture_name'));
+
+            if (($hasSize && $sizeNameIn === '') || ($hasColor && $colorNameIn === '') || ($hasTexture && $textureNameIn === '')) {
+                if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
+                    return response()->json(['success' => false, 'message' => 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).'], 422);
+                }
+                return back()->with('error', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).')->withInput();
+            }
+
+            // Fallback: resolve by attribute names only when provided
             $variant = $this->resolveVariantByAttributes(
                 (int) $request->product_id,
-                $request->input('size_name'),
-                $request->input('color_name'),
-                $request->input('texture_name')
+                $sizeNameIn,
+                $colorNameIn,
+                $textureNameIn
             );
             if ($variant) {
                 $request->merge(['variant_id' => $variant->id]);
@@ -189,7 +204,12 @@ class CartController extends Controller
                     'cart_count' => (int) $count,
                     'cart_item' => $item ? [
                         'id' => $item->id,
-                        'product' => $item->product,
+                        'product' => [
+                            'id' => $item->product->id,
+                            'name' => $item->product->name,
+                            // computed URL for immediate use on client
+                            'default_image_url' => $item->product->default_image_url,
+                        ],
                         'variant' => $item->variant,
                         'variant_id' => $item->variant_id,
                         'quantity' => (int) $item->quantity,
@@ -235,7 +255,11 @@ class CartController extends Controller
                 'cart_count' => (int) $count,
                 'cart_item' => $item ? [
                     'id' => $item->id,
-                    'product' => $item->product,
+                    'product' => [
+                        'id' => $item->product->id,
+                        'name' => $item->product->name,
+                        'default_image_url' => $item->product->default_image_url,
+                    ],
                     'variant' => $item->variant,
                     'variant_id' => $item->variant_id,
                     'quantity' => (int) $item->quantity,

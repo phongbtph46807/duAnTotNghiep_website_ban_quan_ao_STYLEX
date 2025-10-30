@@ -156,19 +156,24 @@
             try { variantsArr = JSON.parse($container.attr('data-variants') || '[]'); requiresVariant = Array.isArray(variantsArr) && variantsArr.length > 0; } catch(e){ requiresVariant = false; }
         }
         // Last-chance resolve variant on submit using current selections
+        var sizeName = ($('#size-select').val() || '').trim();
+        var colorName = ($('#color-select').val() || '').trim();
+        var textureName = ($('#texture-select').val() || '').trim();
+        // If requires variant and any dimension select exists, force user to make a choice on all existing selects
+        if (requiresVariant && (!sizeName && $('#size-select').length || !colorName && $('#color-select').length || !textureName && $('#texture-select').length)) {
+            swal('Thông báo', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).', 'error');
+            return false;
+        }
         if (requiresVariant && !variantId) {
-            var sizeName = ($('#size-select').val() || '').trim();
-            var colorName = ($('#color-select').val() || '').trim();
-            var textureName = ($('#texture-select').val() || '').trim();
             var found = null;
             for (var i=0;i<variantsArr.length;i++){
                 var v = variantsArr[i];
                 var vSize = v.size && v.size.name ? String(v.size.name).trim() : '';
                 var vColor = v.color && v.color.name ? String(v.color.name).trim() : '';
                 var vTexture = v.texture && v.texture.name ? String(v.texture.name).trim() : '';
-                var okS = !sizeName || sizeName === vSize;
-                var okC = !colorName || colorName === vColor;
-                var okT = !textureName || textureName === vTexture;
+                var okS = sizeName ? sizeName === vSize : true;
+                var okC = colorName ? colorName === vColor : true;
+                var okT = textureName ? textureName === vTexture : true;
                 if (okS && okC && okT) { found = v; break; }
             }
             if (found && found.id){
@@ -239,7 +244,10 @@
 			}
 		});
 		if (!found) {
-			var imageUrl = (cartItem.product && cartItem.product.default_image_url) ? cartItem.product.default_image_url : (cartItem.product && cartItem.product.thumbnail) ? cartItem.product.thumbnail : '';
+            var imageUrl = '';
+            if (cartItem.product_image_url) { imageUrl = cartItem.product_image_url; }
+            else if (cartItem.product && cartItem.product.default_image_url) { imageUrl = cartItem.product.default_image_url; }
+            else if (cartItem.product && cartItem.product.thumbnail) { imageUrl = cartItem.product.thumbnail; }
 			var attrs = [];
 			if (cartItem.variant && cartItem.variant.size) attrs.push('Size: ' + cartItem.variant.size.name);
 			if (cartItem.variant && cartItem.variant.color) attrs.push('Màu: ' + cartItem.variant.color.name);
