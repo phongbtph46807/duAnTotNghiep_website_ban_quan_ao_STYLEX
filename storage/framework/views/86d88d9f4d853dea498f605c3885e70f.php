@@ -2,7 +2,10 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="<?php echo e(route('home')); ?>"><img src="<?php echo e(asset('client/images/icons/logo-01.png')); ?>" alt="IMG-LOGO"></a>
+				<!-- Logo desktop -->		
+					<a href="<?php echo e(route('home')); ?>" class="logo">
+					STYLE<span>X</span>
+					</a>
 			</div>
 
 			<!-- Icon header -->
@@ -11,18 +14,29 @@
 			<i class="zmdi zmdi-search"></i>
 		</div>
 
-		<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="">
+		<?php
+			if (\Illuminate\Support\Facades\Auth::check()) {
+				$cartCountMobile = \App\Models\Cart::where('user_id', \Illuminate\Support\Facades\Auth::id())->sum('quantity');
+				$sessionItems = session('cart.items', []);
+				foreach ($sessionItems as $it) { $cartCountMobile += (int)($it['quantity'] ?? 0); }
+			} else {
+				$sessionItems = session('cart.items', []);
+				$cartCountMobile = 0;
+				foreach ($sessionItems as $it) { $cartCountMobile += (int)($it['quantity'] ?? 0); }
+			}
+		?>
+		<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="<?php echo e($cartCountMobile); ?>">
 			<i class="zmdi zmdi-shopping-cart"></i>
 		</div>
 			
 		<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
 			<i class="zmdi zmdi-favorite-outline"></i>
 		</a>
-										
-						<a href="login.html" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
-							<i class="zmdi zmdi-account"></i>
-						</a>
-				
+											
+					<a href="login.html" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+						<i class="zmdi zmdi-account"></i>
+					</a>
+			
 			</div>
 
 			<!-- Button show menu -->

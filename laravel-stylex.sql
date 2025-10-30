@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 25, 2025 at 10:03 AM
+-- Generation Time: Oct 30, 2025 at 06:55 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.20
 
@@ -97,6 +97,34 @@ CREATE TABLE `cache_locks` (
   `owner` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `expiration` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `carts`
+--
+
+CREATE TABLE `carts` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `session_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `product_id` bigint UNSIGNED DEFAULT NULL,
+  `variant_id` bigint UNSIGNED DEFAULT NULL,
+  `quantity` int NOT NULL DEFAULT '1',
+  `size` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `color` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `carts`
+--
+
+INSERT INTO `carts` (`id`, `user_id`, `session_id`, `product_id`, `variant_id`, `quantity`, `size`, `color`, `created_at`, `updated_at`) VALUES
+(1, NULL, 'puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', 22, NULL, 1, NULL, NULL, '2025-10-29 00:00:28', '2025-10-29 00:00:28'),
+(2, NULL, 'puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', 20, NULL, 3, NULL, NULL, '2025-10-29 00:10:24', '2025-10-29 00:15:04'),
+(30, 57, NULL, 22, 52, 1, NULL, NULL, '2025-10-29 23:38:11', '2025-10-29 23:38:11');
 
 -- --------------------------------------------------------
 
@@ -348,7 +376,75 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (29, '2025_10_19_120000_create_roles_table', 15),
 (30, '2025_10_19_120100_create_permissions_table', 15),
 (31, '2025_10_19_120200_create_permission_role_table', 15),
-(34, '2025_10_02_162443_2025_10_02_09_create_posts_and_admin_reports', 16);
+(34, '2025_10_02_162443_2025_10_02_09_create_posts_and_admin_reports', 16),
+(35, '2025_10_27_055410_create_carts_table', 17),
+(36, '2025_10_27_055724_add_variant_id_to_carts_table', 18),
+(37, '2025_10_29_000000_alter_carts_add_columns', 19),
+(38, '2025_10_30_000001_alter_carts_add_columns', 20),
+(39, '2025_10_30_000100_create_orders_tables', 21);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `orders`
+--
+
+CREATE TABLE `orders` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `session_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `full_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `note` text COLLATE utf8mb4_unicode_ci,
+  `subtotal` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `shipping_fee` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `discount` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `total` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `payment_method` enum('cod','online') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cod',
+  `payment_status` enum('unpaid','paid','refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
+  `status` enum('pending','processing','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `session_id`, `code`, `full_name`, `phone`, `email`, `city`, `address`, `note`, `subtotal`, `shipping_fee`, `discount`, `total`, `payment_method`, `payment_status`, `status`, `created_at`, `updated_at`) VALUES
+(1, 57, NULL, 'OD155A300616', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội', '123', 10888, 0, 0, 10888, 'cod', 'unpaid', 'pending', '2025-10-29 23:19:34', '2025-10-29 23:19:34'),
+(2, 57, NULL, 'OD74F1BD8FE0', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Xã Đông Quang, Huyện Ba Vì, Thành phố Hà Nội', '123', 222, 0, 0, 222, 'cod', 'unpaid', 'pending', '2025-10-29 23:34:19', '2025-10-29 23:34:19');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `id` bigint UNSIGNED NOT NULL,
+  `order_id` bigint UNSIGNED NOT NULL,
+  `product_id` bigint UNSIGNED NOT NULL,
+  `variant_id` bigint UNSIGNED DEFAULT NULL,
+  `quantity` int UNSIGNED NOT NULL DEFAULT '1',
+  `price` bigint UNSIGNED NOT NULL,
+  `line_total` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `variant_id`, `quantity`, `price`, `line_total`, `created_at`, `updated_at`) VALUES
+(1, 1, 20, 28, 1, 10000, 10000, '2025-10-29 23:19:35', '2025-10-29 23:19:35'),
+(2, 1, 22, 52, 4, 222, 888, '2025-10-29 23:19:35', '2025-10-29 23:19:35'),
+(3, 2, 22, 52, 1, 222, 222, '2025-10-29 23:34:19', '2025-10-29 23:34:19');
 
 -- --------------------------------------------------------
 
@@ -457,9 +553,8 @@ CREATE TABLE `products` (
 
 INSERT INTO `products` (`id`, `sku`, `name`, `slug`, `thumbnail`, `short_description`, `description`, `meta_title`, `price`, `price_sale`, `brand_id`, `category_id`, `default_image`, `base_price`, `cost_price`, `total_stock`, `weight`, `is_active`, `is_featured`, `visibility`, `additional`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (20, NULL, 'Bui Tuan Phong12233', 'bui-tuan-phong12233', 'products/75fFp16VGpt0sTEava5gq1p9ZETCG53X3LqWpsJW.jpg', NULL, '13122222312321', NULL, 12000, 10000, NULL, 2, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-19 01:55:17', '2025-10-20 23:45:40', NULL),
-(21, NULL, 'Esprit Ruffle Shirt', 'esprit-ruffle-shirt', 'products/rDlSibrRMCjprTjsmL4iKqqzjJow51KxSLLYeMWu.jpg', NULL, NULL, NULL, 200000, 150000, NULL, 2, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 10:53:22', '2025-10-21 11:03:16', '2025-10-21 11:03:16'),
-(22, NULL, 'Esprit Ruffle Shirtdd', 'esprit-ruffle-shirtdd', 'products/rdnvAy7Rm3nh2buQM2eotpdwtXHXlnXIB0od0E5m.jpg', NULL, NULL, NULL, 44444, 222, NULL, 4, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 11:02:01', '2025-10-21 11:02:01', NULL),
-(23, NULL, 'Esprit Ruffle Shirtd', 'esprit-ruffle-shirtd', 'products/FVSirzL47oEHWYw9HNxMchCKU4twxu7iTXGWhJi0.jpg', NULL, NULL, NULL, 100000, 70000, NULL, 1, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 11:04:20', '2025-10-25 02:41:04', NULL);
+(22, NULL, 'Esprit Ruffle Shirtdd', 'esprit-ruffle-shirtdd', 'products/XFh5mQUIHI4j6PHzFROoiPREufdrk6QtHa0oZYRe.jpg', NULL, NULL, NULL, 44444, 222, NULL, 4, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 11:02:01', '2025-10-25 05:12:08', NULL),
+(23, NULL, 'Esprit Ruffle Shirtd', 'esprit-ruffle-shirtd', 'products/gVMgUNPVJ8uehyaCCvBGjlHCBaBXwSdUBmoozUhc.jpg', NULL, NULL, NULL, 100000, 70000, NULL, 1, NULL, 0.00, NULL, 0, NULL, 1, 0, 'both', NULL, '2025-10-21 11:04:20', '2025-10-25 05:07:29', NULL);
 
 -- --------------------------------------------------------
 
@@ -544,7 +639,7 @@ INSERT INTO `product_variants` (`id`, `product_id`, `sku`, `color_id`, `size_id`
 (50, 20, 'L5ZN8GN2UZOC', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 1, NULL),
 (51, 20, 'TOLVSCJSSLTQ', 3, 11, 0.00, 1, 0, 0, NULL, 1, NULL, '2025-10-19 09:10:19', '2025-10-19 09:10:19', 2, NULL),
 (52, 22, 'TGL5JDG0J3LT', 8, 11, 0.00, 1, 0, 0, 'products/9eu961G3qQEVz4N3orHSFSkEoICig52w0J0FMONn.jpg', 1, NULL, '2025-10-21 11:02:01', '2025-10-21 11:02:01', 7, NULL),
-(53, 23, 'AET7ZGAYF6NX', 7, 9, 0.00, 1, 0, 0, 'products/ymHfgo6IfqQUEsc8INZM1b9nCzricEfMh7YaPnXE.jpg', 1, NULL, '2025-10-21 11:04:20', '2025-10-21 11:04:20', 6, NULL);
+(53, 23, 'AET7ZGAYF6NX', 7, 9, 0.00, 1, 0, 0, 'products/rsxEtt6KuiFSbwDGbgIBhHOrzc8nlHX2yOEfG7Vw.jpg', 1, NULL, '2025-10-21 11:04:20', '2025-10-25 05:00:54', 6, NULL);
 
 -- --------------------------------------------------------
 
@@ -588,10 +683,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('DGPIWs0cGLVXwp9DwGveC22fjA7Cehkspw2xTOy3', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTlVWV2lVUU1RblZaWU50bnRVRHpFZVZSUGFyMmxqbHV2ZjRUMENrUyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1761100826),
-('fHN6cMeRYkO7r5iNCIa2rOntfrDLB5yatsYRoh7r', 56, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoicnJmMTZWSTZMWVAyVTY3Q3JTTW5yUkNYZkNHNUpkN0RyS2JvSG5mciI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU2O30=', 1761068195),
-('IboZNlMCfLZdMTcX7YwUlcufmcER3XrjphoSbUHH', 56, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSFBmRklNaWluc1pJR0tWd042cGZXTUVvVUhXeDY4UmgwMjlONGtPTSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU2O30=', 1761070158),
-('YnJr6mS6B6kECOV7nR7rIKasPy5pXMlvD2OkO5lP', 57, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVXhLR3RGcEpPWmFCb0gwMmJBblFvNmNET3FBcDY0T0d0eFhxYkVWTCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo1Nzt9', 1761386433);
+('X92zbm07OxJpx4OSlCHK6hc5W0PcfSL6osVvTb20', 57, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWFFyZ0U0RzVOSjFmamxzclVuOHc3NVZpaGRjNWpsa3hlVWNkeEh6eCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU3O30=', 1761807140);
 
 -- --------------------------------------------------------
 
@@ -652,7 +744,7 @@ INSERT INTO `sizes` (`id`, `name`, `description`, `status`, `created_at`, `updat
 (5, 'XS', NULL, 1, '2025-10-18 22:21:11', '2025-10-19 08:53:19', '2025-10-19 08:53:19'),
 (6, 'XXL', NULL, 1, '2025-10-18 22:21:11', '2025-10-19 08:53:04', '2025-10-19 08:53:04'),
 (7, 'XXXL', NULL, 1, '2025-10-18 22:21:11', '2025-10-19 08:52:52', '2025-10-19 08:52:52'),
-(8, 'XS', NULL, 0, '2025-10-18 22:21:47', '2025-10-19 08:53:37', NULL),
+(8, 'XS', NULL, 1, '2025-10-18 22:21:47', '2025-10-25 23:15:00', NULL),
 (9, 'S', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
 (10, 'M', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
 (11, 'L', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
@@ -759,7 +851,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `is_admin`, `phone_number`, `is_verified`, `email_verified_at`, `password`, `verification_token`, `token_expires_at`, `remember_token`, `created_at`, `updated_at`, `avatar`, `status`, `salary`, `hire_date`, `deleted_at`, `role`) VALUES
 (56, 'Phong', 'admin@example.com', 1, NULL, 0, '2025-10-19 22:30:00', '$2y$12$SsAwPgg4JUk3E2rAlBWkwOycrbHuIB5yqNRsNWhkBYtBwcKSLJiUi', NULL, NULL, NULL, '2025-10-19 22:30:00', '2025-10-19 22:30:00', NULL, 'active', NULL, NULL, NULL, 1),
-(57, 'Admin User', 'admin@test.com', 1, NULL, 0, '2025-10-19 22:30:00', '$2y$12$yng8wr/VR7agiyKH./HJLuyv0RRqMtXy0XLOcdnRWGpbcrwT4KLYC', NULL, NULL, NULL, '2025-10-19 22:30:00', '2025-10-19 22:30:00', NULL, 'active', NULL, NULL, NULL, 1),
+(57, 'Phongbt', 'admin@test.com', 1, NULL, 0, '2025-10-19 22:30:00', '$2y$12$yng8wr/VR7agiyKH./HJLuyv0RRqMtXy0XLOcdnRWGpbcrwT4KLYC', NULL, NULL, NULL, '2025-10-19 22:30:00', '2025-10-25 21:47:35', 'users/1761454055_banner-07.jpg', 'active', NULL, NULL, NULL, 1),
 (58, 'Phong', 'staff@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$rRvrPByC6LTGyAMtlZEl5.gp2FUCLx/A8bmwUgYKqRtykPEoz3..m', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'active', NULL, NULL, NULL, 2),
 (59, 'Normal User', 'user@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$iZkw.TKMeiRFyHqsvwFT.Oj1ObrMHuCAflQctHb/hv1UJD9ADyqcO', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'active', NULL, NULL, NULL, 0),
 (60, 'Test User 1', 'test1@test.com', 0, NULL, 0, '2025-10-19 22:30:01', '$2y$12$jEPIBmI9vRQLikbEXTSwNugVKs5w4SuCgYbtC/9plkDKIYPcJ/ecu', NULL, NULL, NULL, '2025-10-19 22:30:01', '2025-10-19 22:30:01', NULL, 'active', NULL, NULL, NULL, 0),
@@ -818,6 +910,17 @@ ALTER TABLE `cache_locks`
   ADD PRIMARY KEY (`key`);
 
 --
+-- Indexes for table `carts`
+--
+ALTER TABLE `carts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `carts_owner_product_variant_index` (`user_id`,`session_id`,`product_id`,`variant_id`),
+  ADD KEY `carts_session_id_index` (`session_id`),
+  ADD KEY `carts_user_id_index` (`user_id`),
+  ADD KEY `carts_product_id_index` (`product_id`),
+  ADD KEY `carts_variant_id_index` (`variant_id`);
+
+--
 -- Indexes for table `categories`
 --
 ALTER TABLE `categories`
@@ -869,6 +972,21 @@ ALTER TABLE `loyalty_tiers`
 --
 ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `orders_code_unique` (`code`),
+  ADD KEY `orders_session_id_index` (`session_id`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_items_order_id_index` (`order_id`);
 
 --
 -- Indexes for table `password_reset_tokens`
@@ -1005,6 +1123,12 @@ ALTER TABLE `brands`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `carts`
+--
+ALTER TABLE `carts`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
+--
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
@@ -1044,7 +1168,19 @@ ALTER TABLE `loyalty_tiers`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+
+--
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1062,7 +1198,7 @@ ALTER TABLE `posts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `product_images`
@@ -1123,6 +1259,14 @@ ALTER TABLE `user_loyalty`
 --
 
 --
+-- Constraints for table `carts`
+--
+ALTER TABLE `carts`
+  ADD CONSTRAINT `carts_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `carts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `carts_variant_id_foreign` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `categories`
 --
 ALTER TABLE `categories`
@@ -1133,6 +1277,12 @@ ALTER TABLE `categories`
 --
 ALTER TABLE `inventory_logs`
   ADD CONSTRAINT `inventory_logs_variant_id_foreign` FOREIGN KEY (`variant_id`) REFERENCES `product_variants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `permission_role`

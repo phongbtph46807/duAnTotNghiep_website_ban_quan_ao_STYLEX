@@ -115,11 +115,6 @@
 									<img class="icon-heart1 dis-block trans-04" src="<?php echo e(asset('client/images/icons/icon-heart-01.png')); ?>" alt="ICON">
 									<img class="icon-heart2 dis-block trans-04 ab-t-l" src="<?php echo e(asset('client/images/icons/icon-heart-02.png')); ?>" alt="ICON">
 								</a>
-								
-								<a href="#" class="btn-addcart-b2 dis-block pos-relative js-addcart-b2" data-product-id="<?php echo e($product->id); ?>" style="cursor: pointer;" title="Thêm vào giỏ hàng">
-									<i class="zmdi zmdi-shopping-cart icon-cart1 dis-block trans-04" style="font-size: 18px; color: #888;"></i>
-									<i class="zmdi zmdi-shopping-cart icon-cart2 dis-block trans-04 ab-t-l" style="font-size: 18px; color: #666;"></i>
-								</a>
 							</div>
 							</div>
 						</div>

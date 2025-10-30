@@ -38,17 +38,22 @@
 							<tbody id="cartItems">
 								@if(count($cartData) > 0)
 									@foreach($cartData as $item)
-									<tr class="table-row" data-product-id="{{ $item['product']->id }}">
+									<tr class="table-row" data-cart-id="{{ $item['id'] }}">
 										<td class="column-1">
 											<div class="how-itemcart1">
 												@php
-													$firstImage = $item['product']->productImages->first();
-													if ($firstImage) {
-														// Check if image exists in uploads folder
-														$imagePath = public_path($firstImage->image_path);
-														$imageUrl = file_exists($imagePath) ? asset($firstImage->image_path) : asset('client/images/product-01.jpg');
+													// Lấy image_url từ controller nếu có, nếu không thì fallback về cách cũ
+													if (isset($item['image_url'])) {
+														$imageUrl = $item['image_url'];
 													} else {
-														$imageUrl = asset('client/images/product-01.jpg');
+														$firstImage = $item['product']->productImages->first();
+														if ($firstImage) {
+															// Check if image exists in uploads folder
+															$imagePath = public_path($firstImage->image_path);
+															$imageUrl = file_exists($imagePath) ? asset($firstImage->image_path) : asset('client/images/product-01.jpg');
+														} else {
+															$imageUrl = asset('client/images/product-01.jpg');
+														}
 													}
 												@endphp
 												<img src="{{ $imageUrl }}" alt="{{ $item['product']->name }}">
@@ -56,15 +61,25 @@
 										</td>
 										<td class="column-2">
 											<a href="{{ route('client.products.show', $item['product']->id) }}">{{ $item['product']->name }}</a>
+											@if($item['size'] || $item['color'] || $item['texture'])
+												<br>
+												<small class="text-muted">
+													@if($item['size']) Size: {{ $item['size'] }} @endif
+													@if($item['size'] && $item['color']) | @endif
+													@if($item['color']) Màu: {{ $item['color'] }} @endif
+													@if(($item['size'] || $item['color']) && $item['texture']) | @endif
+													@if($item['texture']) Chất liệu: {{ $item['texture'] }} @endif
+												</small>
+											@endif
 										</td>
-										<td class="column-3">{{ number_format($item['product']->price, 0, ',', '.') }} VNĐ</td>
+										<td class="column-3">{{ number_format($item['price'], 0, ',', '.') }} VNĐ</td>
 										<td class="column-4">
 											<div class="wrap-num-product flex-w m-l-auto m-r-0">
 												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
 													<i class="fs-16 zmdi zmdi-minus"></i>
 												</div>
 
-												<input class="mtext-104 cl3 txt-center num-product" type="number" name="quantity" value="{{ $item['quantity'] }}" min="1">
+												<input class="mtext-104 cl3 txt-center num-product" type="number" name="quantity" value="{{ $item['quantity'] }}" min="1" data-cart-id="{{ $item['id'] }}">
 
 												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
 													<i class="fs-16 zmdi zmdi-plus"></i>
@@ -72,10 +87,10 @@
 											</div>
 										</td>
 										<td class="column-5">
-											{{ number_format($item['product']->price * $item['quantity'], 0, ',', '.') }} VNĐ
+											{{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }} VNĐ
 										</td>
 										<td class="column-6">
-											<button class="btn-remove-cart" data-product-id="{{ $item['product']->id }}">
+											<button class="btn-remove-cart" data-cart-id="{{ $item['id'] }}">
 												<i class="zmdi zmdi-close"></i>
 											</button>
 										</td>
@@ -143,11 +158,11 @@
 	$(document).ready(function() {
 		// Update quantity
 		$('.num-product').on('change', function() {
-			const productId = $(this).closest('tr').data('product-id');
+			const cartId = $(this).data('cart-id');
 			const quantity = $(this).val();
 			
 			$.ajax({
-				url: '/cart/' + productId,
+				url: '/cart/' + cartId,
 				method: 'PUT',
 				data: {
 					quantity: quantity,
@@ -161,10 +176,10 @@
 		
 		// Remove item - Direct delete without confirmation
 		$('.btn-remove-cart').on('click', function() {
-			const productId = $(this).data('product-id');
+			const cartId = $(this).data('cart-id');
 			
 			$.ajax({
-				url: '/cart/' + productId,
+				url: '/cart/' + cartId,
 				method: 'DELETE',
 				data: {
 					_token: $('meta[name="csrf-token"]').attr('content')

@@ -53,12 +53,24 @@
 					</div>
                     
 					<!-- Icon header -->
+					<?php
+						if (\Illuminate\Support\Facades\Auth::check()) {
+							$cartCount = \App\Models\Cart::where('user_id', \Illuminate\Support\Facades\Auth::id())->sum('quantity');
+							// include session items if any left from guest
+							$sessionItems = session('cart.items', []);
+							foreach ($sessionItems as $it) { $cartCount += (int)($it['quantity'] ?? 0); }
+						} else {
+							$sessionItems = session('cart.items', []);
+							$cartCount = 0;
+							foreach ($sessionItems as $it) { $cartCount += (int)($it['quantity'] ?? 0); }
+						}
+					?>
 					<div class="wrap-icon-header flex-w flex-r-m">
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo e($cartCount); ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
@@ -85,7 +97,7 @@
 										<i class="zmdi zmdi-account-circle me-2"></i>
 										Hồ sơ cá nhân
 									</a>
-									<a class="dropdown-item" href="#">
+									<a class="dropdown-item" href="<?php echo e(route('client.order.list')); ?>">
 										<i class="zmdi zmdi-shopping-cart me-2"></i>
 										Đơn hàng của tôi
 									</a>

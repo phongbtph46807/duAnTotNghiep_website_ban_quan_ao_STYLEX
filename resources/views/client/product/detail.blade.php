@@ -174,8 +174,6 @@
 								</div>
 								@endif
 
-								<!-- Hidden field để lưu variant_id -->
-								<input type="hidden" id="selected-variant-id" name="variant_id" value="">
 							@endif
 
 							<div class="flex-w flex-r-m p-b-10" 
@@ -183,23 +181,29 @@
 								 data-variants="{{ json_encode($product->productVariants) }}"
 								 data-original-price="{{ $product->price }}"
 								 data-original-price-sale="{{ $product->price_sale }}">
-								<div class="size-204 flex-w flex-m respon6-next">
-									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
+                              <form id="add-to-cart-form" method="POST" action="{{ route('client.cart.add') }}" data-ajax="1" class="size-204 flex-w flex-m respon6-next">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <input type="hidden" name="variant_id" value="">
+                                    <input type="hidden" name="size_name" value="">
+                                    <input type="hidden" name="color_name" value="">
+                                    <input type="hidden" name="texture_name" value="">
+                                    <div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-minus"></i>
 										</div>
 
-										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1" min="1">
+                                        <input class="mtext-104 cl3 txt-center num-product" type="number" name="quantity" value="1" min="1">
 
 										<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-plus"></i>
 										</div>
 									</div>
 
-									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail" data-product-id="{{ $product->id }}">
+                                    <button type="submit" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
 										Thêm vào giỏ
 									</button>
-								</div>
+                                </form>
 							</div>	
 						</div>
 
@@ -455,16 +459,17 @@ $(document).ready(function() {
     const originalPriceSale = parseFloat(productContainer.data('original-price-sale') || 0);
     const hasPriceSale = originalPriceSale && originalPriceSale < originalPrice;
     
-    // Function để tìm variant dựa trên size, color, texture
+    // Function để tìm variant dựa trên size, color, texture (chỉ so khớp các trường đã chọn)
     function findVariant(size, color, texture) {
         return variants.find(variant => {
-            const variantSize = variant.size ? variant.size.name : null;
-            const variantColor = variant.color ? variant.color.name : null;
-            const variantTexture = variant.texture ? variant.texture.name : null;
-            
-            return variantSize === size && 
-                   variantColor === color && 
-                   variantTexture === texture;
+            const vSize = variant.size ? variant.size.name : null;
+            const vColor = variant.color ? variant.color.name : null;
+            const vTexture = variant.texture ? variant.texture.name : null;
+
+            const okSize = !size || size === vSize;
+            const okColor = !color || color === vColor;
+            const okTexture = !texture || texture === vTexture;
+            return okSize && okColor && okTexture;
         });
     }
     
@@ -476,15 +481,25 @@ $(document).ready(function() {
         
         const variant = findVariant(size, color, texture);
         
-        if (variant && variant.price > 0) {
-            // Cập nhật giá hiển thị
-            $('.mtext-106').html('<span class="fw-bold">' + 
-                new Intl.NumberFormat('vi-VN').format(variant.price) + 'đ</span>');
-            
-            // Lưu variant_id
-            $('#selected-variant-id').val(variant.id);
+        if (variant) {
+            // Luôn lưu variant_id kể cả khi giá = 0 (fallback về giá product)
+            $('input[name="variant_id"]').val(variant.id);
+
+            if (variant.price && parseFloat(variant.price) > 0) {
+                $('.mtext-106').html('<span class="fw-bold">' + 
+                    new Intl.NumberFormat('vi-VN').format(variant.price) + 'đ</span>');
+            } else {
+                if (hasPriceSale) {
+                    $('.mtext-106').html('<span class="fw-bold">' + 
+                        new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
+                        '<span style="text-decoration: line-through; color: red;">' + 
+                        new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
+                } else {
+                    $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
+                }
+            }
         } else {
-            // Reset về giá gốc của product
+            // Không khớp biến thể nào -> reset giá và xoá variant_id
             if (hasPriceSale) {
                 $('.mtext-106').html('<span class="fw-bold">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
@@ -493,13 +508,24 @@ $(document).ready(function() {
             } else {
                 $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
             }
-            
-            $('#selected-variant-id').val('');
+            $('input[name="variant_id"]').val('');
         }
     }
     
+    // Đồng bộ hidden fields và variant khi mở trang (trường hợp đã có sẵn lựa chọn)
+    (function syncInitial() {
+        $('input[name="size_name"]').val($('#size-select').val() || '');
+        $('input[name="color_name"]').val($('#color-select').val() || '');
+        $('input[name="texture_name"]').val($('#texture-select').val() || '');
+        updatePrice();
+    })();
+
     // Event listeners cho các dropdown
     $('#size-select, #color-select, #texture-select').on('change', function() {
+        // update hidden attribute names
+        $('input[name="size_name"]').val($('#size-select').val() || '');
+        $('input[name="color_name"]').val($('#color-select').val() || '');
+        $('input[name="texture_name"]').val($('#texture-select').val() || '');
         updatePrice();
     });
     
@@ -518,52 +544,15 @@ $(document).ready(function() {
         input.val(currentValue + 1);
     });
     
-    // Add to cart
-    $('.js-addcart-detail').on('click', function(e) {
-        e.preventDefault();
-        
-        const productId = $(this).data('product-id');
-        const quantity = $('.num-product').val();
-        const variantId = $('#selected-variant-id').val();
-        
-        // Kiểm tra nếu có variants nhưng chưa chọn
-        if (variants.length > 0 && !variantId) {
+    // Chặn submit nếu có biến thể mà chưa chọn -> tránh lưu null
+    $('#add-to-cart-form').off('submit').on('submit', function(e){
+        const variantId = $('input[name="variant_id"]').val();
+        if (variants && variants.length > 0 && !variantId) {
+            e.preventDefault();
             alert('Vui lòng chọn đầy đủ thông tin sản phẩm (kích thước, màu sắc, chất liệu)');
-            return;
+            return false;
         }
-        
-        // Gửi AJAX request
-        $.ajax({
-            url: '/cart/add',
-            method: 'POST',
-            data: {
-                product_id: productId,
-                quantity: quantity,
-                variant_id: variantId || null,
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    // Hiển thị thông báo thành công
-                    alert(response.message);
-                    
-                    // Có thể cập nhật số lượng trong giỏ hàng ở header
-                    if (response.cart_count) {
-                        $('.cart-count').text(response.cart_count);
-                    }
-                } else {
-                    alert('Có lỗi xảy ra: ' + response.message);
-                }
-            },
-            error: function(xhr) {
-                const response = xhr.responseJSON;
-                if (response && response.message) {
-                    alert('Có lỗi xảy ra: ' + response.message);
-                } else {
-                    alert('Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng');
-                }
-            }
-        });
+        return true;
     });
 });
 </script>
