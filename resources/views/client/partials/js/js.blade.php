@@ -269,7 +269,18 @@
 		}
 		// Recompute totals
 		var total = 0; $('#cartItems .header-cart-item-info').each(function(){ var t=$(this).text().split(' x '); if(t.length===2){ var q=parseInt(t[0])||0; var p=parseInt((t[1]||'').replace(/[^0-9]/g,''))||0; total += q*p; }});
-		$('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(total) + ' ₫'); $('#cartFooter').show(); $('.icon-header-noti.js-show-cart').attr('data-notify', cartCount||0); $('#cartItemCount').text('(' + (cartCount||0) + ')');
+		$('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(total) + ' ₫');
+		// Always show mini-cart footer (tổng cộng + các nút) sau khi thêm sp!
+		var $footer = $('#cartFooter');
+		if (!$footer.length) {
+			// Nếu dom chưa có block footer (vừa thêm sp đầu tiên), render lại từ server bằng AJAX hoặc tự tạo lại DOM block này.
+			// Đơn giản nhất là reload lại luôn mini-cart qua location hoặc trigger F5 nhỏ khu vực này.
+			// Nhưng tạm thời để phòng ngừa, ta có thể show block này nếu DOM có rồi đang display:none
+			$('[id="cartFooter"]').show();
+		} else {
+			$footer.show();
+		}
+		$('.icon-header-noti.js-show-cart').attr('data-notify', cartCount||0); $('#cartItemCount').text('(' + (cartCount||0) + ')');
 	};
 
 	// Delete item handler (centralized)

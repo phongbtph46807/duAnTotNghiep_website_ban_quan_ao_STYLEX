@@ -294,4 +294,28 @@ class CartController extends Controller
         $count = (int) $this->baseCartQuery()->sum('quantity');
         return response()->json(['success' => true, 'cart_count' => $count]);
     }
+
+    public function update(Request $request, $id)
+    {
+        $qty = max(1, (int)($request->input('quantity', 1)));
+        $success = false;
+        if (!Auth::check()) {
+            // Cập nhật session cart nếu là guest
+            $items = $this->getSessionCartItems();
+            if (isset($items[$id])) {
+                $items[$id]['quantity'] = $qty;
+                $this->putSessionCartItems($items);
+                $success = true;
+            }
+        } else {
+            $owner = $this->getOwnerKeys();
+            $item = $this->baseCartQuery()->where('id', $id)->first();
+            if ($item) {
+                $item->quantity = $qty;
+                $item->save();
+                $success = true;
+            }
+        }
+        return response()->json(['success' => $success]);
+    }
 }

@@ -76,7 +76,7 @@
 					</div>
 					<div class="header-cart-buttons flex-w w-full" style="gap: 10px;">
 						<a href="<?php echo e(route('client.cart.index')); ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1;">Xem Giỏ Hàng</a>
-						<a href="#" class="flex-c-m stext-101 cl0 size-107 bg1 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; background: #333;">Thanh Toán</a>
+						<!-- <a href="<?php echo e(route('client.checkout.index')); ?>" class="flex-c-m stext-101 cl0 size-107 bg1 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; background: #333;">Thanh Toán</a> -->
 					</div>
 				</div>
 				<?php endif; ?>
