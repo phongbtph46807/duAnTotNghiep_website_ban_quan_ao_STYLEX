@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Support\ImageOptimizer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Product\StoreProductRequest;
 use App\Http\Requests\Admin\Product\UpdateProductRequest;
@@ -14,6 +15,7 @@ use App\Models\User;
 use App\Traits\LoggableTrait;
 use App\Traits\UploadToLocalTrait;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -68,12 +70,12 @@ class ProductController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 $data = $request->validated();
-                
+
                 // Tự động tạo slug nếu không có
                 if (empty($data['slug'])) {
                     $data['slug'] = Str::slug($data['name']);
                 }
-                
+
                 if (!empty($data['thumbnail'])) {
                     $urlThumbnail = Storage::disk('public')->put(self::FOLDER, $data['thumbnail']);
                     if ($urlThumbnail) {
@@ -172,27 +174,33 @@ class ProductController extends Controller
         $sizes = Size::query()->where('status', 1)->get();
         return view('admin.products.edit', compact('categories', 'product', 'colors', 'textures', 'sizes'));
     }
-    public function update(UpdateProductRequest $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product, ImageOptimizer $optimizer)
     {
         try {
-            DB::transaction(function () use ($request, $product) {
+            DB::transaction(function () use ($request, $product, $optimizer) {
                 $data = $request->validated();
 
+                // 0) TÁCH DỮ LIỆU: không đẩy mảng phụ vào update() của products
+                $productData = $data;
+                unset($productData['variants'], $productData['product_images'], $productData['alt_texts']);
+
                 // 1) Thumbnail: nếu có upload mới thì thay, không thì giữ nguyên
-                if (!empty($data['thumbnail'])) {
-                    if ($product->thumbnail) {
-                        Storage::delete($product->thumbnail);
-                    }
-                    $data['thumbnail'] = Storage::put(self::FOLDER, $data['thumbnail']);
-                } else {
-                    unset($data['thumbnail']);
+                if ($request->hasFile('thumbnail') && $request->file('thumbnail') instanceof UploadedFile) {
+                    $request->validate([
+                        'thumbnail' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'],
+                    ]);
+
+                    // Nén/resize + lưu theo id => storage/app/public/products/{product_id}/...
+                    // Đồng bộ: chỉ cập nhật products.thumbnail 
+                    $optimizer->saveForProduct($product, $request->file('thumbnail'));
                 }
+                unset($productData['thumbnail']); // tránh ghi đè lại
 
                 // 2) Update product
-                $product->update($data);
+                $product->update($productData);
 
                 // 3) Update/Create variants (KHÔNG xoá biến thể cũ)
-                foreach ($data['variants'] ?? [] as $row) {
+                foreach (($data['variants'] ?? []) as $i => $row) {
                     $payload = [
                         'product_id'  => $product->id,
                         'color_id'    => $row['color_id'] ?? null,
@@ -203,11 +211,10 @@ class ProductController extends Controller
                         'status'      => $row['status'] ?? 0,
                     ];
 
-                    // Ảnh biến thể mới
-                    $newImagePath = null;
-                    if (!empty($row['image'])) {
-                        $newImagePath = Storage::disk('public')->put(self::FOLDER, $row['image']);
-                        $payload['image'] = $newImagePath;
+                    // Ảnh biến thể mới 
+                    $file = $request->file("variants.$i.image");
+                    if (!$file && isset($row['image']) && $row['image'] instanceof UploadedFile) {
+                        $file = $row['image'];
                     }
 
                     if (!empty($row['id'])) {
@@ -215,16 +222,30 @@ class ProductController extends Controller
                         $variant = $product->productVariants()->where('id', $row['id'])->first();
 
                         if ($variant) {
-                            // Nếu có ảnh mới → xoá ảnh cũ
-                            if ($newImagePath && $variant->image) {
-                                Storage::disk('public')->delete($variant->image);
-                            }
+                            // KHÔNG set 'image' trong payload; Optimizer sẽ tự cập nhật cột image
                             $variant->update($payload);
+
+                            if ($file instanceof UploadedFile) {
+                                $request->validate([
+                                    "variants.$i.image" => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'],
+                                ]);
+
+                                // Nén/resize + lưu => cập nhật product_variants.image 
+                                $optimizer->saveForVariant($variant, $file);
+                            }
                         }
                     } else {
                         // Tạo mới biến thể (sku tự sinh)
                         $payload['sku'] = Str::upper(Str::random(12));
-                        $product->productVariants()->create($payload);
+                        $variant = $product->productVariants()->create($payload);
+
+                        if ($file instanceof UploadedFile) {
+                            $request->validate([
+                                "variants.$i.image" => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:2048'],
+                            ]);
+                            // Nén/resize + lưu => cập nhật product_variants.image 
+                            $optimizer->saveForVariant($variant, $file);
+                        }
                     }
                 }
 
@@ -237,6 +258,7 @@ class ProductController extends Controller
             return back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau')->withInput();
         }
     }
+
     public function destroy(Product $product)
     {
         try {
