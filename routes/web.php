@@ -21,7 +21,7 @@ use App\Http\Controllers\Admin\RoleEntityController;
 use App\Http\Controllers\Admin\PermissionEntityController;
 use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
-
+use App\Http\Controllers\Client\BlogController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -30,7 +30,11 @@ Route::prefix('shop')->as('shop.')->group(function () {
     Route::get('/', [ClientProductController::class, 'index'])->name('index');
     Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
 });
-
+// Client Blog routes
+Route::prefix('blog')->as('blog.')->group(function () {
+    Route::get('/', [BlogController::class, 'index'])->name('index');
+    Route::get('/{slug}', [BlogController::class, 'show'])->name('detail');
+});
 Route::group(['middleware' => ['isAuthenticated']], function () {
 
     Route::get('/register', [AuthController::class, 'registerView'])->name('registerView');
