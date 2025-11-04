@@ -78,7 +78,20 @@ class ProductController extends Controller
 
                 $product = Product::query()->create($data);
 
-             
+                if (!empty($data['variants'])) {
+                    foreach ($data['variants'] ?? [] as $variant) {
+                        $variant['product_id'] = $product->id;
+                        $variant['sku'] = Str::upper(Str::random(12));
+
+                        if (isset($variant['image'])) {
+                            $variant['image'] = Storage::put(self::FOLDER, $variant['image']);
+                        } else {
+                            $variant['image'] = null;
+                        }
+
+                        $product->productVariants()->create($variant);
+                    }
+                }
             });
             return redirect()->route('admin.products.index')->with('success', 'Thêm mới thành công');
         } catch (\Throwable $th) {
@@ -154,7 +167,41 @@ class ProductController extends Controller
                 $product->update($data);
 
                 // 3) Update/Create variants (KHÔNG xoá biến thể cũ)
-               
+                foreach ($data['variants'] ?? [] as $row) {
+                    $payload = [
+                        'product_id'  => $product->id,
+                        'color_id'    => $row['color_id'] ?? null,
+                        'size_id'     => $row['size_id'] ?? null,
+                        'texture_id'  => $row['texture_id'] ?? null,
+                        'price'       => $row['price'] ?? 0,
+                        'quantity'    => $row['quantity'] ?? 1,
+                        'status'      => $row['status'] ?? 0,
+                    ];
+
+                    // Ảnh biến thể mới
+                    $newImagePath = null;
+                    if (!empty($row['image'])) {
+                        $newImagePath = Storage::put(self::FOLDER, $row['image']);
+                        $payload['image'] = $newImagePath;
+                    }
+
+                    if (!empty($row['id'])) {
+                        // Cập nhật biến thể hiện có
+                        $variant = $product->productVariants()->where('id', $row['id'])->first();
+
+                        if ($variant) {
+                            // Nếu có ảnh mới → xoá ảnh cũ
+                            if ($newImagePath && $variant->image) {
+                                Storage::delete($variant->image);
+                            }
+                            $variant->update($payload);
+                        }
+                    } else {
+                        // Tạo mới biến thể (sku tự sinh)
+                        $payload['sku'] = Str::upper(Str::random(12));
+                        $product->productVariants()->create($payload);
+                    }
+                }
 
                 // 4) KHÔNG xoá biến thể trong update theo yêu cầu
             });
