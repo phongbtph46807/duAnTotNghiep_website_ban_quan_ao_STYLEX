@@ -195,9 +195,96 @@
             if (!res || !res.success) { swal('Thông báo', (res && res.message) ? res.message : 'Không thể thêm vào giỏ', 'error'); return; }
 			var count = res.cart_count || 0;
 			$('.icon-header-noti.js-show-cart').attr('data-notify', count);
-			if (window.addHeaderCartItemFromResponse && res.cart_item) {
-				window.addHeaderCartItemFromResponse(res.cart_item, count);
-			}
+			// Reload cart mini to update items and total
+			// Always reload cart via AJAX to ensure it's updated
+			$.ajax({
+				url: '/cart/get',
+				method: 'GET',
+				success: function(cartData) {
+						if (cartData && cartData.cart_items) {
+							var $cartItems = $('#cartItems');
+							var $cartFooter = $('#cartFooter');
+							$cartItems.empty();
+							
+							if (cartData.cart_items.length > 0) {
+								cartData.cart_items.forEach(function(item) {
+									var imagePath = (item.product && item.product.default_image_url) ? item.product.default_image_url : '/client/images/product/product-01.jpg';
+									var name = (item.product && item.product.name) ? item.product.name : 'Sản phẩm';
+									var productId = (item.product && item.product.id) ? item.product.id : (item.product_id || item.id);
+									var price = item.price || 0;
+									var quantity = item.quantity || 1;
+									
+									// Get variant info
+									var variant = item.variant || {};
+									var sizeName = variant.size ? (variant.size.name || '') : '';
+									var colorName = variant.color ? (variant.color.name || '') : '';
+									var textureName = variant.texture ? (variant.texture.name || '') : '';
+									var variantInfo = '';
+									if (sizeName || colorName || textureName) {
+										var parts = [];
+										if (sizeName) parts.push('Size: ' + sizeName);
+										if (colorName) parts.push('Màu: ' + colorName);
+										if (textureName) parts.push('Chất liệu: ' + textureName);
+										variantInfo = '<div class="stext-110" style="margin: 2px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">' +
+											parts.map(function(p) {
+												return '<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">' + p + '</span>';
+											}).join('') +
+											'</div>';
+									}
+									
+									var html = '<li class="header-cart-item flex-w flex-t m-b-12" data-cart-id="' + item.id + '">' +
+										'<div class="header-cart-item-img"><img src="' + imagePath + '" alt="' + name + '"></div>' +
+										'<div class="header-cart-item-txt p-t-8" style="flex:1;">' +
+										'<a href="/products/' + productId + '" class="header-cart-item-name m-b-5 hov-cl1 trans-04">' + name + '</a>' +
+										variantInfo +
+										'<span class="header-cart-item-info">' + quantity + ' x ' + new Intl.NumberFormat('vi-VN').format(price) + ' ₫</span>' +
+										'</div>' +
+										'<button class="delete-item" type="button" data-cart-id="' + item.id + '" title="Xóa" style="margin-left:auto; background: none; border: none; cursor: pointer; align-self:center;"><i class="zmdi zmdi-close"></i></button>' +
+										'</li>';
+									$cartItems.append(html);
+								});
+								
+								// Update total and count
+								var finalCount = cartData.item_count || count || 0;
+								var totalAmount = cartData.total_amount || 0;
+								
+								// Update cart count badge
+								$('#cartItemCount').text('(' + finalCount + ')');
+								$('.icon-header-noti.js-show-cart').attr('data-notify', finalCount);
+								
+								// Create or update footer with total and button
+								var $cartContent = $cartItems.closest('.header-cart-content');
+								if ($cartFooter.length === 0) {
+									// Create footer if it doesn't exist
+									var footerHtml = '<div class="w-full" id="cartFooter" style="flex-shrink: 0; border-top: 1px solid #e8e8e8; margin-top: auto;">' +
+										'<div class="header-cart-total w-full p-tb-30" id="cartTotal">' +
+										'<div class="flex-w flex-sb-m">' +
+										'<span class="mtext-107 cl2" style="font-size: 18px; font-weight: 600;">Tổng cộng:</span>' +
+										'<span class="mtext-106 cl2" id="totalAmount" style="font-size: 20px; font-weight: 700; color: #666;">' + new Intl.NumberFormat('vi-VN').format(totalAmount) + ' ₫</span>' +
+										'</div>' +
+										'</div>' +
+										'<div class="header-cart-buttons flex-w w-full" style="gap: 10px;">' +
+										'<a href="/cart" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; text-align: center; text-decoration: none;">Xem Giỏ Hàng</a>' +
+										'</div>' +
+										'</div>';
+									$cartContent.append(footerHtml);
+								} else {
+									// Update existing footer
+									$('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(totalAmount) + ' ₫');
+									$cartFooter.css('display', 'block').show();
+								}
+							} else {
+								$cartItems.html('<li class="header-cart-empty" style="padding: 60px 20px; text-align: center; color: #999;"><p style="margin-top: 20px; font-size: 16px;">Giỏ hàng trống</p></li>');
+								if ($cartFooter.length > 0) {
+									$cartFooter.hide();
+								}
+							}
+						}
+					},
+					error: function(xhr, status, error) {
+						console.error('Error loading cart:', error);
+					}
+				});
             showToast('Đã thêm vào giỏ hàng');
         }).fail(function(xhr){
             var msg = 'Không thể thêm vào giỏ';

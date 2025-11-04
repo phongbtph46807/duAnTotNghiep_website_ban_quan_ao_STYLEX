@@ -82,22 +82,25 @@ unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Tỉnh/Thành phố *</label>
-                        <select id="province" class="co-select" required>
-                            <option value="">Chọn tỉnh/thành</option>
+                        <select id="province" class="co-select" data-json-url="<?php echo e(asset('client/js/provinces-data.json')); ?>" required>
+                            <option value="">Đang tải dữ liệu...</option>
                         </select>
                         <input type="hidden" name="city" value="<?php echo e(old('city')); ?>">
+                        <small id="province-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Quận/Huyện *</label>
                         <select id="district" class="co-select" required disabled>
                             <option value="">Chọn quận/huyện</option>
                         </select>
+                        <small id="district-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Phường/Xã *</label>
                         <select id="ward" class="co-select" required disabled>
                             <option value="">Chọn phường/xã</option>
                         </select>
+                        <small id="ward-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                     </div>
                     <div class="co-col-12">
                         <label class="co-label">Địa chỉ nhận hàng *</label>
@@ -200,6 +203,7 @@ unset($__errorArgs, $__bag); ?>
 </div>
 
 <?php $__env->startPush('scripts'); ?>
+<script src="<?php echo e(asset('client/js/provinces-handler.js')); ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     var radios = document.querySelectorAll('input[name="payment_method"]');
@@ -214,69 +218,6 @@ document.addEventListener('DOMContentLoaded', function(){
     payOptions.forEach(function(el){ el.addEventListener('click', function(){ var inp = el.querySelector('input'); if (inp) { inp.checked = true; toggle(); } }); });
     radios.forEach(function(r){ r.addEventListener('change', toggle); });
     toggle();
-
-    // Address cascading selects (using open API of provinces.vn)
-    var $province = document.getElementById('province');
-    var $district = document.getElementById('district');
-    var $ward = document.getElementById('ward');
-    var $cityHidden = document.querySelector('input[name="city"]');
-    var $addressInput = document.querySelector('input[name="address"]');
-
-    function setDisabled(sel, disabled){ sel.disabled = !!disabled; if (disabled) sel.innerHTML = '<option value="">---</option>'; }
-    function setOptions(sel, list, placeholder){
-        sel.innerHTML = '<option value="">'+ (placeholder||'Chọn') +'</option>';
-        list.forEach(function(it){
-            var opt = document.createElement('option'); opt.value = it.code || it.name; opt.textContent = it.name; opt.dataset.name = it.name; sel.appendChild(opt);
-        });
-        sel.disabled = false;
-    }
-
-    function syncCityHidden(){
-        var pName = $province.options[$province.selectedIndex] ? ($province.options[$province.selectedIndex].dataset.name || '') : '';
-        $cityHidden.value = pName;
-    }
-
-    function prependToAddress(){
-        var p = $province.options[$province.selectedIndex]?.dataset.name || '';
-        var d = $district.options[$district.selectedIndex]?.dataset.name || '';
-        var w = $ward.options[$ward.selectedIndex]?.dataset.name || '';
-        // Do not overwrite user street, just ensure province/district/ward present
-        var base = $addressInput.value || '';
-        var parts = [base];
-        if (w) parts.push(w); if (d) parts.push(d); if (p) parts.push(p);
-        $addressInput.value = parts.filter(Boolean).join(', ');
-    }
-
-    // Load all provinces with nested districts/wards
-    fetch('https://provinces.open-api.vn/api/?depth=3')
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-            setOptions($province, data, 'Chọn tỉnh/thành');
-        }).catch(function(){
-            // fallback: leave inputs as free text
-            setDisabled($province, true); setDisabled($district, true); setDisabled($ward, true);
-        });
-
-    $province.addEventListener('change', function(){
-        var code = this.value;
-        var name = this.options[this.selectedIndex]?.dataset.name || '';
-        syncCityHidden();
-        // find districts from cached provinces list if available in DOM dataset
-        fetch('https://provinces.open-api.vn/api/p/'+code+'?depth=2')
-            .then(function(r){ return r.json(); })
-            .then(function(res){ setOptions($district, res.districts||[], 'Chọn quận/huyện'); setDisabled($ward, true); })
-            .catch(function(){ setDisabled($district, true); setDisabled($ward, true); });
-    });
-
-    $district.addEventListener('change', function(){
-        var code = this.value;
-        fetch('https://provinces.open-api.vn/api/d/'+code+'?depth=2')
-            .then(function(r){ return r.json(); })
-            .then(function(res){ setOptions($ward, res.wards||[], 'Chọn phường/xã'); })
-            .catch(function(){ setDisabled($ward, true); });
-    });
-
-    $ward.addEventListener('change', function(){ prependToAddress(); });
 });
 </script>
 <?php $__env->stopPush(); ?>

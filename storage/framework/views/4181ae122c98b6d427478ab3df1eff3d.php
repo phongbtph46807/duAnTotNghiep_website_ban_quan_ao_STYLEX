@@ -22,8 +22,8 @@
 				</button>
 			</div>
 			
-			<div class="header-cart-content flex-w js-pscroll" id="cartContent" style="flex: 1; overflow-y: auto;">
-				<ul class="header-cart-wrapitem w-full" id="cartItems">
+			<div class="header-cart-content flex-w js-pscroll" id="cartContent" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+				<ul class="header-cart-wrapitem w-full" id="cartItems" style="flex: 1; overflow-y: auto;">
 					<?php if(empty($headerCartItems) || !count($headerCartItems)): ?>
 						<li class="header-cart-empty" style="padding: 60px 20px; text-align: center; color: #999;">
 							<p style="margin-top: 20px; font-size: 16px;">Giỏ hàng trống</p>
@@ -67,15 +67,15 @@
 					<?php endif; ?>
 				</ul>
 				<?php if(!empty($headerCartItems) && count($headerCartItems)): ?>
-				<div class="w-full" id="cartFooter">
-					<div class="header-cart-total w-full p-tb-30" id="cartTotal" style="border-top: 1px solid #e8e8e8;">
+				<div class="w-full" id="cartFooter" style="flex-shrink: 0; border-top: 1px solid #e8e8e8; margin-top: auto;">
+					<div class="header-cart-total w-full p-tb-30" id="cartTotal">
 						<div class="flex-w flex-sb-m">
 							<span class="mtext-107 cl2" style="font-size: 18px; font-weight: 600;">Tổng cộng:</span>
 							<span class="mtext-106 cl2" id="totalAmount" style="font-size: 20px; font-weight: 700; color: #666;"><?php echo e(number_format((float)($headerCartTotal ?? 0), 0, ',', '.')); ?> ₫</span>
 						</div>
 					</div>
 					<div class="header-cart-buttons flex-w w-full" style="gap: 10px;">
-						<a href="<?php echo e(route('client.cart.index')); ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1;">Xem Giỏ Hàng</a>
+						<a href="<?php echo e(route('client.cart.index')); ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; text-align: center; text-decoration: none;">Xem Giỏ Hàng</a>
 						<!-- <a href="<?php echo e(route('client.checkout.index')); ?>" class="flex-c-m stext-101 cl0 size-107 bg1 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; background: #333;">Thanh Toán</a> -->
 					</div>
 				</div>

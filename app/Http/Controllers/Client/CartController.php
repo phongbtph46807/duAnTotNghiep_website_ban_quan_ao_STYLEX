@@ -77,6 +77,60 @@ class CartController extends Controller
         return $q->first();
     }
 
+    /** Get cart data (AJAX) */
+    public function getCart(Request $request)
+    {
+        $cartItems = $this->baseCartQuery()
+            ->with([
+                'product.productImages',
+                'product.primaryImage',
+                'variant.color',
+                'variant.size',
+                'variant.texture'
+            ])
+            ->get();
+
+        $cartData = [];
+        $total = 0;
+        $itemCount = 0;
+
+        foreach ($cartItems as $item) {
+            $variant = $item->variant;
+            $product = $item->product;
+            $size = $variant && $variant->size ? $variant->size->name : null;
+            $color = $variant && $variant->color ? $variant->color->name : null;
+            $texture = $variant && $variant->texture ? $variant->texture->name : null;
+            $price = $variant && $variant->price ? (float) $variant->price : (float) ($product->price_sale ?? $product->price);
+            
+            $cartData[] = [
+                'id' => $item->id,
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'default_image_url' => $product->default_image_url,
+                ],
+                'variant' => $variant ? [
+                    'id' => $variant->id,
+                    'size' => $variant->size ? ['name' => $variant->size->name] : null,
+                    'color' => $variant->color ? ['name' => $variant->color->name] : null,
+                    'texture' => $variant->texture ? ['name' => $variant->texture->name] : null,
+                ] : null,
+                'variant_id' => $item->variant_id,
+                'quantity' => (int) $item->quantity,
+                'price' => (float) $price,
+            ];
+            
+            $total += $price * $item->quantity;
+            $itemCount += $item->quantity;
+        }
+
+        return response()->json([
+            'cart_items' => $cartData,
+            'total_amount' => (float) $total,
+            'item_count' => (int) $itemCount,
+        ]);
+    }
+
     /** Display cart page */
     public function index()
     {
