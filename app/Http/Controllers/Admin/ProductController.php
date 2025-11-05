@@ -178,13 +178,26 @@ class ProductController extends Controller
             DB::transaction(function () use ($request, $product) {
                 $data = $request->validated();
 
-                // 1) Thumbnail: nếu có upload mới thì thay, không thì giữ nguyên
-                if (!empty($data['thumbnail'])) {
+                // Debug: Log dữ liệu để kiểm tra
+                Log::info('Update Product Data:', [
+                    'thumbnail' => isset($data['thumbnail']) ? 'Has thumbnail' : 'No thumbnail',
+                    'variants_count' => count($data['variants'] ?? []),
+                    'request_files' => array_keys($request->allFiles()),
+                    'all_data_keys' => array_keys($data)
+                ]);
+
+                // 1) Thumbnail: xử lý riêng biệt, không để bị ảnh hưởng bởi variants
+                $thumbnailPath = null;
+                if ($request->hasFile('thumbnail')) {
+                    $thumbnailFile = $request->file('thumbnail');
                     if ($product->thumbnail) {
-                        Storage::delete($product->thumbnail);
+                        Storage::disk('public')->delete($product->thumbnail);
                     }
-                    $data['thumbnail'] = Storage::put(self::FOLDER, $data['thumbnail']);
+                    $thumbnailPath = Storage::disk('public')->put(self::FOLDER, $thumbnailFile);
+                    $data['thumbnail'] = $thumbnailPath;
+                    Log::info('Thumbnail saved to:', ['path' => $thumbnailPath]);
                 } else {
+                    // Không có file thumbnail mới, giữ nguyên thumbnail cũ
                     unset($data['thumbnail']);
                 }
 
@@ -203,11 +216,12 @@ class ProductController extends Controller
                         'status'      => $row['status'] ?? 0,
                     ];
 
-                    // Ảnh biến thể mới
+                    // Ảnh biến thể mới - chỉ xử lý khi có file upload thực sự
                     $newImagePath = null;
-                    if (!empty($row['image'])) {
+                    if (isset($row['image']) && $row['image'] instanceof \Illuminate\Http\UploadedFile) {
                         $newImagePath = Storage::disk('public')->put(self::FOLDER, $row['image']);
                         $payload['image'] = $newImagePath;
+                        Log::info('Variant image saved to:', ['path' => $newImagePath, 'variant_id' => $row['id'] ?? 'new']);
                     }
 
                     if (!empty($row['id'])) {

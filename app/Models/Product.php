@@ -59,7 +59,7 @@ class Product extends Model
     public function getThumbnailUrlAttribute()
     {
         if ($this->thumbnail && file_exists(storage_path('app/public/' . $this->thumbnail))) {
-            return asset('storage/' . $this->thumbnail);
+            return \Stroage::url($this->thumbnail);
         }
         return asset('client/images/banner-01.jpg'); // Ảnh mặc định
     }
@@ -68,10 +68,10 @@ class Product extends Model
     public function getDefaultImageUrlAttribute()
     {
         if ($this->primaryImage) {
-            return asset('storage/' . $this->primaryImage->image_path);
+            return \Storage::url($this->primaryImage->image_path);
         }
         if ($this->thumbnail) {
-            return asset('storage/' . $this->thumbnail);
+            return \Storage::url($this->thumbnail);
         }
         return asset('client/images/no-image.jpg'); // Ảnh mặc định
     }

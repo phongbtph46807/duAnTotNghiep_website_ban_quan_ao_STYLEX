@@ -33,9 +33,21 @@
         }
 
         .variant-thumb {
-            height: 44px;
-            width: 44px;
-            object-fit: cover;
+            max-width: 200px;
+            max-height: 200px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: .25rem;
+            border: 1px solid #eee
+        }
+
+        #product-img {
+            max-width: 300px;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
             border-radius: .25rem;
             border: 1px solid #eee
         }
@@ -137,7 +149,7 @@
                         <input type="file" id="product-image-input" name="thumbnail" class="form-control"
                             accept="image/*">
                         <div class="d-flex align-items-center gap-3 mt-2">
-                            <img id="product-img" class="rounded" style="max-height:150px;"
+                            <img id="product-img" class="rounded" style="max-width: 300px; max-height: 300px; width: auto; height: auto;"
                                 src="{{ $product->thumbnail ? Storage::url($product->thumbnail) : '' }}">
                             @if ($product->thumbnail)
                                 <small class="text-muted">Ảnh hiện tại</small>
@@ -304,7 +316,7 @@
                                         @if ($imgUrl)
                                             <div class="d-flex align-items-center gap-2 mb-2">
                                                 <img src="{{ $imgUrl }}" alt="variant-image"
-                                                    class="variant-thumb" style="width: 100px">
+                                                    class="variant-thumb" style="max-width: 200px; max-height: 200px; width: auto; height: auto;">
                                                 <small class="text-muted">Ảnh hiện tại</small>
                                             </div>
                                         @endif
@@ -490,17 +502,21 @@
 
             /* === KHÔNG có xoá dòng, KHÔNG có xoá tất cả theo yêu cầu === */
 
-            // Chặn submit nếu thiếu nhóm
+            // Chỉ validate khi có biến thể trong bảng và khi sinh biến thể mới
             $('#product-form').on('submit', function(e) {
-                const ck = validateAttr();
-                if (!ck.ok) {
-                    e.preventDefault();
-                    (window.toastr ? toastr.error(ck.msg) : alert(ck.msg));
-                    document.querySelector('#attr-colors').closest('.card').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                    return false;
+                // Chỉ validate nếu có biến thể trong bảng
+                const hasVariants = $('#variants-table tbody tr').length > 0;
+                if (hasVariants) {
+                    const ck = validateAttr();
+                    if (!ck.ok) {
+                        e.preventDefault();
+                        (window.toastr ? toastr.error(ck.msg) : alert(ck.msg));
+                        document.querySelector('#attr-colors').closest('.card').scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                        return false;
+                    }
                 }
             });
         });

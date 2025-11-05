@@ -3,83 +3,95 @@
 @section('title', 'Thông tin cá nhân')
 
 @section('content')
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">Thông tin cá nhân</h4>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0 font-size-18">Thông tin cá nhân</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Trang chủ</a></li>
+                        <li class="breadcrumb-item active">Thông tin cá nhân</li>
+                    </ol>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center">
-                        <div class="mb-3">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" 
-                                 alt="Avatar" class="rounded-circle" width="150" height="150">
-                        </div>
-                        <h5>{{ $user->name }}</h5>
-                        <p class="text-muted">{{ $user->email }}</p>
-                        @if($user->role == 1)
-                            <span class="badge bg-danger">Admin</span>
-                        @elseif($user->role == 2)
-                            <span class="badge bg-warning">Staff</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="{{ $user->avatar ? Storage::url($user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" 
+                             alt="Avatar" class="rounded-circle" width="150" height="150">
+                    </div>
+                    <h5>{{ $user->name }}</h5>
+                    <p class="text-muted">{{ $user->email }}</p>
+                    @if($user->role == 1)
+                        <span class="badge bg-danger">Admin</span>
+                    @elseif($user->role == 2)
+                        <span class="badge bg-warning">Staff</span>
+                    @else
+                        <span class="badge bg-info">User</span>
+                    @endif
+                    <div class="mt-3">
+                        @if($user->status == 1)
+                            <span class="badge bg-success">Active</span>
                         @else
-                            <span class="badge bg-info">User</span>
+                            <span class="badge bg-secondary">Inactive</span>
                         @endif
                     </div>
-                    <div class="col-md-8">
-                        <div class="table-responsive">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>Họ tên:</strong></td>
-                                    <td>{{ $user->name }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Email:</strong></td>
-                                    <td>{{ $user->email }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Số điện thoại:</strong></td>
-                                    <td>{{ $user->phone_number ?? 'Chưa cập nhật' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Vai trò:</strong></td>
-                                    <td>
-                                        @if($user->role == 1)
-                                            <span class="badge bg-danger">Admin</span>
-                                        @elseif($user->role == 2)
-                                            <span class="badge bg-warning">Staff</span>
-                                        @else
-                                            <span class="badge bg-info">User</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Trạng thái:</strong></td>
-                                    <td>
-                                        @if($user->status == 'active')
-                                            <span class="badge bg-success">Hoạt động</span>
-                                        @elseif($user->status == 'inactive')
-                                            <span class="badge bg-secondary">Không hoạt động</span>
-                                        @else
-                                            <span class="badge bg-danger">Bị khóa</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Ngày tạo:</strong></td>
-                                    <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Cập nhật lần cuối:</strong></td>
-                                    <td>{{ $user->updated_at->format('d/m/Y H:i') }}</td>
-                                </tr>
-                            </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Thông tin chi tiết</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Họ và tên</label>
+                            <p class="form-control-plaintext">{{ $user->name }}</p>
                         </div>
-                        <div class="mt-3">
-                            <a href="{{ route('admin.profile.edit') }}" class="btn btn-primary">
-                                <i class="ri-edit-line me-1"></i> Chỉnh sửa thông tin
-                            </a>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <p class="form-control-plaintext">{{ $user->email }}</p>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <p class="form-control-plaintext">{{ $user->phone_number ?: 'Chưa cập nhật' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Vai trò</label>
+                            <p class="form-control-plaintext">
+                                @if($user->role == 1)
+                                    Quản trị viên
+                                @elseif($user->role == 2)
+                                    Nhân viên
+                                @else
+                                    Người dùng
+                                @endif
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Trạng thái</label>
+                            <p class="form-control-plaintext">
+                                {{ $user->status == 1 ? 'Hoạt động' : 'Không hoạt động' }}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ngày tạo</label>
+                            <p class="form-control-plaintext">{{ $user->created_at->format('d/m/Y H:i') }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ route('admin.profile.edit') }}" class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa thông tin
+                        </a>
                     </div>
                 </div>
             </div>

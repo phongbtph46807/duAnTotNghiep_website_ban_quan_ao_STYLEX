@@ -2,6 +2,30 @@
 
 @section('title', $product->name . ' - ' . env('APP_NAME'))
 
+@push('styles')
+<style>
+    .product-image {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        -ms-interpolation-mode: nearest-neighbor;
+    }
+    
+    .wrap-pic-w img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100% !important;
+        object-fit: contain !important;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+        -ms-interpolation-mode: nearest-neighbor;
+    }
+</style>
+@endpush
+
 @section('content')
 
 	<!-- breadcrumb -->
@@ -36,11 +60,11 @@
 							<div class="slick3 gallery-lb">
 								@if($product->productImages && $product->productImages->count() > 0)
 									@foreach($product->productImages as $image)
-									<div class="item-slick3" data-thumb="{{ asset('storage/' . $image->image_path) }}">
+									<div class="item-slick3" data-thumb="{{ Storage::url($image->image_path) }}">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ asset('storage/' . $image->image_path) }}" alt="{{ $product->name }}">
+											<img src="{{ Storage::url($image->image_path) }}" alt="{{ $product->name }}" class="product-image">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ asset('storage/' . $image->image_path) }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ Storage::url($image->image_path) }}">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
@@ -49,7 +73,7 @@
 								@else
 									<div class="item-slick3" data-thumb="{{ $product->default_image_url }}">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}">
+											<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}" class="product-image">
 
 											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ $product->default_image_url }}">
 												<i class="fa fa-expand"></i>
@@ -87,6 +111,7 @@
 								@php
 									$sizes = $product->productVariants->pluck('size.name')->unique()->filter();
 									$colors = $product->productVariants->pluck('color.name')->unique()->filter();
+									$textures = $product->productVariants->pluck('texture.name')->unique()->filter();
 								@endphp
 								
 								@if($sizes->count() > 0)
@@ -97,10 +122,10 @@
 
 									<div class="size-204 respon6-next">
 										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="size">
-												<option>Chọn kích thước</option>
+											<select class="js-select2" name="size" id="size-select">
+												<option value="">Chọn kích thước</option>
 												@foreach($sizes as $size)
-												<option>{{ $size }}</option>
+												<option value="{{ $size }}">{{ $size }}</option>
 												@endforeach
 											</select>
 											<div class="dropDownSelect2"></div>
@@ -117,10 +142,10 @@
 
 									<div class="size-204 respon6-next">
 										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="color">
-												<option>Chọn màu sắc</option>
+											<select class="js-select2" name="color" id="color-select">
+												<option value="">Chọn màu sắc</option>
 												@foreach($colors as $color)
-												<option>{{ $color }}</option>
+												<option value="{{ $color }}">{{ $color }}</option>
 												@endforeach
 											</select>
 											<div class="dropDownSelect2"></div>
@@ -128,26 +153,57 @@
 									</div>
 								</div>
 								@endif
+
+								@if($textures->count() > 0)
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">
+										Chất Liệu
+									</div>
+
+									<div class="size-204 respon6-next">
+										<div class="rs1-select2 bor8 bg0">
+											<select class="js-select2" name="texture" id="texture-select">
+												<option value="">Chọn chất liệu</option>
+												@foreach($textures as $texture)
+												<option value="{{ $texture }}">{{ $texture }}</option>
+												@endforeach
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+									</div>
+								</div>
+								@endif
+
 							@endif
 
-							<div class="flex-w flex-r-m p-b-10">
-								<div class="size-204 flex-w flex-m respon6-next">
-									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
+							<div class="flex-w flex-r-m p-b-10" 
+								 data-product-id="{{ $product->id }}"
+								 data-variants="{{ json_encode($product->productVariants) }}"
+								 data-original-price="{{ $product->price }}"
+								 data-original-price-sale="{{ $product->price_sale }}">
+                              <form id="add-to-cart-form" method="POST" action="{{ route('client.cart.add') }}" data-ajax="1" class="size-204 flex-w flex-m respon6-next">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <input type="hidden" name="variant_id" value="">
+                                    <input type="hidden" name="size_name" value="">
+                                    <input type="hidden" name="color_name" value="">
+                                    <input type="hidden" name="texture_name" value="">
+                                    <div class="wrap-num-product flex-w m-r-20 m-tb-10">
 										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-minus"></i>
 										</div>
 
-										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+                                        <input class="mtext-104 cl3 txt-center num-product" type="number" name="quantity" value="1" min="1">
 
 										<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-plus"></i>
 										</div>
 									</div>
 
-									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                                    <button type="submit" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
 										Thêm vào giỏ
 									</button>
-								</div>
+                                </form>
 							</div>	
 						</div>
 
@@ -392,3 +448,112 @@
 	</section>
 	@endif
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Lấy dữ liệu từ data attributes
+    const productContainer = $('[data-product-id]');
+    const variants = JSON.parse(productContainer.data('variants') || '[]');
+    const originalPrice = parseFloat(productContainer.data('original-price') || 0);
+    const originalPriceSale = parseFloat(productContainer.data('original-price-sale') || 0);
+    const hasPriceSale = originalPriceSale && originalPriceSale < originalPrice;
+    
+    // Function để tìm variant dựa trên size, color, texture (chỉ so khớp các trường đã chọn)
+    function findVariant(size, color, texture) {
+        return variants.find(variant => {
+            const vSize = variant.size ? variant.size.name : null;
+            const vColor = variant.color ? variant.color.name : null;
+            const vTexture = variant.texture ? variant.texture.name : null;
+
+            const okSize = !size || size === vSize;
+            const okColor = !color || color === vColor;
+            const okTexture = !texture || texture === vTexture;
+            return okSize && okColor && okTexture;
+        });
+    }
+    
+    // Function để cập nhật giá khi chọn variant
+    function updatePrice() {
+        const size = $('#size-select').val();
+        const color = $('#color-select').val();
+        const texture = $('#texture-select').val();
+        
+        const variant = findVariant(size, color, texture);
+        
+        if (variant) {
+            // Luôn lưu variant_id kể cả khi giá = 0 (fallback về giá product)
+            $('input[name="variant_id"]').val(variant.id);
+
+            if (variant.price && parseFloat(variant.price) > 0) {
+                $('.mtext-106').html('<span class="fw-bold">' + 
+                    new Intl.NumberFormat('vi-VN').format(variant.price) + 'đ</span>');
+            } else {
+                if (hasPriceSale) {
+                    $('.mtext-106').html('<span class="fw-bold">' + 
+                        new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
+                        '<span style="text-decoration: line-through; color: red;">' + 
+                        new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
+                } else {
+                    $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
+                }
+            }
+        } else {
+            // Không khớp biến thể nào -> reset giá và xoá variant_id
+            if (hasPriceSale) {
+                $('.mtext-106').html('<span class="fw-bold">' + 
+                    new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
+                    '<span style="text-decoration: line-through; color: red;">' + 
+                    new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
+            } else {
+                $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
+            }
+            $('input[name="variant_id"]').val('');
+        }
+    }
+    
+    // Đồng bộ hidden fields và variant khi mở trang (trường hợp đã có sẵn lựa chọn)
+    (function syncInitial() {
+        $('input[name="size_name"]').val($('#size-select').val() || '');
+        $('input[name="color_name"]').val($('#color-select').val() || '');
+        $('input[name="texture_name"]').val($('#texture-select').val() || '');
+        updatePrice();
+    })();
+
+    // Event listeners cho các dropdown
+    $('#size-select, #color-select, #texture-select').on('change', function() {
+        // update hidden attribute names
+        $('input[name="size_name"]').val($('#size-select').val() || '');
+        $('input[name="color_name"]').val($('#color-select').val() || '');
+        $('input[name="texture_name"]').val($('#texture-select').val() || '');
+        updatePrice();
+    });
+    
+    // Quantity controls
+    $('.btn-num-product-down').on('click', function() {
+        const input = $(this).siblings('.num-product');
+        const currentValue = parseInt(input.val());
+        if (currentValue > 1) {
+            input.val(currentValue - 1);
+        }
+    });
+    
+    $('.btn-num-product-up').on('click', function() {
+        const input = $(this).siblings('.num-product');
+        const currentValue = parseInt(input.val());
+        input.val(currentValue + 1);
+    });
+    
+    // Chặn submit nếu có biến thể mà chưa chọn -> tránh lưu null
+    $('#add-to-cart-form').off('submit').on('submit', function(e){
+        const variantId = $('input[name="variant_id"]').val();
+        if (variants && variants.length > 0 && !variantId) {
+            e.preventDefault();
+            alert('Vui lòng chọn đầy đủ thông tin sản phẩm (kích thước, màu sắc, chất liệu)');
+            return false;
+        }
+        return true;
+    });
+});
+</script>
+@endpush

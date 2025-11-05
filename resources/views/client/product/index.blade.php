@@ -8,15 +8,15 @@
 	<div class="container">
 		<div class="flex-w flex-sb-m p-b-52">
 			<div class="flex-w flex-l-m filter-tope-group m-tb-10">
-				<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1" data-filter="*">
+				<a href="{{ route('client.products.index') }}" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {{ !request('category') ? 'how-active1' : '' }}" data-filter="*">
 					Tất Cả Sản Phẩm
-				</button>
+				</a>
 
 				@if(isset($categories) && $categories->count() > 0)
 					@foreach($categories as $category)
-						<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".category-{{ $category->id }}">
+						<a href="{{ route('client.products.index', ['category' => $category->id]) }}" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {{ request('category') == $category->id ? 'how-active1' : '' }}" data-filter=".category-{{ $category->id }}">
 							{{ $category->name }}
-						</button>
+						</a>
 					@endforeach
 				@endif
 			</div>
@@ -256,6 +256,6 @@
 				</div>
 			</div>
 		</div>
+		</div>
 	</div>
-</div>
 @endsection
