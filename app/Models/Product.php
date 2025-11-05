@@ -59,7 +59,7 @@ class Product extends Model
     public function getThumbnailUrlAttribute()
     {
         if ($this->thumbnail && file_exists(storage_path('app/public/' . $this->thumbnail))) {
-            return \Storage::url($this->thumbnail);
+            return \Stroage::url($this->thumbnail);
         }
         return asset('client/images/banner-01.jpg'); // Ảnh mặc định
     }
