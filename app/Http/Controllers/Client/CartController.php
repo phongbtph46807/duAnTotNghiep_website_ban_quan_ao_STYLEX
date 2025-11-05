@@ -139,6 +139,9 @@ class CartController extends Controller
         ->with([
             'product.productImages',
             'product.primaryImage',
+            'product.productVariants.size',
+            'product.productVariants.color',
+            'product.productVariants.texture',
             'variant.color',
             'variant.size',
             'variant.texture'

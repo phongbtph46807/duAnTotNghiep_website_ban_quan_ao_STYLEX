@@ -161,14 +161,12 @@
 									</div>
 
 									<div class="size-204 respon6-next">
-										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="texture" id="texture-select">
-												<option value="">Chọn chất liệu</option>
-												@foreach($textures as $texture)
-												<option value="{{ $texture }}">{{ $texture }}</option>
-												@endforeach
-											</select>
-											<div class="dropDownSelect2"></div>
+										<div class="stext-102 cl6" style="padding: 8px 0;">
+											<span id="texture-display">{{ $textures->implode(', ') }}</span>
+											@php
+												$firstTexture = $textures->first();
+											@endphp
+											<input type="hidden" name="texture" id="texture-select" value="{{ $firstTexture }}">
 										</div>
 									</div>
 								</div>
@@ -245,7 +243,16 @@
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Đánh giá (0)</a>
+							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">
+								Đánh giá 
+								@if(isset($product->reviews_count))
+									({{ $product->reviews_count }})
+								@elseif(isset($product->reviews) && method_exists($product->reviews, 'count'))
+									({{ $product->reviews->count() }})
+								@else
+									(0)
+								@endif
+							</a>
 						</li>
 					</ul>
 
@@ -459,8 +466,10 @@ $(document).ready(function() {
     const originalPriceSale = parseFloat(productContainer.data('original-price-sale') || 0);
     const hasPriceSale = originalPriceSale && originalPriceSale < originalPrice;
     
-    // Function để tìm variant dựa trên size, color, texture (chỉ so khớp các trường đã chọn)
-    function findVariant(size, color, texture) {
+    // Function để tìm variant dựa trên size, color (texture được tự động lấy)
+    function findVariant(size, color) {
+        const texture = $('#texture-select').val();
+        
         return variants.find(variant => {
             const vSize = variant.size ? variant.size.name : null;
             const vColor = variant.color ? variant.color.name : null;
@@ -477,9 +486,9 @@ $(document).ready(function() {
     function updatePrice() {
         const size = $('#size-select').val();
         const color = $('#color-select').val();
-        const texture = $('#texture-select').val();
+        const texture = $('#texture-select').val(); // Texture không thay đổi, giữ nguyên từ database
         
-        const variant = findVariant(size, color, texture);
+        const variant = findVariant(size, color);
         
         if (variant) {
             // Luôn lưu variant_id kể cả khi giá = 0 (fallback về giá product)
@@ -514,18 +523,23 @@ $(document).ready(function() {
     
     // Đồng bộ hidden fields và variant khi mở trang (trường hợp đã có sẵn lựa chọn)
     (function syncInitial() {
+        // Texture luôn được set từ đầu
+        const texture = $('#texture-select').val();
+        $('input[name="texture_name"]').val(texture || '');
+        
         $('input[name="size_name"]').val($('#size-select').val() || '');
         $('input[name="color_name"]').val($('#color-select').val() || '');
-        $('input[name="texture_name"]').val($('#texture-select').val() || '');
         updatePrice();
     })();
 
-    // Event listeners cho các dropdown
-    $('#size-select, #color-select, #texture-select').on('change', function() {
+    // Event listeners cho các dropdown (chỉ size và color)
+    $('#size-select, #color-select').on('change', function() {
         // update hidden attribute names
         $('input[name="size_name"]').val($('#size-select').val() || '');
         $('input[name="color_name"]').val($('#color-select').val() || '');
-        $('input[name="texture_name"]').val($('#texture-select').val() || '');
+        // Texture giữ nguyên từ database (không thay đổi)
+        const texture = $('#texture-select').val();
+        $('input[name="texture_name"]').val(texture || '');
         updatePrice();
     });
     

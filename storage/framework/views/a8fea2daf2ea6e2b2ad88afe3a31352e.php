@@ -71,7 +71,6 @@
 									$varObj = $item['variant'] ?? null;
 									$sizeName = $item['size'] ?? ($varObj && isset($varObj->size) ? ($varObj->size->name ?? null) : null);
 									$colorName = $item['color'] ?? ($varObj && isset($varObj->color) ? ($varObj->color->name ?? null) : null);
-									$textureName = $item['texture'] ?? ($varObj && isset($varObj->texture) ? ($varObj->texture->name ?? null) : null);
 								?>
 								<tr class="table_row align-middle" data-cart-id="<?php echo e($item['id']); ?>" data-price="<?php echo e($price); ?>" data-qty="<?php echo e($qty); ?>">
 									<td class="column-1">
@@ -81,16 +80,13 @@
 									</td>
 									<td class="column-2">
 										<a href="<?php echo e(route('client.products.show', $item['product']->id)); ?>" class="stext-104 cl4 hov-cl1 trans-04"><?php echo e($item['product']->name); ?></a>
-								<?php if($sizeName || $colorName || $textureName): ?>
+								<?php if($sizeName || $colorName): ?>
 									<div class="stext-110" style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
 										<?php if($sizeName): ?>
 											<span style="background:#f3f3f3; color:#333; border:1px solid #e5e5e5; border-radius:12px; padding:2px 8px; font-size:12px;">Size: <?php echo e($sizeName); ?></span>
 										<?php endif; ?>
 										<?php if($colorName): ?>
 											<span style="background:#f3f3f3; color:#333; border:1px solid #e5e5e5; border-radius:12px; padding:2px 8px; font-size:12px;">Màu: <?php echo e($colorName); ?></span>
-										<?php endif; ?>
-										<?php if($textureName): ?>
-											<span style="background:#f3f3f3; color:#333; border:1px solid #e5e5e5; border-radius:12px; padding:2px 8px; font-size:12px;">Chất liệu: <?php echo e($textureName); ?></span>
 										<?php endif; ?>
 									</div>
 								<?php endif; ?>

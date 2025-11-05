@@ -218,13 +218,11 @@
 									var variant = item.variant || {};
 									var sizeName = variant.size ? (variant.size.name || '') : '';
 									var colorName = variant.color ? (variant.color.name || '') : '';
-									var textureName = variant.texture ? (variant.texture.name || '') : '';
 									var variantInfo = '';
-									if (sizeName || colorName || textureName) {
+									if (sizeName || colorName) {
 										var parts = [];
 										if (sizeName) parts.push('Size: ' + sizeName);
 										if (colorName) parts.push('Màu: ' + colorName);
-										if (textureName) parts.push('Chất liệu: ' + textureName);
 										variantInfo = '<div class="stext-110" style="margin: 2px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">' +
 											parts.map(function(p) {
 												return '<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">' + p + '</span>';

@@ -150,7 +150,15 @@ class CheckoutController extends Controller
     public function track(Request $request) {
         $order = null;
         if($request->has('code') && $request->code){
-            $order = Order::with(['items.product','items.variant.size','items.variant.color','items.variant.texture'])
+            $order = Order::with([
+                'items.product',
+                'items.product.productVariants.size',
+                'items.product.productVariants.color',
+                'items.product.productVariants.texture',
+                'items.variant.size',
+                'items.variant.color',
+                'items.variant.texture'
+            ])
                 ->where('code', $request->code)->orWhere('id', $request->code)
                 ->orWhere('phone', $request->code)->latest()->first();
         }

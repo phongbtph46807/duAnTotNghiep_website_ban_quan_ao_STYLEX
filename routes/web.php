@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\RoleEntityController;
 use App\Http\Controllers\Admin\PermissionEntityController;
 use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
+use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Client\CheckoutController;
 
 
@@ -154,6 +155,8 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         // Tax & Shipping routes - CHỈ ADMIN
         Route::resource('tax_rates', TaxRateController::class);
         Route::resource('shipping_carriers', ShippingCarrierController::class);
+        // Voucher routes - CHỈ ADMIN
+        Route::resource('vouchers', VoucherController::class);
         
         // RBAC Entities (roles & permissions) - CHỈ ADMIN, entity management only
         Route::prefix('rbac')->as('rbac.')->group(function () {

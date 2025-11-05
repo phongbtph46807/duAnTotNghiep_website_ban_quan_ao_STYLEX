@@ -227,6 +227,27 @@
                         </ul>
                     </div>
                 </li>
+                <!-- Voucher Management -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarVouchers" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarVouchers">
+                        <i class="ri-ticket-line"></i> <span>Quản lý voucher</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarVouchers">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="<?php echo e(route('admin.vouchers.index')); ?>" class="nav-link">
+                                    <i class="ri-list-check me-1"></i> Danh sách voucher
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?php echo e(route('admin.vouchers.create')); ?>" class="nav-link">
+                                    <i class="ri-add-circle-line me-1"></i> Tạo voucher
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
                 <?php endif; ?>
 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Giao diện/Truyền

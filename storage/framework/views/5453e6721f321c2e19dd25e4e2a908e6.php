@@ -184,7 +184,6 @@ unset($__errorArgs, $__bag); ?>
                             <div class="stext-110 cl6" style="font-size:12px; margin-top:2px;">
                                 <?php if($it['variant'] && $it['variant']->size): ?> Size: <?php echo e($it['variant']->size->name); ?> <?php endif; ?>
                                 <?php if($it['variant'] && $it['variant']->color): ?> • Màu: <?php echo e($it['variant']->color->name); ?> <?php endif; ?>
-                                <?php if($it['variant'] && $it['variant']->texture): ?> • Chất liệu: <?php echo e($it['variant']->texture->name); ?> <?php endif; ?>
                             </div>
                         </div>
                         <div class="co-qty">x <?php echo e($it['quantity']); ?></div>

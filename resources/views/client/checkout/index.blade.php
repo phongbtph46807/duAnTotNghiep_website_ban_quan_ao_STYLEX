@@ -156,7 +156,6 @@
                             <div class="stext-110 cl6" style="font-size:12px; margin-top:2px;">
                                 @if($it['variant'] && $it['variant']->size) Size: {{ $it['variant']->size->name }} @endif
                                 @if($it['variant'] && $it['variant']->color) • Màu: {{ $it['variant']->color->name }} @endif
-                                @if($it['variant'] && $it['variant']->texture) • Chất liệu: {{ $it['variant']->texture->name }} @endif
                             </div>
                         </div>
                         <div class="co-qty">x {{ $it['quantity'] }}</div>
