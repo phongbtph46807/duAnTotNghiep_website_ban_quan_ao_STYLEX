@@ -30,7 +30,7 @@ use App\Http\Controllers\Client\CheckoutController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Client Product routes
-Route::prefix('shop')->as('shop.')->group(function () {
+Route::prefix('client.products')->as('client.products.')->group(function () {
     Route::get('/', [ClientProductController::class, 'index'])->name('index');
     Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
 });

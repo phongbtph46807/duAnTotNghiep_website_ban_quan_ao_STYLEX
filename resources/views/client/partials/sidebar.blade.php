@@ -34,26 +34,16 @@
 					            <a href="{{ route('home') }}">Trang Chủ</a>
 					        </li>
 
-<<<<<<< HEAD
-					        <li>
-					            <a href="{{ route('shop.index') }}">Sản Phẩm</a>
-=======
 					        <li class="{{ request()->routeIs('client.products.*') ? 'active-menu' : '' }}">
 					            <a href="{{ route('client.products.index') }}">Sản Phẩm</a>
->>>>>>> 32f7be2c3761161ff2ac0c26c867ad15e3f65e84
 					        </li>
 
 					        <li class="label1 {{ request()->is('shoping-cart') ? 'active-menu' : '' }}" data-label1="hot">
 					            <a href="shoping-cart.html">Sắp Ra Mắt</a>
 					        </li>
 
-<<<<<<< HEAD
-					        <li>
-					            <a href="{{ route('blog.index')}}">Blog</a>
-=======
 					        <li class="{{ request()->is('blog') ? 'active-menu' : '' }}">
 					            <a href="blog.html">Blog</a>
->>>>>>> 32f7be2c3761161ff2ac0c26c867ad15e3f65e84
 					        </li>
 
 					        <li class="{{ request()->is('contact') ? 'active-menu' : '' }}">
