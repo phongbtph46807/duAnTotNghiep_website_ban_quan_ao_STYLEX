@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\LoyaltyTierController;
 use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
 use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\Admin\OrderController;
 
 // Admin và Staff routes - cả hai đều có thể truy cập
 Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
@@ -107,6 +108,10 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
             Route::resource('roles', RoleEntityController::class)->except(['show']);
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
+        
+        // Orders management
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
         
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
