@@ -43,7 +43,7 @@
 					        </li>
 
 					        <li class="{{ request()->is('blog') ? 'active-menu' : '' }}">
-					            <a href="blog.html">Blog</a>
+					            <a href="{{route('blog.index')}}">Blog</a>
 					        </li>
 
 					        <li class="{{ request()->is('contact') ? 'active-menu' : '' }}">
