@@ -1,60 +1,60 @@
     <!-- JAVASCRIPT -->
-    <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/feather-icons/feather.min.js') }}"></script>
-    <script src="{{ asset('assets/js/pages/plugins/lord-icon-2.1.0.js') }}"></script>
-    <script src="{{ asset('assets/js/plugins.js') }}"></script>
+    <script src="<?php echo e(asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/libs/simplebar/simplebar.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/libs/node-waves/waves.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/libs/feather-icons/feather.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/js/pages/plugins/lord-icon-2.1.0.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/js/plugins.js')); ?>"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- apexcharts -->
-    <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
+    <script src="<?php echo e(asset('assets/libs/apexcharts/apexcharts.min.js')); ?>"></script>
 
     <!-- Vector map-->
-    <script src="{{ asset('assets/libs/jsvectormap/js/jsvectormap.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
+    <script src="<?php echo e(asset('assets/libs/jsvectormap/js/jsvectormap.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/libs/jsvectormap/maps/world-merc.js')); ?>"></script>
 
     <!--Swiper slider js-->
-    <script src="{{ asset('assets/libs/swiper/swiper-bundle.min.js') }}"></script>
+    <script src="<?php echo e(asset('assets/libs/swiper/swiper-bundle.min.js')); ?>"></script>
 
     <!-- Dashboard init -->
-    <script src="{{ asset('assets/js/pages/dashboard-ecommerce.init.js') }}"></script>
+    <script src="<?php echo e(asset('assets/js/pages/dashboard-ecommerce.init.js')); ?>"></script>
 
     <!-- ckeditor -->
-    <script src="{{ asset('assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js') }}"></script>
+    <script src="<?php echo e(asset('assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js')); ?>"></script>
 
     <!-- dropzone js -->
-    <script src="{{ asset('assets/libs/dropzone/dropzone-min.js') }}"></script>
+    <script src="<?php echo e(asset('assets/libs/dropzone/dropzone-min.js')); ?>"></script>
 
-    <script src="{{ asset('assets/js/pages/ecommerce-product-create.init.js') }}"></script>
+    <script src="<?php echo e(asset('assets/js/pages/ecommerce-product-create.init.js')); ?>"></script>
     <!-- App js -->
-    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <script src="<?php echo e(asset('assets/js/app.js')); ?>"></script>
         <script>
         // Hiển thị lỗi validation //
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                toastr.error("{{ $error }}");
-            @endforeach
-        @endif
+        <?php if($errors->any()): ?>
+            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                toastr.error("<?php echo e($error); ?>");
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        <?php endif; ?>
 
         // Hiển thị flash messages //
-        @if (session('success'))
-            toastr.success("{{ session('success') }}");
-        @endif
+        <?php if(session('success')): ?>
+            toastr.success("<?php echo e(session('success')); ?>");
+        <?php endif; ?>
 
-        @if (session('error'))
-            toastr.error("{{ session('error') }}");
-        @endif
+        <?php if(session('error')): ?>
+            toastr.error("<?php echo e(session('error')); ?>");
+        <?php endif; ?>
 
-        @if (session('warning'))
-            toastr.warning("{{ session('warning') }}");
-        @endif
+        <?php if(session('warning')): ?>
+            toastr.warning("<?php echo e(session('warning')); ?>");
+        <?php endif; ?>
 
-        @if (session('info'))
-            toastr.info("{{ session('info') }}");
-        @endif
+        <?php if(session('info')): ?>
+            toastr.info("<?php echo e(session('info')); ?>");
+        <?php endif; ?>
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -164,3 +164,4 @@
             handleAction('.btn-forcedelete', actionConfigs.forceDelete);
         });
     </script>
+<?php /**PATH C:\laragon\www\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/partials/js.blade.php ENDPATH**/ ?>

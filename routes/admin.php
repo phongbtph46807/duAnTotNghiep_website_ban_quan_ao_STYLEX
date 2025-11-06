@@ -36,7 +36,9 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
         Route::resource('colors', ColorController::class);
         Route::resource('sizes', SizeController::class);
         Route::resource('textures', TextureController::class);
-        
+        Route::prefix('contact')->as('contact.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('index');
+        });
         // Products routes
         Route::prefix('products')->as('products.')->group(function () {
             Route::get('/', [ProductController::class, 'index'])->name('index');
@@ -51,7 +53,7 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
             Route::post('/{product}/toggle-feature', [ProductController::class, 'toggleFeature'])->name('toggleFeature');
             Route::patch('/{id}/restore', [ProductController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('force-delete');
-            
+
             // Nén/resize ảnh
             Route::post('/{product}/images', [ProductImageController::class, 'storeProduct'])
                 ->name('images.store');
@@ -120,27 +122,27 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         Route::get('/roles/check-admin-count', [RoleController::class, 'checkAdminCount'])->name('roles.check-admin-count');
         Route::post('/roles/{user}/update-role', [RoleController::class, 'updateRole'])->name('roles.update-role');
         Route::post('/roles/bulk-update', [RoleController::class, 'bulkUpdateRoles'])->name('roles.bulk-update');
-        
+
         // Loyalty Tiers - CHỈ ADMIN
         Route::resource('loyalty-tiers', LoyaltyTierController::class)
             ->parameters(['loyalty-tiers' => 'loyaltyTier']);
-            
+
         // Tax & Shipping routes - CHỈ ADMIN
         Route::resource('tax_rates', TaxRateController::class);
         Route::resource('shipping_carriers', ShippingCarrierController::class);
         // Voucher routes - CHỈ ADMIN
         Route::resource('vouchers', VoucherController::class);
-        
+
         // RBAC Entities (roles & permissions) - CHỈ ADMIN, entity management only
         Route::prefix('rbac')->as('rbac.')->group(function () {
             Route::resource('roles', RoleEntityController::class)->except(['show']);
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
-        
+
         // Orders management
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-        
+
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/trash', [UserController::class, 'trash'])->name('trash');

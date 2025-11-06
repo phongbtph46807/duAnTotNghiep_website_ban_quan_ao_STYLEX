@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Client\ContactController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
@@ -54,7 +55,10 @@ Route::group(['middleware' => ['isAuthenticated']], function(){
     Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
     Route::post('/login', [AuthController::class,'login'])->name('login');
 });
-
+Route::prefix('contact')->as('client.contact.')->group(function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index');
+    Route::post('/store', [ContactController::class, 'store'])->name('store');
+});
 // Logout route - cần middleware auth để đảm bảo user đã đăng nhập
 Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->name('logout');
 

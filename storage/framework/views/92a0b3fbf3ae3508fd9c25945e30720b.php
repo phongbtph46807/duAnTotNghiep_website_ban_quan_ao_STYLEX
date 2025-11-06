@@ -2,7 +2,7 @@
     <!-- LOGO -->
     <div class="navbar-brand-box">
         <!-- Dark Logo-->
-        <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
+        <a href="<?php echo e(route('admin.dashboard')); ?>" class="logo logo-dark">
             <span class="logo-sm">
                 <div class="style-x-logo-sm">
                     <span class="style-text">S</span>
@@ -17,7 +17,7 @@
             </span>
         </a>
         <!-- Light Logo-->
-        <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
+        <a href="<?php echo e(route('admin.dashboard')); ?>" class="logo logo-light">
             <span class="logo-sm">
                 <div class="style-x-logo-sm">
                     <span class="style-text">S</span>
@@ -52,7 +52,7 @@
                     <div class="collapse menu-dropdown" id="sidebarDashboards">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.categories.index') }}" class="nav-link" data-key="t-analytics">
+                                <a href="<?php echo e(route('admin.categories.index')); ?>" class="nav-link" data-key="t-analytics">
                                     Danh sách danh mục
                                 </a>
                             </li>
@@ -73,17 +73,17 @@
                     <div class="collapse menu-dropdown" id="sidebarProducts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.products.index') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.products.index')); ?>" class="nav-link">
                                     <i class="ri-list-check me-1"></i> Danh sách sản phẩm
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.products.create') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.products.create')); ?>" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Thêm sản phẩm mới
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.products.trash') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.products.trash')); ?>" class="nav-link">
                                     <i class="ri-delete-bin-line me-1"></i> Sản phẩm đã xóa
                                 </a>
                             </li>
@@ -100,17 +100,17 @@
                     <div class="collapse menu-dropdown" id="sidebarAttributes">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.colors.index') }}" class="nav-link" data-key="t-colors">
+                                <a href="<?php echo e(route('admin.colors.index')); ?>" class="nav-link" data-key="t-colors">
                                     <i class="ri-palette-line me-1"></i> Quản lý màu sắc
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.sizes.index') }}" class="nav-link" data-key="t-sizes">
+                                <a href="<?php echo e(route('admin.sizes.index')); ?>" class="nav-link" data-key="t-sizes">
                                     <i class="ri-ruler-line me-1"></i> Quản lý kích thước
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.textures.index') }}" class="nav-link" data-key="t-textures">
+                                <a href="<?php echo e(route('admin.textures.index')); ?>" class="nav-link" data-key="t-textures">
                                     <i class="ri-scissors-line me-1"></i> Quản lý chất liệu
                                 </a>
                             </li>
@@ -127,21 +127,21 @@
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarInventory">
                         <ul class="nav nav-sm flex-column">
-                            {{-- Tổng quan --}}
+                            
                             <li class="nav-item">
                                 <a href="#}" class="nav-link">
                                     <i class="ri-dashboard-line me-1"></i> Tổng quan kho
                                 </a>
                             </li>
 
-                            {{-- Tồn kho --}}
+                            
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="ri-stack-line me-1"></i> Tồn kho hiện tại
                                 </a>
                             </li>
 
-                            {{-- Nhập/Xuất kho dropdown con --}}
+                            
                             <li class="nav-item">
                                 <a href="#sidebarInOut" class="nav-link" data-bs-toggle="collapse" role="button"
                                     aria-expanded="false" aria-controls="sidebarInOut">
@@ -168,35 +168,35 @@
                                 </div>
                             </li>
 
-                            {{-- Kiểm kê --}}
+                            
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="ri-file-list-3-line me-1"></i> Kiểm kê kho
                                 </a>
                             </li>
 
-                            {{-- Lịch sử giao dịch --}}
+                            
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="ri-history-line me-1"></i> Lịch sử giao dịch
                                 </a>
                             </li>
 
-                            {{-- Quản lý kho --}}
+                            
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="ri-home-4-line me-1"></i> Danh sách kho
                                 </a>
                             </li>
 
-                            {{-- Báo cáo --}}
+                            
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="ri-bar-chart-box-line me-1"></i> Báo cáo kho
                                 </a>
                             </li>
 
-                            {{-- Cài đặt --}}
+                            
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="ri-settings-3-line me-1"></i> Cài đặt kho
@@ -207,7 +207,7 @@
                     <!-- end Dashboard Menu -->
 
                     <!-- Thuế & Vận chuyển - CHỈ ADMIN -->
-                    @if (auth()->user()->role == 1)
+                    <?php if(auth()->user()->role == 1): ?>
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarTaxShip" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarTaxShip">
@@ -216,12 +216,12 @@
                     <div class="collapse menu-dropdown" id="sidebarTaxShip">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.tax_rates.index') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.tax_rates.index')); ?>" class="nav-link">
                                     <i class="ri-bill-line me-1"></i> Thuế (Tax Rates)
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.shipping_carriers.index') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.shipping_carriers.index')); ?>" class="nav-link">
                                     <i class="ri-truck-line me-1"></i> Đơn vị vận chuyển
                                 </a>
                             </li>
@@ -237,19 +237,19 @@
                     <div class="collapse menu-dropdown" id="sidebarVouchers">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.vouchers.index') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.vouchers.index')); ?>" class="nav-link">
                                     <i class="ri-list-check me-1"></i> Danh sách voucher
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.vouchers.create') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.vouchers.create')); ?>" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Tạo voucher
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </li>
-                @endif
+                <?php endif; ?>
 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Giao diện/Truyền
                         Thông</span></li>
@@ -262,20 +262,20 @@
                     <div class="collapse menu-dropdown" id="sidebarAuth">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.banners.index') }}" class="nav-link"
+                                <a href="<?php echo e(route('admin.banners.index')); ?>" class="nav-link"
                                     data-key="t-analytics">
                                     <i class="ri-list-check me-1"></i> Danh sách banner
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.banners.create') }}" class="nav-link"
+                                <a href="<?php echo e(route('admin.banners.create')); ?>" class="nav-link"
                                     data-key="t-analytics">
                                     <i class="ri-add-circle-line me-1"></i>
                                     Thêm mới banner
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.banners.trash') }}" class="nav-link"
+                                <a href="<?php echo e(route('admin.banners.trash')); ?>" class="nav-link"
                                     data-key="t-analytics">
                                      <i class="ri-delete-bin-line me-1"></i>
                                      Danh sách banner đã xóa
@@ -293,17 +293,17 @@
                     <div class="collapse menu-dropdown" id="sidebarPosts">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.posts.index') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.posts.index')); ?>" class="nav-link">
                                     <i class="ri-list-check me-1"></i> Danh sách bài viết
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.posts.create') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.posts.create')); ?>" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Thêm bài viết mới
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.posts.trash') }}" class="nav-link">
+                                <a href="<?php echo e(route('admin.posts.trash')); ?>" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Danh sách bài viết đã xóa
                                 </a>
                             </li>
@@ -311,7 +311,7 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="{{ route('admin.contact.index') }}"  aria-controls="sidebarPosts">
+                    <a class="nav-link menu-link" href="<?php echo e(route('admin.contact.index')); ?>"  aria-controls="sidebarPosts">
                         <i class="ri-pages-line"></i> <span>Quản lí liên hệ</span>
                     </a>
                 </li>
@@ -336,13 +336,13 @@
                     </div>
                 </li>
 
-                {{-- END HIDE BLOCK --}}
+                
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Khách hàng và đơn
                         hàng</span>
                 </li>
 
                 <!-- Quản lí người dùng - ADMIN và STAFF -->
-                @if (auth()->user()->role == 1 || auth()->user()->role == 2)
+                <?php if(auth()->user()->role == 1 || auth()->user()->role == 2): ?>
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarUI" data-bs-toggle="collapse" role="button"
                             aria-expanded="false" aria-controls="sidebarUI">
@@ -352,33 +352,33 @@
                         <div class="collapse menu-dropdown" id="sidebarUI">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.users.index') }}" class="nav-link"
+                                    <a href="<?php echo e(route('admin.users.index')); ?>" class="nav-link"
                                         data-key="t-analytics">
                                         <i class="ri-user-line me-1"></i> Danh sách người dùng
                                     </a>
                                 </li>
-                                @if (auth()->user()->role == 1)
+                                <?php if(auth()->user()->role == 1): ?>
                                     <li class="nav-item">
-                                        <a href="{{ route('admin.users.create') }}" class="nav-link"
+                                        <a href="<?php echo e(route('admin.users.create')); ?>" class="nav-link"
                                             data-key="t-analytics">
                                             <i class="ri-user-add-line me-1"></i> Tạo User mới
                                             <small class="text-muted d-block">(Chỉ tạo User)</small>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="{{ route('admin.users.trash') }}" class="nav-link"
+                                        <a href="<?php echo e(route('admin.users.trash')); ?>" class="nav-link"
                                             data-key="t-analytics">
                                             Danh sách người dùng đã xóa
                                         </a>
                                     </li>
-                                @endif
+                                <?php endif; ?>
                             </ul>
                         </div>
                     </li>
-                @endif
+                <?php endif; ?>
 
                 <!-- Quản lý phân quyền - CHỈ ADMIN -->
-                @if (auth()->user()->role == 1)
+                <?php if(auth()->user()->role == 1): ?>
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarManagement" data-bs-toggle="collapse"
                             role="button" aria-expanded="false" aria-controls="sidebarManagement">
@@ -387,28 +387,28 @@
                         <div class="collapse menu-dropdown" id="sidebarManagement">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.roles.index') }}" class="nav-link">
+                                    <a href="<?php echo e(route('admin.roles.index')); ?>" class="nav-link">
                                         <i class="ri-user-settings-line me-1"></i> Phân quyền người dùng
                                         <small class="text-muted d-block">(Gán role cho user)</small>
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.rbac.roles.index') }}" class="nav-link">
+                                    <a href="<?php echo e(route('admin.rbac.roles.index')); ?>" class="nav-link">
                                         <i class="ri-shield-star-line me-1"></i> Quản lý Roles (Entity)
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.rbac.permissions.index') }}" class="nav-link">
+                                    <a href="<?php echo e(route('admin.rbac.permissions.index')); ?>" class="nav-link">
                                         <i class="ri-key-2-line me-1"></i> Quản lý Permissions (Entity)
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </li>
-                @endif
+                <?php endif; ?>
 
                 <!-- Cấp độ thành viên - CHỈ ADMIN -->
-                @if (auth()->user()->role == 1)
+                <?php if(auth()->user()->role == 1): ?>
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarLoyalty" data-bs-toggle="collapse"
                             role="button" aria-expanded="false" aria-controls="sidebarLoyalty">
@@ -417,13 +417,13 @@
                         <div class="collapse menu-dropdown" id="sidebarLoyalty">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.loyalty-tiers.index') }}" class="nav-link"
+                                    <a href="<?php echo e(route('admin.loyalty-tiers.index')); ?>" class="nav-link"
                                         data-key="t-loyalty-list">
                                         Danh sách cấp độ
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.loyalty-tiers.create') }}" class="nav-link"
+                                    <a href="<?php echo e(route('admin.loyalty-tiers.create')); ?>" class="nav-link"
                                         data-key="t-loyalty-create">
                                         Thêm cấp độ mới
                                     </a>
@@ -431,7 +431,7 @@
                             </ul>
                         </div>
                     </li>
-                @endif
+                <?php endif; ?>
 
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarOrders" data-bs-toggle="collapse" role="button"
@@ -443,7 +443,7 @@
                     <div class="collapse menu-dropdown" id="sidebarOrders">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.orders.index') }}" class="nav-link"
+                                <a href="<?php echo e(route('admin.orders.index')); ?>" class="nav-link"
                                     data-key="t-orders-list">
                                     Danh sách đơn hàng
                                 </a>
@@ -517,5 +517,6 @@
 </div>
 
 
-<link rel="stylesheet" href="{{ asset('assets/css/style-x-logo.css') }}">
-<script src="{{ asset('assets/js/sidebar-menu.js') }}"></script>
+<link rel="stylesheet" href="<?php echo e(asset('assets/css/style-x-logo.css')); ?>">
+<script src="<?php echo e(asset('assets/js/sidebar-menu.js')); ?>"></script>
+<?php /**PATH C:\laragon\www\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/partials/sidebar.blade.php ENDPATH**/ ?>
