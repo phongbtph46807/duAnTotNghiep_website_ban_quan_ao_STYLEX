@@ -5,8 +5,13 @@
     <script src="<?php echo e(asset('assets/libs/feather-icons/feather.min.js')); ?>"></script>
     <script src="<?php echo e(asset('assets/js/pages/plugins/lord-icon-2.1.0.js')); ?>"></script>
     <script src="<?php echo e(asset('assets/js/plugins.js')); ?>"></script>
+<<<<<<< HEAD
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+=======
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+>>>>>>> 32f7be2c3761161ff2ac0c26c867ad15e3f65e84
     <!-- apexcharts -->
     <script src="<?php echo e(asset('assets/libs/apexcharts/apexcharts.min.js')); ?>"></script>
 

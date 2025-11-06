@@ -43,7 +43,7 @@
 					        </li>
 
 					        <li class="<?php echo e(request()->is('blog') ? 'active-menu' : ''); ?>">
-					            <a href="blog.html">Blog</a>
+					            <a href="<?php echo e(route('blog.index')); ?>">Blog</a>
 					        </li>
 
 					        <li class="<?php echo e(request()->is('contact') ? 'active-menu' : ''); ?>">

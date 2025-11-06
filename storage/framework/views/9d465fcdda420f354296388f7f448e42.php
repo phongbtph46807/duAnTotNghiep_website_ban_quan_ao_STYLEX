@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Bài viết - ' . env('APP_NAME')); ?>
 <?php $__env->startSection('content'); ?>
 <div class="container">
@@ -11,7 +9,7 @@
                 <?php $__currentLoopData = $blogs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $blog): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="p-b-63">
                         <a href="<?php echo e(route('blog.detail', $blog->slug)); ?>" class="hov-img0 how-pos5-parent">
-                            <img src="<?php echo e(Storage::url($blog->thumbnail) ?? asset('client/images/blog-default.jpg')); ?>" alt="<?php echo e($blog->title); ?>">
+                            <img src="<?php echo e($blog->thumbnail ? Storage::url($blog->thumbnail) : asset('client/images/blog-default.jpg')); ?>" alt="<?php echo e($blog->title); ?>">
 
                             <div class="flex-col-c-m size-123 bg9 how-pos5">
                                 <span class="ltext-107 cl2 txt-center">
@@ -151,4 +149,4 @@
     </div>
 </div>
 <?php $__env->stopSection(); ?>
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/blog/index.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\blog\index.blade.php ENDPATH**/ ?>
