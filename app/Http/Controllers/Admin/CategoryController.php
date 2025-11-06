@@ -26,7 +26,8 @@ class CategoryController extends Controller
                 'inactive_categories' => Category::where('status', 0)->count(),
                 'parent_categories' => Category::whereNull('parent_id')->count()
             ];
-
+  
+            
             return view('admin.category.index', compact(['parentCategories', 'selectableCategories', 'categoryStats']));
         } catch (\Exception $e) {
             $this->logError($e);
