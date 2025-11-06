@@ -33,11 +33,20 @@ class ProductController extends Controller
         
         // Phân trang
         $products = $query->paginate(12);
-        
+
+        // Quick view (server-rendered)
+        $quickProduct = null;
+        if ($request->filled('quick_view')) {
+            $quickProduct = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
+                ->where('is_active', 1)
+                ->find($request->quick_view);
+        }
+
         return view('client.product.index', [
             'products' => $products,
             'categories' => $categories,
             'selectedCategory' => $request->category,
+            'quickProduct' => $quickProduct,
         ]);
     }
     
