@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\BannerController;
 
 // Admin và Staff routes - cả hai đều có thể truy cập
 Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
@@ -56,14 +57,33 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
 
+        // Banners routes
+        Route::prefix('banners')->as('banners.')->group(function () {
+            Route::get('/', [BannerController::class, 'index'])->name('index');
+            Route::get('/trash', [BannerController::class, 'trash'])->name('trash');
+            Route::get('/create', [BannerController::class, 'create'])->name('create');
+            Route::get('/{banner}', [BannerController::class, 'show'])->name('show');
+            Route::post('/store', [BannerController::class, 'store'])->name('store');
+            Route::post('/update-order', [BannerController::class, 'updateOrder'])->name('updateOrder');
+            Route::get('/edit/{banner}', [BannerController::class, 'edit'])->name('edit');
+            Route::put('/{banner}', [BannerController::class, 'update'])->name('update');
+            Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('destroy');
+            Route::patch('/{id}/restore', [BannerController::class, 'restore'])->name('restore');
+            Route::delete('/{id}/force-delete', [BannerController::class, 'forceDelete'])->name('force-delete');
+        });
+
         // Post routes
-        Route::prefix('post')->as('post.')->group(function () {
+        Route::prefix('posts')->as('posts.')->group(function () {
             Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/trash', [PostController::class, 'trash'])->name('trash');
             Route::get('/create', [PostController::class, 'create'])->name('create');
+            Route::get('/{id}', [PostController::class, 'show'])->name('show');
             Route::post('/store', [PostController::class, 'store'])->name('store');
-            Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::get('/edit/{id}', [PostController::class, 'edit'])->name('edit');
             Route::put('/{id}', [PostController::class, 'update'])->name('update');
-            Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
+            Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
+            Route::patch('/{id}/restore', [PostController::class, 'restore'])->name('restore');
+            Route::delete('/{id}/force-delete', [PostController::class, 'forceDelete'])->name('force-delete');
         });
     });
 });

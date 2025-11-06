@@ -297,7 +297,7 @@ class ProductController extends Controller
         try {
             $product = Product::withTrashed()->findOrFail($id);
             $product->forceDelete();
-            return redirect()->route('admin.products.trash')->with('success', 'Xóa cứng người dùng thành công');
+            return redirect()->route('admin.products.trash')->with('success', 'Xóa cứng sản phẩm thành công');
         } catch (\Exception $e) {
             $this->logError($e);
 

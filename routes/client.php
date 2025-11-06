@@ -5,6 +5,7 @@ use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
+use App\Http\Controllers\Client\BlogController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 
@@ -15,6 +16,12 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::prefix('products')->as('client.products.')->group(function () {
     Route::get('/', [ClientProductController::class, 'index'])->name('index');
     Route::get('/{id}', [ClientProductController::class, 'show'])->name('show');
+});
+
+// Client Blog routes
+Route::prefix('blog')->as('blog.')->group(function () {
+    Route::get('/', [BlogController::class, 'index'])->name('index');
+    Route::get('/{slug}', [BlogController::class, 'show'])->name('detail');
 });
 
 // Client Cart routes
