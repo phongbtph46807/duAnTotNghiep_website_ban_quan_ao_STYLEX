@@ -94,24 +94,38 @@
                 aria-haspopup="true" aria-expanded="false">
                 <span class="d-flex align-items-center">
 
-                    <img class="rounded-circle header-profile-user" src="{{Storage::url(Auth::user()->avatar ?? null)}}"
+                    <img class="rounded-circle header-profile-user" src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
                         alt="Header Avatar">
                     <span class="text-start ms-xl-2">
-                        <span
-                            class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{ Auth::user()->name ?? null }}</span>
-                        <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">{{ Auth::user()->is_admin ?? null }}</span>
-
+                        <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
+                            {{ Auth::user()->name ?? null}}
+                            @if(Auth::user()->role == 1)
+                                <span class="badge bg-danger ms-1">Admin</span>
+                            @elseif(Auth::user()->role == 2)
+                                <span class="badge bg-warning ms-1">Staff</span>
+                            @else
+                                <span class="badge bg-info ms-1">User</span>
+                            @endif
+                        </span>
+                        <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">{{ Auth::user()->email ?? null }}</span>
                     </span>
                 </span>
             </button>
             <div class="dropdown-menu dropdown-menu-end">
                 <!-- item-->
 
-                <h6 class="dropdown-header">Welcome {{ Auth::user()->name ?? null }}!</h6>
-                <a class="dropdown-item" href="pages-profile.html"><i
-
+                <h6 class="dropdown-header">
+                    @if(Auth::user()->role == 1)
+                        Xin chào Admin {{ Auth::user()->name ?? null }}! 
+                    @elseif(Auth::user()->role == 2)
+                        Xin chào Staff {{ Auth::user()->name ?? null }}! 
+                    @else
+                        Xin chào {{ Auth::user()->name ?? null }}! 
+                    @endif
+                </h6>
+                <a class="dropdown-item" href="{{ route('admin.profile') }}"><i
                         class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span
-                        class="align-middle">Thông tin</span></a>    
+                        class="align-middle">Thông tin cá nhân</span></a>    
                         <a class="dropdown-item" href="#">
                         <i
                         class="mdi mdi-cog-outline text-muted fs-16 align-middle me-1"></i> <span
@@ -119,7 +133,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="dropdown-item" type="submit">
-                        <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> Logout
+                        <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> Đăng xuất
                     </button>
                 </form>
             </div>

@@ -26,14 +26,14 @@ File: Custom Bootstrap Css File
   --vz-teal: #02a8b5;
   --vz-cyan: #299cdb;
   --vz-white: #fff;
-  --vz-gray: #878a99;
+  --vz-gray: #cccccc;
   --vz-gray-dark: #343a40;
   --vz-gray-100: #f3f6f9;
   --vz-gray-200: #eff2f7;
   --vz-gray-300: #e9ebec;
   --vz-gray-400: #ced4da;
   --vz-gray-500: #adb5bd;
-  --vz-gray-600: #878a99;
+  --vz-gray-600: #cccccc;
   --vz-gray-700: #495057;
   --vz-gray-800: #343a40;
   --vz-gray-900: #212529;
@@ -86,21 +86,21 @@ File: Custom Bootstrap Css File
   --vz-body-font-size: 0.8125rem;
   --vz-body-font-weight: 400;
   --vz-body-line-height: 1.5;
-  --vz-body-color: #212529;
-  --vz-body-color-rgb: 33, 37, 41;
-  --vz-body-bg: #f3f3f9;
-  --vz-body-bg-rgb: 243, 243, 249;
-  --vz-emphasis-color: #212529;
-  --vz-emphasis-color-rgb: 33, 37, 41;
-  --vz-secondary-color: #878a99;
+  --vz-body-color: #ffffff;
+  --vz-body-color-rgb: 255, 255, 255;
+  --vz-body-bg: #000000;
+  --vz-body-bg-rgb: 0, 0, 0;
+  --vz-emphasis-color: #ffffff;
+  --vz-emphasis-color-rgb: 255, 255, 255;
+  --vz-secondary-color: #cccccc;
   --vz-secondary-color-rgb: 135, 138, 153;
-  --vz-secondary-bg: #fff;
-  --vz-secondary-bg-rgb: 255, 255, 255;
+  --vz-secondary-bg: #000000;
+  --vz-secondary-bg-rgb: 0, 0, 0;
   --vz-tertiary-color: rgba(33, 37, 41, 0.5);
   --vz-tertiary-color-rgb: 33, 37, 41;
-  --vz-tertiary-bg: #eff2f7;
-  --vz-tertiary-bg-rgb: 239, 242, 247;
-  --vz-heading-color: #495057;
+  --vz-tertiary-bg: #111111;
+  --vz-tertiary-bg-rgb: 17, 17, 17;
+  --vz-heading-color: #ffffff;
   --vz-link-color: #405189;
   --vz-link-color-rgb: 64, 81, 137;
   --vz-link-decoration: none;
@@ -141,7 +141,7 @@ File: Custom Bootstrap Css File
   --vz-body-bg-rgb: 26, 29, 33;
   --vz-emphasis-color: #fff;
   --vz-emphasis-color-rgb: 255, 255, 255;
-  --vz-secondary-color: #878a99;
+  --vz-secondary-color: #cccccc;
   --vz-secondary-color-rgb: 135, 138, 153;
   --vz-secondary-bg: #212529;
   --vz-secondary-bg-rgb: 33, 37, 41;
@@ -704,7 +704,7 @@ progress {
   margin-top: -1rem;
   margin-bottom: 1rem;
   font-size: 0.875em;
-  color: #878a99;
+  color: #cccccc;
 }
 .blockquote-footer::before {
   content: "— ";
@@ -3685,7 +3685,7 @@ textarea.form-control-lg {
   --vz-btn-hover-border-color: transparent;
   --vz-btn-active-color: var(--vz-link-hover-color);
   --vz-btn-active-border-color: transparent;
-  --vz-btn-disabled-color: #878a99;
+  --vz-btn-disabled-color: #cccccc;
   --vz-btn-disabled-border-color: transparent;
   --vz-btn-box-shadow: 0 0 0 #000;
   --vz-btn-focus-shadow-rgb: 93, 107, 155;
@@ -3792,7 +3792,7 @@ textarea.form-control-lg {
   --vz-dropdown-link-disabled-color: var(--vz-tertiary-color);
   --vz-dropdown-item-padding-x: 1.2rem;
   --vz-dropdown-item-padding-y: 0.35rem;
-  --vz-dropdown-header-color: #878a99;
+  --vz-dropdown-header-color: #cccccc;
   --vz-dropdown-header-padding-x: 1.2rem;
   --vz-dropdown-header-padding-y: 0.5rem;
   position: absolute;

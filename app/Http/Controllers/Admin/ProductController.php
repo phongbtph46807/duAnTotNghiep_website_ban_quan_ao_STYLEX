@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Product\StoreProductRequest;
 use App\Http\Requests\Admin\Product\UpdateProductRequest;
-use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Product;
@@ -27,7 +26,7 @@ class ProductController extends Controller
     const FOLDER = 'products';
     public function index(Request $request)
     {
-        $queryproducts = Product::query()->latest('id');
+        $queryproducts = Product::query()->with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])->latest('id');
 
         if ($request->filled('name')) {
             $queryproducts->where('name', 'like', '%' . $request->name . '%');
@@ -36,7 +35,7 @@ class ProductController extends Controller
             $queryproducts->where('category_id', $request->category_id);
         }
         if ($request->filled('status')) {
-            $queryproducts->where('status', $request->status);
+            $queryproducts->where('is_active', $request->status);
         }
         if ($request->filled('is_featured')) {
             $queryproducts->where('is_featured', $request->is_featured);
@@ -63,20 +62,46 @@ class ProductController extends Controller
         $sizes = Size::query()->where('status', 1)->get();
         return view('admin.products.create', compact('categories', 'colors', 'textures', 'sizes'));
     }
-    public function store(ProductRequest $request)
+    public function store(StoreProductRequest $request)
     {
 
         try {
             DB::transaction(function () use ($request) {
                 $data = $request->validated();
-                if (!empty($data['thumbnail'])) {
-                    $urlThumbnail = Storage::put(self::FOLDER, $data['thumbnail']);
-                } else {
-                    $urlThumbnail = null;
+                
+                // Tự động tạo slug nếu không có
+                if (empty($data['slug'])) {
+                    $data['slug'] = Str::slug($data['name']);
                 }
-                $data['thumbnail'] = $urlThumbnail;
+                
+                if (!empty($data['thumbnail'])) {
+                    $urlThumbnail = Storage::disk('public')->put(self::FOLDER, $data['thumbnail']);
+                    if ($urlThumbnail) {
+                        $data['thumbnail'] = $urlThumbnail;
+                    } else {
+                        $data['thumbnail'] = null;
+                    }
+                } else {
+                    $data['thumbnail'] = null;
+                }
 
                 $product = Product::query()->create($data);
+
+                // Xử lý product images
+                if (!empty($data['product_images'])) {
+                    foreach ($data['product_images'] as $index => $image) {
+                        $imagePath = Storage::disk('public')->put(self::FOLDER, $image);
+                        if ($imagePath) {
+                            $product->productImages()->create([
+                                'image_path' => $imagePath,
+                                'image_url' => $imagePath,
+                                'alt_text' => $data['alt_texts'][$index] ?? "Hình ảnh " . ($index + 1) . " của " . $product->name,
+                                'sort_order' => $index,
+                                'is_primary' => $index === 0,
+                            ]);
+                        }
+                    }
+                }
 
                 if (!empty($data['variants'])) {
                     foreach ($data['variants'] ?? [] as $variant) {
@@ -84,7 +109,7 @@ class ProductController extends Controller
                         $variant['sku'] = Str::upper(Str::random(12));
 
                         if (isset($variant['image'])) {
-                            $variant['image'] = Storage::put(self::FOLDER, $variant['image']);
+                            $variant['image'] = Storage::disk('public')->put(self::FOLDER, $variant['image']);
                         } else {
                             $variant['image'] = null;
                         }
@@ -147,19 +172,32 @@ class ProductController extends Controller
         $sizes = Size::query()->where('status', 1)->get();
         return view('admin.products.edit', compact('categories', 'product', 'colors', 'textures', 'sizes'));
     }
-    public function update(ProductRequest $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
         try {
             DB::transaction(function () use ($request, $product) {
                 $data = $request->validated();
 
-                // 1) Thumbnail: nếu có upload mới thì thay, không thì giữ nguyên
-                if (!empty($data['thumbnail'])) {
+                // Debug: Log dữ liệu để kiểm tra
+                Log::info('Update Product Data:', [
+                    'thumbnail' => isset($data['thumbnail']) ? 'Has thumbnail' : 'No thumbnail',
+                    'variants_count' => count($data['variants'] ?? []),
+                    'request_files' => array_keys($request->allFiles()),
+                    'all_data_keys' => array_keys($data)
+                ]);
+
+                // 1) Thumbnail: xử lý riêng biệt, không để bị ảnh hưởng bởi variants
+                $thumbnailPath = null;
+                if ($request->hasFile('thumbnail')) {
+                    $thumbnailFile = $request->file('thumbnail');
                     if ($product->thumbnail) {
-                        Storage::delete($product->thumbnail);
+                        Storage::disk('public')->delete($product->thumbnail);
                     }
-                    $data['thumbnail'] = Storage::put(self::FOLDER, $data['thumbnail']);
+                    $thumbnailPath = Storage::disk('public')->put(self::FOLDER, $thumbnailFile);
+                    $data['thumbnail'] = $thumbnailPath;
+                    Log::info('Thumbnail saved to:', ['path' => $thumbnailPath]);
                 } else {
+                    // Không có file thumbnail mới, giữ nguyên thumbnail cũ
                     unset($data['thumbnail']);
                 }
 
@@ -178,11 +216,12 @@ class ProductController extends Controller
                         'status'      => $row['status'] ?? 0,
                     ];
 
-                    // Ảnh biến thể mới
+                    // Ảnh biến thể mới - chỉ xử lý khi có file upload thực sự
                     $newImagePath = null;
-                    if (!empty($row['image'])) {
-                        $newImagePath = Storage::put(self::FOLDER, $row['image']);
+                    if (isset($row['image']) && $row['image'] instanceof \Illuminate\Http\UploadedFile) {
+                        $newImagePath = Storage::disk('public')->put(self::FOLDER, $row['image']);
                         $payload['image'] = $newImagePath;
+                        Log::info('Variant image saved to:', ['path' => $newImagePath, 'variant_id' => $row['id'] ?? 'new']);
                     }
 
                     if (!empty($row['id'])) {
@@ -192,7 +231,7 @@ class ProductController extends Controller
                         if ($variant) {
                             // Nếu có ảnh mới → xoá ảnh cũ
                             if ($newImagePath && $variant->image) {
-                                Storage::delete($variant->image);
+                                Storage::disk('public')->delete($variant->image);
                             }
                             $variant->update($payload);
                         }
@@ -258,7 +297,7 @@ class ProductController extends Controller
         try {
             $product = Product::withTrashed()->findOrFail($id);
             $product->forceDelete();
-            return redirect()->route('admin.products.trash')->with('success', 'Xóa cứng người dùng thành công');
+            return redirect()->route('admin.products.trash')->with('success', 'Xóa cứng sản phẩm thành công');
         } catch (\Exception $e) {
             $this->logError($e);
 

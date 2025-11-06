@@ -16,12 +16,11 @@ class IsAuthenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
-        
-        // if (Auth::check() && Auth::user()->is_admin == 1) {
-        //     return redirect()->route('admin.dashboard');
-        // } else if (Auth::check() && Auth::user()->is_admin == 0) {
-        //     return redirect()->route('user.dashboard');
-        // }
+        if (Auth::check() && Auth::user()->is_admin == 1) {
+            return redirect()->route('admin.dashboard');
+        } else if (Auth::check() && Auth::user()->is_admin == 0) {
+            return redirect()->route('user.dashboard');
+        }
         
         return $next($request);
     }

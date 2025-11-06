@@ -16,10 +16,10 @@ class OnlyAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // if(Auth::check() && Auth::user()->is_admin == 1){
+        if(Auth::check() && Auth::user()->is_admin == 1){
             return $next($request);
-        // }
+        }
         
-        // return redirect()->route('loginView')->with('error', 'Bạn không có quyền truy cập trang này!');
+        return redirect()->route('loginView')->with('error', 'Bạn không có quyền truy cập trang này!');
     }
 }

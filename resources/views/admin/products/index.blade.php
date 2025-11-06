@@ -56,7 +56,7 @@
             <div class="card stats-card total-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-primary">
-                        <i class="ri-user-3-line"></i>
+                        <i class="ri-shopping-bag-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Tổng số sản phẩm</h5>
                     <h3 class="card-text fw-bold">{{ $productCounts->total_products ?? 0 }}</h3>
@@ -67,7 +67,7 @@
             <div class="card stats-card approved-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-success">
-                        <i class="ri-user-follow-line"></i>
+                        <i class="ri-checkbox-circle-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Số sản phẩm hoạt động</h5>
                     <h3 class="card-text fw-bold text-success">{{ $productCounts->active_products ?? 0 }}</h3>
@@ -78,7 +78,7 @@
             <div class="card stats-card pending-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-warning">
-                        <i class="ri-user-unfollow-line"></i>
+                        <i class="ri-pause-circle-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Số sản phẩm không hoạt động</h5>
                     <h3 class="card-text fw-bold text-warning">{{ $productCounts->inactive_products ?? 0 }}</h3>
@@ -89,7 +89,7 @@
             <div class="card stats-card rejected-card">
                 <div class="card-body text-center">
                     <div class="stat-icon text-danger">
-                        <i class="ri-lock-line"></i>
+                        <i class="ri-star-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Tổng số sản phẩm nổi bật</h5>
                     <h3 class="card-text fw-bold text-danger">{{ $productCounts->featured_products ?? 0 }}</h3>
@@ -180,25 +180,34 @@
                                             class="ri-delete-bin-2-line"></i></button>
                                 </div>
                             </div>
-                            <div class="col-sm">
-                                <div class="d-flex justify-content-sm-end">
-                                    <div class="search-box ms-2">
-                                        <input type="text" class="form-control search" placeholder="Search...">
-                                        <i class="ri-search-line search-icon"></i>
+                            <div class="d-flex justify-content-end ">
+                                <form method="GET" action="{{ route('admin.products.index') }}"
+                                    class="d-flex align-items-center" style="max-width: 320px;">
+                                    <div class="input-group">
+                                        <input type="text" name="name" value="{{ request('name') }}"
+                                            class="form-control" placeholder="Tìm kiếm sản phẩm...">
+                                        <button class="btn btn-primary" type="submit">
+                                            <i class="ri-search-line"></i>
+                                        </button>
                                     </div>
-                                </div>
+                                </form>
                             </div>
+
+
+
+
                         </div>
 
                         <div class="table-responsive table-card mt-3 mb-1">
                             <table class="table align-middle text-center table-nowrap" id="customerTable">
                                 <thead class="table-light">
                                     <tr>
-                                        
+
                                         <th data-sort="customer_id">ID</th>
                                         <th data-sort="customer_name">Tên sản phẩm</th>
                                         <th data-sort="email">Ảnh</th>
                                         <th data-sort="cate">Danh mục</th>
+                                        <th data-sort="variants">Biến thể</th>
                                         <th data-sort="phone">Sản phẩm nổi bật</th>
                                         <th data-sort="date">Trạng thái</th>
                                         <th data-sort="action">Hành động</th>
@@ -207,14 +216,28 @@
                                 <tbody class="list form-check-all">
                                     @foreach ($items as $item)
                                         <tr>
-                                           
+
                                             <td class="customer_id">{{ $item->id }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                <img src="{{ Storage::url($item->thumbnail) ?? 'Không có ảnh' }}"
-                                                    width="50">
+                                                <img src="{{ $item->thumbnail_url }}" width="50" height="50"
+                                                    class="rounded" alt="Product Image"
+                                                    style="object-fit: cover; background-color: #f8f9fa;">
                                             </td>
                                             <td class="customer_name">{{ $item->category->name }}</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info-subtle text-info">
+                                                    {{ $item->productVariants ? $item->productVariants->count() : 0 }} biến
+                                                    thể
+                                                </span>
+                                                @if ($item->productVariants && $item->productVariants->count() > 0)
+                                                    <br><small class="text-muted">
+                                                        @foreach ($item->productVariants->take(2) as $variant)
+                                                            {{ $variant->color->name ?? 'N/A' }}-{{ $variant->size->name ?? 'N/A' }}-{{ $variant->texture->name ?? 'N/A' }}{{ !$loop->last ? ', ' : '' }}
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </td>
                                             <td class="text-center">
                                                 <div class="form-check text-center form-switch form-switch-warning">
                                                     <input class="form-check-input" type="checkbox" role="switch"
@@ -223,12 +246,12 @@
                                                 </div>
                                             </td>
                                             <td class="status">
-                                                @if ($item->is_active == '1')
-                                                    <span
-                                                        class="badge bg-success-subtle text-success text-uppercase">Hoạt động</span>
+                                                @if ($item->is_active == 1)
+                                                    <span class="badge bg-success-subtle text-success text-uppercase">Hoạt
+                                                        động</span>
                                                 @else
-                                                    <span
-                                                        class="badge bg-warning-subtle text-warning text-uppercase">Ngừng hoạt động</span>
+                                                    <span class="badge bg-warning-subtle text-warning text-uppercase">Ngừng
+                                                        hoạt động</span>
                                                 @endif
                                             </td>
                                             <td>

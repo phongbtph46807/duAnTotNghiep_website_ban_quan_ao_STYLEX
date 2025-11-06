@@ -17,12 +17,18 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
     use LoggableTrait, UploadToLocalTrait;
-
     const FOLDER = 'users';
     const URLIMAGEDEFAULT = "https://res.cloudinary.com/dvrexlsgx/image/upload/v1732148083/Avatar-trang-den_apceuv_pgbce6.png";
     public function index(Request $request)
     {
         $queryUsers = User::query()->latest('id');
+
+        // Staff chỉ được xem User (role = 0), Admin xem User và Staff (role = 0,2)
+        if (auth()->user() && auth()->user()->role === User::ROLE_STAFF) {
+            $queryUsers->where('role', User::ROLE_USER);
+        } elseif (auth()->user() && auth()->user()->role === User::ROLE_ADMIN) {
+            $queryUsers->whereIn('role', [User::ROLE_USER, User::ROLE_STAFF]);
+        }
 
         if ($request->filled('name')) {
             $queryUsers->where('name', 'like', '%' . $request->name . '%');
@@ -36,16 +42,26 @@ class UserController extends Controller
         if ($request->filled('status')) {
             $queryUsers->where('status', $request->status);
         }
-        if ($request->filled('is_admin')) {
-            $queryUsers->where('is_admin', $request->is_admin);
+        if ($request->filled('role')) {
+            $queryUsers->where('role', $request->role);
         }
 
-        $queryUserCounts = User::query()
-            ->selectRaw('
+        // Thống kê - Admin xem đầy đủ, Staff chỉ xem users thường
+        $queryUserCounts = User::query();
+        
+        // Staff chỉ được xem thống kê User (role = 0)
+        if (auth()->user() && auth()->user()->role === User::ROLE_STAFF) {
+            $queryUserCounts->where('role', User::ROLE_USER);
+        }
+        
+        $queryUserCounts->selectRaw('
                     count(id) as total_users,
                     sum(status = "active") as active_users,
                     sum(status = "inactive") as inactive_users,
-                    sum(status = "blocked") as blocked_users
+                    sum(status = "blocked") as blocked_users,
+                    sum(role = 1) as admin_count,
+                    sum(role = 2) as staff_count,
+                    sum(role = 0) as user_count
                 ');
         $items = $queryUsers->paginate(10);
         $userCounts = $queryUserCounts->first();
@@ -71,8 +87,11 @@ class UserController extends Controller
                 $data['avatar'] = $urlAvatar;
             }
 
+            // Luôn tạo User (role=0, is_admin=0)
+            $data['role'] = 0;
+            $data['is_admin'] = 0;
             $data['email_verified_at'] = now();
-            // dd($data);
+            
             $user = User::query()->create($data);
 
             DB::commit();
@@ -137,8 +156,22 @@ class UserController extends Controller
     }
     public function update(UpdateUserRequest $request, User $user)
     {
+        // Nếu là Staff: chỉ được cập nhật trạng thái user
+        if (auth()->user() && auth()->user()->role === User::ROLE_STAFF) {
+            $validated = \request()->validate([
+                'status' => ['required', 'in:active,inactive,blocked'],
+            ]);
+
+            $oldStatus = $user->status;
+            $user->update(['status' => $validated['status']]);
+            if ($oldStatus !== $user->status) {
+                event(new UserStatusChanged($user, $oldStatus, $user->status, 'Người dùng', 'Người dùng'));
+            }
+            return redirect()->route('admin.users.edit', $user)->with('success', 'Cập nhật trạng thái thành công');
+        }
+
         $validator = $request->validated();
-        $data = $request->except('avatar', 'email', 'email_verified');
+        $data = $request->except('avatar', 'email', 'email_verified', 'is_admin', 'role');
 
         DB::beginTransaction();
 
@@ -148,7 +181,6 @@ class UserController extends Controller
             $oldStatus = $user->status;
 
             if ($request->hasFile('avatar')) {
-
                 $avatarFile = $request->file('avatar');
                 $data['avatar'] = $this->uploadToLocal($avatarFile, self::FOLDER);
             }
@@ -162,11 +194,9 @@ class UserController extends Controller
                 event(new UserStatusChanged($user, $oldStatus, $newStatus, $oldRole, $newRole));
             }
 
-
             if (!empty($data['avatar']) && !empty($oldAvatar) && $oldAvatar !== self::URLIMAGEDEFAULT) {
                 $this->deleteFromLocal($oldAvatar, self::FOLDER);
             }
-
 
             DB::commit();
             return redirect()->route('admin.users.edit', $user)->with('success', 'Cập nhật thành công');
@@ -236,6 +266,65 @@ class UserController extends Controller
             $this->logError($e);
 
             return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+
+    /**
+     * Hiển thị thông tin profile của user hiện tại
+     */
+    public function profile()
+    {
+        $user = auth()->user();
+        return view('admin.users.profile', compact('user'));
+    }
+
+    /**
+     * Hiển thị form chỉnh sửa profile
+     */
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('admin.users.edit-profile', compact('user'));
+    }
+
+    /**
+     * Cập nhật thông tin profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        try {
+            $data = $request->only(['name', 'phone_number']);
+            
+            // Xử lý upload avatar nếu có
+            if ($request->hasFile('avatar')) {
+                // Xóa avatar cũ nếu có
+                if ($user->avatar && \Storage::disk('public')->exists($user->avatar)) {
+                    \Storage::disk('public')->delete($user->avatar);
+                }
+                
+                // Upload avatar mới
+                $avatar = $request->file('avatar');
+                $avatarName = time() . '_' . $avatar->getClientOriginalName();
+                $avatarPath = $avatar->storeAs(self::FOLDER, $avatarName, 'public');
+                $data['avatar'] = $avatarPath;
+            }
+
+            $user->update($data);
+
+            return redirect()->route('admin.profile')
+                ->with('success', 'Cập nhật thông tin thành công!');
+                
+        } catch (\Exception $e) {
+            $this->logError($e);
+            return back()->with('error', 'Có lỗi xảy ra khi cập nhật thông tin!');
         }
     }
 }
