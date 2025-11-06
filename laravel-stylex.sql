@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Oct 30, 2025 at 06:55 AM
+-- Generation Time: Nov 06, 2025 at 05:23 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.20
 
@@ -57,6 +57,32 @@ CREATE TABLE `app_data` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `banners`
+--
+
+CREATE TABLE `banners` (
+  `id` bigint UNSIGNED NOT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `redirect_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `content` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `order` int NOT NULL DEFAULT '0',
+  `status` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `banners`
+--
+
+INSERT INTO `banners` (`id`, `title`, `redirect_url`, `image`, `content`, `order`, `status`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, '123', '123', 'banners/1762403279_NGcwJDUxKv.jpg', '123', 0, 1, NULL, '2025-11-05 21:27:59', '2025-11-05 21:27:59');
 
 -- --------------------------------------------------------
 
@@ -124,7 +150,10 @@ CREATE TABLE `carts` (
 INSERT INTO `carts` (`id`, `user_id`, `session_id`, `product_id`, `variant_id`, `quantity`, `size`, `color`, `created_at`, `updated_at`) VALUES
 (1, NULL, 'puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', 22, NULL, 1, NULL, NULL, '2025-10-29 00:00:28', '2025-10-29 00:00:28'),
 (2, NULL, 'puCIdxbl44OvV7bpgwAabHFhLEK0ukOc8IOuPNbv', 20, NULL, 3, NULL, NULL, '2025-10-29 00:10:24', '2025-10-29 00:15:04'),
-(30, 57, NULL, 22, 52, 1, NULL, NULL, '2025-10-29 23:38:11', '2025-10-29 23:38:11');
+(54, NULL, '8HDwF0v2GZrurdUQcdNNvAKAF9xIEBa8ZwTLB8Yg', 23, 53, 2, NULL, NULL, '2025-11-05 02:09:58', '2025-11-05 02:09:58'),
+(56, 57, NULL, 23, 53, 3, NULL, NULL, '2025-11-05 02:34:51', '2025-11-05 02:38:28'),
+(57, 57, NULL, 22, 52, 1, NULL, NULL, '2025-11-05 03:11:33', '2025-11-05 03:11:33'),
+(58, NULL, 'sdRnS2U7LUd67AaActDKQmhpW3G738V3pYeN11eu', 23, 53, 1, NULL, NULL, '2025-11-05 19:38:41', '2025-11-05 19:38:41');
 
 -- --------------------------------------------------------
 
@@ -381,7 +410,16 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (36, '2025_10_27_055724_add_variant_id_to_carts_table', 18),
 (37, '2025_10_29_000000_alter_carts_add_columns', 19),
 (38, '2025_10_30_000001_alter_carts_add_columns', 20),
-(39, '2025_10_30_000100_create_orders_tables', 21);
+(39, '2025_10_30_000100_create_orders_tables', 21),
+(40, '2025_11_05_000001_create_vouchers_table', 22),
+(41, '2025_11_05_000002_add_max_discount_to_vouchers', 23),
+(42, '2025_10_22_151025_create_banners_table', 24),
+(43, '2025_10_29_153526_create_tags_table', 25),
+(44, '2025_10_29_153538_create_taggables_table', 26),
+(45, '2025_01_14_055501_create_categories_table', 27),
+(46, '2025_10_20_164641_create_product_images_table', 27),
+(48, '2025_10_29_153511_create_posts_table', 28),
+(49, '2025_11_06_042154_add_columns_to_posts_table_for_blog', 29);
 
 -- --------------------------------------------------------
 
@@ -416,8 +454,12 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `session_id`, `code`, `full_name`, `phone`, `email`, `city`, `address`, `note`, `subtotal`, `shipping_fee`, `discount`, `total`, `payment_method`, `payment_status`, `status`, `created_at`, `updated_at`) VALUES
-(1, 57, NULL, 'OD155A300616', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội', '123', 10888, 0, 0, 10888, 'cod', 'unpaid', 'pending', '2025-10-29 23:19:34', '2025-10-29 23:19:34'),
-(2, 57, NULL, 'OD74F1BD8FE0', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Xã Đông Quang, Huyện Ba Vì, Thành phố Hà Nội', '123', 222, 0, 0, 222, 'cod', 'unpaid', 'pending', '2025-10-29 23:34:19', '2025-10-29 23:34:19');
+(1, 57, NULL, 'OD155A300616', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội', '123', 10888, 0, 0, 10888, 'cod', 'unpaid', 'completed', '2025-10-29 23:19:34', '2025-11-05 05:39:48'),
+(2, 57, NULL, 'OD74F1BD8FE0', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Xã Đông Quang, Huyện Ba Vì, Thành phố Hà Nội', '123', 222, 0, 0, 222, 'cod', 'unpaid', 'pending', '2025-10-29 23:34:19', '2025-10-29 23:34:19'),
+(3, 57, NULL, 'ODD2708F05E8', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội, Phường Phú Thịnh, Thị xã Sơn Tây, Thành phố Hà Nội', NULL, 1554, 0, 0, 1554, 'cod', 'unpaid', 'pending', '2025-10-30 00:59:12', '2025-10-30 00:59:12'),
+(4, 57, NULL, 'OD8B667235F5', 'Phongbt', '0936665970', 'admin@test.com', 'Thành phố Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội, Phường Phú Thịnh, Thị xã Sơn Tây, Thành phố Hà Nội, Xã Đại Thịnh, Huyện Mê Linh, Thành phố Hà Nội', NULL, 666, 0, 0, 666, 'cod', 'unpaid', 'pending', '2025-10-30 05:46:32', '2025-10-30 05:46:32'),
+(5, 57, NULL, 'OD9CAF3C1A87', 'Phongbt', '0936665970', 'admin@test.com', 'Hà Nội', 'Phường Ngô Quyền, Thị xã Sơn Tây, Thành phố Hà Nội, Phường Phú Thịnh, Thị xã Sơn Tây, Thành phố Hà Nội, Xã Đại Thịnh, Huyện Mê Linh, Thành phố Hà Nội', 's', 1110, 0, 0, 1110, 'cod', 'unpaid', 'pending', '2025-11-04 11:31:07', '2025-11-04 11:31:07'),
+(6, 57, NULL, 'ODDED696795C', 'Phongbt', '0936665970', 'admin@test.com', 'Tỉnh Hà Giang', 'Phường Trần Phú, Thành phố Hà Giang, Tỉnh Hà Giang', '`123', 40666, 0, 0, 40666, 'cod', 'unpaid', 'pending', '2025-11-04 15:51:14', '2025-11-04 15:51:14');
 
 -- --------------------------------------------------------
 
@@ -444,7 +486,13 @@ CREATE TABLE `order_items` (
 INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `variant_id`, `quantity`, `price`, `line_total`, `created_at`, `updated_at`) VALUES
 (1, 1, 20, 28, 1, 10000, 10000, '2025-10-29 23:19:35', '2025-10-29 23:19:35'),
 (2, 1, 22, 52, 4, 222, 888, '2025-10-29 23:19:35', '2025-10-29 23:19:35'),
-(3, 2, 22, 52, 1, 222, 222, '2025-10-29 23:34:19', '2025-10-29 23:34:19');
+(3, 2, 22, 52, 1, 222, 222, '2025-10-29 23:34:19', '2025-10-29 23:34:19'),
+(4, 3, 22, 52, 7, 222, 1554, '2025-10-30 00:59:12', '2025-10-30 00:59:12'),
+(5, 4, 22, 52, 3, 222, 666, '2025-10-30 05:46:32', '2025-10-30 05:46:32'),
+(6, 5, 22, 52, 5, 222, 1110, '2025-11-04 11:31:07', '2025-11-04 11:31:07'),
+(7, 6, 20, 28, 1, 10000, 10000, '2025-11-04 15:51:14', '2025-11-04 15:51:14'),
+(8, 6, 20, 30, 3, 10000, 30000, '2025-11-04 15:51:14', '2025-11-04 15:51:14'),
+(9, 6, 22, 52, 3, 222, 666, '2025-11-04 15:51:14', '2025-11-04 15:51:14');
 
 -- --------------------------------------------------------
 
@@ -506,13 +554,32 @@ INSERT INTO `permission_role` (`role_id`, `permission_id`) VALUES
 
 CREATE TABLE `posts` (
   `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `category_id` bigint UNSIGNED NOT NULL,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `author_id` bigint UNSIGNED NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `content` text COLLATE utf8mb4_unicode_ci,
+  `thumbnail` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status` enum('draft','pending','published','private','scheduled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `views` int NOT NULL DEFAULT '0',
+  `is_hot` tinyint(1) NOT NULL DEFAULT '0',
+  `published_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `posts`
+--
+
+INSERT INTO `posts` (`id`, `user_id`, `category_id`, `title`, `slug`, `description`, `content`, `thumbnail`, `status`, `views`, `is_hot`, `published_at`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 56, 21, 'Phong cách thời trang nam hiện đại – Tối giản nhưng tinh tế', 'phong-cach-thoi-trang-nam-hien-dai-toi-gian-nhung-tinh-te-82b517f7-5', '<p>Khám phá bí quyết phối đồ phong cách tối giản cho nam giới – xu hướng được yêu thích trong năm nay tại StyleX.</p>', '<p>Thời trang nam hiện đại đang hướng tới phong cách tối giản (minimalist) – nơi mọi chi tiết đều được chọn lọc kỹ càng để tạo nên tổng thể tinh tế, thanh lịch. </p><p>Một tủ đồ nam tối giản thường bao gồm những món cơ bản như áo sơ mi trắng, quần tây đen, áo thun trơn, blazer và giày da. Khi biết cách phối hợp, bạn có thể tạo ra nhiều phong cách khác nhau mà không cần quá nhiều món đồ.</p><p>Điều quan trọng trong phong cách này là **chất liệu và form dáng**. Một chiếc áo vừa vặn, vải cotton thoáng mát hay linen tự nhiên sẽ mang lại cảm giác thoải mái và sang trọng.</p><p>Tại StyleX, bạn có thể dễ dàng tìm thấy những thiết kế nam mang phong cách hiện đại, tinh giản nhưng không hề đơn điệu – phù hợp cho cả đi làm, đi chơi hay dự tiệc.</p>', 'blogs/1762403333_zicGQwFDVw.jpg', 'published', 4914, 1, '2025-11-05 21:28:56', NULL, '2025-11-05 21:24:47', '2025-11-05 21:28:56'),
+(2, 56, 20, 'Xu hướng thời trang nữ 2025 – Thanh lịch và năng động', 'xu-huong-thoi-trang-nu-2025-thanh-lich-va-nang-dong-27a9ebca-2699-4bd2-a568-9fc9d2bfe2a3', 'StyleX cập nhật những xu hướng thời trang nữ nổi bật năm 2025: từ phong cách thanh lịch công sở đến streetwear năng động.', 'Bước sang năm 2025, thời trang nữ chứng kiến sự hòa trộn giữa phong cách thanh lịch cổ điển và nét năng động hiện đại. \n\nÁo blazer oversize, chân váy midi, đầm hai dây chất liệu satin, hay quần jeans ống suông là những món được yêu thích nhất. Xu hướng phối đồ theo tone màu pastel nhẹ nhàng hoặc các gam trung tính như beige, kem, xám vẫn tiếp tục được ưa chuộng.\n\nBên cạnh đó, phong cách **mix & match linh hoạt** lên ngôi – phụ nữ hiện đại không ngại thử nghiệm, kết hợp các item để thể hiện cá tính riêng. \n\nStyleX mang đến bộ sưu tập thời trang nữ được thiết kế tinh tế, dễ phối và phù hợp cho mọi hoàn cảnh – giúp bạn tự tin tỏa sáng mỗi ngày.', NULL, 'published', 3120, 1, '2025-10-27 21:24:47', NULL, '2025-11-05 21:24:47', '2025-11-05 21:24:47'),
+(3, 56, 27, 'Cách chọn size quần áo chuẩn – Bí quyết mua sắm online tại StyleX', 'cach-chon-size-quan-ao-chuan-bi-quyet-mua-sam-online-tai-stylex-dd2b216a-d952-4baa-83fe-ae229cab6312', 'Chia sẻ mẹo chọn size quần áo chính xác khi mua hàng online để luôn vừa vặn và thoải mái.', 'Một trong những nỗi lo lớn nhất khi mua quần áo online là chọn sai size. Để giúp bạn yên tâm mua sắm tại StyleX, chúng tôi chia sẻ một số bí quyết đơn giản mà hiệu quả.\n\nTrước hết, hãy **đo 3 vòng cơ bản**: ngực, eo và hông. So sánh số đo này với bảng size chuẩn mà StyleX cung cấp trong từng sản phẩm. Mỗi mẫu quần áo có thể có sự chênh lệch nhỏ tùy chất liệu và form dáng, nên bạn hãy đọc kỹ phần mô tả.\n\nNgoài ra, nếu bạn thích mặc thoải mái, nên chọn **size lớn hơn 1 số** so với form ôm sát. Ngược lại, nếu muốn phong cách trẻ trung, năng động thì **chọn form vừa vặn** là lựa chọn tốt nhất.\n\nVới chính sách đổi trả dễ dàng của StyleX, bạn hoàn toàn yên tâm khi mua sắm trực tuyến mà vẫn đảm bảo phong cách và sự vừa vặn.', NULL, 'published', 2003, 1, '2025-10-25 21:24:47', NULL, '2025-11-05 21:24:47', '2025-11-05 21:24:47'),
+(4, 56, 21, 'Phối đồ đôi cho cặp đôi – Tình yêu trong từng chi tiết thời trang', 'phoi-do-doi-cho-cap-doi-tinh-yeu-trong-tung-chi-tiet-thoi-trang-a4492ce8-389c-4c52-923b-1ef01e09b091', 'Gợi ý những set đồ đôi đẹp và tinh tế giúp các cặp đôi thể hiện phong cách riêng cùng StyleX.', 'Thời trang đôi không chỉ là xu hướng, mà còn là cách các cặp đôi thể hiện sự đồng điệu và kết nối trong phong cách sống. \n\nBạn không nhất thiết phải mặc giống hệt nhau để tạo cảm giác “đồ đôi”. Thay vào đó, hãy chọn **màu sắc, họa tiết hoặc chất liệu tương đồng**. Ví dụ, anh mặc áo sơ mi xanh navy thì cô có thể chọn váy xanh nhạt hoặc áo blouse cùng tone.\n\nCác bộ sưu tập Couple Collection của StyleX hướng đến sự tinh tế, trẻ trung và dễ phối. Chúng tôi tin rằng mỗi cặp đôi đều có thể tìm thấy phong cách riêng của mình – dù là năng động, thanh lịch hay lãng mạn.\n\nCùng StyleX tạo nên những khoảnh khắc thời trang đáng nhớ bên người thương của bạn!', NULL, 'published', 386, 1, '2025-10-10 21:24:47', NULL, '2025-11-05 21:24:47', '2025-11-05 21:24:47'),
+(5, 56, 26, 'Chăm sóc và bảo quản quần áo đúng cách – Giữ phong độ bền lâu', 'cham-soc-va-bao-quan-quan-ao-dung-cach-giu-phong-do-ben-lau-8190a1a6-059b-42bc-ac83-a885a30399d2', 'Hướng dẫn cách giặt, phơi và bảo quản quần áo giúp giữ form và màu sắc lâu dài, được StyleX khuyên dùng.', 'Đầu tư vào thời trang không chỉ dừng lại ở việc chọn đồ đẹp mà còn ở cách bạn **bảo quản quần áo** sau khi sử dụng. Một vài thói quen nhỏ có thể giúp trang phục luôn như mới và bền màu.\n\nHãy đọc kỹ nhãn hướng dẫn giặt trên từng sản phẩm – đặc biệt với các chất liệu như lụa, len hoặc cotton cao cấp. Giặt tay bằng nước lạnh sẽ giúp giữ form áo tốt hơn, trong khi phơi nơi thoáng mát tránh ánh nắng trực tiếp giúp vải không bị phai màu.\n\nQuần áo nên được **phân loại theo màu và chất liệu** trước khi giặt, đồng thời tránh dùng quá nhiều chất tẩy. Khi ủi, hãy chọn nhiệt độ phù hợp cho từng loại vải để tránh hư hỏng.\n\nTại StyleX, chúng tôi tin rằng phong cách bền vững bắt đầu từ việc chăm sóc trang phục đúng cách – để mỗi bộ đồ luôn thể hiện trọn vẹn đẳng cấp và cá tính của bạn.', NULL, 'published', 1521, 1, '2025-10-30 21:24:47', NULL, '2025-11-05 21:24:47', '2025-11-05 21:24:47');
 
 -- --------------------------------------------------------
 
@@ -683,7 +750,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('X92zbm07OxJpx4OSlCHK6hc5W0PcfSL6osVvTb20', 57, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWFFyZ0U0RzVOSjFmamxzclVuOHc3NVZpaGRjNWpsa3hlVWNkeEh6eCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU3O30=', 1761807140);
+('m3tP9UOXrWuCfeTnvmfAJx9TGx4mVaL5IhKas4BH', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTFlyWHdUaGpPN2hZWGlDWHZYbFJ4VDE0V1ZNUm1CTXRSeHJMYVZuVyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJuZXciO2E6MDp7fXM6Mzoib2xkIjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fX0=', 1762404604),
+('Vi39o9DGH7Pf8y2tPu38bPZhnovSI8km79lIHQts', 57, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSWw4M3lqd0dkaTVxd3U1QWlaeEF1RWlOMDl2M1Y5TmtGV0dGNExxdyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NDI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9iYW5uZXJzL2NyZWF0ZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjU3O30=', 1762354873);
 
 -- --------------------------------------------------------
 
@@ -751,6 +819,35 @@ INSERT INTO `sizes` (`id`, `name`, `description`, `status`, `created_at`, `updat
 (12, 'XL', NULL, 1, '2025-10-18 22:21:47', '2025-10-18 22:21:47', NULL),
 (13, 'XXL', NULL, 1, '2025-10-18 22:21:47', '2025-10-19 08:53:26', '2025-10-19 08:53:26'),
 (14, 'XXXL', NULL, 1, '2025-10-18 22:21:47', '2025-10-19 08:53:23', '2025-10-19 08:53:23');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `taggables`
+--
+
+CREATE TABLE `taggables` (
+  `id` bigint UNSIGNED NOT NULL,
+  `tag_id` bigint UNSIGNED NOT NULL,
+  `taggable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `taggable_id` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tags`
+--
+
+CREATE TABLE `tags` (
+  `id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -873,6 +970,37 @@ CREATE TABLE `user_loyalty` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vouchers`
+--
+
+CREATE TABLE `vouchers` (
+  `id` bigint UNSIGNED NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('percent','fixed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'percent',
+  `value` decimal(10,2) NOT NULL,
+  `max_discount_amount` decimal(12,2) DEFAULT NULL,
+  `min_order_amount` decimal(12,2) DEFAULT NULL,
+  `usage_limit` int UNSIGNED DEFAULT NULL,
+  `used_count` int UNSIGNED NOT NULL DEFAULT '0',
+  `starts_at` timestamp NULL DEFAULT NULL,
+  `ends_at` timestamp NULL DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `vouchers`
+--
+
+INSERT INTO `vouchers` (`id`, `code`, `description`, `type`, `value`, `max_discount_amount`, `min_order_amount`, `usage_limit`, `used_count`, `starts_at`, `ends_at`, `is_active`, `deleted_at`, `created_at`, `updated_at`) VALUES
+(1, 'HEHE123', NULL, 'percent', 10.00, 200000.00, 20.00, 5, 0, '2025-11-05 09:33:00', '2025-11-06 09:33:00', 1, NULL, '2025-11-05 02:33:16', '2025-11-05 03:17:19');
+
 --
 -- Indexes for dumped tables
 --
@@ -888,6 +1016,12 @@ ALTER TABLE `admin_reports`
 -- Indexes for table `app_data`
 --
 ALTER TABLE `app_data`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `banners`
+--
+ALTER TABLE `banners`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1013,7 +1147,10 @@ ALTER TABLE `permission_role`
 --
 ALTER TABLE `posts`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `posts_slug_unique` (`slug`);
+  ADD UNIQUE KEY `posts_slug_unique` (`slug`),
+  ADD KEY `posts_user_id_foreign` (`user_id`),
+  ADD KEY `posts_category_id_foreign` (`category_id`);
+ALTER TABLE `posts` ADD FULLTEXT KEY `posts_title_description_content_fulltext` (`title`,`description`,`content`);
 
 --
 -- Indexes for table `products`
@@ -1073,6 +1210,21 @@ ALTER TABLE `sizes`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `taggables`
+--
+ALTER TABLE `taggables`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `taggables_tag_id_foreign` (`tag_id`),
+  ADD KEY `taggables_taggable_type_taggable_id_index` (`taggable_type`,`taggable_id`);
+
+--
+-- Indexes for table `tags`
+--
+ALTER TABLE `tags`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `tags_slug_unique` (`slug`);
+
+--
 -- Indexes for table `tax_rates`
 --
 ALTER TABLE `tax_rates`
@@ -1101,6 +1253,13 @@ ALTER TABLE `user_loyalty`
   ADD KEY `user_loyalty_loyalty_tier_id_foreign` (`loyalty_tier_id`);
 
 --
+-- Indexes for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `vouchers_code_unique` (`code`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1117,6 +1276,12 @@ ALTER TABLE `app_data`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `banners`
+--
+ALTER TABLE `banners`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `brands`
 --
 ALTER TABLE `brands`
@@ -1126,7 +1291,7 @@ ALTER TABLE `brands`
 -- AUTO_INCREMENT for table `carts`
 --
 ALTER TABLE `carts`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -1168,19 +1333,19 @@ ALTER TABLE `loyalty_tiers`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1192,7 +1357,7 @@ ALTER TABLE `permissions`
 -- AUTO_INCREMENT for table `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -1231,6 +1396,18 @@ ALTER TABLE `sizes`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
+-- AUTO_INCREMENT for table `taggables`
+--
+ALTER TABLE `taggables`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tags`
+--
+ALTER TABLE `tags`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `tax_rates`
 --
 ALTER TABLE `tax_rates`
@@ -1253,6 +1430,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `user_loyalty`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
@@ -1292,6 +1475,13 @@ ALTER TABLE `permission_role`
   ADD CONSTRAINT `permission_role_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `posts`
+--
+ALTER TABLE `posts`
+  ADD CONSTRAINT `posts_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `posts_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `products`
 --
 ALTER TABLE `products`
@@ -1313,6 +1503,12 @@ ALTER TABLE `product_variants`
   ADD CONSTRAINT `product_variants_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `product_variants_size_id_foreign` FOREIGN KEY (`size_id`) REFERENCES `sizes` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `product_variants_texture_id_foreign` FOREIGN KEY (`texture_id`) REFERENCES `textures` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `taggables`
+--
+ALTER TABLE `taggables`
+  ADD CONSTRAINT `taggables_tag_id_foreign` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `user_loyalty`
