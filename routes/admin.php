@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\ShippingCarrierController;
 use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\ProductImageController;
 
 // Admin và Staff routes - cả hai đều có thể truy cập
 Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
@@ -50,7 +51,14 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
             Route::post('/{product}/toggle-feature', [ProductController::class, 'toggleFeature'])->name('toggleFeature');
             Route::patch('/{id}/restore', [ProductController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('force-delete');
+            
+            // Nén/resize ảnh
+            Route::post('/{product}/images', [ProductImageController::class, 'storeProduct'])
+                ->name('images.store');
         });
+        // Nén/resize ảnh cho variant-image
+        Route::post('/variants/{variant}/images', [ProductImageController::class, 'storeVariant'])
+            ->name('variants.images.store');
 
         // Profile routes - Admin và Staff đều có thể chỉnh sửa thông tin cá nhân
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
