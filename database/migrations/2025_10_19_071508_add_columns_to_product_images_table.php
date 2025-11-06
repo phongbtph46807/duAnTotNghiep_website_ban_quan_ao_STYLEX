@@ -11,23 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('product_images', function (Blueprint $table) {
-            if (!Schema::hasColumn('product_images', 'product_id')) {
-                $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            }
-            if (!Schema::hasColumn('product_images', 'image_path')) {
-                $table->string('image_path');
-            }
-            if (!Schema::hasColumn('product_images', 'alt_text')) {
-                $table->string('alt_text')->nullable();
-            }
-            if (!Schema::hasColumn('product_images', 'sort_order')) {
-                $table->integer('sort_order')->default(0);
-            }
-            if (!Schema::hasColumn('product_images', 'is_primary')) {
-                $table->boolean('is_primary')->default(false);
-            }
-        });
+        // Schema::table('product_images', function (Blueprint $table) {
+        //     if (!Schema::hasColumn('product_images', 'product_id')) {
+        //         $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+        //     }
+        //     if (!Schema::hasColumn('product_images', 'image_path')) {
+        //         $table->string('image_path');
+        //     }
+        //     if (!Schema::hasColumn('product_images', 'alt_text')) {
+        //         $table->string('alt_text')->nullable();
+        //     }
+        //     if (!Schema::hasColumn('product_images', 'sort_order')) {
+        //         $table->integer('sort_order')->default(0);
+        //     }
+        //     if (!Schema::hasColumn('product_images', 'is_primary')) {
+        //         $table->boolean('is_primary')->default(false);
+        //     }
+        // });
     }
 
     public function down(): void

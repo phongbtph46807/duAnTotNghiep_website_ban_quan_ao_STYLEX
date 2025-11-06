@@ -18,9 +18,15 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             CategorySeeder::class,
-            ProductSeeder::class,
-            ProductImageSeeder::class,
+            LoyaltyTierSeeder::class,
+            // ProductSeeder::class,
+            // ProductImageSeeder::class,
+            ShippingCarrierSeeder::class,
+            TaxRateSeeder::class,
             TextureSeeder::class,
+            BannerSeeder::class,
+            PostSeeder::class,
+            TagSeeder::class,
         ]);
     }
 }

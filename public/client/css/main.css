@@ -906,6 +906,69 @@ Input, textarea : 14px/1.6 '', Arial, sans-serif;
 
 
 /*//////////////////////////////////////////////////////////////////
+[ Cart Notification ]*/
+.cart-notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  background: #2d2d2d;
+  padding: 18px 25px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  min-width: 320px;
+  max-width: 420px;
+  transform: translateX(500px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.cart-notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.cart-notification span {
+  font-size: 15px;
+  color: #ffffff;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.cart-notification.success {
+  border-left: 4px solid #ffffff;
+}
+
+.cart-notification.error {
+  border-left: 4px solid #cccccc;
+}
+
+.cart-notification i {
+  font-size: 24px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+}
+
+.cart-notification.success i {
+  background-color: #ffffff;
+  color: #2d2d2d;
+}
+
+.cart-notification.error i {
+  background-color: #cccccc;
+  color: #2d2d2d;
+}
+
+
+/*//////////////////////////////////////////////////////////////////
 [ Header cart ]*/
 .wrap-header-cart {
   position: fixed;
@@ -926,23 +989,26 @@ Input, textarea : 14px/1.6 '', Arial, sans-serif;
 .header-cart {
   position: fixed;
   z-index: 1100;
-  width: 390px;
-  max-width: calc(100% - 30px);
+  width: 450px;
+  max-width: calc(100% - 40px);
   height: 100vh;
   top: 0;
-  right: -400px;
+  right: -500px;
   background-color: #fff;
   
-  -webkit-transition: all 0.4s;
-  -o-transition: all 0.4s;
-  -moz-transition: all 0.34;  
-  transition: all 0.4s;
+  -webkit-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  -o-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  -moz-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);  
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-  box-shadow: 0 3px 6px 0px rgba(0, 0, 0, 0.18);
-  -moz-box-shadow: 0 3px 6px 0px rgba(0, 0, 0, 0.18);
-  -webkit-box-shadow: 0 3px 6px 0px rgba(0, 0, 0, 0.18);
-  -o-box-shadow: 0 3px 6px 0px rgba(0, 0, 0, 0.18);
-  -ms-box-shadow: 0 3px 6px 0px rgba(0, 0, 0, 0.18);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: -2px 0 10px rgba(0, 0, 0, 0.25);
+  -webkit-box-shadow: -2px 0 10px rgba(0, 0, 0, 0.25);
+  -o-box-shadow: -2px 0 10px rgba(0, 0, 0, 0.25);
+  -ms-box-shadow: -2px 0 10px rgba(0, 0, 0, 0.25);
+  
+  display: flex;
+  flex-direction: column;
 }
 
 .header-cart::after {
@@ -955,7 +1021,9 @@ Input, textarea : 14px/1.6 '', Arial, sans-serif;
 
 .show-header-cart {
   visibility: visible;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0,0,0,0.75);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 
 .show-header-cart .header-cart {

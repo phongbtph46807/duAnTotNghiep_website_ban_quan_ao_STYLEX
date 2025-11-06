@@ -3,77 +3,310 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Posts\StorePostRequest;
+use App\Http\Requests\Admin\Posts\UpdatePostRequest;
+use App\Models\Category;
 use App\Models\Post;
-use Illuminate\Support\Str;
+use App\Models\Tag;
+use App\Traits\LoggableTrait;
+use App\Traits\UploadToLocalTrait;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+use function PHPUnit\Framework\isEmpty;
 
 class PostController extends Controller
 {
-    const OBJECT = 'admin.post';
-    const DOT = '.';
+    use LoggableTrait, UploadToLocalTrait;
 
-    public function index()
+    const FOLDER = 'blogs';
+
+    public function index(Request $request)
     {
-        $posts = Post::with('author')->latest()->get();
-        return view(self::OBJECT . self::DOT . __FUNCTION__, compact('posts'));
+        try {
+            $title = 'Quản lý bài viết';
+            $subTitle = 'Danh sách bài viết';
+
+            $categories = Category::query()->get();
+            $queryPost = Post::with(['user:id,name', 'category:id,name']);
+            $posts_total = Post::query()->count();
+            $posts_published = Post::query()->where('status', 'published')->count();
+            $posts_is_hot = Post::query()->where('is_hot', 1)->count();
+            $posts_deleted = Post::onlyTrashed()->count();
+            $posts = $queryPost->paginate(10);
+
+            return view('admin.posts.index', compact([
+                'title',
+                'subTitle',
+                'categories',
+                'posts',
+                'posts_total',
+                'posts_published',
+                'posts_is_hot',
+                'posts_deleted',
+            ]));
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại');
+        }
     }
 
     public function create()
     {
-        return view(self::OBJECT . self::DOT . __FUNCTION__);
+        try {
+            $title = 'Quản lý bài viết';
+            $subTitle = 'Thêm mới bài viết';
+
+            $categories = Category::query()->get();
+            $tags = Tag::query()->get();
+
+            return view('admin.posts.create', compact([
+                'title',
+                'subTitle',
+                'categories',
+                'tags'
+            ]));
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        $request->validate([
-            'title'   => 'required|string|max:255',
-            'slug'    => 'nullable|string|max:255|unique:posts,slug',
-            'content' => 'required|string',
-        ]);
-        $slug = $request->slug ?: Str::slug($request->title);
+        try {
+            $request->validated();
+            DB::beginTransaction();
 
-        $post = Post::create([
-            'title'     => $request->title,
-            'slug'      => $slug,
-            'content'   => $request->content,
-            'author_id' => Auth::id(),
-        ]);
+            $data = $request->except('thumbnail');
 
-        return redirect()->route('admin.post.index')->with('success', 'Bài viết đã được tạo!');
+            if ($request->hasFile('thumbnail')) {
+                $data['thumbnail'] = $this->uploadToLocal($request->file('thumbnail'), self::FOLDER);
+            }
+
+            $data['user_id'] = Auth::id();
+
+            if ($request->input('status') === 'scheduled') {
+                if (!$request->has('published_at') || empty($request->input('published_at'))) {
+                    throw new \Exception('Ngày xuất bản là bắt buộc đối với các bài đăng đã lên lịch');
+                }
+                $data['published_at'] = $request->input('published_at');
+            } else {
+                $data['published_at'] = $request->input('status') === 'published' ? now() : null;
+            }
+
+            do {
+                $data['slug'] = Str::slug($request->title) . '-' . substr(Str::uuid(), 0, 10);
+            } while (Post::query()->where('slug', $data['slug'])->exists());
+
+            $post = Post::query()->create($data);
+
+            if (!empty($request->input('tags'))) {
+                $tags = collect($request->input('tags'))->map(function ($tagName) {
+                    return Tag::query()->firstOrCreate([
+                        'name' => $tagName,
+                        'slug' => Str::slug($tagName) ?? Str::uuid()
+                    ]);
+                });
+
+                $post->tags()->sync($tags->pluck('id'));
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.posts.index')->with('success', 'Thêm mới bài viết thành công');
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            if (
+                !empty($data['thumbnail'])
+                && filter_var($data['thumbnail'], FILTER_VALIDATE_URL)
+            ) {
+                $this->deleteFromLocal($data['thumbnail'], 'posts');
+            }
+
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 
-    public function edit($id)
+    public function show(string $id)
     {
-        $post = Post::findOrFail($id);
-        return view(self::OBJECT . self::DOT . __FUNCTION__, compact('post'));
+        try {
+            $title = 'Quản lý bài viết';
+            $subTitle = 'Chi tiết bài viết';
+
+            $post = Post::query()
+                ->with(['tags:id,name', 'category:id,name,parent_id', 'user:id,name'])
+                ->find($id);
+
+            return view('admin.posts.show', compact([
+                'title',
+                'subTitle',
+                'post',
+            ]));
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Không tìm thấy bài viết');
+        }
     }
 
-    public function update(Request $request, $id)
+    public function edit(string $id)
     {
-        $request->validate([
-            'title'   => 'required|string|max:255',
-            'slug'    => 'nullable|string|max:255|unique:posts,slug,' . $id,
-            'content' => 'required|string',
-        ]);
+        try {
+            $title = 'Quản lý bài viết';
+            $subTitle = 'Cập nhật bài viết';
 
-        $post = Post::findOrFail($id);
-        $slug = $request->slug ?: Str::slug($request->title);
+            $categories = Category::query()->get();
+            $tags = Tag::query()->get();
+            $post = Post::query()
+                ->with(['tags:id,name', 'category:id,name,parent_id'])
+                ->find($id);
 
-        $post->update([
-            'title'   => $request->title,
-            'slug'    => $slug,
-            'content' => $request->content,
-        ]);
+            $categoryIds = $post->category->pluck('id')->toArray();
+            $tagIds = $post->tags->pluck('id')->toArray();
 
-        return redirect()->route('admin.post.index')->with('success', 'Bài viết đã được cập nhật!');
+            return view('admin.posts.edit', compact([
+                'title',
+                'subTitle',
+                'categories',
+                'tags',
+                'post',
+                'categoryIds',
+                'tagIds'
+            ]));
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Không tìm thấy bài viết');
+        }
     }
 
-    public function destroy($id)
+    public function update(UpdatePostRequest $request, string $id)
     {
-        $post = Post::findOrFail($id);
-        $post->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.post.index')->with('success', 'Bài viết đã được xóa!');
+            $data = $request->except('thumbnail', 'categories', 'is_hot');
+
+            $post = Post::query()->with(['tags'])->find($id);
+
+            if ($request->hasFile('thumbnail')) {
+                // Xóa thumbnail cũ nếu tồn tại
+                if ($post->thumbnail) {
+                    // Kiểm tra nếu là URL thì không cần xóa (external URL)
+                    if (!filter_var($post->thumbnail, FILTER_VALIDATE_URL)) {
+                        // Xóa file cũ từ storage
+                        $this->deleteFromLocal($post->thumbnail, self::FOLDER);
+                    }
+                }
+
+                // Upload thumbnail mới
+                $data['thumbnail'] = $this->uploadToLocal($request->file('thumbnail'), self::FOLDER);
+            }
+
+            $data['is_hot'] = $request->input('is_hot') ?? 0;
+            if ($request->input('status') === 'scheduled') {
+                if (!$request->has('published_at') || empty($request->input('published_at'))) {
+                    throw new \Exception('Publish date is required for scheduled posts');
+                }
+                $data['published_at'] = $request->input('published_at');
+            } else {
+                $data['published_at'] = $request->input('status') === 'published' ? now() : null;
+            }
+
+            do {
+                $data['slug'] = Str::slug($request->title) . '-' . substr(Str::uuid(), 0, 10);
+            } while (Post::query()->where('slug', $data['slug'])->exists());
+
+            $post->update($data);
+
+            if (!empty($request->input('tags'))) {
+                $tags = collect($request->input('tags'))->map(function ($tagName) {
+                    return Tag::firstOrCreate([
+                        'name' => $tagName,
+                        'slug' => Str::slug($tagName) ?? Str::uuid()
+                    ]);
+                });
+
+                $post->tags()->sync($tags->pluck('id'));
+            } else {
+                $post->tags()->detach();
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.posts.edit', $id)->with('success', 'Cập nhật bài viết thành công');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if (isset($data['thumbnail']) && !empty($data['thumbnail']) && filter_var($data['thumbnail'], FILTER_VALIDATE_URL)) {
+                $this->deleteFromLocal($data['thumbnail'], self::FOLDER);
+            }
+
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Cập nhật bài viết không thành công');
+        }
+    }
+            public function destroy(Post $post)
+    {
+        try {
+            $post->delete();
+
+            return redirect()
+                ->route('admin.posts.index')
+                ->with('success', 'Đã chuyển vào thùng rác!');
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+
+    public function trash()
+    {
+        try {
+            $postsDeleted = Post::onlyTrashed()->latest('id')->paginate(10);
+            return view('admin.posts.trash', compact('postsDeleted'));
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+    public function restore($id)
+    {
+        try {
+            $post = Post::withTrashed()->findOrFail($id);
+            $post->restore();
+            return redirect()->route('admin.posts.trash')->with('success', 'Khôi phục bài viết thành công');
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
+    }
+    public function forceDelete($id)
+    {
+        try {
+            $post = Post::withTrashed()->findOrFail($id);
+            $post->forceDelete();
+            return redirect()->route('admin.posts.trash')->with('success', 'Xóa cứng bài viết thành công');
+        } catch (\Exception $e) {
+            $this->logError($e);
+
+            return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
+        }
     }
 }

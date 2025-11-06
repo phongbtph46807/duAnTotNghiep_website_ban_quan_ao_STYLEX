@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
+use App\Models\Cart;
 use App\Models\User;
 use App\Traits\LoggableTrait;
 use Illuminate\Http\Request;
@@ -75,6 +76,35 @@ class AuthController extends Controller
                 if(Auth::user()->email_verified_at == null){
                     Auth::logout();
                     return back()->with('error', 'Hãy xác thực tài khoản của bạn!');
+                }
+                // Merge session cart into DB once after login
+                try {
+                    $sessionItems = $request->session()->get('cart.items', []);
+                    if (!empty($sessionItems)) {
+                        foreach ($sessionItems as $it) {
+                            if (empty($it['product_id'])) { continue; }
+                            $existing = Cart::where('user_id', Auth::id())
+                                ->where('product_id', $it['product_id'])
+                                ->where('variant_id', $it['variant_id'] ?? null)
+                                ->first();
+                            if ($existing) {
+                                $existing->quantity = (int)$existing->quantity + (int)($it['quantity'] ?? 1);
+                                $existing->save();
+                            } else {
+                                Cart::create([
+                                    'user_id' => Auth::id(),
+                                    'session_id' => null,
+                                    'product_id' => (int)$it['product_id'],
+                                    'variant_id' => $it['variant_id'] ?? null,
+                                    'quantity' => (int)($it['quantity'] ?? 1),
+                                ]);
+                            }
+                        }
+                        // clear session cart after merge
+                        $request->session()->forget('cart.items');
+                    }
+                } catch (\Throwable $e) {
+                    // ignore merge errors to not block login
                 }
                 if(Auth::user()->role == 1 || Auth::user()->role == 2){
                     return redirect()->route('admin.dashboard');
