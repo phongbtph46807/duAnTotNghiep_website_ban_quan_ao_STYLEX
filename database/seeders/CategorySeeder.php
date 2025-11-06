@@ -13,7 +13,7 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         // Clear table first
-        // Category::truncate();
+        Category::truncate();
 
         // Danh mục cha chính
         $aoNam = Category::create(['name' => 'Áo Nam', 'parent_id' => null, 'status' => 1]);

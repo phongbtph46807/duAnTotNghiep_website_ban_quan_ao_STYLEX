@@ -180,29 +180,21 @@
                                             class="ri-delete-bin-2-line"></i></button>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end ">
-                                <form method="GET" action="{{ route('admin.products.index') }}"
-                                    class="d-flex align-items-center" style="max-width: 320px;">
-                                    <div class="input-group">
-                                        <input type="text" name="name" value="{{ request('name') }}"
-                                            class="form-control" placeholder="Tìm kiếm sản phẩm...">
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="ri-search-line"></i>
-                                        </button>
+                            <div class="col-sm">
+                                <div class="d-flex justify-content-sm-end">
+                                    <div class="search-box ms-2">
+                                        <input type="text" class="form-control search" placeholder="Search...">
+                                        <i class="ri-search-line search-icon"></i>
                                     </div>
-                                </form>
+                                </div>
                             </div>
-
-
-
-
                         </div>
 
                         <div class="table-responsive table-card mt-3 mb-1">
                             <table class="table align-middle text-center table-nowrap" id="customerTable">
                                 <thead class="table-light">
                                     <tr>
-
+                                        
                                         <th data-sort="customer_id">ID</th>
                                         <th data-sort="customer_name">Tên sản phẩm</th>
                                         <th data-sort="email">Ảnh</th>
@@ -216,23 +208,20 @@
                                 <tbody class="list form-check-all">
                                     @foreach ($items as $item)
                                         <tr>
-
+                                           
                                             <td class="customer_id">{{ $item->id }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                <img src="{{ $item->thumbnail_url }}" width="50" height="50"
-                                                    class="rounded" alt="Product Image"
-                                                    style="object-fit: cover; background-color: #f8f9fa;">
+                                                <img src="{{ $item->thumbnail_url }}" width="50" height="50" class="rounded" alt="Product Image" style="object-fit: cover; background-color: #f8f9fa;">
                                             </td>
                                             <td class="customer_name">{{ $item->category->name }}</td>
                                             <td class="text-center">
                                                 <span class="badge bg-info-subtle text-info">
-                                                    {{ $item->productVariants ? $item->productVariants->count() : 0 }} biến
-                                                    thể
+                                                    {{ $item->productVariants ? $item->productVariants->count() : 0 }} biến thể
                                                 </span>
-                                                @if ($item->productVariants && $item->productVariants->count() > 0)
+                                                @if($item->productVariants && $item->productVariants->count() > 0)
                                                     <br><small class="text-muted">
-                                                        @foreach ($item->productVariants->take(2) as $variant)
+                                                        @foreach($item->productVariants->take(2) as $variant)
                                                             {{ $variant->color->name ?? 'N/A' }}-{{ $variant->size->name ?? 'N/A' }}-{{ $variant->texture->name ?? 'N/A' }}{{ !$loop->last ? ', ' : '' }}
                                                         @endforeach
                                                     </small>
@@ -247,11 +236,11 @@
                                             </td>
                                             <td class="status">
                                                 @if ($item->is_active == 1)
-                                                    <span class="badge bg-success-subtle text-success text-uppercase">Hoạt
-                                                        động</span>
+                                                    <span
+                                                        class="badge bg-success-subtle text-success text-uppercase">Hoạt động</span>
                                                 @else
-                                                    <span class="badge bg-warning-subtle text-warning text-uppercase">Ngừng
-                                                        hoạt động</span>
+                                                    <span
+                                                        class="badge bg-warning-subtle text-warning text-uppercase">Ngừng hoạt động</span>
                                                 @endif
                                             </td>
                                             <td>

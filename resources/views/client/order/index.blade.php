@@ -58,7 +58,11 @@
             @endphp
             <span class="co-badge {{ $cls }}">{{ $label }}</span>
           </td>
-          <td><a href="{{ route('client.order.track',['code'=>$order->code??$order->id]) }}" class="btn-primary-x">Xem chi tiết</a></td>
+          <td>
+            <a href="{{ route('client.order.track',['code'=>$order->code??$order->id]) }}" class="btn-primary-x">Xem chi tiết</a>
+            <a href="{{ route('client.order.invoice',['code'=>$order->code??$order->id]) }}" class="btn-primary-x" style="background:#eef3fb;color:#6777ef;border:1px solid #6777ef;margin-left:6px;">Hóa đơn PDF</a>
+          </td>
+          
         </tr>
         @endforeach
       </tbody>

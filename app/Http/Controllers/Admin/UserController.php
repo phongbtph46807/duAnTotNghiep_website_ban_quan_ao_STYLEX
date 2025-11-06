@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
     use LoggableTrait, UploadToLocalTrait;
+
     const FOLDER = 'users';
     const URLIMAGEDEFAULT = "https://res.cloudinary.com/dvrexlsgx/image/upload/v1732148083/Avatar-trang-den_apceuv_pgbce6.png";
     public function index(Request $request)
@@ -181,6 +182,7 @@ class UserController extends Controller
             $oldStatus = $user->status;
 
             if ($request->hasFile('avatar')) {
+
                 $avatarFile = $request->file('avatar');
                 $data['avatar'] = $this->uploadToLocal($avatarFile, self::FOLDER);
             }
@@ -194,9 +196,11 @@ class UserController extends Controller
                 event(new UserStatusChanged($user, $oldStatus, $newStatus, $oldRole, $newRole));
             }
 
+
             if (!empty($data['avatar']) && !empty($oldAvatar) && $oldAvatar !== self::URLIMAGEDEFAULT) {
                 $this->deleteFromLocal($oldAvatar, self::FOLDER);
             }
+
 
             DB::commit();
             return redirect()->route('admin.users.edit', $user)->with('success', 'Cập nhật thành công');

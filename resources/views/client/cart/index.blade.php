@@ -3,155 +3,6 @@
 @section('title', 'Giỏ Hàng - ' . env('APP_NAME'))
 
 @section('content')
-<style>
-	/* Cart Dropdown Styles */
-	.cart-dropdown-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-bottom: 10px;
-	}
-	
-	.cart-dropdown-title {
-		margin: 0;
-		font-size: 16px;
-		font-weight: 600;
-		color: #333;
-	}
-	
-	.cart-dropdown-wrapper {
-		position: relative;
-	}
-	
-	.cart-dropdown-btn {
-		background: #6777ef;
-		border: none;
-		padding: 4px 8px;
-		border-radius: 4px;
-		color: white;
-		cursor: pointer;
-		font-size: 12px;
-		transition: all 0.2s;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-	
-	.cart-dropdown-btn:hover {
-		background: #5568d3;
-	}
-	
-	.cart-dropdown-btn:focus {
-		outline: none;
-		box-shadow: 0 0 0 2px rgba(103, 119, 239, 0.25);
-	}
-	
-	.cart-dropdown-btn i {
-		font-size: 10px;
-		transition: transform 0.2s;
-	}
-	
-	.cart-dropdown-btn.active i {
-		transform: rotate(180deg);
-	}
-	
-	.cart-dropdown-menu {
-		display: none;
-		position: absolute;
-		right: 0;
-		top: 100%;
-		margin-top: 6px;
-		min-width: 320px;
-		max-width: 360px;
-		max-height: 240px;
-		overflow-y: auto;
-		background: white;
-		border-radius: 8px;
-		box-shadow: 0 8px 24px rgba(0,0,0,0.16);
-		z-index: 1000;
-		padding: 8px;
-	}
-	
-	.cart-dropdown-menu.show {
-		display: block;
-	}
-	
-	.cart-dropdown-item {
-		padding: 8px 10px;
-		border-bottom: 1px solid #f3f3f3;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		cursor: pointer;
-		transition: background 0.2s;
-		border-radius: 6px;
-	}
-	
-	.cart-dropdown-item:hover {
-		background-color: #f8f9fa;
-	}
-	
-	.cart-dropdown-item:last-child {
-		border-bottom: none;
-	}
-	
-	.cart-dropdown-img {
-		width: 44px;
-		height: 44px;
-		object-fit: cover;
-		border-radius: 6px;
-		flex-shrink: 0;
-	}
-	
-	.cart-dropdown-content {
-		flex: 1;
-		min-width: 0;
-	}
-	
-	.cart-dropdown-name {
-		color: #333;
-		text-decoration: none;
-		font-weight: 600;
-		font-size: 13px;
-		display: block;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		line-height: 1.35;
-	}
-	
-	.cart-dropdown-name:hover {
-		color: #6777ef;
-	}
-	
-	.cart-dropdown-info {
-		color: #666;
-		display: block;
-		margin-top: 2px;
-		font-size: 11px;
-	}
-	
-	/* Scrollbar styling */
-	.cart-dropdown-menu::-webkit-scrollbar {
-		width: 6px;
-	}
-	
-	.cart-dropdown-menu::-webkit-scrollbar-track {
-		background: #f1f1f1;
-		border-radius: 3px;
-	}
-	
-	.cart-dropdown-menu::-webkit-scrollbar-thumb {
-		background: #ccc;
-		border-radius: 3px;
-	}
-	
-	.cart-dropdown-menu::-webkit-scrollbar-thumb:hover {
-		background: #aaa;
-	}
-</style>
 
 <!-- breadcrumb -->
 <div class="container">
@@ -173,45 +24,6 @@
 		<div class="row">
 			<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
 				<div class="m-l-25 m-r--38 m-lr-0-xl">
-					@if(count($cartData) > 0)
-					<div class="cart-dropdown-header">
-						<h4 class="cart-dropdown-title">Giỏ hàng của bạn ({{ count($cartData) }} sản phẩm)</h4>
-						<div class="cart-dropdown-wrapper">
-							<button class="cart-dropdown-btn" type="button" id="cartDropdown">
-								Xem tất cả <i class="fa fa-chevron-down"></i>
-							</button>
-							<div class="cart-dropdown-menu" id="cartDropdownMenu">
-								@foreach($cartData as $item)
-								<div class="cart-dropdown-item">
-									@php
-										if (isset($item['image_url'])) {
-											$imageUrl = $item['image_url'];
-										} else {
-											$firstImage = $item['product']->productImages->first();
-											if ($firstImage) {
-												$imagePath = public_path($firstImage->image_path);
-												$imageUrl = file_exists($imagePath) ? asset($firstImage->image_path) : asset('client/images/product-01.jpg');
-											} else {
-												$imageUrl = asset('client/images/product-01.jpg');
-											}
-										}
-									@endphp
-									<img src="{{ $imageUrl }}" alt="{{ $item['product']->name }}" class="cart-dropdown-img">
-									<div class="cart-dropdown-content">
-										<a href="{{ route('client.products.show', $item['product']->id) }}" class="cart-dropdown-name">
-											{{ $item['product']->name }}
-										</a>
-										<small class="cart-dropdown-info">
-											x{{ $item['quantity'] }} - {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }} ₫
-										</small>
-									</div>
-								</div>
-								@endforeach
-							</div>
-						</div>
-					</div>
-					@endif
-					
 					<div class="wrap-table-shopping-cart">
 						<table class="table-shopping-cart">
 							<tr class="table-head">
@@ -249,12 +61,14 @@
 										</td>
 										<td class="column-2">
 											<a href="{{ route('client.products.show', $item['product']->id) }}">{{ $item['product']->name }}</a>
-											@if($item['size'] || $item['color'])
+											@if($item['size'] || $item['color'] || $item['texture'])
 												<br>
 												<small class="text-muted">
 													@if($item['size']) Size: {{ $item['size'] }} @endif
 													@if($item['size'] && $item['color']) | @endif
 													@if($item['color']) Màu: {{ $item['color'] }} @endif
+													@if(($item['size'] || $item['color']) && $item['texture']) | @endif
+													@if($item['texture']) Chất liệu: {{ $item['texture'] }} @endif
 												</small>
 											@endif
 										</td>
@@ -342,22 +156,6 @@
 @push('scripts')
 <script>
 	$(document).ready(function() {
-		// Dropdown toggle functionality
-		$(document).on('click', '#cartDropdown', function(e) {
-			e.preventDefault();
-			e.stopPropagation();
-			$(this).toggleClass('active');
-			$('#cartDropdownMenu').toggleClass('show');
-		});
-		
-		// Close dropdown when clicking outside
-		$(document).on('click', function(e) {
-			if (!$(e.target).closest('.cart-dropdown-wrapper').length) {
-				$('#cartDropdown').removeClass('active');
-				$('#cartDropdownMenu').removeClass('show');
-			}
-		});
-		
 		// Update quantity
 		$('.num-product').on('change', function() {
 			const cartId = $(this).data('cart-id');

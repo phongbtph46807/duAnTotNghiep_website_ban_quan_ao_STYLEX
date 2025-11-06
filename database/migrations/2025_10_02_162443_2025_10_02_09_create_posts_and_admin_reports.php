@@ -7,14 +7,14 @@ return new class extends Migration
     public function up()
     {
         // 1. Blog / Nội dung
-        // Schema::create('posts', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->string('title', 255);
-        //     $table->string('slug', 255)->unique();
-        //     $table->text('content');
-        //     $table->unsignedBigInteger('author_id'); // Tạm thời không có FK
-        //     $table->timestamps();
-        // });
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title', 255);
+            $table->string('slug', 255)->unique();
+            $table->text('content');
+            $table->unsignedBigInteger('author_id'); // Tạm thời không có FK
+            $table->timestamps();
+        });
         // 2. Báo cáo Quản trị
         Schema::create('admin_reports', function (Blueprint $table) {
             $table->id();
@@ -31,6 +31,6 @@ return new class extends Migration
     public function down()
     {
         Schema::dropIfExists('admin_reports');
-        // Schema::dropIfExists('posts');
+        Schema::dropIfExists('posts');
     }
 };

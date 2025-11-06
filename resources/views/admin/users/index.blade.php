@@ -59,25 +59,24 @@
                         <i class="ri-group-line"></i>
                     </div>
                     <h5 class="card-title text-muted mb-2">Tổng cộng</h5>
-                    <h3 class="card-text fw-bold text-primary">
-                        {{ ($userCounts->user_count ?? 0) + ($userCounts->staff_count ?? 0) }}</h3>
+                    <h3 class="card-text fw-bold text-primary">{{ ($userCounts->user_count ?? 0) + ($userCounts->staff_count ?? 0) }}</h3>
                 </div>
             </div>
         </div>
 
         <!-- Số Staff -->
-        @if (auth()->user()->role == 1)
-            <div class="col-6 col-md-2 mb-3">
-                <div class="card stats-card approved-card">
-                    <div class="card-body text-center">
-                        <div class="stat-icon text-warning">
-                            <i class="ri-team-line"></i>
-                        </div>
-                        <h5 class="card-title text-muted mb-2">Staff</h5>
-                        <h3 class="card-text fw-bold text-warning">{{ $userCounts->staff_count ?? 0 }}</h3>
+        @if(auth()->user()->role == 1)
+        <div class="col-6 col-md-2 mb-3">
+            <div class="card stats-card approved-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon text-warning">
+                        <i class="ri-team-line"></i>
                     </div>
+                    <h5 class="card-title text-muted mb-2">Staff</h5>
+                    <h3 class="card-text fw-bold text-warning">{{ $userCounts->staff_count ?? 0 }}</h3>
                 </div>
             </div>
+        </div>
         @endif
 
         <!-- Số User thường -->
@@ -132,7 +131,7 @@
             </div>
         </div>
     </div>
-
+    
     <!-- Instructions -->
     <div class="row">
         <div class="col-12">
@@ -141,14 +140,14 @@
                     <i class="ri-information-line me-2"></i>Lưu ý quan trọng
                 </h6>
                 <p class="mb-0">
-                    <strong>Trang này chỉ tạo tài khoản User.</strong>
-                    Để tạo Admin hoặc Staff, vui lòng sử dụng trang
+                    <strong>Trang này chỉ tạo tài khoản User.</strong> 
+                    Để tạo Admin hoặc Staff, vui lòng sử dụng trang 
                     <a href="{{ route('admin.roles.index') }}" class="alert-link fw-bold">Phân quyền người dùng</a>.
                 </p>
             </div>
         </div>
     </div>
-
+    
     <div class="row">
         <div class="col-lg-12">
             <div class="card">
@@ -193,8 +192,7 @@
                                     </option>
                                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Ngừng
                                         hoạt động</option>
-                                    <option value="blocked" {{ request('status') == 'blocked' ? 'selected' : '' }}>Bị Khóa
-                                    </option>
+                                    <option value="blocked" {{ request('status') == 'blocked' ? 'selected' : '' }}>Bị Khóa</option>
                                 </select>
                             </div>
 
@@ -230,19 +228,14 @@
                                             class="ri-add-line align-bottom me-1"></i> Thêm mới</a>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end mb-3">
-                                <form method="GET" action="{{ route('admin.users.index') }}"
-                                    class="d-flex align-items-center" style="max-width: 320px;">
-                                    <div class="input-group">
-                                        <input type="text" name="name" value="{{ request('name') }}"
-                                            class="form-control" placeholder="Tìm kiếm User...">
-                                        <button class="btn btn-primary" type="submit">
-                                            <i class="ri-search-line"></i>
-                                        </button>
+                            <div class="col-sm">
+                                <div class="d-flex justify-content-sm-end">
+                                    <div class="search-box ms-2">
+                                        <input type="text" class="form-control search" placeholder="Search...">
+                                        <i class="ri-search-line search-icon"></i>
                                     </div>
-                                </form>
+                                </div>
                             </div>
-
                         </div>
 
                         <div class="table-responsive table-card mt-3 mb-1">
@@ -274,7 +267,7 @@
                                             <td class="customer_name">{{ $item->email }}</td>
                                             <td class="phone">{{ $item->phone_number ?? 'Chưa có thông tin' }}</td>
                                             <td>
-                                                @if ($item->email_verified_at != null)
+                                                @if($item->email_verified_at != null)
                                                     <span class="badge bg-success">
                                                         <i class="ri-check-line me-1"></i>Đã xác minh
                                                     </span>
@@ -285,7 +278,7 @@
                                                 @endif
                                             </td>
                                             <td class="phone">
-                                                @if ($item->role == 1)
+                                                @if($item->role == 1)
                                                     <span class="badge bg-danger">Admin</span>
                                                 @elseif($item->role == 2)
                                                     <span class="badge bg-warning">Staff</span>

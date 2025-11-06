@@ -1,17 +1,12 @@
 	<style>
 		/* Mini-cart polish */
-		.header-cart-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px 6px; border-radius: 8px; transition: background-color .2s ease; }
+		.header-cart-item { display: flex; align-items: flex-start; gap: 12px; padding: 8px; border-radius: 8px; transition: background-color .2s ease; }
 		.header-cart-item:hover { background: #fafafa; }
-		.header-cart-item-img img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; display: block; }
+		.header-cart-item-img img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; display: block; }
 		.header-cart-item-name { font-weight: 600; color: #333; }
 		.header-cart-item-info { color: #555; font-weight: 500; }
 		.delete-item i { font-size: 18px; color: #999; }
 		.delete-item:hover i { color: #333; }
-		/* Panel sizing & balance */
-		.header-cart { width: 360px; max-width: 92vw; height: 100vh; }
-		.header-cart-title { border-bottom: 1px solid #f0f0f0; margin-bottom: 10px; padding-bottom: 6px; }
-		#cartContent { padding-top: 6px; }
-		#cartFooter .header-cart-total { padding-top: 16px; padding-bottom: 16px; }
 	</style>
 	<div class="wrap-header-cart js-panel-cart">
 		<div class="s-full js-hide-cart"></div>
@@ -47,14 +42,18 @@
 									$v = $it['variant'] ?? null;
 									$sizeName = $it['size'] ?? ($v && $v->size ? ($v->size->name ?? null) : null);
 									$colorName = $it['color'] ?? ($v && $v->color ? ($v->color->name ?? null) : null);
+									$textureName = $it['texture'] ?? ($v && $v->texture ? ($v->texture->name ?? null) : null);
 								@endphp
-								@if($sizeName || $colorName)
+								@if($sizeName || $colorName || $textureName)
 									<div class="stext-110" style="margin: 2px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">
 										@if($sizeName)
 											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Size: {{ $sizeName }}</span>
 										@endif
 										@if($colorName)
 											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Màu: {{ $colorName }}</span>
+										@endif
+										@if($textureName)
+											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Chất liệu: {{ $textureName }}</span>
 										@endif
 									</div>
 								@endif

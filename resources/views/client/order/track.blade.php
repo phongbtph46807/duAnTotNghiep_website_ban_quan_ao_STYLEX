@@ -52,34 +52,10 @@
             @foreach($order->items as $item)
             <tr>
               <td>{{ $item->product->name }}</td>
-              <td>
-                @php 
-                  $bs = []; 
-                  // Lấy size và color từ variant đã chọn
-                  if($item->variant) {
-                    if($item->variant->size) $bs[] = 'Size: ' . $item->variant->size->name; 
-                    if($item->variant->color) $bs[] = 'Màu: ' . $item->variant->color->name; 
-                  }
-                  
-                  // Lấy tất cả chất liệu từ productVariants của sản phẩm
-                  $allTextures = [];
-                  if($item->product && $item->product->productVariants && $item->product->productVariants->count() > 0) {
-                    foreach($item->product->productVariants as $variant) {
-                      if($variant->texture && $variant->texture->name) {
-                        $allTextures[] = $variant->texture->name;
-                      }
-                    }
-                    $allTextures = array_unique($allTextures);
-                    sort($allTextures);
-                  }
-                  
-                  // Thêm chất liệu vào danh sách
-                  if(count($allTextures) > 0) {
-                    $bs[] = 'Chất liệu: ' . implode(', ', $allTextures);
-                  }
-                @endphp
+              <td>@if($item->variant)
+                @php $bs=[]; if($item->variant->size) $bs[]='Size:'.$item->variant->size->name; if($item->variant->color) $bs[]='Màu:'.$item->variant->color->name; if($item->variant->texture) $bs[]='Chất liệu:'.$item->variant->texture->name; @endphp
                 {{ implode(' | ', $bs) }}
-              </td>
+              @endif</td>
               <td style="text-align:center;">{{ $item->quantity }}</td>
               <td>{{ number_format($item->price, 0, ',', '.') }}₫</td>
             </tr>
