@@ -12,7 +12,7 @@ class HomeController extends Controller
     /**
      * Hiển thị trang chủ.
      */
-    public function index(\Illuminate\Http\Request $request)
+    public function index()
     {
         // 1. Lấy danh mục từ database
         $categories = Category::whereNull('parent_id')
@@ -20,15 +20,8 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
         
-        // 2. Lấy sản phẩm từ database với đầy đủ thông tin cho modal
-        $products = Product::with([
-                'category', 
-                'primaryImage',
-                'productImages',
-                'productVariants.size',
-                'productVariants.color',
-                'productVariants.texture'
-            ])
+        // 2. Lấy sản phẩm từ database
+        $products = Product::with(['category', 'primaryImage'])
             ->where('is_active', 1)
             ->orderBy('is_featured', 'desc')
             ->orderBy('created_at', 'desc')
@@ -36,17 +29,9 @@ class HomeController extends Controller
             ->get();
 
         // 3. Trả về view của trang chủ và "gán" (pass) biến vào view
-        $quickProduct = null;
-        if ($request->filled('quick_view')) {
-            $quickProduct = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
-                ->where('is_active', 1)
-                ->find($request->quick_view);
-        }
-
         return view('client.index', [
             'categories' => $categories,
-            'products' => $products,
-            'quickProduct' => $quickProduct,
+            'products' => $products
         ]);
     }
 }

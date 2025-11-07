@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>{{ env('APP_NAME') }}</title>
+	<title><?php echo e(env('APP_NAME')); ?></title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="csrf-token" content="{{ csrf_token() }}">
-	@include('client.partials.css.css')
+	<meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+	<?php echo $__env->make('client.partials.css.css', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </head>
 <body class="animsition">
 	
 	<!-- Header -->
 	<header class="header-v4">
 		<!-- Header menu desktop -->
-		@include('client.partials.sidebar')
+		<?php echo $__env->make('client.partials.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <!-- mobile reponsive -->
-        @include('client.partials.mobile')
+        <?php echo $__env->make('client.partials.mobile', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 		
 	</header>
 
 	<!-- Cart -->
-    @include('client.partials.cart')
+    <?php echo $__env->make('client.partials.cart', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 
 	<!-- Banner -->
-	@include('client.partials.banner')
+	<?php echo $__env->make('client.partials.banner', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 	<!-- Product -->
 	<section class="bg0 p-t-23 p-b-140">
@@ -37,17 +37,18 @@
 
 			<div class="flex-w flex-sb-m p-b-52">
 				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
-					<a href="{{ route('client.products.index') }}" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {{ !request('category') ? 'how-active1' : '' }}" data-filter="*">
+					<a href="<?php echo e(route('client.products.index')); ?>" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 <?php echo e(!request('category') ? 'how-active1' : ''); ?>" data-filter="*">
 						Tất Cả Danh Mục
 					</a>
 
-					@if(isset($categories) && $categories->count() > 0)
-						@foreach($categories as $index => $category)
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {{ request('category') == $category->id ? 'how-active1' : '' }}" data-filter=".category-{{ $category->id }}">
-						{{ $category->name }}
+					<?php if(isset($categories) && $categories->count() > 0): ?>
+						<?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 <?php echo e(request('category') == $category->id ? 'how-active1' : ''); ?>" data-filter=".category-<?php echo e($category->id); ?>">
+						<?php echo e($category->name); ?>
+
 					</button>
-						@endforeach
-					@endif
+						<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+					<?php endif; ?>
 				</div>
 
 				<div class="flex-w flex-c-m m-tb-10">
@@ -75,17 +76,17 @@
 					</div>	
 				</div>
 
-				@include('client.partials.filter-product')
+				<?php echo $__env->make('client.partials.filter-product', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 			</div>
 
 			<div class="row isotope-grid">
-				@if(isset($products) && $products->count() > 0)
-					@foreach($products as $product)
-					<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-{{ $product->category_id }}">
+				<?php if(isset($products) && $products->count() > 0): ?>
+					<?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+					<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-<?php echo e($product->category_id); ?>">
 						<!-- Block2 -->
 						<div class="block2">
 							<div class="block2-pic hov-img0">
-								<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}">
+								<img src="<?php echo e($product->default_image_url); ?>" alt="<?php echo e($product->name); ?>">
 
 								<a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1">
 									Xem nhanh
@@ -94,41 +95,42 @@
 
 							<div class="block2-txt flex-w flex-t p-t-14">
 								<div class="block2-txt-child1 flex-col-l ">
-									<a href="{{ route('client.products.show', $product->id) }}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-										{{ $product->name }}
+									<a href="<?php echo e(route('client.products.show', $product->id)); ?>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+										<?php echo e($product->name); ?>
+
 									</a>
 
 									<span class="stext-105 cl3">
-										@if($product->price_sale && $product->price_sale < $product->price)
-											<span class="fw-bold">{{ number_format($product->price_sale, 0, ',', '.') }}đ</span>
-											<span style="text-decoration: line-through; color: red;">{{ number_format($product->price, 0, ',', '.') }}đ</span>
-										@else
-											{{ number_format($product->price, 0, ',', '.') }}đ
-										@endif
+										<?php if($product->price_sale && $product->price_sale < $product->price): ?>
+											<span class="fw-bold"><?php echo e(number_format($product->price_sale, 0, ',', '.')); ?>đ</span>
+											<span style="text-decoration: line-through; color: red;"><?php echo e(number_format($product->price, 0, ',', '.')); ?>đ</span>
+										<?php else: ?>
+											<?php echo e(number_format($product->price, 0, ',', '.')); ?>đ
+										<?php endif; ?>
 									</span>
 								</div>
 
 							<div class="block2-txt-child2 flex-r p-t-3">
 								<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="margin-right: 15px;">
-									<img class="icon-heart1 dis-block trans-04" src="{{ asset('client/images/icons/icon-heart-01.png') }}" alt="ICON">
-									<img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{ asset('client/images/icons/icon-heart-02.png') }}" alt="ICON">
+									<img class="icon-heart1 dis-block trans-04" src="<?php echo e(asset('client/images/icons/icon-heart-01.png')); ?>" alt="ICON">
+									<img class="icon-heart2 dis-block trans-04 ab-t-l" src="<?php echo e(asset('client/images/icons/icon-heart-02.png')); ?>" alt="ICON">
 								</a>
 							</div>
 							</div>
 						</div>
 					</div>
-					@endforeach
-				@else
+					<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+				<?php else: ?>
 					<div class="col-12 text-center">
 						<p class="text-muted">Chưa có sản phẩm nào</p>
 					</div>
-				@endif
+				<?php endif; ?>
 			</div>
 			
 
 			<!-- Load more -->
 			<div class="flex-c-m flex-w w-full p-t-45">
-				<a href="{{ route('client.products.index') }}" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
+				<a href="<?php echo e(route('client.products.index')); ?>" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
 					Xem Thêm
 				</a>
 			</div>
@@ -142,7 +144,7 @@
 		<div class="container">
 			<div class="bg0 p-t-60 p-b-30 p-lr-15-lg how-pos3-parent">
 				<button class="how-pos3 hov3 trans-04 js-hide-modal1">
-					<img src="{{ asset('client/images/icons/icon-close.png') }}" alt="CLOSE">
+					<img src="<?php echo e(asset('client/images/icons/icon-close.png')); ?>" alt="CLOSE">
 				</button>
 
 				<div class="row">
@@ -153,31 +155,31 @@
 								<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
 
 								<div class="slick3 gallery-lb">
-									<div class="item-slick3" data-thumb="{{ asset('client/images/product-detail-01.jpg') }}">
+									<div class="item-slick3" data-thumb="<?php echo e(asset('client/images/product-detail-01.jpg')); ?>">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ asset('client/images/product-detail-01.jpg') }}" alt="IMG-PRODUCT">
+											<img src="<?php echo e(asset('client/images/product-detail-01.jpg')); ?>" alt="IMG-PRODUCT">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ asset('client/images/product-detail-01.jpg') }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="<?php echo e(asset('client/images/product-detail-01.jpg')); ?>">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
 									</div>
 
-									<div class="item-slick3" data-thumb="{{ asset('client/images/product-detail-02.jpg') }}">
+									<div class="item-slick3" data-thumb="<?php echo e(asset('client/images/product-detail-02.jpg')); ?>">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ asset('client/images/product-detail-02.jpg') }}" alt="IMG-PRODUCT">
+											<img src="<?php echo e(asset('client/images/product-detail-02.jpg')); ?>" alt="IMG-PRODUCT">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ asset('client/images/product-detail-02.jpg') }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="<?php echo e(asset('client/images/product-detail-02.jpg')); ?>">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
 									</div>
 
-									<div class="item-slick3" data-thumb="{{ asset('client/images/product-detail-03.jpg') }}">
+									<div class="item-slick3" data-thumb="<?php echo e(asset('client/images/product-detail-03.jpg')); ?>">
 										<div class="wrap-pic-w pos-relative">
-											<img src="{{ asset('client/images/product-detail-03.jpg') }}" alt="IMG-PRODUCT">
+											<img src="<?php echo e(asset('client/images/product-detail-03.jpg')); ?>" alt="IMG-PRODUCT">
 
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="{{ asset('client/images/product-detail-03.jpg') }}">
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="<?php echo e(asset('client/images/product-detail-03.jpg')); ?>">
 												<i class="fa fa-expand"></i>
 											</a>
 										</div>
@@ -290,9 +292,9 @@
 	</div>
 
 	<!-- Footer -->
-    @include('client.partials.footer')
+    <?php echo $__env->make('client.partials.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </body>
 </html>
 <!--===============================================================================================-->	
-@include('client.partials.js.js')
-<!--===============================================================================================-->
+<?php echo $__env->make('client.partials.js.js', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<!--===============================================================================================--><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\index.blade.php ENDPATH**/ ?>
