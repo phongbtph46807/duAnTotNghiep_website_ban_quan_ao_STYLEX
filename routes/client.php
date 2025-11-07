@@ -43,7 +43,9 @@ Route::prefix('checkout')->as('client.checkout.')->group(function(){
 Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
-
+Route::delete('/order/{id}', [CheckoutController::class, 'destroy'])
+     ->name('client.order.destroy')
+     ->middleware('auth');
 // Auth & verification
 Route::group(['middleware' => ['isAuthenticated']], function(){
     Route::get('/register', [AuthController::class,'registerView'])->name('registerView');

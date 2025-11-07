@@ -53,7 +53,9 @@ class CheckoutController extends Controller
         $total = 0.0;
         foreach ($items as $it) {
             $product = $it->product;
-            if (!$product) { continue; }
+            if (!$product) {
+                continue;
+            }
             $variant = $it->variant;
             $price = $this->resolveItemPrice($product, $variant);
             $line = $price * (int) $it->quantity;
@@ -87,7 +89,7 @@ class CheckoutController extends Controller
         ]);
 
         $owner = $this->getOwnerKeys();
-        $items = $this->baseCartQuery()->with(['product','variant'])->get();
+        $items = $this->baseCartQuery()->with(['product', 'variant'])->get();
         if ($items->isEmpty()) {
             return redirect()->route('client.cart.index')->with('error', 'Giỏ hàng trống.');
         }
@@ -99,11 +101,11 @@ class CheckoutController extends Controller
         }
 
         // Tạo Order + OrderItems (transaction)
-        $order = DB::transaction(function() use ($request, $owner, $items, $total) {
+        $order = DB::transaction(function () use ($request, $owner, $items, $total) {
             $order = Order::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
-                'code' => 'OD'.strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
+                'code' => 'OD' . strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
                 'full_name' => $request->full_name,
                 'phone' => $request->phone,
                 'email' => $request->email,
@@ -138,18 +140,20 @@ class CheckoutController extends Controller
         });
 
         $msg = $request->payment_method === 'online'
-            ? 'Thanh toán online thành công! Mã đơn: '.$order->code
-            : 'Đặt hàng thành công (COD). Mã đơn: '.$order->code;
+            ? 'Thanh toán online thành công! Mã đơn: ' . $order->code
+            : 'Đặt hàng thành công (COD). Mã đơn: ' . $order->code;
         return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
     }
 
-    public function thankyou($id) {
-        $order = Order::with('items.product','items.variant.size','items.variant.color','items.variant.texture')->findOrFail($id);
+    public function thankyou($id)
+    {
+        $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
         return view('client.checkout.thankyou', compact('order'));
     }
-    public function track(Request $request) {
+    public function track(Request $request)
+    {
         $order = null;
-        if($request->has('code') && $request->code){
+        if ($request->has('code') && $request->code) {
             $order = Order::with([
                 'items.product',
                 'items.product.productVariants.size',
@@ -165,15 +169,32 @@ class CheckoutController extends Controller
         return view('client.order.track', compact('order'));
     }
 
-    public function orderList() {
+    public function orderList()
+    {
         $userId = Auth::id();
         $sessionId = session()->getId();
         $orders = \App\Models\Order::query()
-            ->when($userId, function($q) use ($userId){ $q->where('user_id', $userId); })
-            ->when(!$userId, function($q) use ($sessionId){ $q->where('session_id', $sessionId); })
-            ->orderByDesc('created_at')->with(['items.product','items.variant.size','items.variant.color','items.variant.texture'])->get();
+            ->when($userId, function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->when(!$userId, function ($q) use ($sessionId) {
+                $q->where('session_id', $sessionId);
+            })
+            ->orderByDesc('created_at')->with(['items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture'])->get();
         return view('client.order.index', compact('orders'));
     }
+
+    public function destroy($id)
+    {
+        $order = Order::where('id', $id)
+                      ->where('user_id', auth::id())
+                      ->firstOrFail();
+
+        if (in_array($order->status, ['pending', 'processing'])) {
+            $order->delete();
+            return redirect()->back()->with('success', 'Đơn hàng đã được xoá thành công!');
+        }
+
+        return redirect()->back()->with('error', 'Không thể xoá đơn hàng đã giao hoặc đã huỷ!');
+    }
 }
-
-

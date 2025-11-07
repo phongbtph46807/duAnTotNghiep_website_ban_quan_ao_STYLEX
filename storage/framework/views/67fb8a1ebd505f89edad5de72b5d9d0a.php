@@ -1,7 +1,6 @@
-@extends('client.layout.layout')
-@section('title', 'Đơn hàng của tôi - ' . env('APP_NAME'))
+<?php $__env->startSection('title', 'Đơn hàng của tôi - ' . env('APP_NAME')); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <style>
 /* === Giữ nguyên CSS cũ của bạn === */
 .table-history{width:100%;background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(103,119,239,.07);font-size:15px;overflow:hidden}
@@ -34,23 +33,25 @@
   <div style="margin-bottom:24px;"></div>
 
   <!-- Toast thông báo -->
-  @if(session('success'))
+  <?php if(session('success')): ?>
   <div class="toast toast-success" id="toast">
     <div class="toast-body">
-      {{ session('success') }}
+      <?php echo e(session('success')); ?>
+
     </div>
   </div>
-  @endif
-  @if(session('error'))
+  <?php endif; ?>
+  <?php if(session('error')): ?>
   <div class="toast toast-error" id="toast">
     <div class="toast-body">
-      {{ session('error') }}
+      <?php echo e(session('error')); ?>
+
     </div>
   </div>
-  @endif
+  <?php endif; ?>
 
   <div class="co-card"><div class="co-card__body">
-    @if(count($orders))
+    <?php if(count($orders)): ?>
     <div class="table-responsive">
       <table class="table-history">
         <thead>
@@ -64,56 +65,56 @@
           </tr>
         </thead>
         <tbody>
-          @foreach($orders as $order)
+          <?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
           <tr>
-            <td style="font-weight:700;font-size:16px;">{{ $order->code ?? $order->id }}</td>
-            <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+            <td style="font-weight:700;font-size:16px;"><?php echo e($order->code ?? $order->id); ?></td>
+            <td><?php echo e($order->created_at->format('d/m/Y H:i')); ?></td>
             <td style="font-weight:700;color:#4d5ae5;">
-              {{ number_format($order->total, 0, ',', '.') }}₫
+              <?php echo e(number_format($order->total, 0, ',', '.')); ?>₫
             </td>
             <td>
-              @if($order->payment_method=='cod')
+              <?php if($order->payment_method=='cod'): ?>
                 <span style="color:#222">COD</span>
-              @else
+              <?php else: ?>
                 <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo"
                      style="height:20px;vertical-align:middle;margin-right:4px;"> Online
-              @endif
+              <?php endif; ?>
             </td>
             <td>
-              @php
+              <?php
                 $label = 'Đang xử lý'; $cls='badge-info';
                 if($order->status=='pending'){ $label='Chờ xác nhận'; $cls='badge-secondary'; }
                 elseif($order->status=='processing'){ $label='Đang xử lý'; $cls='badge-info'; }
                 elseif($order->status=='shipped'){ $label='Đã giao'; $cls='badge-success'; }
                 elseif($order->status=='cancelled'){ $label='Đã hủy'; $cls='badge-danger'; }
-              @endphp
-              <span class="co-badge {{ $cls }}">{{ $label }}</span>
+              ?>
+              <span class="co-badge <?php echo e($cls); ?>"><?php echo e($label); ?></span>
             </td>
 
             <td class="text-right">
               <!-- Nút Xem chi tiết -->
-              <a href="{{ route('client.order.track', ['code' => $order->code ?? $order->id]) }}"
+              <a href="<?php echo e(route('client.order.track', ['code' => $order->code ?? $order->id])); ?>"
                  class="btn-primary-x">Xem chi tiết</a>
 
               <!-- Nút XOÁ (chỉ hiện khi pending/processing) -->
-              @if(in_array($order->status, ['pending', 'processing']))
-                <form action="{{ route('client.order.destroy', $order->id) }}"
+              <?php if(in_array($order->status, ['pending', 'processing'])): ?>
+                <form action="<?php echo e(route('client.order.destroy', $order->id)); ?>"
                       method="POST" style="display:inline-block;margin-left:8px;"
-                      onsubmit="return confirm('Xoá đơn hàng #{{ $order->code ?? $order->id }}?\nHành động này không thể hoàn tác!')">
-                  @csrf
-                  @method('DELETE')
+                      onsubmit="return confirm('Xoá đơn hàng #<?php echo e($order->code ?? $order->id); ?>?\nHành động này không thể hoàn tác!')">
+                  <?php echo csrf_field(); ?>
+                  <?php echo method_field('DELETE'); ?>
                   <button type="submit" class="btn-danger-x">Xoá</button>
                 </form>
-              @endif
+              <?php endif; ?>
             </td>
           </tr>
-          @endforeach
+          <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </tbody>
       </table>
     </div>
-    @else
+    <?php else: ?>
       <div class="co-hint">Bạn chưa có đơn hàng nào.</div>
-    @endif
+    <?php endif; ?>
   </div></div>
 </div>
 
@@ -130,4 +131,5 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/order/index.blade.php ENDPATH**/ ?>

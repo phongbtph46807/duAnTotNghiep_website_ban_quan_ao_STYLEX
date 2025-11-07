@@ -140,6 +140,8 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         // Orders management
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+       
+
         
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
