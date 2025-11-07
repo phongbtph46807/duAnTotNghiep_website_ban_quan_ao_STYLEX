@@ -192,7 +192,7 @@ class CheckoutController extends Controller
 
         if (in_array($order->status, ['pending', 'processing'])) {
             $order->delete();
-            return redirect()->back()->with('success', 'Đơn hàng đã được xoá thành công!');
+            return redirect()->back()->with('success', 'Đơn hàng đã được hủy thành công!');
         }
 
         return redirect()->back()->with('error', 'Không thể xoá đơn hàng đã giao hoặc đã huỷ!');

@@ -99,10 +99,10 @@
               @if(in_array($order->status, ['pending', 'processing']))
                 <form action="{{ route('client.order.destroy', $order->id) }}"
                       method="POST" style="display:inline-block;margin-left:8px;"
-                      onsubmit="return confirm('Xoá đơn hàng #{{ $order->code ?? $order->id }}?\nHành động này không thể hoàn tác!')">
+                      onsubmit="return confirm('Hủy đơn hàng #{{ $order->code ?? $order->id }}?\nHành động này không thể hoàn tác!')">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" class="btn-danger-x">Xoá</button>
+                  <button type="submit" class="btn-danger-x">Hủy</button>
                 </form>
               @endif
             </td>

@@ -100,10 +100,10 @@
               <?php if(in_array($order->status, ['pending', 'processing'])): ?>
                 <form action="<?php echo e(route('client.order.destroy', $order->id)); ?>"
                       method="POST" style="display:inline-block;margin-left:8px;"
-                      onsubmit="return confirm('Xoá đơn hàng #<?php echo e($order->code ?? $order->id); ?>?\nHành động này không thể hoàn tác!')">
+                      onsubmit="return confirm('Hủy đơn hàng #<?php echo e($order->code ?? $order->id); ?>?\nHành động này không thể hoàn tác!')">
                   <?php echo csrf_field(); ?>
                   <?php echo method_field('DELETE'); ?>
-                  <button type="submit" class="btn-danger-x">Xoá</button>
+                  <button type="submit" class="btn-danger-x">Hủy</button>
                 </form>
               <?php endif; ?>
             </td>
