@@ -67,7 +67,7 @@
 
                 <!-- Pagination -->
                 <div class="flex-l-m flex-w w-full p-t-10 m-lr--7">
-                    <?php echo e($blogs->links('pagination::bootstrap-4')); ?>
+                    <?php echo e($blogs->links('client.posts.pagination')); ?>
 
                 </div>
             </div>

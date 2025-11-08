@@ -22,6 +22,9 @@
 	<!-- Cart -->
     @include('client.partials.cart')
 
+	<!-- Chat Box -->
+    @include('client.partials.chat')
+
 	<!-- Content -->
 	@yield('content')
 

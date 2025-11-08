@@ -62,7 +62,7 @@
 
                 <!-- Pagination -->
                 <div class="flex-l-m flex-w w-full p-t-10 m-lr--7">
-                    {{ $blogs->links('pagination::bootstrap-4') }}
+                    {{ $blogs->links('client.posts.pagination') }}
                 </div>
             </div>
         </div>

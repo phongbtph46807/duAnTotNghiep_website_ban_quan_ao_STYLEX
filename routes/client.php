@@ -32,6 +32,8 @@ Route::prefix('cart')->as('client.cart.')->group(function () {
     Route::put('/{id}', [CartController::class, 'update'])->name('update');
     Route::delete('/{id}', [CartController::class, 'remove'])->name('remove');
     Route::delete('/', [CartController::class, 'clear'])->name('clear');
+    Route::post('/voucher/apply', [CartController::class, 'applyVoucher'])->name('voucher.apply');
+    Route::post('/voucher/remove', [CartController::class, 'removeVoucher'])->name('voucher.remove');
 });
 
 // Checkout

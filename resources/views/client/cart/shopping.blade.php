@@ -123,11 +123,32 @@
 					</div>
 
 						<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-						<div class="flex-w flex-m m-r-20 m-tb-5">
-							<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Mã giảm giá">
-							<div class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">Áp dụng mã</div>
+						<div class="flex-w flex-m m-r-20 m-tb-5" style="flex: 1;">
+							<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" 
+								   type="text" 
+								   id="voucherCode" 
+								   name="coupon" 
+								   placeholder="Nhập mã voucher"
+								   style="flex: 1;">
+							<button type="button" 
+									id="applyVoucherBtn" 
+									class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+								Áp dụng mã
+							</button>
 						</div>
-							<div id="update-cart-btn" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">Cập nhật giỏ hàng</div>
+						<div id="voucherMessage" class="w-full m-tb-5" style="font-size: 12px; color: #28a745;"></div>
+						<div id="voucherInfo" class="w-full m-tb-5" style="display: none;">
+							<span class="stext-110 cl2" style="color: #28a745; font-weight: 600;">
+								Mã: <span id="appliedVoucherCode"></span>
+							</span>
+							<button type="button" 
+									id="removeVoucherBtn" 
+									class="stext-110 cl2 ml-2" 
+									style="color: #dc3545; background: none; border: none; cursor: pointer; text-decoration: underline;">
+								(Xóa)
+							</button>
+						</div>
+						<div id="update-cart-btn" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">Cập nhật giỏ hàng</div>
 					</div>
 				</div>
 			</div>
@@ -138,6 +159,10 @@
 					<div class="flex-w flex-t bor12 p-b-13">
 						<div class="size-208"><span class="stext-110 cl2">Tạm tính:</span></div>
 						<div class="size-209"><span class="mtext-110 cl2" id="cart-subtotal">{{ number_format($total ?? 0, 0, ',', '.') }} ₫</span></div>
+					</div>
+					<div class="flex-w flex-t bor12 p-b-13" id="discountRow" style="display: none;">
+						<div class="size-208"><span class="stext-110 cl2" style="color: #28a745;">Giảm giá:</span></div>
+						<div class="size-209"><span class="mtext-110 cl2" id="discountAmount" style="color: #28a745;">0 ₫</span></div>
 					</div>
 					<div class="flex-w flex-t bor12 p-t-15 p-b-30">
 						<div class="size-208 w-full-ssm"><span class="stext-110 cl2">Vận chuyển:</span></div>
@@ -158,6 +183,22 @@
 <script>
 (function($){
 	function format(n){ try { return new Intl.NumberFormat('vi-VN').format(n) + ' ₫'; } catch(e){ return n + ' ₫'; } }
+	var currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
+	var currentSubtotal = 0;
+	var appliedVoucher = {!! json_encode($voucher ?? null) !!};
+
+	// Initialize voucher UI if voucher is applied
+	$(document).ready(function(){
+		if (appliedVoucher) {
+			currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
+			$('#voucherInfo').show();
+			$('#appliedVoucherCode').text(appliedVoucher.code);
+			$('#voucherCode').val('').prop('disabled', true);
+			$('#applyVoucherBtn').hide();
+			updateGrandTotal();
+		}
+	});
+
 	function recalcTotals(){
 		var grand = 0;
 		$('table.table-shopping-cart tr.table_row').each(function(){
@@ -169,8 +210,34 @@
 			$row.find('.line-total').text(format(line));
 			grand += line;
 		});
+		currentSubtotal = grand;
 		$('#cart-subtotal').text(format(grand));
-		$('#cart-grandtotal').text(format(grand));
+		
+		// Recalculate discount if voucher is applied
+		if (appliedVoucher) {
+			if (appliedVoucher.type === 'percent') {
+				currentDiscount = (grand * appliedVoucher.value) / 100;
+			} else if (appliedVoucher.type === 'fixed') {
+				currentDiscount = appliedVoucher.value;
+				if (currentDiscount > grand) {
+					currentDiscount = grand;
+				}
+			}
+		}
+		
+		updateGrandTotal();
+	}
+
+	function updateGrandTotal(){
+		var finalTotal = currentSubtotal - currentDiscount;
+		if (finalTotal < 0) finalTotal = 0;
+		$('#cart-grandtotal').text(format(finalTotal));
+		if (currentDiscount > 0) {
+			$('#discountRow').show();
+			$('#discountAmount').text(format(currentDiscount));
+		} else {
+			$('#discountRow').hide();
+		}
 	}
 	// Mark dirty on +/- and change, do not call server
 	$(document).on('click', 'table.table-shopping-cart .btn-num-product-up, table.table-shopping-cart .btn-num-product-down', function(e){
@@ -232,6 +299,74 @@
 	});
 	// Initial totals
 	recalcTotals();
+
+	// Apply voucher
+	$(document).on('click', '#applyVoucherBtn', function(e){
+		e.preventDefault();
+		var code = $('#voucherCode').val().trim();
+		if (!code) {
+			$('#voucherMessage').text('Vui lòng nhập mã voucher').css('color', '#dc3545');
+			return;
+		}
+		$('#applyVoucherBtn').prop('disabled', true).text('Đang xử lý...');
+		$('#voucherMessage').text('');
+		$.ajax({
+			url: '/cart/voucher/apply',
+			method: 'POST',
+			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+			data: { code: code, _token: $('meta[name="csrf-token"]').attr('content') }
+		}).done(function(res){
+			if (res.success) {
+				currentDiscount = res.discount;
+				updateGrandTotal();
+				$('#voucherMessage').text(res.message).css('color', '#28a745');
+				$('#voucherInfo').show();
+				$('#appliedVoucherCode').text(res.voucher.code);
+				$('#voucherCode').val('').prop('disabled', true);
+				$('#applyVoucherBtn').hide();
+			} else {
+				$('#voucherMessage').text(res.message || 'Có lỗi xảy ra').css('color', '#dc3545');
+			}
+		}).fail(function(xhr){
+			var msg = 'Có lỗi xảy ra';
+			if (xhr.responseJSON && xhr.responseJSON.message) {
+				msg = xhr.responseJSON.message;
+			}
+			$('#voucherMessage').text(msg).css('color', '#dc3545');
+		}).always(function(){
+			$('#applyVoucherBtn').prop('disabled', false).text('Áp dụng mã');
+		});
+	});
+
+	// Remove voucher
+	$(document).on('click', '#removeVoucherBtn', function(e){
+		e.preventDefault();
+		$.ajax({
+			url: '/cart/voucher/remove',
+			method: 'POST',
+			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+			data: { _token: $('meta[name="csrf-token"]').attr('content') }
+		}).done(function(res){
+			if (res.success) {
+				currentDiscount = 0;
+				updateGrandTotal();
+				$('#voucherMessage').text(res.message).css('color', '#28a745');
+				$('#voucherInfo').hide();
+				$('#voucherCode').val('').prop('disabled', false);
+				$('#applyVoucherBtn').show();
+				setTimeout(function(){
+					$('#voucherMessage').text('');
+				}, 3000);
+			}
+		});
+	});
+
+	// Enter key to apply voucher
+	$(document).on('keypress', '#voucherCode', function(e){
+		if (e.which === 13) {
+			$('#applyVoucherBtn').click();
+		}
+	});
 
 	// Delete line from main cart (AJAX)
 	$(document).on('click', 'table.table-shopping-cart .delete-line', function(e){

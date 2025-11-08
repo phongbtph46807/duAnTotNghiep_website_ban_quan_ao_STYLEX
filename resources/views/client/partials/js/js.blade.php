@@ -436,3 +436,189 @@
 			}
 		});
 	</script>
+<!--===============================================================================================-->
+	<!-- Chat Box JavaScript -->
+	<script>
+		$(document).ready(function() {
+			// Display current date
+			function updateChatDate() {
+				const now = new Date();
+				const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+				const dayName = days[now.getDay()];
+				const day = String(now.getDate()).padStart(2, '0');
+				const month = String(now.getMonth() + 1).padStart(2, '0');
+				const year = now.getFullYear();
+				const dateStr = dayName + ', ' + day + '/' + month + '/' + year;
+				$('#chatCurrentDate').html('<i class="zmdi zmdi-calendar" style="font-size: 9px; margin-right: 4px; opacity: 0.7;"></i>' + dateStr);
+			}
+			updateChatDate();
+			
+			// Ensure chat icon is visible
+			$('#chatIconWrapper').attr('style', 'bottom: 100px; right: 30px; z-index: 10001 !important; display: block !important; visibility: visible !important; position: fixed !important;');
+			
+			$('#chatIconButton').show().css({
+				'display': 'flex',
+				'visibility': 'visible'
+			});
+
+			const chatIconButton = $('#chatIconButton');
+			const chatBoxContainer = $('#chatBoxContainer');
+			const chatCloseBtn = $('#chatCloseBtn');
+			const chatInput = $('#chatInput');
+			const chatSendBtn = $('#chatSendBtn');
+			const chatMessages = $('#chatMessages');
+
+			// Debug: Check if elements exist
+			if (chatIconButton.length === 0) {
+				console.error('Chat icon button not found!');
+			}
+			if (chatBoxContainer.length === 0) {
+				console.error('Chat box container not found!');
+			}
+
+			// Toggle chat box
+			chatIconButton.on('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				if (chatBoxContainer.hasClass('show')) {
+					// Close chat box
+					chatBoxContainer.removeClass('show');
+					chatBoxContainer.hide();
+				} else {
+					// Simple positioning: box above icon, same right
+					const iconBottom = 100; // Icon bottom position
+					const iconRight = 30; // Icon right position
+					const iconHeight = 60; // Icon height
+					const gap = 10; // Gap between icon and box
+					
+					// Position box above icon
+					const boxBottom = iconBottom + iconHeight + gap;
+					
+					// Open chat box
+					chatBoxContainer.addClass('show');
+					chatBoxContainer.css({
+						'display': 'flex',
+						'visibility': 'visible',
+						'opacity': '1',
+						'bottom': boxBottom + 'px',
+						'right': iconRight + 'px',
+						'position': 'fixed'
+					}).show();
+					chatInput.focus();
+					scrollToBottom();
+				}
+			});
+
+			// Close chat box
+			chatCloseBtn.on('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				chatBoxContainer.removeClass('show');
+				chatBoxContainer.hide();
+			});
+
+			// Send message function
+			function sendMessage() {
+				const message = chatInput.val().trim();
+				if (message === '') return;
+
+				// Remove welcome message if exists
+				chatMessages.find('.chat-welcome').remove();
+
+				// Add user message
+				addMessage(message, 'user');
+				chatInput.val('');
+				scrollToBottom();
+
+				// Simulate admin response (chỉ là giao diện, không có backend)
+				setTimeout(function() {
+					showTypingIndicator();
+					setTimeout(function() {
+						removeTypingIndicator();
+						addMessage('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.', 'admin');
+						scrollToBottom();
+					}, 1500);
+				}, 500);
+			}
+
+			// Send button click
+			chatSendBtn.on('click', function() {
+				sendMessage();
+			});
+
+			// Enter key to send
+			chatInput.on('keypress', function(e) {
+				if (e.which === 13) {
+					e.preventDefault();
+					sendMessage();
+				}
+			});
+
+			// Add message to chat
+			function addMessage(text, type) {
+				const now = new Date();
+				const time = now.getHours().toString().padStart(2, '0') + ':' + 
+							now.getMinutes().toString().padStart(2, '0');
+				
+				const messageClass = type === 'user' ? 'user' : 'admin';
+				const avatarIcon = type === 'user' ? 'zmdi-account' : 'zmdi-account-circle';
+				
+				const messageHtml = `
+					<div class="chat-message ${messageClass}">
+						<div class="chat-message-avatar">
+							<i class="zmdi ${avatarIcon}"></i>
+						</div>
+						<div class="chat-message-content">
+							<div class="chat-message-bubble">${text}</div>
+							<div class="chat-message-time">${time}</div>
+						</div>
+					</div>
+				`;
+				
+				chatMessages.append(messageHtml);
+			}
+
+			// Show typing indicator
+			function showTypingIndicator() {
+				const typingHtml = `
+					<div class="chat-message admin" id="typingIndicator">
+						<div class="chat-message-avatar">
+							<i class="zmdi zmdi-account-circle"></i>
+						</div>
+						<div class="chat-message-content">
+							<div class="chat-typing-indicator">
+								<div class="chat-typing-dot"></div>
+								<div class="chat-typing-dot"></div>
+								<div class="chat-typing-dot"></div>
+							</div>
+						</div>
+					</div>
+				`;
+				chatMessages.append(typingHtml);
+				scrollToBottom();
+			}
+
+			// Remove typing indicator
+			function removeTypingIndicator() {
+				$('#typingIndicator').remove();
+			}
+
+			// Scroll to bottom
+			function scrollToBottom() {
+				chatMessages.scrollTop(chatMessages[0].scrollHeight);
+			}
+
+
+			// Close chat when clicking outside (optional)
+			$(document).on('click', function(e) {
+				if (!$(e.target).closest('#chatBoxContainer, #chatIconWrapper').length) {
+					if (chatBoxContainer.hasClass('show')) {
+						// Uncomment below if you want to close when clicking outside
+						// chatBoxContainer.removeClass('show');
+					}
+				}
+			});
+		});
+	</script>
+<!--===============================================================================================-->

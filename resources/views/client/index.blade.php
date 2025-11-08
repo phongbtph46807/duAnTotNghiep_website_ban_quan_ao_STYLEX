@@ -22,6 +22,8 @@
 	<!-- Cart -->
     @include('client.partials.cart')
 
+	<!-- Chat Box -->
+    @include('client.partials.chat')
 
 	<!-- Banner -->
 	@include('client.partials.banner')

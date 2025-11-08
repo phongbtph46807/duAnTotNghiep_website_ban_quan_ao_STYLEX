@@ -22,6 +22,8 @@
 	<!-- Cart -->
     <?php echo $__env->make('client.partials.cart', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
+	<!-- Chat Box -->
+    <?php echo $__env->make('client.partials.chat', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 	<!-- Banner -->
 	<?php echo $__env->make('client.partials.banner', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>

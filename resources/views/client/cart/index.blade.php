@@ -313,6 +313,40 @@
 						Cart Totals
 					</h4>
 
+					<!-- Voucher Section -->
+					<div class="flex-w flex-t bor12 p-b-13 p-t-13">
+						<div class="size-208 w-full">
+							<span class="stext-110 cl2 d-block mb-2">
+								Mã giảm giá:
+							</span>
+							<div class="flex-w" style="gap: 8px;">
+								<input type="text" 
+									   id="voucherCode" 
+									   class="stext-111 cl2 plh3 size-111 bor11 p-lr-20" 
+									   placeholder="Nhập mã voucher"
+									   style="flex: 1; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 4px;">
+								<button type="button" 
+										id="applyVoucherBtn" 
+										class="flex-c-m stext-101 cl0 size-112 bg1 bor11 hov-btn3 p-lr-15 trans-04"
+										style="white-space: nowrap; border-radius: 4px;">
+									Áp dụng
+								</button>
+							</div>
+							<div id="voucherMessage" class="mt-2" style="font-size: 12px;"></div>
+							<div id="voucherInfo" class="mt-2" style="display: none;">
+								<span class="stext-110 cl2" style="color: #28a745; font-weight: 600;">
+									Mã: <span id="appliedVoucherCode"></span>
+								</span>
+								<button type="button" 
+										id="removeVoucherBtn" 
+										class="stext-110 cl2 ml-2" 
+										style="color: #dc3545; background: none; border: none; cursor: pointer; text-decoration: underline;">
+									(Xóa)
+								</button>
+							</div>
+						</div>
+					</div>
+
 					<div class="flex-w flex-t bor12 p-b-13">
 						<div class="size-208">
 							<span class="stext-110 cl2">
@@ -321,7 +355,35 @@
 						</div>
 
 						<div class="size-209">
-							<span class="mtext-110 cl2">
+							<span class="mtext-110 cl2" id="subtotalAmount">
+								{{ number_format($total, 0, ',', '.') }} VNĐ
+							</span>
+						</div>
+					</div>
+
+					<div class="flex-w flex-t bor12 p-b-13" id="discountRow" style="display: none;">
+						<div class="size-208">
+							<span class="stext-110 cl2" style="color: #28a745;">
+								Giảm giá:
+							</span>
+						</div>
+
+						<div class="size-209">
+							<span class="mtext-110 cl2" id="discountAmount" style="color: #28a745;">
+								0 VNĐ
+							</span>
+						</div>
+					</div>
+
+					<div class="flex-w flex-t bor12 p-t-13 p-b-13">
+						<div class="size-208">
+							<span class="stext-110 cl2" style="font-weight: 600; font-size: 16px;">
+								Thành tiền:
+							</span>
+						</div>
+
+						<div class="size-209">
+							<span class="mtext-110 cl2" id="totalAmount" style="font-weight: 700; font-size: 18px; color: #333;">
 								{{ number_format($total, 0, ',', '.') }} VNĐ
 							</span>
 						</div>

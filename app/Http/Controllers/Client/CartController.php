@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Client\ApplyVoucherRequest;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Voucher;
+use App\Services\VoucherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +16,13 @@ use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
+    protected VoucherService $voucherService;
+
+    public function __construct(VoucherService $voucherService)
+    {
+        $this->voucherService = $voucherService;
+    }
+
     private function getOwnerKeys(): array
     {
         $userId = Auth::id();
@@ -55,6 +65,28 @@ class CartController extends Controller
         }
         $base = $product->price_sale ?? $product->price;
         return (float) $base;
+    }
+
+    /**
+     * Calculate cart subtotal
+     *
+     * @return float
+     */
+    private function calculateSubtotal(): float
+    {
+        $cartItems = $this->baseCartQuery()
+            ->with(['product', 'variant'])
+            ->get();
+
+        $subtotal = 0;
+        foreach ($cartItems as $item) {
+            $variant = $item->variant;
+            $product = $item->product;
+            $price = $this->resolveItemPrice($product, $variant);
+            $subtotal += $price * $item->quantity;
+        }
+
+        return (float) $subtotal;
     }
 
     private function resolveVariantByAttributes(int $productId, ?string $sizeName, ?string $colorName, ?string $textureName): ?ProductVariant
@@ -175,9 +207,16 @@ class CartController extends Controller
             $total += $price * $item->quantity;
         }
 
+        // Calculate discount using VoucherService
+        $discountData = $this->voucherService->recalculateDiscount($total);
+        $voucherData = $this->voucherService->getAppliedVoucher();
+
         return view('client.cart.shopping', [
             'cartData' => $cartData,
-            'total' => $total
+            'total' => $total,
+            'discount' => $discountData['discount'],
+            'finalTotal' => $discountData['total'],
+            'voucher' => $voucherData
         ]);
     }
 
@@ -374,5 +413,60 @@ class CartController extends Controller
             }
         }
         return response()->json(['success' => $success]);
+    }
+
+    /** Apply voucher code */
+    public function applyVoucher(ApplyVoucherRequest $request)
+    {
+        $code = $request->validated()['code'];
+        $subtotal = $this->calculateSubtotal();
+
+        // Validate voucher
+        $validation = $this->voucherService->validateVoucher($code, $subtotal);
+        
+        if (!$validation['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $validation['message']
+            ], 422);
+        }
+
+        $voucher = $validation['voucher'];
+
+        // Calculate discount
+        $discount = $this->voucherService->calculateDiscount($voucher, $subtotal);
+        $finalTotal = max(0, $subtotal - $discount);
+
+        // Apply voucher to session
+        $this->voucherService->applyToSession($voucher, $discount);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Áp dụng mã voucher thành công',
+            'voucher' => [
+                'code' => $voucher->code,
+                'type' => $voucher->type,
+                'value' => $voucher->value,
+                'description' => $voucher->description
+            ],
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'total' => $finalTotal
+        ]);
+    }
+
+    /** Remove voucher */
+    public function removeVoucher(Request $request)
+    {
+        $this->voucherService->removeFromSession();
+        $subtotal = $this->calculateSubtotal();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa mã voucher',
+            'subtotal' => $subtotal,
+            'discount' => 0,
+            'total' => $subtotal
+        ]);
     }
 }

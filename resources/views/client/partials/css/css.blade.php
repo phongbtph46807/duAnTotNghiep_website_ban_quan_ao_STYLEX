@@ -27,6 +27,8 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('client/css/util.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('client/css/main.css') }}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{{ asset('client/css/chat.css') }}">
 	
 	<!-- Custom CSS for User Dropdown -->
 	<style>
