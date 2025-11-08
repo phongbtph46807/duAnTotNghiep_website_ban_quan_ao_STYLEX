@@ -67,10 +67,14 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+#chatBoxContainer .card-header button {
+    text-decoration: none !important;
+    transition: background 0.3s ease;
+}
+
 #chatBoxContainer .card-header button:hover {
     background: rgba(255, 255, 255, 0.2) !important;
-    transform: rotate(90deg);
-    transition: all 0.3s ease;
+    text-decoration: none !important;
 }
 
 @keyframes blink {
@@ -268,9 +272,13 @@
     align-items: center !important;
 }
 
+#chatCloseBtn {
+    text-decoration: none !important;
+}
+
 #chatCloseBtn:hover {
     background: rgba(255, 255, 255, 0.15) !important;
-    transform: rotate(90deg);
+    text-decoration: none !important;
 }
 
 /* Responsive Design */

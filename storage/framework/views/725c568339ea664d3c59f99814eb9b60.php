@@ -38,8 +38,8 @@
         <button class="btn btn-link text-white p-0 flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle" 
                 id="chatCloseBtn" 
                 aria-label="Đóng chat"
-                style="width: 34px; height: 34px; transition: all 0.3s; background: rgba(255,255,255,0.1);">
-            <i class="zmdi zmdi-close" style="font-size: 18px;"></i>
+                style="width: 34px; height: 34px; transition: background 0.3s ease; background: rgba(255,255,255,0.1); text-decoration: none !important;">
+            <i class="zmdi zmdi-close" style="font-size: 18px; text-decoration: none !important;"></i>
         </button>
     </div>
 

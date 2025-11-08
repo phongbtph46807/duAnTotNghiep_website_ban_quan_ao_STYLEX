@@ -163,9 +163,24 @@
                     </li>
                     @endforeach
                 </ul>
-                <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
-                    <span class="mtext-101 cl2">Tổng cộng</span>
-                    <span class="mtext-101 cl2 co-price">{{ number_format($total, 0, ',', '.') }} ₫</span>
+                <div style="padding-top:10px; border-top:1px solid #eee;">
+                    <div class="flex-w flex-sb-m m-t-10">
+                        <span class="mtext-101 cl2">Tạm tính</span>
+                        <span class="mtext-101 cl2">{{ number_format($subtotal, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @if($discount > 0 && $voucher)
+                    <div class="flex-w flex-sb-m m-t-10" style="color:#28a745;">
+                        <span class="mtext-101 cl2">
+                            Giảm giá 
+                            <small style="font-size:11px; color:#666;">({{ $voucher['code'] }})</small>
+                        </span>
+                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ number_format($discount, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @endif
+                    <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
+                        <span class="mtext-101 cl2" style="font-weight:700; font-size:16px;">Tổng cộng</span>
+                        <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;">{{ number_format($total, 0, ',', '.') }} ₫</span>
+                    </div>
                 </div>
                 </div>
             </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\VoucherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,12 @@ use App\Models\OrderItem;
 
 class CheckoutController extends Controller
 {
+    protected VoucherService $voucherService;
+
+    public function __construct(VoucherService $voucherService)
+    {
+        $this->voucherService = $voucherService;
+    }
     private function getOwnerKeys(): array
     {
         $userId = Auth::id();
@@ -50,14 +57,14 @@ class CheckoutController extends Controller
             ->get();
 
         $cartData = [];
-        $total = 0.0;
+        $subtotal = 0.0;
         foreach ($items as $it) {
             $product = $it->product;
             if (!$product) { continue; }
             $variant = $it->variant;
             $price = $this->resolveItemPrice($product, $variant);
             $line = $price * (int) $it->quantity;
-            $total += $line;
+            $subtotal += $line;
             $cartData[] = [
                 'id' => $it->id,
                 'product' => $product,
@@ -69,9 +76,18 @@ class CheckoutController extends Controller
             ];
         }
 
+        // Calculate discount and total using VoucherService
+        $voucherResult = $this->voucherService->recalculateDiscount($subtotal);
+        $discount = $voucherResult['discount'];
+        $total = $voucherResult['total'];
+        $appliedVoucher = $this->voucherService->getAppliedVoucher();
+
         return view('client.checkout.index', [
             'cartData' => $cartData,
+            'subtotal' => $subtotal,
+            'discount' => $discount,
             'total' => $total,
+            'voucher' => $appliedVoucher,
         ]);
     }
 
@@ -92,14 +108,20 @@ class CheckoutController extends Controller
             return redirect()->route('client.cart.index')->with('error', 'Giỏ hàng trống.');
         }
 
-        // Tính tổng để gửi sang cổng thanh toán (nếu cần)
-        $total = 0.0;
+        // Tính subtotal
+        $subtotal = 0.0;
         foreach ($items as $it) {
-            $total += $this->resolveItemPrice($it->product, $it->variant) * (int) $it->quantity;
+            $subtotal += $this->resolveItemPrice($it->product, $it->variant) * (int) $it->quantity;
         }
 
+        // Calculate discount and total using VoucherService
+        $voucherResult = $this->voucherService->recalculateDiscount($subtotal);
+        $discount = $voucherResult['discount'];
+        $total = $voucherResult['total'];
+        $appliedVoucher = $this->voucherService->getAppliedVoucher();
+
         // Tạo Order + OrderItems (transaction)
-        $order = DB::transaction(function() use ($request, $owner, $items, $total) {
+        $order = DB::transaction(function() use ($request, $owner, $items, $subtotal, $discount, $total, $appliedVoucher) {
             $order = Order::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
@@ -110,9 +132,9 @@ class CheckoutController extends Controller
                 'city' => $request->city,
                 'address' => $request->address,
                 'note' => $request->note,
-                'subtotal' => (int) $total,
+                'subtotal' => (int) $subtotal,
                 'shipping_fee' => 0,
-                'discount' => 0,
+                'discount' => (int) $discount,
                 'total' => (int) $total,
                 'payment_method' => $request->payment_method,
                 'payment_status' => $request->payment_method === 'online' ? 'paid' : 'unpaid',
@@ -132,8 +154,9 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Clear cart after order created
+            // Clear cart and voucher after order created
             Cart::clearOwner($owner['user_id'], $owner['session_id']);
+            $this->voucherService->removeFromSession();
             return $order;
         });
 

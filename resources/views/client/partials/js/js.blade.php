@@ -518,6 +518,45 @@
 				chatBoxContainer.hide();
 			});
 
+			// Hide chat icon when minicart is opened
+			function toggleChatIconVisibility() {
+				const panelCart = $('.js-panel-cart');
+				const chatIconWrapper = $('#chatIconWrapper');
+				
+				if (panelCart.hasClass('show-header-cart')) {
+					// Hide chat icon when minicart is open
+					chatIconWrapper.attr('style', 'bottom: 100px; right: 30px; z-index: 10001 !important; display: none !important; visibility: hidden !important; opacity: 0 !important; position: fixed !important;');
+				} else {
+					// Show chat icon when minicart is closed
+					chatIconWrapper.attr('style', 'bottom: 100px; right: 30px; z-index: 10001 !important; display: block !important; visibility: visible !important; opacity: 1 !important; position: fixed !important;');
+				}
+			}
+
+			// Watch for minicart open/close
+			$(document).on('click', '.js-show-cart', function() {
+				setTimeout(toggleChatIconVisibility, 10);
+			});
+
+			$(document).on('click', '.js-hide-cart', function() {
+				setTimeout(toggleChatIconVisibility, 10);
+			});
+
+			// Also watch for class changes on panel-cart (in case it's toggled elsewhere)
+			const panelCartObserver = new MutationObserver(function(mutations) {
+				toggleChatIconVisibility();
+			});
+
+			const panelCartElement = document.querySelector('.js-panel-cart');
+			if (panelCartElement) {
+				panelCartObserver.observe(panelCartElement, {
+					attributes: true,
+					attributeFilter: ['class']
+				});
+			}
+
+			// Initial check
+			toggleChatIconVisibility();
+
 			// Send message function
 			function sendMessage() {
 				const message = chatInput.val().trim();
