@@ -22,12 +22,29 @@ class ProductController extends Controller
         // Query sản phẩm
         $query = Product::with(['category', 'primaryImage'])
             ->where('is_active', 1);
+
+        if ($request->has('category')) {
+            $categoryId = $request->input('category');
+            
+            $category = Category::with('childrenRecursive')->find($categoryId);
+            //Nếu category tồn tại
+            if ($category) {
+                // Lấy danh sách ID của chính nó VÀ TẤT CẢ con cháu
+                $allCategoryIds = $category->getAllDescendantIdsAndSelf();
+                // Lọc tất cả sản phẩm có category_id nằm trong danh sách ID này
+                $query->whereIn('category_id', $allCategoryIds);
+            } else {
+                // Trường hợp ai đó nhập URL linh tinh với ID không tồn tại
+                $query->where('category_id', $categoryId); // Sẽ không trả về gì
+            }
+        }
         
         // Sắp xếp mặc định
         $query->orderBy('created_at', 'desc');
         
         // Phân trang
         $products = $query->paginate(12);
+        $products->appends($request->query());
         
         return view('client.product.index', [
             'products' => $products,

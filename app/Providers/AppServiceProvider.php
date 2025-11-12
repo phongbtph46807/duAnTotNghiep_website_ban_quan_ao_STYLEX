@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Providers;
-use Illuminate\Pagination\Paginator;    
+
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use App\Models\Category;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         Paginator::useBootstrapFive();
+        Paginator::useBootstrapFive();
+        View::composer('*', function ($view) {
+
+            // Dùng cache (lưu 1 giờ) 
+            $menuCategories = cache()->remember('menu_categories', 3600, function () {
+                return Category::whereNull('parent_id') // 1. Chỉ lấy danh mục cha (cấp 1)
+                    ->where('status', 1)                 // 2. Chỉ lấy các danh mục đang hoạt động
+                    ->with('childrenRecursive')         // 3. Lấy TẤT CẢ con/cháu đệ quy
+                    ->orderBy('id', 'asc')          // 4. Sắp xếp theo id
+                    ->get();
+            });
+            // Chia sẻ biến $menuCategories cho tất cả các file blade
+            $view->with('menuCategories', $menuCategories);
+        });
     }
 }
