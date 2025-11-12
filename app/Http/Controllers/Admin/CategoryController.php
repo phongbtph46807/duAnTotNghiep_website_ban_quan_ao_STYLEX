@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Traits\LoggableTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
     //
     use LoggableTrait;
-    public function index(){
+    public function index()
+    {
         try {
             //code...
             // Paginate parent categories and eager-load children for display
@@ -44,7 +46,8 @@ class CategoryController extends Controller
         }
     }
 
-    public function edit($id){
+    public function edit($id)
+    {
         try {
             $category = Category::findOrFail($id);
             // Chỉ lấy danh mục cha (parent_id = null) và loại trừ danh mục hiện tại
@@ -57,7 +60,8 @@ class CategoryController extends Controller
         }
     }
 
-    public function show($id){
+    public function show($id)
+    {
         try {
             $category = Category::findOrFail($id);
             return response()->json([
@@ -73,10 +77,11 @@ class CategoryController extends Controller
         }
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         try {
             $category = Category::findOrFail($id);
-            
+
             $request->validate([
                 'category_name' => 'required|unique:categories,name,' . $id,
                 'parent_id' => 'nullable|exists:categories,id|not_in:' . $id,
@@ -92,6 +97,8 @@ class CategoryController extends Controller
                 'status' => $newStatus
             ]);
 
+            //Xoá cache
+            Cache::forget('menu_categories');
             // Xử lý logic thay đổi trạng thái
             if ($oldStatus != $newStatus) {
                 if ($oldStatus == 1 && $newStatus == 0) {
@@ -129,20 +136,24 @@ class CategoryController extends Controller
         }
     }
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         try {
             $category = Category::findOrFail($id);
             $childrenCount = $category->children()->count();
-            
+
             // Xóa tất cả danh mục con trước
             if ($childrenCount > 0) {
                 $category->children()->delete();
             }
-            
-            $category->delete();
 
-            $message = $childrenCount > 0 
-                ? "Xóa danh mục và {$childrenCount} danh mục con thành công!" 
+            $category->delete();
+            
+            //Xoá cache
+            Cache::forget('menu_categories');
+
+            $message = $childrenCount > 0
+                ? "Xóa danh mục và {$childrenCount} danh mục con thành công!"
                 : "Xóa danh mục thành công!";
 
             return response()->json([
@@ -157,7 +168,8 @@ class CategoryController extends Controller
             ]);
         }
     }
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         try {
             //code...
             $request->validate([
@@ -167,20 +179,22 @@ class CategoryController extends Controller
 
             Category::create([
                 'name' => $request->category_name,
-                'parent_id' => $request->parent_id 
+                'parent_id' => $request->parent_id
 
             ]);
 
-           return response()->json([
+            //Xoá cache
+            Cache::forget('menu_categories');
+            return response()->json([
                 'success' => true,
                 'msg' => 'Thêm Danh Mục Thành Công!'
-           ]);
+            ]);
         } catch (\Exception $e) {
-               $this->logError($e);
-                return response()->json([
+            $this->logError($e);
+            return response()->json([
                 'success' => false,
                 'msg' => $e->getMessage()
-           ]);
+            ]);
         }
     }
 
@@ -190,7 +204,7 @@ class CategoryController extends Controller
     private function deactivateChildren($parentId)
     {
         $children = Category::where('parent_id', $parentId)->get();
-        
+
         foreach ($children as $child) {
             $child->update(['status' => 0]);
             // Đệ quy để tắt cả danh mục con của danh mục con
@@ -204,7 +218,7 @@ class CategoryController extends Controller
     private function activateChildren($parentId)
     {
         $children = Category::where('parent_id', $parentId)->get();
-        
+
         foreach ($children as $child) {
             // Chỉ kích hoạt nếu danh mục con trước đó đang hoạt động
             // hoặc nếu không có thông tin về trạng thái trước đó
