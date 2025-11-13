@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Client\ContactController;
+use App\Http\Controllers\Client\SpinController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Client\HomeController;
 use App\Http\Controllers\Client\ProductController as ClientProductController;
@@ -66,5 +67,9 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
     Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
 });
+Route::get('/spin', [SpinController::class, 'index'])->name('index');
+Route::post('/play', [SpinController::class, 'spin'])->name('spin.play');
+Route::post('/{spinUser}/claim', [SpinController::class, 'claim'])->name('spin.claim');
+Route::get('/spin/history', [SpinController::class, 'history'])->name('spin.history');
 
 

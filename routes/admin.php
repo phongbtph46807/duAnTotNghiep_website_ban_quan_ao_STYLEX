@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SpinController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -95,6 +96,9 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
             Route::patch('/{id}/restore', [PostController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [PostController::class, 'forceDelete'])->name('force-delete');
         });
+        //spin
+        Route::resource('spins', SpinController::class);
+        Route::post('spins/{spin}/toggle-status', [SpinController::class, 'toggleStatus'])->name('spins.toggleStatus');
     });
 });
 
