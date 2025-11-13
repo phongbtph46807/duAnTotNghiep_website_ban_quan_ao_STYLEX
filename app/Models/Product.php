@@ -75,4 +75,56 @@ class Product extends Model
         }
         return asset('client/images/no-image.jpg'); // Ảnh mặc định
     }
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+    public function getRatingsCountAttribute()
+    {
+        $reviews = $this->reviews;
+        return [
+            5 => $reviews->where('rating', 5)->count(),
+            4 => $reviews->where('rating', 4)->count(),
+            3 => $reviews->where('rating', 3)->count(),
+            2 => $reviews->where('rating', 2)->count(),
+            1 => $reviews->where('rating', 1)->count(),
+        ];
+    }
+    public function getRatingsPercentAttribute()
+    {
+        $total = $this->reviews->count();
+        if ($total === 0) {
+            return [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+        }
+
+        $percentages = [];
+        foreach ($this->ratings_count as $star => $count) {
+            $percentages[$star] = round(($count / $total) * 100, 1);
+        }
+
+        return $percentages;
+    }
+
+    public function getExperienceAvgAttribute()
+    {
+        $reviews = $this->reviews()->with('experiences')->get();
+        $experiences = $reviews->pluck('experiences')->flatten();
+
+        $criteria = [
+            'Chất liệu vải',
+            'Độ vừa vặn',
+            'Màu sắc',
+        ];
+
+        $data = [];
+        foreach ($criteria as $criterion) {
+            $filtered = $experiences->where('criterion', $criterion);
+            $data[$criterion] = [
+                'avg' => round($filtered->avg('rating') ?? 0, 1),
+                'count' => $filtered->count(),
+            ];
+        }
+
+        return $data;
+    }
 }

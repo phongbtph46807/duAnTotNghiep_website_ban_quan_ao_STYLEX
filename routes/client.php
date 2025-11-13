@@ -43,6 +43,7 @@ Route::prefix('checkout')->as('client.checkout.')->group(function(){
 Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
+Route::post('/order/review', [CheckoutController::class, 'sendReviewOrder'])->name('client.order.sendReviewOrder');
 
 // Auth & verification
 Route::group(['middleware' => ['isAuthenticated']], function(){

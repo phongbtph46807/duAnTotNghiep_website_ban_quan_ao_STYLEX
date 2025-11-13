@@ -28,7 +28,6 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Product::class);
     }
-
     public function color()
     {
         return $this->belongsTo(Color::class);
@@ -42,5 +41,15 @@ class ProductVariant extends Model
     public function texture()
     {
         return $this->belongsTo(Texture::class);
+    }
+    public function getAttributeSummaryAttribute()
+    {
+        $parts = [];
+
+        if ($this->color?->name) $parts[] = $this->color->name;
+        if ($this->size?->name) $parts[] = $this->size->name;
+        if ($this->texture?->name) $parts[] = $this->texture->name;
+
+        return implode(', ', $parts);
     }
 }

@@ -17,6 +17,7 @@ class ProductVariantResource extends JsonResource
             'color' => $this->whenLoaded('color', fn() => ['id'=>$this->color->id,'name'=>$this->color->name]),
             'size' => $this->whenLoaded('size', fn() => ['id'=>$this->size->id,'name'=>$this->size->name]),
             'attributes' => $this->attributes,
+            'attribute_summary' => $this->attribute_summary,
         ];
     }
 }

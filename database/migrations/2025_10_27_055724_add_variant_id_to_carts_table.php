@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('carts', function (Blueprint $table) {
-            $table->foreignId('variant_id')->nullable()->constrained('product_variants')->onDelete('cascade');
+            // $table->foreignId('variant_id')->nullable()->constrained('product_variants')->onDelete('cascade');
             
-            // Drop unique constraint cũ
-            $table->dropUnique('unique_cart_item');
+            // // Drop unique constraint cũ
+            // $table->dropUnique('unique_cart_item');
             
-            // Tạo unique constraint mới với variant_id
-            $table->unique(['user_id', 'variant_id'], 'unique_cart_variant');
+            // // Tạo unique constraint mới với variant_id
+            // $table->unique(['user_id', 'variant_id'], 'unique_cart_variant');
         });
     }
 

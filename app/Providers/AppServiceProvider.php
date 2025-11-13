@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Carbon\Carbon;
 use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
-
+        Carbon::setLocale('vi');
         // Ensure header mini-cart data is always available
         View::composer('client.partials.cart', function ($view) {
             $items = [];

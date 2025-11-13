@@ -7,6 +7,8 @@
 	<script src="{{ asset('client/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 <!--===============================================================================================-->
 	<script src="{{ asset('client/vendor/select2/select2.min.js') }}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 	<script>
 		$(".js-select2").each(function(){
 			$(this).select2({
@@ -436,3 +438,54 @@
 			}
 		});
 	</script>
+	<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Bắt tất cả form có class .review-form
+    document.querySelectorAll('.review-form').forEach(form => {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Đang gửi...';
+
+            // Lấy dữ liệu form
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Hiển thị thông báo thành công (SweetAlert hoặc Toast tuỳ bạn)
+                    alert(result.message);
+
+                    // Đóng modal
+                    const modal = bootstrap.Modal.getInstance(form.closest('.modal'));
+                    modal.hide();
+
+                    // Reset form
+                    form.reset();
+                } else {
+                    alert(result.message || 'Gửi đánh giá thất bại!');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi hệ thống! Vui lòng thử lại.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Gửi đánh giá';
+            }
+        });
+    });
+});
+</script>
+
+
