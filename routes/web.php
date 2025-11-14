@@ -47,6 +47,8 @@ Route::prefix('checkout')->as('client.checkout.')->group(function(){
     Route::get('/', [CheckoutController::class, 'index'])->name('index');
     Route::post('/place', [CheckoutController::class, 'place'])->name('place');
 });
+Route::get('/checkout/vnpay-return', [CheckoutController::class, 'vnpayReturn'])
+    ->name('client.checkout.vnpayReturn');
 
 Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
