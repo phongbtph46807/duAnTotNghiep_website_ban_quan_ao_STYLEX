@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             CategorySeeder::class,
             LoyaltyTierSeeder::class,
-            // ProductSeeder::class,
+            ProductSeeder::class,
             // ProductImageSeeder::class,
             ShippingCarrierSeeder::class,
             TaxRateSeeder::class,
