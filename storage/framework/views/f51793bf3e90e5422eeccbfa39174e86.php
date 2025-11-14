@@ -186,11 +186,15 @@
 	</div>
 </div>
 
+<?php
+    $hasQuickProduct = !empty($quickProduct);
+?>
 <script>
 $(document).ready(function() {
-    // Link xem chi tiết đã render sẵn bằng PHP
-    <?php if(isset($quickProduct) && $quickProduct): ?>
-        // Khởi tạo slick cho gallery nếu chưa có
+    var hasQuickProduct = <?php echo json_encode($hasQuickProduct); ?>;
+    var lastQuickAddForm = null;
+
+    if (hasQuickProduct) {
         var $gallery = $('.slick3');
         if ($gallery.length && !$gallery.hasClass('slick-initialized')) {
             $gallery.slick({
@@ -206,11 +210,9 @@ $(document).ready(function() {
                 nextArrow: '<button class="arrow-slick3 next-slick3"><i class="zmdi zmdi-caret-right"></i></button>',
             });
         }
-        // Đảm bảo modal đang mở
         $('.js-modal1').addClass('show-modal1');
-    <?php endif; ?>
+    }
 
-    // Update hidden fields when size or color is selected (để form có thể gửi size_name và color_name)
     $('#size-select, #color-select').on('change', function() {
         var size = $('#size-select').val();
         var color = $('#color-select').val();
@@ -218,13 +220,17 @@ $(document).ready(function() {
         $('input[name="color_name"]').val(color || '');
     });
     
-    // Hook vào AJAX success của form trong modal để đóng modal sau khi thêm vào giỏ thành công
-    // Logic add to cart được xử lý bởi js.blade.php, ta chỉ cần đóng modal sau khi thành công
-    $(document).on('ajaxSuccess', 'form[data-ajax="1"][action$="/cart/add"]', function(event, xhr, settings) {
-        var $form = $(this);
-        // Chỉ xử lý nếu form nằm trong modal
-        if ($form.closest('.js-modal1').length && xhr.responseJSON && xhr.responseJSON.success) {
-            // Đợi swal hiện xong rồi đóng modal
+    $(document).on('submit', 'form[data-ajax="1"][action$="/cart/add"]', function() {
+        lastQuickAddForm = this;
+    });
+
+    $(document).ajaxSuccess(function(event, xhr) {
+        if (!lastQuickAddForm) {
+            return;
+        }
+        var $triggerForm = $(lastQuickAddForm);
+        lastQuickAddForm = null;
+        if ($triggerForm.closest('.js-modal1').length && xhr.responseJSON && xhr.responseJSON.success) {
             setTimeout(function() {
                 $('.js-modal1').removeClass('show-modal1');
                 if (window.history && window.history.replaceState) {
@@ -238,4 +244,4 @@ $(document).ready(function() {
 });
 </script>
 
-<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\product\mini-product.blade.php ENDPATH**/ ?>
+<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\products\mini-product.blade.php ENDPATH**/ ?>

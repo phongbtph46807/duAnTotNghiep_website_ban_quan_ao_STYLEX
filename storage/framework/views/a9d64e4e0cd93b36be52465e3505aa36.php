@@ -1,3 +1,5 @@
+﻿
+
 <?php $__env->startSection('title', 'Sản Phẩm - ' . env('APP_NAME')); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -105,7 +107,8 @@
 	</div>
 </div>
 
-<?php echo $__env->make('client.product.mini-product', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+<?php echo $__env->make('client.products.mini-product', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\product\index.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\products\index.blade.php ENDPATH**/ ?>

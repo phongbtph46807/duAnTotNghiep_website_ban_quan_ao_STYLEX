@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', 'Sản Phẩm - ' . env('APP_NAME'))
 
@@ -105,5 +105,6 @@
 	</div>
 </div>
 
-@include('client.product.mini-product')
+@include('client.products.mini-product')
 @endsection
+

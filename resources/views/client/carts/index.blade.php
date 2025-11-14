@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', 'Giỏ Hàng - ' . env('APP_NAME'))
 
@@ -459,4 +459,5 @@
 	});
 </script>
 @endpush
+
 

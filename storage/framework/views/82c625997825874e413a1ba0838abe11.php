@@ -1,10 +1,7 @@
+﻿
 <?php $__env->startSection('title', 'Bài Viết - ' . env('APP_NAME')); ?>
 <?php $__env->startSection('content'); ?>
-    
-    <?php
-        use Illuminate\Support\Str;
-    ?>
-    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url(<?php echo e(asset('assets/images/posts/bg-02.jpg')); ?>);">
+    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="<?php echo 'background-image: url(' . asset('assets/images/posts/bg-02.jpg') . ');'; ?>">
         <h2 class="ltext-105 cl0 txt-center">
             Blog
         </h2>
@@ -41,7 +38,7 @@
                                 </h4>
 
                                 <p class="stext-117 cl6">
-                                    <?php echo e(Str::limit(strip_tags($post->content), 150, '...')); ?>
+                                    <?php echo e(\Illuminate\Support\Str::limit(strip_tags($post->content), 150, '...')); ?>
 
                                 </p>
 
@@ -321,4 +318,5 @@
 <?php $__env->stopSection(); ?>
 
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\posts\index.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\posts\index.blade.php ENDPATH**/ ?>

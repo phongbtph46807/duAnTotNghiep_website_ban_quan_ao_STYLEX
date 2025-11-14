@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', 'Thanh toán - ' . env('APP_NAME'))
 
@@ -209,5 +209,6 @@ document.addEventListener('DOMContentLoaded', function(){
 @endpush
 
 @endsection
+
 
 

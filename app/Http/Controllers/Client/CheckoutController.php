@@ -185,7 +185,7 @@ class CheckoutController extends Controller
                 ->where('code', $request->code)->orWhere('id', $request->code)
                 ->orWhere('phone', $request->code)->latest()->first();
         }
-        return view('client.order.track', compact('order'));
+        return view('client.orders.track', compact('order'));
     }
 
     public function orderList() {
@@ -195,7 +195,7 @@ class CheckoutController extends Controller
             ->when($userId, function($q) use ($userId){ $q->where('user_id', $userId); })
             ->when(!$userId, function($q) use ($sessionId){ $q->where('session_id', $sessionId); })
             ->orderByDesc('created_at')->with(['items.product','items.variant.size','items.variant.color','items.variant.texture'])->get();
-        return view('client.order.index', compact('orders'));
+        return view('client.orders.index', compact('orders'));
     }
 }
 

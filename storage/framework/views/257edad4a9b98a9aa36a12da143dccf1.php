@@ -1,7 +1,7 @@
-@extends('client.layout.layout')
+﻿
 
-@section('title', $blog->title)
-@section('content')
+<?php $__env->startSection('title', $blog->title); ?>
+<?php $__env->startSection('content'); ?>
 <section class="bg0 p-t-52 p-b-20">
     <div class="container">
         <div class="row">
@@ -11,14 +11,16 @@
 
                     <!-- Blog Image -->
                     <div class="wrap-pic-w how-pos5-parent">
-                        <img src="{{ $blog->thumbnail ? Storage::url($blog->thumbnail) : asset('client/images/blog-default.jpg') }}" alt="{{ $blog->title }}">
+                        <img src="<?php echo e($blog->thumbnail ? Storage::url($blog->thumbnail) : asset('client/images/blog-default.jpg')); ?>" alt="<?php echo e($blog->title); ?>">
 
                         <div class="flex-col-c-m size-123 bg9 how-pos5">
                             <span class="ltext-107 cl2 txt-center">
-                                {{ $blog->created_at->format('d') }}
+                                <?php echo e($blog->created_at->format('d')); ?>
+
                             </span>
                             <span class="stext-109 cl3 txt-center">
-                                {{ $blog->created_at->format('M Y') }}
+                                <?php echo e($blog->created_at->format('M Y')); ?>
+
                             </span>
                         </div>
                     </div>
@@ -27,31 +29,37 @@
                     <div class="p-t-32">
                         <span class="flex-w flex-m stext-111 cl2 p-b-19">
                             <span>
-                                <span class="cl4">By</span> {{ $blog->user->name ?? 'Admin' }}
+                                <span class="cl4">By</span> <?php echo e($blog->user->name ?? 'Admin'); ?>
+
                                 <span class="cl12 m-l-4 m-r-6">|</span>
                             </span>
 
                             <span>
-                                {{ $blog->created_at->format('d M, Y') }}
+                                <?php echo e($blog->created_at->format('d M, Y')); ?>
+
                                 <span class="cl12 m-l-4 m-r-6">|</span>
                             </span>
 
                             <span>
-                                {{ $blog->category->name ?? 'Uncategorized' }}
+                                <?php echo e($blog->category->name ?? 'Uncategorized'); ?>
+
                                 <span class="cl12 m-l-4 m-r-6">|</span>
                             </span>
 
                             <span>
-                                {{ $blog->tags->pluck('name')->join(', ') }}
+                                <?php echo e($blog->tags->pluck('name')->join(', ')); ?>
+
                             </span>
                         </span>
 
                         <h4 class="ltext-109 cl2 p-b-28">
-                            {{ $blog->title }}
+                            <?php echo e($blog->title); ?>
+
                         </h4>
 
                         <div class="stext-117 cl6 p-b-26">
-                            {!! $blog->content !!}
+                            <?php echo $blog->content; ?>
+
                         </div>
                     </div>
 
@@ -59,38 +67,41 @@
                     <div class="flex-w flex-t p-t-16">
                         <span class="size-216 stext-116 cl8 p-t-4">Tags</span>
                         <div class="flex-w size-217">
-                            @foreach ($blog->tags as $tag)
+                            <?php $__currentLoopData = $blog->tags; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tag): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <a href="" 
                                    class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-                                   {{ $tag->name }}
+                                   <?php echo e($tag->name); ?>
+
                                 </a>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
 
                     <!-- Related Blogs -->
-                    @if($related_blogs->count())
+                    <?php if($related_blogs->count()): ?>
                     <div class="p-t-50">
                         <h5 class="mtext-113 cl2 p-b-20">Related Posts</h5>
                         <div class="row">
-                            @foreach($related_blogs as $related)
+                            <?php $__currentLoopData = $related_blogs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $related): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <div class="col-sm-6 col-lg-4 p-b-30">
-                                    <a href="{{ route('blog.detail', $related->slug) }}" class="hov-img0 how-pos5-parent">
-                                        <img src="{{ $related->thumbnail ?? asset('client/images/blog-default.jpg') }}" alt="{{ $related->title }}">
+                                    <a href="<?php echo e(route('blog.detail', $related->slug)); ?>" class="hov-img0 how-pos5-parent">
+                                        <img src="<?php echo e($related->thumbnail ?? asset('client/images/blog-default.jpg')); ?>" alt="<?php echo e($related->title); ?>">
                                     </a>
                                     <div class="p-t-15">
-                                        <a href="{{ route('blog.detail', $related->slug) }}" class="stext-112 cl2 hov-cl1 trans-04">
-                                            {{ Str::limit($related->title, 50) }}
+                                        <a href="<?php echo e(route('blog.detail', $related->slug)); ?>" class="stext-112 cl2 hov-cl1 trans-04">
+                                            <?php echo e(Str::limit($related->title, 50)); ?>
+
                                         </a>
                                         <p class="stext-109 cl6 p-t-5">
-                                            {{ $related->created_at->format('d M Y') }}
+                                            <?php echo e($related->created_at->format('d M Y')); ?>
+
                                         </p>
                                     </div>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
-                    @endif
+                    <?php endif; ?>
 
                     <!-- Comment form -->
                     <div class="p-t-40">
@@ -143,14 +154,15 @@
                     <div class="p-t-55">
                         <h4 class="mtext-112 cl2 p-b-33">Categories</h4>
                         <ul>
-                            @foreach ($categories as $category)
+                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <li class="bor18">
                                     <a href="" 
                                        class="dis-block stext-115 cl6 hov-cl1 trans-04 p-tb-8 p-lr-4">
-                                       {{ $category->name }}
+                                       <?php echo e($category->name); ?>
+
                                     </a>
                                 </li>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
                     </div>
 
@@ -158,25 +170,26 @@
                     <div class="p-t-65">
                         <h4 class="mtext-112 cl2 p-b-33">Featured Products</h4>
                         <ul>
-                            @foreach ($product_feature as $product)
+                            <?php $__currentLoopData = $product_feature; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <li class="flex-w flex-t p-b-30">
                                     <a href="" 
                                        class="wrao-pic-w size-214 hov-ovelay1 m-r-20">
-                                        <img src="{{ $product->image_url ?? asset('client/images/no-image.jpg') }}" 
-                                             alt="{{ $product->name }}">
+                                        <img src="<?php echo e($product->image_url ?? asset('client/images/no-image.jpg')); ?>" 
+                                             alt="<?php echo e($product->name); ?>">
                                     </a>
 
                                     <div class="size-215 flex-col-t p-t-8">
                                         <a href="" 
                                            class="stext-116 cl8 hov-cl1 trans-04">
-                                           {{ $product->name }}
+                                           <?php echo e($product->name); ?>
+
                                         </a>
                                         <span class="stext-116 cl6 p-t-20">
-                                            {{ number_format($product->price, 0, ',', '.') }}₫
+                                            <?php echo e(number_format($product->price, 0, ',', '.')); ?>₫
                                         </span>
                                     </div>
                                 </li>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
                     </div>
 
@@ -184,12 +197,13 @@
                     <div class="p-t-50">
                         <h4 class="mtext-112 cl2 p-b-27">Tags</h4>
                         <div class="flex-w m-r--5">
-                            @foreach ($tags as $tag)
+                            <?php $__currentLoopData = $tags; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tag): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <a href="" 
                                    class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-                                   {{ $tag->name }}
+                                   <?php echo e($tag->name); ?>
+
                                 </a>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
                     </div>
 
@@ -198,4 +212,6 @@
         </div>
     </div>
 </section>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\blogs\detail.blade.php ENDPATH**/ ?>

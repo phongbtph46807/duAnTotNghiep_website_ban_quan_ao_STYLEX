@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', $product->name . ' - ' . env('APP_NAME'))
 
@@ -571,3 +571,4 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+

@@ -10,7 +10,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::query();
+        $query = Order::with(['items.product']);
 
         // 🔍 Tìm kiếm theo tên, email hoặc mã đơn
         if ($request->filled('search')) {
@@ -41,6 +41,15 @@ class OrderController extends Controller
             $query->where('payment_status', $request->payment_status);
         }
 
+        // 📅 Lọc theo ngày tạo
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
         // 📊 Thống kê
         $orderStats = Order::selectRaw("
             COUNT(id) as total_orders,
@@ -50,8 +59,15 @@ class OrderController extends Controller
             SUM(status = 'cancelled') as cancelled_orders
         ")->first();
 
+        // Phân trang linh hoạt
+        $perPage = (int) $request->input('per_page', 10);
+        $allowedPerPage = [10, 20, 50, 100];
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 10;
+        }
+
         // Lấy danh sách
-        $orders = $query->paginate(10)->appends($request->query());
+        $orders = $query->paginate($perPage)->appends($request->query());
 
         return view('admin.orders.index', compact('orders', 'orderStats'));
     }

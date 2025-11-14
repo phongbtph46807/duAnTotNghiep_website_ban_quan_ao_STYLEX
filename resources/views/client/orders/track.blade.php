@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 @section('title', 'Tra cứu đơn hàng - ' . env('APP_NAME'))
 @section('content')
 <style>
@@ -95,3 +95,4 @@
   </div>
 </div>
 @endsection
+

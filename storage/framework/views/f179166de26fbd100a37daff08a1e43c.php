@@ -39,4 +39,4 @@
 </body>
 </html>
 <!--===============================================================================================-->
-<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\layout\layout.blade.php ENDPATH**/ ?>
+<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\layouts\app.blade.php ENDPATH**/ ?>

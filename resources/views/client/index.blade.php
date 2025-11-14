@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 	<title>{{ env('APP_NAME') }}</title>
@@ -139,7 +139,7 @@
 	</section>
 	
 	<!-- Content -->
-	@include('client.product.mini-product')
+	@include('client.products.mini-product')
 
 	<!-- Footer -->
     @include('client.partials.footer')

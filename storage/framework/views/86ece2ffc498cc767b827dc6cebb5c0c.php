@@ -1,3 +1,5 @@
+﻿
+
 <?php $__env->startSection('title', 'Giỏ hàng - ' . env('APP_NAME')); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -41,6 +43,7 @@
 						.table-shopping-cart td.column-2 a.stext-104 {
 							display: -webkit-box;
 							-webkit-line-clamp: 2;
+							line-clamp: 2;
 							-webkit-box-orient: vertical;
 							overflow: hidden;
 							max-width: 420px;
@@ -183,7 +186,7 @@
 	function format(n){ try { return new Intl.NumberFormat('vi-VN').format(n) + ' ₫'; } catch(e){ return n + ' ₫'; } }
 	var currentDiscount = parseFloat('<?php echo e($discount ?? 0); ?>') || 0;
 	var currentSubtotal = 0;
-	var appliedVoucher = <?php echo json_encode($voucher ?? null); ?>;
+	var appliedVoucher = <?php echo json_encode($voucher); ?>;
 
 	// Initialize voucher UI if voucher is applied
 	$(document).ready(function(){
@@ -388,4 +391,5 @@
 
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\cart\shopping.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\carts\shopping.blade.php ENDPATH**/ ?>

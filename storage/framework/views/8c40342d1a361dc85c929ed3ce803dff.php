@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 	<title><?php echo e(env('APP_NAME')); ?></title>
@@ -141,7 +141,7 @@
 	</section>
 	
 	<!-- Content -->
-	<?php echo $__env->make('client.product.mini-product', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+	<?php echo $__env->make('client.products.mini-product', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 	<!-- Footer -->
     <?php echo $__env->make('client.partials.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>

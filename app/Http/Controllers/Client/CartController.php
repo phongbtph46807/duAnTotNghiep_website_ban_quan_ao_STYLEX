@@ -211,7 +211,7 @@ class CartController extends Controller
         $discountData = $this->voucherService->recalculateDiscount($total);
         $voucherData = $this->voucherService->getAppliedVoucher();
 
-        return view('client.cart.shopping', [
+        return view('client.carts.shopping', [
             'cartData' => $cartData,
             'total' => $total,
             'discount' => $discountData['discount'],

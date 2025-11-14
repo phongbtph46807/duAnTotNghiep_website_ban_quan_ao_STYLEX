@@ -1,11 +1,7 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 @section('title', 'Bài Viết - ' . env('APP_NAME'))
 @section('content')
-    {{-- Sử dụng helper của Laravel để rút gọn nội dung --}}
-    @php
-        use Illuminate\Support\Str;
-    @endphp
-    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url({{asset('assets/images/posts/bg-02.jpg')}});">
+    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="<?php echo 'background-image: url(' . asset('assets/images/posts/bg-02.jpg') . ');'; ?>">
         <h2 class="ltext-105 cl0 txt-center">
             Blog
         </h2>
@@ -39,7 +35,7 @@
                                 </h4>
 
                                 <p class="stext-117 cl6">
-                                    {{ Str::limit(strip_tags($post->content), 150, '...') }}
+                                    {{ \Illuminate\Support\Str::limit(strip_tags($post->content), 150, '...') }}
                                 </p>
 
                                 <div class="flex-w flex-sb-m p-t-18">
@@ -314,4 +310,5 @@
         </div>
     </section>
 @endsection
+
 

@@ -1,3 +1,5 @@
+﻿
+
 <?php $__env->startSection('title', $product->name . ' - ' . env('APP_NAME')); ?>
 
 <?php $__env->startPush('styles'); ?>
@@ -581,4 +583,5 @@ $(document).ready(function() {
 </script>
 <?php $__env->stopPush(); ?>
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\product\detail.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\products\detail.blade.php ENDPATH**/ ?>

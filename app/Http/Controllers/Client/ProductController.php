@@ -42,7 +42,7 @@ class ProductController extends Controller
                 ->find($request->quick_view);
         }
 
-        return view('client.product.index', [
+        return view('client.products.index', [
             'products' => $products,
             'categories' => $categories,
             'selectedCategory' => $request->category,
@@ -67,7 +67,7 @@ class ProductController extends Controller
             ->limit(8)
             ->get();
         
-        return view('client.product.detail', [
+        return view('client.products.detail', [
             'product' => $product,
             'relatedProducts' => $relatedProducts,
         ]);

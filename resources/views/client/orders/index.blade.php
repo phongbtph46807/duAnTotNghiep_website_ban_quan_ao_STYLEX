@@ -1,5 +1,6 @@
-<?php $__env->startSection('title', 'Đơn hàng của tôi - ' . env('APP_NAME')); ?>
-<?php $__env->startSection('content'); ?>
+﻿@extends('client.layouts.app')
+@section('title', 'Đơn hàng của tôi - ' . env('APP_NAME'))
+@section('content')
 <style>
 .table-history {
   width:100%; background:#fff; border-radius:14px; box-shadow:0 6px 24px rgba(103,119,239,.07); font-size:15px; overflow:hidden;
@@ -28,7 +29,7 @@
   <h2 class="co-title">Đơn hàng của tôi</h2>
   <div style="margin-bottom:24px;"></div>
   <div class="co-card"><div class="co-card__body">
-    <?php if(count($orders)): ?>
+    @if(count($orders))
     <div class="table-responsive"><table class="table-history">
       <thead>
         <tr>
@@ -41,32 +42,31 @@
         </tr>
       </thead>
       <tbody>
-        <?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        @foreach($orders as $order)
         <tr>
-          <td style="font-weight:700;font-size:16px;"><?php echo e($order->code ?? $order->id); ?></td>
-          <td><?php echo e($order->created_at->format('d/m/Y H:i')); ?></td>
-          <td style="font-weight:700;color:#4d5ae5;"><?php echo e(number_format($order->total, 0, ',', '.')); ?>₫</td>
-          <td><?php if($order->payment_method=='cod'): ?><span style="color:#222">COD</span><?php else: ?> <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:20px;vertical-align:middle;margin-right:4px;"> Online <?php endif; ?></td>
+          <td style="font-weight:700;font-size:16px;">{{ $order->code ?? $order->id }}</td>
+          <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
+          <td style="font-weight:700;color:#4d5ae5;">{{ number_format($order->total, 0, ',', '.') }}₫</td>
+          <td>@if($order->payment_method=='cod')<span style="color:#222">COD</span>@else <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:20px;vertical-align:middle;margin-right:4px;"> Online @endif</td>
           <td>
-            <?php
+            @php
             $label = 'Đang xử lý'; $cls='badge-info';
             if($order->status=='pending'){ $label='Chờ xác nhận'; $cls='badge-secondary'; }
             elseif($order->status=='processing'){ $label='Đang xử lý'; $cls='badge-info'; }
             elseif($order->status=='shipped'){ $label='Đã giao'; $cls='badge-success'; }
             elseif($order->status=='cancelled'){ $label='Đã hủy'; $cls='badge-danger'; }
-            ?>
-            <span class="co-badge <?php echo e($cls); ?>"><?php echo e($label); ?></span>
+            @endphp
+            <span class="co-badge {{ $cls }}">{{ $label }}</span>
           </td>
-          <td><a href="<?php echo e(route('client.order.track',['code'=>$order->code??$order->id])); ?>" class="btn-primary-x">Xem chi tiết</a></td>
+          <td><a href="{{ route('client.order.track',['code'=>$order->code??$order->id]) }}" class="btn-primary-x">Xem chi tiết</a></td>
         </tr>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        @endforeach
       </tbody>
     </table></div>
-    <?php else: ?>
+    @else
       <div class="co-hint">Bạn chưa có đơn hàng nào.</div>
-    <?php endif; ?>
+    @endif
   </div></div>
 </div>
-<?php $__env->stopSection(); ?>
+@endsection
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\order\index.blade.php ENDPATH**/ ?>

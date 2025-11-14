@@ -79,17 +79,18 @@
 						</a>
 						
 						<?php if(auth()->guard()->check()): ?>
+							<?php $authUser = Auth::user(); ?>
 							<!-- User đã đăng nhập -->
 							<div class="dropdown">
 								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown">
 									<i class="zmdi zmdi-account"></i>
-									<span class="ml-2"><?php echo e(Auth::user()->name); ?></span>
+									<span class="ml-2"><?php echo e($authUser->name ?? ''); ?></span>
 								</a>
 								<div class="dropdown-menu dropdown-menu-end">
 									<div class="dropdown-header">
 										<div class="user-info">
-											<div class="user-name"><?php echo e(Auth::user()->name); ?></div>
-											<div class="user-email"><?php echo e(Auth::user()->email); ?></div>
+											<div class="user-name"><?php echo e($authUser->name ?? ''); ?></div>
+											<div class="user-email"><?php echo e($authUser->email ?? ''); ?></div>
 										</div>
 									</div>
 									<div class="dropdown-divider"></div>
