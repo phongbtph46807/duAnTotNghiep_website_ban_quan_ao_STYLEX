@@ -19,15 +19,16 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\ProductImageController;
+use App\Http\Controllers\Admin\ReviewController;
 
 // Admin và Staff routes - cả hai đều có thể truy cập
-Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         //Categories route
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-        Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('category.store');
+        Route::post('/admin-category-create', [CategoryController::class, 'store'])->name('category.store');
         Route::get('/category/{id}/edit', [CategoryController::class, 'edit'])->name('category.edit');
         Route::put('/category/{id}', [CategoryController::class, 'update'])->name('category.update');
         Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
@@ -36,7 +37,7 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
         Route::resource('colors', ColorController::class);
         Route::resource('sizes', SizeController::class);
         Route::resource('textures', TextureController::class);
-        
+
         // Products routes
         Route::prefix('products')->as('products.')->group(function () {
             Route::get('/', [ProductController::class, 'index'])->name('index');
@@ -51,7 +52,7 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
             Route::post('/{product}/toggle-feature', [ProductController::class, 'toggleFeature'])->name('toggleFeature');
             Route::patch('/{id}/restore', [ProductController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('force-delete');
-            
+
             // Nén/resize ảnh
             Route::post('/{product}/images', [ProductImageController::class, 'storeProduct'])
                 ->name('images.store');
@@ -93,11 +94,18 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
             Route::patch('/{id}/restore', [PostController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [PostController::class, 'forceDelete'])->name('force-delete');
         });
+        // Reviews routes
+        Route::prefix('reviews')->as('reviews.')->group(function () {
+            Route::get('/', [ReviewController::class, 'index'])->name('index');
+            Route::get('/{review}', [ReviewController::class, 'show'])->name('show');
+            Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])
+                ->name('toggleStatus');
+        });
     });
 });
 
 // Users management - CHUNG cho cả ADMIN và STAFF
-Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
@@ -108,7 +116,7 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
 });
 
 // Routes chỉ dành cho Admin (role=1) - Bổ sung thêm chức năng
-Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         // Role Management - CHỈ ADMIN
         Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
@@ -120,27 +128,27 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         Route::get('/roles/check-admin-count', [RoleController::class, 'checkAdminCount'])->name('roles.check-admin-count');
         Route::post('/roles/{user}/update-role', [RoleController::class, 'updateRole'])->name('roles.update-role');
         Route::post('/roles/bulk-update', [RoleController::class, 'bulkUpdateRoles'])->name('roles.bulk-update');
-        
+
         // Loyalty Tiers - CHỈ ADMIN
         Route::resource('loyalty-tiers', LoyaltyTierController::class)
             ->parameters(['loyalty-tiers' => 'loyaltyTier']);
-            
+
         // Tax & Shipping routes - CHỈ ADMIN
         Route::resource('tax_rates', TaxRateController::class);
         Route::resource('shipping_carriers', ShippingCarrierController::class);
         // Voucher routes - CHỈ ADMIN
         Route::resource('vouchers', VoucherController::class);
-        
+
         // RBAC Entities (roles & permissions) - CHỈ ADMIN, entity management only
         Route::prefix('rbac')->as('rbac.')->group(function () {
             Route::resource('roles', RoleEntityController::class)->except(['show']);
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
-        
+
         // Orders management
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-        
+
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/trash', [UserController::class, 'trash'])->name('trash');
@@ -155,5 +163,3 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         });
     });
 });
-
-

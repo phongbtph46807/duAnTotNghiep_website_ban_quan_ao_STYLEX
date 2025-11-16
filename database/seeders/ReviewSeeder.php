@@ -15,7 +15,7 @@ class ReviewSeeder extends Seeder
     public function run(): void
     {
         // Cố định product_id = 9
-        $product = Product::find(9);
+        $product = Product::find(11);
 
         if (!$product) {
             $this->command->warn('⚠️ Không tìm thấy sản phẩm ID = 9');
@@ -28,7 +28,7 @@ class ReviewSeeder extends Seeder
         // Tạo 5 review ngẫu nhiên
         for ($i = 1; $i <= 5; $i++) {
             // Chọn user_id ngẫu nhiên từ 15 → 20
-            $userId = rand(15, 20);
+            $userId = rand(1, 7);
 
             $review = Review::create([
                 'user_id' => $userId,
