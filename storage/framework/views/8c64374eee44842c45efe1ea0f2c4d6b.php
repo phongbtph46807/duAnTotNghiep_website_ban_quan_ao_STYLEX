@@ -466,7 +466,7 @@
                                                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                                                     <?php $__currentLoopData = $review->media; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $media): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                                         <a href="<?php echo e($media->url); ?>" target="_blank">
-                                                                            <img src="<?php echo e($media->url); ?>"
+                                                                            <img src="<?php echo e(Storage::url($media->url)); ?>"
                                                                                 alt="Ảnh đánh giá"
                                                                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd;">
                                                                         </a>

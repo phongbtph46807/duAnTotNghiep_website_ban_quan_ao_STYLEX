@@ -82,6 +82,7 @@ class ProductController extends Controller
                 'rating' => (int)$review->rating,
                 'comment' => $review->content,
                 'variant' => $review->productVariant?->attribute_summary,
+                'tags'  => $review->tags,
                 'media' => $review->media->pluck('url'),
                 'created_at' => $review->created_at->diffForHumans(),
             ];

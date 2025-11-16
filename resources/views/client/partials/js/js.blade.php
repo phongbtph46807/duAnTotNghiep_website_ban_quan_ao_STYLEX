@@ -465,7 +465,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (result.success) {
                     // Hiển thị thông báo thành công (SweetAlert hoặc Toast tuỳ bạn)
-                    alert(result.message);
+                    Swal.fire({
+                            icon: 'success',
+                            title: 'Đánh giá Thành công!',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload(); // reload trang sau khi alert đóng
+                        });;
 
                     // Đóng modal
                     const modal = bootstrap.Modal.getInstance(form.closest('.modal'));

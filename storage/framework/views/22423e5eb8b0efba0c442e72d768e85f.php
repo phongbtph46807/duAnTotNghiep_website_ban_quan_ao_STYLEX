@@ -379,8 +379,8 @@
                                                                 <svg class="text-warning" viewBox="0 0 24 24"
                                                                     style="width:24px;height:24px;fill:currentColor;">
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                 </svg>
                                                             <?php elseif($i == $fullStars + 1 && $hasHalfStar): ?>
                                                                 
@@ -393,26 +393,23 @@
                                                                         </linearGradient>
                                                                     </defs>
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" fill="url(#half-star)" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" fill="url(#half-star)" />
                                                                 </svg>
                                                             <?php else: ?>
                                                                 
                                                                 <svg class="text-secondary" viewBox="0 0 24 24"
                                                                     style="width:24px;height:24px;fill:currentColor;">
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                 </svg>
                                                             <?php endif; ?>
                                                         <?php endfor; ?>
                                                     </span>
                                                     <div class="text-muted large"><?php echo e($product->reviews->count()); ?> lượt
                                                         đánh giá</div>
-                                                    
                                                 </div>
-                                                <!-- Modal -->
-                                                
                                                 <div class="col-3 col-md-4" style="width: 400px;">
                                                     <?php $__currentLoopData = [5, 4, 3, 2, 1]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $star): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                         <div class="mb-1 d-flex align-items-center">
@@ -423,8 +420,8 @@
                                                                 <svg class="star-icon" viewBox="0 0 24 24"
                                                                     aria-hidden="true" focusable="false">
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                 </svg>
                                                             </span>
                                                             <div class="rating-bar flex-grow-1 mx-2">
@@ -462,8 +459,8 @@
                                                                         <svg class="text-warning" viewBox="0 0 24 24"
                                                                             style="width:20px;height:20px;fill:currentColor;">
                                                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                    9.24l-7.19-.61L12 2 9.19 8.63
-                                    2 9.24l5.46 4.73L5.82 21z" />
+                                                9.24l-7.19-.61L12 2 9.19 8.63
+                                                2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     <?php elseif($i == $fullStars + 1 && $hasHalfStar): ?>
                                                                         <?php $gradientId = 'half-star-' . $loop->index . '-' . uniqid(); ?>
@@ -479,15 +476,15 @@
                                                                                 </linearGradient>
                                                                             </defs>
                                                                             <path fill="url(#<?php echo e($gradientId); ?>)" d="M12 17.27L18.18 21l-1.64-7.03L22
-                                    9.24l-7.19-.61L12 2 9.19 8.63
-                                    2 9.24l5.46 4.73L5.82 21z" />
+                                                9.24l-7.19-.61L12 2 9.19 8.63
+                                                2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     <?php else: ?>
                                                                         <svg class="text-secondary" viewBox="0 0 24 24"
                                                                             style="width:20px;height:20px;fill:currentColor;">
                                                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                    9.24l-7.19-.61L12 2 9.19 8.63
-                                    2 9.24l5.46 4.73L5.82 21z" />
+                                                9.24l-7.19-.61L12 2 9.19 8.63
+                                                2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     <?php endif; ?>
                                                                 <?php endfor; ?>
@@ -542,14 +539,27 @@
                                                                             focusable="false"
                                                                             style="width:16px;height:16px;fill:currentColor;">
                                                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     <?php endfor; ?>
                                                                 </div>
                                                             </div>
+                                                            <?php if(!empty($review['tags'])): ?>
+                                                                <div class="mt-1">
+                                                                    <?php $__currentLoopData = $review['tags']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tag): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                                        <span
+                                                                            style="background:#f1f1f1; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:4px;">
+                                                                            <?php echo e($tag); ?>
+
+                                                                        </span>
+                                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                                </div>
+                                                            <?php endif; ?>
                                                             <div><small class="text-muted">Phân loại hàng:
                                                                     <?php echo e($review['variant'] ?? ''); ?></small></div>
+
+
                                                             <div class="review-subtitle"><?php echo e($review['comment']); ?></div>
                                                             <div class="review-time">
                                                                 <i class="bi bi-clock"></i> <?php echo e($review['created_at']); ?>
@@ -577,10 +587,11 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                         fill="currentColor" class="bi bi-arrow-right ms-2"
                                                         viewBox="0 0 16 16">
-                                                        <path fill-rule="evenodd" d="M10.146 12.354a.5.5 0 0 1 0-.708L13.793 8 10.146 4.354a.5.5 0 1 1
-                                                        .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708 0z" />
+                                                        <path fill-rule="evenodd"
+                                                            d="M10.146 12.354a.5.5 0 0 1 0-.708L13.793 8 10.146 4.354a.5.5 0 1 1
+                                                                    .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708 0z" />
                                                         <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5
-                                                        0 0 1 2 8z" />
+                                                                    0 0 1 2 8z" />
                                                     </svg>
                                                 </button>
                                             </div>

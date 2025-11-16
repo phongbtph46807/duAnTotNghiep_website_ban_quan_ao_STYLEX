@@ -456,7 +456,7 @@
                                                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                                                     @foreach ($review->media as $media)
                                                                         <a href="{{ $media->url }}" target="_blank">
-                                                                            <img src="{{ $media->url }}"
+                                                                            <img src="{{ Storage::url($media->url) }}"
                                                                                 alt="Ảnh đánh giá"
                                                                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd;">
                                                                         </a>

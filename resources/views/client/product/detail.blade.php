@@ -373,8 +373,8 @@
                                                                 <svg class="text-warning" viewBox="0 0 24 24"
                                                                     style="width:24px;height:24px;fill:currentColor;">
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                 </svg>
                                                             @elseif ($i == $fullStars + 1 && $hasHalfStar)
                                                                 {{-- Nửa sao --}}
@@ -387,192 +387,23 @@
                                                                         </linearGradient>
                                                                     </defs>
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" fill="url(#half-star)" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" fill="url(#half-star)" />
                                                                 </svg>
                                                             @else
                                                                 {{-- Sao trống --}}
                                                                 <svg class="text-secondary" viewBox="0 0 24 24"
                                                                     style="width:24px;height:24px;fill:currentColor;">
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                 </svg>
                                                             @endif
                                                         @endfor
                                                     </span>
                                                     <div class="text-muted large">{{ $product->reviews->count() }} lượt
                                                         đánh giá</div>
-                                                    {{-- <div class="container my-4">
-                                                        <button type="button" class="btn btn-danger"
-                                                            data-bs-toggle="modal" data-bs-target="#reviewModal">
-                                                            Viết đánh giá
-                                                        </button>
-                                                    </div> --}}
                                                 </div>
-                                                <!-- Modal -->
-                                                {{-- <div class="modal fade" id="reviewModal" tabindex="-1"
-                                                    aria-labelledby="reviewModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                        <form class="modal-content" id="reviewForm" novalidate>
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title modal-header-title"
-                                                                    id="reviewModalLabel">
-                                                                    Đánh giá (Name_san_pham)
-                                                                </h5>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal" aria-label="Đóng"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Đánh giá tổng thể</label>
-                                                                    <div class="star-input" id="overallRating">
-                                                                        <input type="radio" name="overall"
-                                                                            id="overall5" value="5"
-                                                                            required /><label for="overall5"
-                                                                            title="5 sao">&#9733;</label>
-                                                                        <input type="radio" name="overall"
-                                                                            id="overall4" value="4" /><label
-                                                                            for="overall4" title="4 sao">&#9733;</label>
-                                                                        <input type="radio" name="overall"
-                                                                            id="overall3" value="3" /><label
-                                                                            for="overall3" title="3 sao">&#9733;</label>
-                                                                        <input type="radio" name="overall"
-                                                                            id="overall2" value="2" /><label
-                                                                            for="overall2" title="2 sao">&#9733;</label>
-                                                                        <input type="radio" name="overall"
-                                                                            id="overall1" value="1" /><label
-                                                                            for="overall1" title="1 sao">&#9733;</label>
-                                                                    </div>
-                                                                    <div class="invalid-feedback">Vui lòng chọn đánh giá
-                                                                        tổng thể.</div>
-                                                                </div>
-                                                                <hr />
-                                                                <label class="form-label">Đánh giá theo trải nghiệm</label>
-                                                                <div class="row mb-3">
-                                                                    <div class="col-12 col-md-4 mb-2">
-                                                                        <div>Chất liệu vải</div>
-                                                                        <div class="star-input" id="efficiencyRating">
-                                                                            <input type="radio" name="efficiency"
-                                                                                id="eff5" value="5"
-                                                                                required /><label for="eff5"
-                                                                                title="5 sao">&#9733;</label>
-                                                                            <input type="radio" name="efficiency"
-                                                                                id="eff4" value="4" /><label
-                                                                                for="eff4"
-                                                                                title="4 sao">&#9733;</label>
-                                                                            <input type="radio" name="efficiency"
-                                                                                id="eff3" value="3" /><label
-                                                                                for="eff3"
-                                                                                title="3 sao">&#9733;</label>
-                                                                            <input type="radio" name="efficiency"
-                                                                                id="eff2" value="2" /><label
-                                                                                for="eff2"
-                                                                                title="2 sao">&#9733;</label>
-                                                                            <input type="radio" name="efficiency"
-                                                                                id="eff1" value="1" /><label
-                                                                                for="eff1"
-                                                                                title="1 sao">&#9733;</label>
-                                                                        </div>
-                                                                        <div class="invalid-feedback">Chọn điểm đánh giá
-                                                                            chất liệu vải.</div>
-                                                                    </div>
-                                                                    <div class="col-12 col-md-4 mb-2">
-                                                                        <div>Độ vừa vặn</div>
-                                                                        <div class="star-input" id="batteryRating">
-                                                                            <input type="radio" name="battery"
-                                                                                id="bat5" value="5"
-                                                                                required /><label for="bat5"
-                                                                                title="5 sao">&#9733;</label>
-                                                                            <input type="radio" name="battery"
-                                                                                id="bat4" value="4" /><label
-                                                                                for="bat4"
-                                                                                title="4 sao">&#9733;</label>
-                                                                            <input type="radio" name="battery"
-                                                                                id="bat3" value="3" /><label
-                                                                                for="bat3"
-                                                                                title="3 sao">&#9733;</label>
-                                                                            <input type="radio" name="battery"
-                                                                                id="bat2" value="2" /><label
-                                                                                for="bat2"
-                                                                                title="2 sao">&#9733;</label>
-                                                                            <input type="radio" name="battery"
-                                                                                id="bat1" value="1" /><label
-                                                                                for="bat1"
-                                                                                title="1 sao">&#9733;</label>
-                                                                        </div>
-                                                                        <div class="invalid-feedback">Chọn điểm đánh giá Độ
-                                                                            vừa vặn.</div>
-                                                                    </div>
-                                                                    <div class="col-12 col-md-4 mb-2">
-                                                                        <div>Màu sắc</div>
-                                                                        <div class="star-input" id="cameraRating">
-                                                                            <input type="radio" name="camera"
-                                                                                id="cam5" value="5"
-                                                                                required /><label for="cam5"
-                                                                                title="5 sao">&#9733;</label>
-                                                                            <input type="radio" name="camera"
-                                                                                id="cam4" value="4" /><label
-                                                                                for="cam4"
-                                                                                title="4 sao">&#9733;</label>
-                                                                            <input type="radio" name="camera"
-                                                                                id="cam3" value="3" /><label
-                                                                                for="cam3"
-                                                                                title="3 sao">&#9733;</label>
-                                                                            <input type="radio" name="camera"
-                                                                                id="cam2" value="2" /><label
-                                                                                for="cam2"
-                                                                                title="2 sao">&#9733;</label>
-                                                                            <input type="radio" name="camera"
-                                                                                id="cam1" value="1" /><label
-                                                                                for="cam1"
-                                                                                title="1 sao">&#9733;</label>
-                                                                        </div>
-                                                                        <div class="invalid-feedback">Chọn điểm đánh giá
-                                                                            màu sắc.</div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="reviewTags" class="form-label">Chọn các
-                                                                        tiêu chí trải nghiệm</label><br />
-                                                                    <div class="form-check form-check-inline">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            id="tagEfficiency"
-                                                                            value="Chất liệu mềm mại" />
-                                                                        <label class="form-check-label"
-                                                                            for="tagEfficiency">Chất liệu mềm mại</label>
-                                                                    </div>
-                                                                    <div class="form-check form-check-inline">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            id="tagBattery" value="Form áo vừa vặn" />
-                                                                        <label class="form-check-label"
-                                                                            for="tagBattery">Form áo vừa vặn</label>
-                                                                    </div>
-                                                                    <div class="form-check form-check-inline">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            id="tagCamera" value="Màu sắc tươi sáng" />
-                                                                        <label class="form-check-label"
-                                                                            for="tagCamera">Màu sắc tươi sáng</label>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="detailedReview" class="form-label">Nội
-                                                                        dung đánh giá</label>
-                                                                    <textarea id="detailedReview" rows="4" class="form-control" placeholder="Viết cảm nhận của bạn về sản phẩm..."
-                                                                        required></textarea>
-                                                                    <div class="invalid-feedback">Vui lòng nhập nội dung
-                                                                        đánh giá.</div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Đóng</button>
-                                                                <button type="submit" class="btn btn-danger">Gửi đánh
-                                                                    giá</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div> --}}
                                                 <div class="col-3 col-md-4" style="width: 400px;">
                                                     @foreach ([5, 4, 3, 2, 1] as $star)
                                                         <div class="mb-1 d-flex align-items-center">
@@ -582,8 +413,8 @@
                                                                 <svg class="star-icon" viewBox="0 0 24 24"
                                                                     aria-hidden="true" focusable="false">
                                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                 </svg>
                                                             </span>
                                                             <div class="rating-bar flex-grow-1 mx-2">
@@ -621,8 +452,8 @@
                                                                         <svg class="text-warning" viewBox="0 0 24 24"
                                                                             style="width:20px;height:20px;fill:currentColor;">
                                                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                    9.24l-7.19-.61L12 2 9.19 8.63
-                                    2 9.24l5.46 4.73L5.82 21z" />
+                                                9.24l-7.19-.61L12 2 9.19 8.63
+                                                2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     @elseif ($i == $fullStars + 1 && $hasHalfStar)
                                                                         @php $gradientId = 'half-star-' . $loop->index . '-' . uniqid(); @endphp
@@ -638,15 +469,15 @@
                                                                                 </linearGradient>
                                                                             </defs>
                                                                             <path fill="url(#{{ $gradientId }})" d="M12 17.27L18.18 21l-1.64-7.03L22
-                                    9.24l-7.19-.61L12 2 9.19 8.63
-                                    2 9.24l5.46 4.73L5.82 21z" />
+                                                9.24l-7.19-.61L12 2 9.19 8.63
+                                                2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     @else
                                                                         <svg class="text-secondary" viewBox="0 0 24 24"
                                                                             style="width:20px;height:20px;fill:currentColor;">
                                                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                    9.24l-7.19-.61L12 2 9.19 8.63
-                                    2 9.24l5.46 4.73L5.82 21z" />
+                                                9.24l-7.19-.61L12 2 9.19 8.63
+                                                2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     @endif
                                                                 @endfor
@@ -699,14 +530,26 @@
                                                                             focusable="false"
                                                                             style="width:16px;height:16px;fill:currentColor;">
                                                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22
-                                        9.24l-7.19-.61L12 2 9.19 8.63
-                                        2 9.24l5.46 4.73L5.82 21z" />
+                                                    9.24l-7.19-.61L12 2 9.19 8.63
+                                                    2 9.24l5.46 4.73L5.82 21z" />
                                                                         </svg>
                                                                     @endfor
                                                                 </div>
                                                             </div>
+                                                            @if (!empty($review['tags']))
+                                                                <div class="mt-1">
+                                                                    @foreach ($review['tags'] as $tag)
+                                                                        <span
+                                                                            style="background:#f1f1f1; padding:3px 8px; border-radius:6px; font-size:12px; margin-right:4px;">
+                                                                            {{ $tag }}
+                                                                        </span>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
                                                             <div><small class="text-muted">Phân loại hàng:
                                                                     {{ $review['variant'] ?? '' }}</small></div>
+
+
                                                             <div class="review-subtitle">{{ $review['comment'] }}</div>
                                                             <div class="review-time">
                                                                 <i class="bi bi-clock"></i> {{ $review['created_at'] }}
@@ -733,10 +576,11 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                                         fill="currentColor" class="bi bi-arrow-right ms-2"
                                                         viewBox="0 0 16 16">
-                                                        <path fill-rule="evenodd" d="M10.146 12.354a.5.5 0 0 1 0-.708L13.793 8 10.146 4.354a.5.5 0 1 1
-                                                        .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708 0z" />
+                                                        <path fill-rule="evenodd"
+                                                            d="M10.146 12.354a.5.5 0 0 1 0-.708L13.793 8 10.146 4.354a.5.5 0 1 1
+                                                                    .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708 0z" />
                                                         <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5
-                                                        0 0 1 2 8z" />
+                                                                    0 0 1 2 8z" />
                                                     </svg>
                                                 </button>
                                             </div>

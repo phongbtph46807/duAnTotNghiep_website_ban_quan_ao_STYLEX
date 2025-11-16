@@ -226,7 +226,7 @@
                                                         </button>
                                                     </div>
                                                     <?php else: ?>
-        <span class="text-success">Bạn đã đánh giá sản phẩm này.</span>
+                                                         <span class="text-success">Bạn đã đánh giá sản phẩm này.</span>
                                                      <?php endif; ?>
                                                     <!-- Modal đánh giá -->
                                                     <div class="modal fade review-modal" id="reviewModal<?php echo e($item->id); ?>"
@@ -436,6 +436,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if(session('review_success')): ?>
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+        text: '<?php echo e(session('review_success')); ?>',
+        timer: 2000,
+        showConfirmButton: false
+    });
+</script>
+<?php endif; ?>
 
 <?php $__env->stopSection(); ?>
 
