@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class Product extends Model
 {
@@ -74,5 +76,27 @@ class Product extends Model
             return asset('storage/' . $this->thumbnail);
         }
         return asset('client/images/no-image.jpg'); // Ảnh mặc định
+    }
+
+    public function wishedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'wishlist', 'product_id', 'user_id')->withTimestamps();
+    }
+
+    /**
+     * Kiểm tra xem sản phẩm này đã được user đang đăng nhập thêm vào wishlist chưa.
+     */
+    public function isWishlistedByUser()
+    {
+        // Nếu user chưa đăng nhập thì luôn trả về false
+        if (!Auth::check()) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Sử dụng quan hệ đã định nghĩa trong User Model
+        return $user->wishlistProducts()->where('product_id', $this->id)->exists();
     }
 }
