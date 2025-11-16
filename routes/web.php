@@ -21,7 +21,7 @@ use App\Http\Controllers\Admin\PermissionEntityController;
 use App\Http\Controllers\Admin\TaxRateController;
 use App\Http\Controllers\Admin\ShippingCarrierController;
 use App\Http\Controllers\Admin\ProductImageController;
-
+use App\Http\Controllers\Client\WishlistController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -48,6 +48,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::group(['middleware' => ['onlyAuthenticated']], function () {
 
     Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
+    // Wishlist routes
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('client.wishlist.index');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('client.wishlist.toggle');
 });
 
 // Admin và Staff routes - cả hai đều có thể truy cập
