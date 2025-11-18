@@ -46,12 +46,13 @@ Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
 
+// Email verification - public route (no auth required)
+Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
+
 // Auth & verification
 Route::group(['middleware' => ['isAuthenticated']], function(){
     Route::get('/register', [AuthController::class,'registerView'])->name('registerView');
     Route::post('/register', [AuthController::class,'register'])->name('register');
-
-    Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
 
     Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
     Route::post('/login', [AuthController::class,'login'])->name('login');

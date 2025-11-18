@@ -50,13 +50,15 @@
           <td><?php if($order->payment_method=='cod'): ?><span style="color:#222">COD</span><?php else: ?> <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:20px;vertical-align:middle;margin-right:4px;"> Online <?php endif; ?></td>
           <td>
             <?php
-            $label = 'Đang xử lý'; $cls='badge-info';
-            if($order->status=='pending'){ $label='Chờ xác nhận'; $cls='badge-secondary'; }
-            elseif($order->status=='processing'){ $label='Đang xử lý'; $cls='badge-info'; }
-            elseif($order->status=='shipped'){ $label='Đã giao'; $cls='badge-success'; }
-            elseif($order->status=='cancelled'){ $label='Đã hủy'; $cls='badge-danger'; }
+            $statusMeta = [
+                'pending' => ['label' => 'Chờ xử lý', 'class' => 'badge-pending'],
+                'processing' => ['label' => 'Đang xử lý', 'class' => 'badge-processing'],
+                'completed' => ['label' => 'Hoàn tất', 'class' => 'badge-completed'],
+                'cancelled' => ['label' => 'Đã hủy', 'class' => 'badge-cancelled'],
+            ];
+            $currentStatus = $statusMeta[$order->status] ?? ['label' => $order->status ?? 'Không xác định', 'class' => 'badge-pending'];
             ?>
-            <span class="co-badge <?php echo e($cls); ?>"><?php echo e($label); ?></span>
+            <span class="co-badge <?php echo e($currentStatus['class']); ?>"><?php echo e($currentStatus['label']); ?></span>
           </td>
           <td><a href="<?php echo e(route('client.order.track',['code'=>$order->code??$order->id])); ?>" class="btn-primary-x">Xem chi tiết</a></td>
         </tr>

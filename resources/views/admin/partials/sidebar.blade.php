@@ -47,19 +47,19 @@
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarDashboards">
-                        <i class="lab la-buffer"></i> <span data-key="t-dashboards">Quản lí danh mục</span>
+                        <i class="ri-folder-2-line"></i> <span data-key="t-dashboards">Quản lí danh mục</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarDashboards">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
                                 <a href="{{ route('admin.categories.index') }}" class="nav-link" data-key="t-analytics">
-                                    Danh sách danh mục
+                                    <i class="ri-list-check me-1"></i> Danh sách danh mục
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" data-key="t-analytics"
                                     onclick="openAddCategoryModal()">
-                                    Thêm mới danh mục
+                                    <i class="ri-add-circle-line me-1"></i> Thêm mới danh mục
                                 </a>
                             </li>
                         </ul>
@@ -306,27 +306,6 @@
                                 <a href="{{ route('admin.posts.trash') }}" class="nav-link">
                                     <i class="ri-add-circle-line me-1"></i> Danh sách bài viết đã xóa
                                 </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarLanding" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarLanding">
-                        <i class="ri-rocket-line"></i> <span data-key="t-landing">Quản lí trang tĩnh</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarLanding">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="landing.html" class="nav-link" data-key="t-one-page"> One Page </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="nft-landing.html" class="nav-link" data-key="t-nft-landing"> NFT Landing
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="job-landing.html" class="nav-link" data-key="t-job">Job</a>
                             </li>
                         </ul>
                     </div>
