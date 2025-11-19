@@ -49,6 +49,10 @@
 					        <li class="{{ request()->is('contact') ? 'active-menu' : '' }}">
 					            <a href="{{route('client.contact.index')}}">Liên Hệ</a>
 					        </li>
+
+                            <li class="{{ request()->is('spin') ? 'active-menu' : '' }}">
+                                <a href="{{route('client.spin.index')}}">Quay Thưởng</a>
+                            </li>
 					    </ul>
 					</div>
 
