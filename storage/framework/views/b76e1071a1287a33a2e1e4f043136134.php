@@ -106,7 +106,9 @@
 						<span class="mtext-106 cl2">
 							<?php if($product->price_sale && $product->price_sale < $product->price): ?>
 								<span class="fw-bold"><?php echo e(number_format($product->price_sale, 0, ',', '.')); ?>đ</span>
-								<span style="text-decoration: line-through; color: red;"><?php echo e(number_format($product->price, 0, ',', '.')); ?>đ</span>
+								<span style="text-decoration: line-through; color: red; margin-left: 8px;">
+									<?php echo e(number_format($product->price, 0, ',', '.')); ?>đ
+								</span>
 							<?php else: ?>
 								<?php echo e(number_format($product->price, 0, ',', '.')); ?>đ
 							<?php endif; ?>
@@ -189,9 +191,10 @@
 											<?php $__currentLoopData = $colors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $color): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 											<?php
 												$isSelected = $color == $defaultColor;
+												// Dùng style giống nút kích thước để màu sắc nhìn đồng bộ
 												$btnStyle = $isSelected 
-													? 'min-width: 80px; padding: 8px 12px; border-radius: 50px; cursor: pointer; transition: all 0.3s; background-color: #333; color: #fff; border-color: #333;'
-													: 'min-width: 80px; padding: 8px 12px; border-radius: 50px; cursor: pointer; transition: all 0.3s; background-color: #f5f5f5; color: #666; border-color: #e0e0e0;';
+													? 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #333; color: #fff; border-color: #333;'
+													: 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #f5f5f5; color: #666; border-color: #e0e0e0;';
 											?>
 											<button type="button" 
 													class="color-variant-btn stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04" 
@@ -587,7 +590,7 @@ $(document).ready(function() {
         }
         
         // Lấy màu hiện tại
-        let currentColor = $('#color-select').val() || '';
+        let currentColor = ($('#color-select').val() || '').trim();
         
         // Lọc màu dựa trên size đã chọn
         let availableColors = [];
@@ -614,6 +617,21 @@ $(document).ready(function() {
         if ($colorButtonsContainer.length) {
             $colorButtonsContainer.empty();
             
+            // Nếu không có màu khả dụng, clear input và thoát
+            if (availableColors.length === 0) {
+                $('#color-select').val('');
+                return;
+            }
+
+            // Nếu màu hiện tại rỗng hoặc không còn hợp lệ với size mới → chọn màu đầu tiên
+            if (!currentColor || availableColors.indexOf(currentColor) === -1) {
+                currentColor = availableColors[0];
+            }
+
+            // Cập nhật lại hidden input theo màu được chọn
+            $('#color-select').val(currentColor);
+
+            // Vẽ lại các nút màu, set active cho màu đang chọn
             availableColors.forEach(function(color) {
                 const isSelected = color === currentColor;
                 const $btn = $('<button></button>')
@@ -622,9 +640,10 @@ $(document).ready(function() {
                     .attr('data-color', color)
                     .text(color)
                     .css({
-                        'min-width': '80px',
+                        // Dùng style giống nút kích thước
+                        'min-width': '60px',
                         'padding': '8px 12px',
-                        'border-radius': '50px',
+                        'border-radius': '4px',
                         'cursor': 'pointer',
                         'transition': 'all 0.3s',
                         'background-color': isSelected ? '#333' : '#f5f5f5',
@@ -634,16 +653,6 @@ $(document).ready(function() {
                 
                 $colorButtonsContainer.append($btn);
             });
-            
-            // Nếu màu hiện tại không có trong danh sách available, chọn màu đầu tiên
-            if (currentColor && availableColors.indexOf(currentColor) === -1) {
-                if (availableColors.length > 0) {
-                    currentColor = availableColors[0];
-                    $('#color-select').val(currentColor);
-                    // Trigger update variant
-                    updateVariant();
-                }
-            }
         }
     }
     
@@ -719,7 +728,7 @@ $(document).ready(function() {
                 if (hasPriceSale) {
                     $('.mtext-106').html('<span class="fw-bold">' + 
                         new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
-                        '<span style="text-decoration: line-through; color: red;">' + 
+                        '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
                         new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
                 } else {
                     $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
@@ -737,7 +746,7 @@ $(document).ready(function() {
             if (hasPriceSale) {
                 $('.mtext-106').html('<span class="fw-bold">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
-                    '<span style="text-decoration: line-through; color: red;">' + 
+                    '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
             } else {
                 $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');

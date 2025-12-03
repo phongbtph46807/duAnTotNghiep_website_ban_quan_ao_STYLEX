@@ -205,7 +205,29 @@ unset($__errorArgs, $__bag); ?>
                     </li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
-                <div style="padding-top:10px; border-top:1px solid #eee;">
+
+                
+                <div class="co-hint m-t-15" style="font-size:13px;">
+                    <div><strong>Đơn vị vận chuyển:</strong>
+                        <?php if(isset($shippingCarrier) && $shippingCarrier): ?>
+                            <?php echo e($shippingCarrier->name); ?> <?php if(isset($shippingFee)): ?> - <?php echo e(number_format($shippingFee, 0, ',', '.')); ?> ₫ <?php endif; ?>
+                        <?php else: ?>
+                            Chưa chọn
+                        <?php endif; ?>
+                    </div>
+                    <div><strong>Mức thuế áp dụng:</strong>
+                        <?php if(isset($taxRate) && $taxRate): ?>
+                            <?php echo e($taxRate->name); ?> (<?php echo e(number_format($taxRate->rate * 100, 2, ',', '.')); ?> %)
+                        <?php else: ?>
+                            Không áp dụng
+                        <?php endif; ?>
+                    </div>
+                    <?php if(isset($voucher) && $voucher): ?>
+                        <div><strong>Voucher:</strong> <?php echo e($voucher['code']); ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <div style="padding-top:10px; border-top:1px solid #eee; margin-top:10px;">
                     <div class="flex-w flex-sb-m m-t-10">
                         <span class="mtext-101 cl2">Tạm tính</span>
                         <span class="mtext-101 cl2"><?php echo e(number_format($subtotal, 0, ',', '.')); ?> ₫</span>
@@ -219,6 +241,28 @@ unset($__errorArgs, $__bag); ?>
                         <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-<?php echo e(number_format($discount, 0, ',', '.')); ?> ₫</span>
                     </div>
                     <?php endif; ?>
+
+                    <?php if(isset($taxAmount) && $taxAmount > 0 && isset($taxRate)): ?>
+                    <div class="flex-w flex-sb-m m-t-10">
+                        <span class="mtext-101 cl2">
+                            Thuế (<?php echo e($taxRate->name); ?>)
+                        </span>
+                        <span class="mtext-101 cl2"><?php echo e(number_format($taxAmount, 0, ',', '.')); ?> ₫</span>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if(isset($shippingFee) && $shippingFee > 0): ?>
+                    <div class="flex-w flex-sb-m m-t-10">
+                        <span class="mtext-101 cl2">
+                            Phí vận chuyển
+                            <?php if(isset($shippingCarrier) && $shippingCarrier): ?>
+                                <small style="font-size:11px; color:#666;">(<?php echo e($shippingCarrier->name); ?>)</small>
+                            <?php endif; ?>
+                        </span>
+                        <span class="mtext-101 cl2"><?php echo e(number_format($shippingFee, 0, ',', '.')); ?> ₫</span>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
                         <span class="mtext-101 cl2" style="font-weight:700; font-size:16px;">Tổng cộng</span>
                         <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;"><?php echo e(number_format($total, 0, ',', '.')); ?> ₫</span>

@@ -199,6 +199,17 @@ class VoucherService
             ];
         }
 
+        // Re-validate voucher với subtotal hiện tại (bao gồm min_order_amount, thời gian, lượt dùng...)
+        $validation = $this->validateVoucher($voucher->code, $subtotal);
+        if (!$validation['valid'] || !$validation['voucher']) {
+            $this->removeFromSession();
+            return [
+                'discount' => 0,
+                'total' => $subtotal
+            ];
+        }
+
+        $voucher = $validation['voucher'];
         $discount = $this->calculateDiscount($voucher, $subtotal);
         
         // Update discount in session

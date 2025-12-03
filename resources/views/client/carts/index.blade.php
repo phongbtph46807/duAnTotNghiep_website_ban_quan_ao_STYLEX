@@ -168,6 +168,14 @@
 </div>
 
 <!-- Shoping Cart -->
+@if(session('error'))
+<div class="container m-t-20">
+	<div style="background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; padding:10px 14px; border-radius:6px; margin-bottom:10px; font-size:14px;">
+		{{ session('error') }}
+	</div>
+</div>
+@endif
+
 <form class="bg0 p-t-75 p-b-85">
 	<div class="container">
 		<div class="row">

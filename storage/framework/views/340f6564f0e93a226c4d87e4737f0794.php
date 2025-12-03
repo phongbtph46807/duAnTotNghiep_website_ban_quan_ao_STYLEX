@@ -15,7 +15,7 @@
 </div>
 
 <section class="bg0 p-t-40 p-b-60">
-	<div class="container">
+	<div class="container" id="cart-page-container" data-cart-error="<?php echo e(session('error')); ?>">
 		<div class="row">
 			<div class="col-lg-10 col-xl-12 m-lr-auto m-b-50">
 				<div class="m-l-25 m-r--38 m-lr-0-xl">
@@ -268,9 +268,9 @@
 									</button>
 								</div>
 								<div>
+									<?php if(!empty($availableVouchers) && count($availableVouchers) > 0): ?>
 									<label class="stext-110 cl2" style="display: block; margin-bottom: 10px; font-weight: 600;">Danh sách voucher có sẵn:</label>
 									<div id="voucherList" style="max-height: 400px; overflow-y: auto;">
-										<?php if(!empty($availableVouchers) && count($availableVouchers) > 0): ?>
 											<?php $__currentLoopData = $availableVouchers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $v): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 											<div class="voucher-item" 
 												 data-code="<?php echo e($v['code']); ?>"
@@ -306,12 +306,8 @@
 												</div>
 											</div>
 											<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-										<?php else: ?>
-											<div class="stext-110 cl6" style="text-align: center; padding: 20px; color: #999;">
-												Không có voucher nào khả dụng
-											</div>
-										<?php endif; ?>
 									</div>
+									<?php endif; ?>
 								</div>
 							</div>
 						</div>
@@ -363,13 +359,14 @@
 						<div class="size-208"><span class="mtext-101 cl2">Tổng:</span></div>
 						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal"><?php echo e(number_format($total ?? 0, 0, ',', '.')); ?> ₫</span></div>
 					</div>
-						<a href="<?php echo e(route('client.checkout.index')); ?>" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
+						<a href="<?php echo e(route('client.checkout.index')); ?>" id="btn-go-checkout" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </section>
+
 
 <?php $__env->startPush('scripts'); ?>
 <script>
@@ -378,6 +375,24 @@
 	var currentDiscount = parseFloat('<?php echo e($discount ?? 0); ?>') || 0;
 	var currentSubtotal = 0;
 	var appliedVoucher = <?php echo json_encode($voucher); ?>;
+
+	// Nếu có lỗi từ backend (ví dụ giỏ hàng trống khi bấm thanh toán), hiển thị toast đỏ sau khi DOM sẵn sàng
+	$(document).ready(function() {
+		var $cartContainer = $('#cart-page-container');
+		var cartError = $cartContainer.data('cart-error');
+		if (cartError && typeof showToast === 'function') {
+			showToast(cartError, 'error');
+		}
+	});
+
+	// Dùng toast chung của toàn site (đã định nghĩa trong client.partials.js.js)
+	function showCartToast(message) {
+		if (typeof showToast === 'function') {
+			showToast(message);
+		} else {
+			alert(message);
+		}
+	}
 
 	// Initialize voucher UI if voucher is applied
 	$(document).ready(function(){
@@ -448,8 +463,22 @@
 			'backgroundColor': '#f9f9f9'
 		});
 		
-		// Update total
+		// Update total trên giao diện
 		updateGrandTotal();
+
+		// Gửi lựa chọn đơn vị vận chuyển lên server để lưu vào session (dùng cho bước checkout)
+		// Dùng trực tiếp URL để tránh lỗi khi route cache chưa cập nhật
+		$.ajax({
+			url: '/cart/shipping/select',
+			method: 'POST',
+			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+			data: {
+				shipping_carrier_id: $radio.val(),
+				_token: $('meta[name="csrf-token"]').attr('content')
+			}
+		}).fail(function(xhr){
+			console.error('Không thể lưu lựa chọn đơn vị vận chuyển', xhr.responseText || '');
+		});
 	});
 	
 	// Initialize first carrier as selected if available
@@ -793,6 +822,9 @@
 	function applyVoucherCode(code) {
 		if (!code || !code.trim()) {
 			$('#voucherMessage').text('Vui lòng nhập mã voucher').css('color', '#dc3545');
+			if (typeof showToast === 'function') {
+				showToast('Vui lòng nhập mã voucher.', 'error');
+			}
 			return;
 		}
 		$('#applyVoucherBtn').prop('disabled', true).text('Đang xử lý...');
@@ -807,6 +839,9 @@
 				currentDiscount = res.discount;
 				updateGrandTotal();
 				$('#voucherMessage').text(res.message).css('color', '#28a745');
+				if (typeof showToast === 'function') {
+					showToast(res.message || 'Áp dụng mã voucher thành công.', 'success');
+				}
 				$('#voucherInfo').show();
 				$('#appliedVoucherCode').text(res.voucher.code);
 				$('#voucherCodeInput').val(res.voucher.code);
@@ -820,6 +855,9 @@
 				msg = xhr.responseJSON.message;
 			}
 			$('#voucherMessage').text(msg).css('color', '#dc3545');
+			if (typeof showToast === 'function') {
+				showToast(msg, 'error');
+			}
 		}).always(function(){
 			$('#applyVoucherBtn').prop('disabled', false).text('Áp dụng mã');
 		});
@@ -908,7 +946,7 @@
 		});
 		
 		if (selectedIds.length === 0) {
-			alert('Vui lòng chọn ít nhất một sản phẩm để xóa.');
+			showCartToast('Vui lòng chọn ít nhất một sản phẩm để xóa.');
 			return;
 		}
 		
@@ -937,16 +975,30 @@
 				deleteCount--;
 				if (deleteCount === 0) {
 					if (failCount === 0) {
+						// Thông báo xóa thành công và reload lại bảng giỏ hàng
+						showCartToast('Đã xóa ' + selectedIds.length + ' sản phẩm khỏi giỏ hàng.');
 						// Reload only cart table, not full page
 						reloadCartTable();
 					} else {
-						alert('Có lỗi khi xóa một số sản phẩm. Vui lòng thử lại.');
+						showCartToast('Có lỗi khi xóa một số sản phẩm. Vui lòng thử lại.');
 					}
 				}
 			});
 		});
 		
 		return false;
+	});
+
+	// Khi bấm "Thanh toán" từ giỏ hàng, gắn đơn vị vận chuyển đã chọn vào URL để PHP đọc được
+	$(document).on('click', '#btn-go-checkout', function(e){
+		e.preventDefault();
+		var url = '<?php echo e(route("client.checkout.index")); ?>';
+		var selectedCarrierId = $('input[name="shipping_carrier"]:checked').val();
+		if (selectedCarrierId) {
+			// Thêm ?shipping_carrier_id=... vào URL
+			url += (url.indexOf('?') === -1 ? '?' : '&') + 'shipping_carrier_id=' + encodeURIComponent(selectedCarrierId);
+		}
+		window.location.href = url;
 	});
 })(jQuery);
 </script>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Banner;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -20,7 +21,13 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
         
-        // 2. Lấy sản phẩm từ database với đầy đủ thông tin cho modal
+        // 2. Lấy banner đang hoạt động (quản lý trong admin)
+        $banners = Banner::query()
+            ->where('status', 1)
+            ->orderBy('order', 'asc')
+            ->get();
+
+        // 3. Lấy sản phẩm từ database với đầy đủ thông tin cho modal
         $products = Product::with([
                 'category', 
                 'primaryImage',
@@ -35,7 +42,7 @@ class HomeController extends Controller
             ->limit(12)
             ->get();
 
-        // 3. Trả về view của trang chủ và "gán" (pass) biến vào view
+        // 4. Trả về view của trang chủ và "gán" (pass) biến vào view
         $quickProduct = null;
         if ($request->filled('quick_view')) {
             $quickProduct = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
@@ -47,6 +54,7 @@ class HomeController extends Controller
             'categories' => $categories,
             'products' => $products,
             'quickProduct' => $quickProduct,
+            'banners' => $banners,
         ]);
     }
 }

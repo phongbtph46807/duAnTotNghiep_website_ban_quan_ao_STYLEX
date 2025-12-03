@@ -33,7 +33,18 @@
                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                
+                <div class="mb-3">
+                    <label class="form-label">Phí vận chuyển (VNĐ) <span class="text-danger">*</span></label>
+                    <input type="number"
+                           name="fee"
+                           class="form-control @error('fee') is-invalid @enderror"
+                           value="{{ old('fee', 0) }}"
+                           min="0"
+                           step="1000"
+                           placeholder="VD: 25000">
+                    @error('fee') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <small class="text-muted">Phí ship cố định cho mỗi đơn hàng sử dụng hãng này.</small>
+                </div>
 
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.shipping_carriers.index') }}" class="btn btn-secondary">Quay lại</a>

@@ -2,26 +2,48 @@
 
 namespace Database\Seeders;
 
+use App\Models\Banner;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class BannerSeeder extends Seeder
 {
     public function run(): void
     {
-        // Tạo 10 banner mẫu
-        for ($i = 1; $i <= 10; $i++) {
-            DB::table('banners')->insert([
-                'title'         => 'Banner ' . $i,
-                'redirect_url'  => 'Banner-' . $i,
-                'image'         => 'banners/sample' . $i . '.jpg',
-                'content'       => 'Nội dung banner số ' . $i,
-                'order'         => $i,
-                'status'        => rand(0, 1),
-                'created_at'    => now(),
-                'updated_at'    => now(),
-            ]);
+        // Xóa toàn bộ dữ liệu banner hiện tại (kể cả đã soft delete)
+        Banner::query()->forceDelete();
+
+        $data = [
+            [
+                'title'        => 'Bộ sưu tập Danh Mục 2025',
+                'content'      => 'BỘ SƯU TẬP MỚI',
+                'image'        => '/client/images/slide-01.jpg',
+                'redirect_url' => '/products',
+                'order'        => 0,
+                'status'       => 1,
+            ],
+            [
+                'title'        => 'Bộ sưu tập nam mới',
+                'content'      => 'Áo khoác & Áo choàng',
+                'image'        => '/client/images/slide-02.jpg',
+                'redirect_url' => '/products',
+                'order'        => 1,
+                'status'       => 1,
+            ],
+            [
+                'title'        => 'Bộ sưu tập nam 2025',
+                'content'      => 'Hàng mới về',
+                'image'        => '/client/images/slide-03.jpg',
+                'redirect_url' => '/products',
+                'order'        => 2,
+                'status'       => 1,
+            ],
+        ];
+
+        foreach ($data as $row) {
+            Banner::updateOrCreate(
+                ['title' => $row['title']],
+                $row
+            );
         }
     }
 }

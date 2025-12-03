@@ -11,7 +11,10 @@ class Order extends Model
     protected $fillable = [
         'user_id','session_id','code',
         'full_name','phone','email','city','address','note',
-        'subtotal','shipping_fee','discount','total',
+        'subtotal','shipping_fee','discount',
+        'tax_rate_id','tax_amount',
+        'shipping_carrier_id',
+        'total',
         'payment_method','payment_status','status'
     ];
 
@@ -19,6 +22,7 @@ class Order extends Model
         'subtotal' => 'integer',
         'shipping_fee' => 'integer',
         'discount' => 'integer',
+        'tax_amount' => 'integer',
         'total' => 'integer',
     ];
 
@@ -30,6 +34,16 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function taxRate(): BelongsTo
+    {
+        return $this->belongsTo(TaxRate::class, 'tax_rate_id');
+    }
+
+    public function shippingCarrier(): BelongsTo
+    {
+        return $this->belongsTo(ShippingCarrier::class, 'shipping_carrier_id');
     }
 }
 

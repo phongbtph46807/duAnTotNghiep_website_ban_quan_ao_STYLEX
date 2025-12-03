@@ -595,9 +595,18 @@ class CartController extends Controller
     {
         $qty = max(1, (int)($request->input('quantity', 1)));
         $owner = $this->getOwnerKeys();
-        $item = $this->baseCartQuery()->where('id', $id)->first();
+        $item = $this->baseCartQuery()->where('id', $id)->with('variant')->first();
         
         if ($item) {
+            // Nếu có variant gắn với cart item thì giới hạn số lượng theo tồn kho của variant
+            $maxQty = $item->variant && isset($item->variant->quantity)
+                ? max(0, (int) $item->variant->quantity)
+                : null;
+
+            if ($maxQty !== null && $qty > $maxQty) {
+                $qty = $maxQty;
+            }
+
             $item->quantity = $qty;
             $item->save();
             
@@ -623,18 +632,61 @@ class CartController extends Controller
                 // Calculate discount
                 $discountData = $this->voucherService->recalculateDiscount($total);
                 
-                return response()->json([
+                $response = [
                     'success' => true,
                     'subtotal' => $total,
                     'discount' => $discountData['discount'],
-                    'total' => $discountData['total']
-                ]);
+                    'total' => $discountData['total'],
+                ];
+
+                // Trả thêm thông tin giới hạn số lượng nếu có
+                if ($maxQty !== null) {
+                    $response['max_quantity'] = $maxQty;
+                    $response['current_quantity'] = $qty;
+                }
+
+                return response()->json($response);
             }
             
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'current_quantity' => $qty,
+                'max_quantity' => $maxQty,
+            ]);
         }
         
         return response()->json(['success' => false], 404);
+    }
+
+    /**
+     * Lưu lựa chọn đơn vị vận chuyển vào session để dùng ở bước checkout
+     */
+    public function selectShipping(Request $request)
+    {
+        $request->validate([
+            'shipping_carrier_id' => ['required', 'integer', 'exists:shipping_carriers,id'],
+        ]);
+
+        $carrier = ShippingCarrier::where('active', true)
+            ->find($request->input('shipping_carrier_id'));
+
+        if (!$carrier) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn vị vận chuyển không khả dụng.',
+            ], 422);
+        }
+
+        session([
+            'cart.shipping_carrier_id' => $carrier->id,
+            'cart.shipping_fee' => (float) ($carrier->fee ?? 0),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'shipping_carrier_id' => $carrier->id,
+            'shipping_fee' => (float) ($carrier->fee ?? 0),
+        ]);
     }
     
     /** Get cart table HTML (for AJAX reload) */

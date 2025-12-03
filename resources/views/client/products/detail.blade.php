@@ -104,7 +104,9 @@
 						<span class="mtext-106 cl2">
 							@if($product->price_sale && $product->price_sale < $product->price)
 								<span class="fw-bold">{{ number_format($product->price_sale, 0, ',', '.') }}đ</span>
-								<span style="text-decoration: line-through; color: red;">{{ number_format($product->price, 0, ',', '.') }}đ</span>
+								<span style="text-decoration: line-through; color: red; margin-left: 8px;">
+									{{ number_format($product->price, 0, ',', '.') }}đ
+								</span>
 							@else
 								{{ number_format($product->price, 0, ',', '.') }}đ
 							@endif
@@ -574,7 +576,7 @@ $(document).ready(function() {
         }
         
         // Lấy màu hiện tại
-        let currentColor = $('#color-select').val() || '';
+        let currentColor = ($('#color-select').val() || '').trim();
         
         // Lọc màu dựa trên size đã chọn
         let availableColors = [];
@@ -601,6 +603,21 @@ $(document).ready(function() {
         if ($colorButtonsContainer.length) {
             $colorButtonsContainer.empty();
             
+            // Nếu không có màu khả dụng, clear input và thoát
+            if (availableColors.length === 0) {
+                $('#color-select').val('');
+                return;
+            }
+
+            // Nếu màu hiện tại rỗng hoặc không còn hợp lệ với size mới → chọn màu đầu tiên
+            if (!currentColor || availableColors.indexOf(currentColor) === -1) {
+                currentColor = availableColors[0];
+            }
+
+            // Cập nhật lại hidden input theo màu được chọn
+            $('#color-select').val(currentColor);
+
+            // Vẽ lại các nút màu, set active cho màu đang chọn
             availableColors.forEach(function(color) {
                 const isSelected = color === currentColor;
                 const $btn = $('<button></button>')
@@ -622,16 +639,6 @@ $(document).ready(function() {
                 
                 $colorButtonsContainer.append($btn);
             });
-            
-            // Nếu màu hiện tại không có trong danh sách available, chọn màu đầu tiên
-            if (currentColor && availableColors.indexOf(currentColor) === -1) {
-                if (availableColors.length > 0) {
-                    currentColor = availableColors[0];
-                    $('#color-select').val(currentColor);
-                    // Trigger update variant
-                    updateVariant();
-                }
-            }
         }
     }
     
@@ -707,7 +714,7 @@ $(document).ready(function() {
                 if (hasPriceSale) {
                     $('.mtext-106').html('<span class="fw-bold">' + 
                         new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
-                        '<span style="text-decoration: line-through; color: red;">' + 
+                        '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
                         new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
                 } else {
                     $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
@@ -725,7 +732,7 @@ $(document).ready(function() {
             if (hasPriceSale) {
                 $('.mtext-106').html('<span class="fw-bold">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
-                    '<span style="text-decoration: line-through; color: red;">' + 
+                    '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
             } else {
                 $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');

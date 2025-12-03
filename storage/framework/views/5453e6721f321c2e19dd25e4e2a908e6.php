@@ -1,8 +1,8 @@
-﻿@extends('client.layouts.app')
+﻿
 
-@section('title', 'Thanh toán - ' . env('APP_NAME'))
+<?php $__env->startSection('title', 'Thanh toán - ' . env('APP_NAME')); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
 <div class="container p-t-40 p-b-60">
     <style>
@@ -38,33 +38,54 @@
             <div class="co-card">
             <div class="co-card__body">
             <h4 class="co-title">Thông tin thanh toán</h4>
-            @if ($errors->any())
+            <?php if($errors->any()): ?>
                 <div class="co-hint" style="margin-bottom:14px;">Vui lòng kiểm tra lại các trường bắt buộc.</div>
-            @endif
-            <form method="POST" action="{{ route('client.checkout.place') }}" id="checkout-form">
-                @csrf
+            <?php endif; ?>
+            <form method="POST" action="<?php echo e(route('client.checkout.place')); ?>" id="checkout-form">
+                <?php echo csrf_field(); ?>
                 <div class="co-grid">
                     <div class="co-col-6">
                         <label class="co-label">Họ và tên *</label>
-                        <input name="full_name" class="co-input" value="{{ old('full_name', auth()->user()->name ?? '') }}" required>
-                        @error('full_name')<div class="co-error">{{ $message }}</div>@enderror
+                        <input name="full_name" class="co-input" value="<?php echo e(old('full_name', auth()->user()->name ?? '')); ?>" required>
+                        <?php $__errorArgs = ['full_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Số điện thoại *</label>
-                        <input name="phone" class="co-input" value="{{ old('phone') }}" required>
-                        @error('phone')<div class="co-error">{{ $message }}</div>@enderror
+                        <input name="phone" class="co-input" value="<?php echo e(old('phone')); ?>" required>
+                        <?php $__errorArgs = ['phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Email</label>
-                        <input name="email" type="email" class="co-input" value="{{ old('email', auth()->user()->email ?? '') }}">
-                        @error('email')<div class="co-error">{{ $message }}</div>@enderror
+                        <input name="email" type="email" class="co-input" value="<?php echo e(old('email', auth()->user()->email ?? '')); ?>">
+                        <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Tỉnh/Thành phố *</label>
-                        <select id="province" class="co-select" data-json-url="{{ asset('client/js/provinces-data.json') }}" required>
+                        <select id="province" class="co-select" data-json-url="<?php echo e(asset('client/js/provinces-data.json')); ?>" required>
                             <option value="">Đang tải dữ liệu...</option>
                         </select>
-                        <input type="hidden" name="city" value="{{ old('city') }}">
+                        <input type="hidden" name="city" value="<?php echo e(old('city')); ?>">
                         <small id="province-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                     </div>
                     <div class="co-col-6">
@@ -83,12 +104,19 @@
                     </div>
                     <div class="co-col-12">
                         <label class="co-label">Địa chỉ nhận hàng *</label>
-                        <input name="address" class="co-input" value="{{ old('address') }}" required>
-                        @error('address')<div class="co-error">{{ $message }}</div>@enderror
+                        <input name="address" class="co-input" value="<?php echo e(old('address')); ?>" required>
+                        <?php $__errorArgs = ['address'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-12">
                         <label class="co-label">Ghi chú (tuỳ chọn)</label>
-                        <textarea name="note" class="co-textarea" rows="3">{{ old('note') }}</textarea>
+                        <textarea name="note" class="co-textarea" rows="3"><?php echo e(old('note')); ?></textarea>
                     </div>
                 </div>
 
@@ -106,7 +134,7 @@
                     </style>
                     <div class="pay-group">
                         <label class="pay-option" data-method="cod">
-                            <input type="radio" name="payment_method" value="cod" {{ old('payment_method','cod')=='cod' ? 'checked' : '' }}>
+                            <input type="radio" name="payment_method" value="cod" <?php echo e(old('payment_method','cod')=='cod' ? 'checked' : ''); ?>>
                             <div class="pay-option__icon">🚚</div>
                             <div>
                                 <div class="pay-option__title">Thanh toán khi nhận hàng (COD)</div>
@@ -115,7 +143,7 @@
                         </label>
 
                         <label class="pay-option" data-method="online">
-                            <input type="radio" name="payment_method" value="online" {{ old('payment_method')=='online' ? 'checked' : '' }}>
+                            <input type="radio" name="payment_method" value="online" <?php echo e(old('payment_method')=='online' ? 'checked' : ''); ?>>
                             <div class="pay-option__icon"><img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:18px"></div>
                             <div>
                                 <div class="pay-option__title">Thanh toán Online</div>
@@ -134,7 +162,7 @@
 
                 <div class="p-t-20">
                     <div class="co-actions">
-                        <a href="{{ route('client.cart.index') }}" class="co-hint" style="text-decoration:none;">← Quay lại giỏ hàng</a>
+                        <a href="<?php echo e(route('client.cart.index')); ?>" class="co-hint" style="text-decoration:none;">← Quay lại giỏ hàng</a>
                         <button class="btn-primary-x">Đặt hàng</button>
                     </div>
                 </div>
@@ -148,13 +176,13 @@
                 <div class="co-card__body">
                 <h4 class="co-title">Đơn hàng</h4>
                 <ul class="p-l-0" style="list-style:none; margin:0;">
-                    @foreach($cartData as $it)
+                    <?php $__currentLoopData = $cartData; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $it): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <li class="co-line">
-                        <img src="{{ $it['product']->default_image_url }}" alt="IMG">
+                        <img src="<?php echo e($it['product']->default_image_url); ?>" alt="IMG">
                         <div class="co-info">
-                            <div class="co-line__name">{{ $it['product']->name }}</div>
+                            <div class="co-line__name"><?php echo e($it['product']->name); ?></div>
                             <div class="stext-110 cl6" style="font-size:12px; margin-top:2px;">
-                                @php
+                                <?php
                                     $variantParts = [];
                                     if ($it['variant'] && $it['variant']->size) {
                                         $variantParts[] = 'Size: ' . $it['variant']->size->name;
@@ -166,78 +194,78 @@
                                         $variantParts[] = 'Chất liệu: ' . $it['variant']->texture->name;
                                     }
                                     $variantDisplay = !empty($variantParts) ? implode(' - ', $variantParts) : '';
-                                @endphp
-                                @if($variantDisplay)
-                                    <strong>{{ $variantDisplay }}</strong>
-                                @endif
+                                ?>
+                                <?php if($variantDisplay): ?>
+                                    <strong><?php echo e($variantDisplay); ?></strong>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <div class="co-qty">x {{ $it['quantity'] }}</div>
-                        <div class="co-price">{{ number_format($it['line_total'], 0, ',', '.') }} ₫</div>
+                        <div class="co-qty">x <?php echo e($it['quantity']); ?></div>
+                        <div class="co-price"><?php echo e(number_format($it['line_total'], 0, ',', '.')); ?> ₫</div>
                     </li>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
 
-                {{-- Thông tin thêm về vận chuyển & thuế --}}
+                
                 <div class="co-hint m-t-15" style="font-size:13px;">
                     <div><strong>Đơn vị vận chuyển:</strong>
-                        @if(isset($shippingCarrier) && $shippingCarrier)
-                            {{ $shippingCarrier->name }} @if(isset($shippingFee)) - {{ number_format($shippingFee, 0, ',', '.') }} ₫ @endif
-                        @else
+                        <?php if(isset($shippingCarrier) && $shippingCarrier): ?>
+                            <?php echo e($shippingCarrier->name); ?> <?php if(isset($shippingFee)): ?> - <?php echo e(number_format($shippingFee, 0, ',', '.')); ?> ₫ <?php endif; ?>
+                        <?php else: ?>
                             Chưa chọn
-                        @endif
+                        <?php endif; ?>
                     </div>
                     <div><strong>Mức thuế áp dụng:</strong>
-                        @if(isset($taxRate) && $taxRate)
-                            {{ $taxRate->name }} ({{ number_format($taxRate->rate * 100, 2, ',', '.') }} %)
-                        @else
+                        <?php if(isset($taxRate) && $taxRate): ?>
+                            <?php echo e($taxRate->name); ?> (<?php echo e(number_format($taxRate->rate * 100, 2, ',', '.')); ?> %)
+                        <?php else: ?>
                             Không áp dụng
-                        @endif
+                        <?php endif; ?>
                     </div>
-                    @if(isset($voucher) && $voucher)
-                        <div><strong>Voucher:</strong> {{ $voucher['code'] }}</div>
-                    @endif
+                    <?php if(isset($voucher) && $voucher): ?>
+                        <div><strong>Voucher:</strong> <?php echo e($voucher['code']); ?></div>
+                    <?php endif; ?>
                 </div>
 
                 <div style="padding-top:10px; border-top:1px solid #eee; margin-top:10px;">
                     <div class="flex-w flex-sb-m m-t-10">
                         <span class="mtext-101 cl2">Tạm tính</span>
-                        <span class="mtext-101 cl2">{{ number_format($subtotal, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2"><?php echo e(number_format($subtotal, 0, ',', '.')); ?> ₫</span>
                     </div>
-                    @if($discount > 0 && $voucher)
+                    <?php if($discount > 0 && $voucher): ?>
                     <div class="flex-w flex-sb-m m-t-10" style="color:#28a745;">
                         <span class="mtext-101 cl2">
                             Giảm giá 
-                            <small style="font-size:11px; color:#666;">({{ $voucher['code'] }})</small>
+                            <small style="font-size:11px; color:#666;">(<?php echo e($voucher['code']); ?>)</small>
                         </span>
-                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ number_format($discount, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-<?php echo e(number_format($discount, 0, ',', '.')); ?> ₫</span>
                     </div>
-                    @endif
+                    <?php endif; ?>
 
-                    @if(isset($taxAmount) && $taxAmount > 0 && isset($taxRate))
+                    <?php if(isset($taxAmount) && $taxAmount > 0 && isset($taxRate)): ?>
                     <div class="flex-w flex-sb-m m-t-10">
                         <span class="mtext-101 cl2">
-                            Thuế ({{ $taxRate->name }})
+                            Thuế (<?php echo e($taxRate->name); ?>)
                         </span>
-                        <span class="mtext-101 cl2">{{ number_format($taxAmount, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2"><?php echo e(number_format($taxAmount, 0, ',', '.')); ?> ₫</span>
                     </div>
-                    @endif
+                    <?php endif; ?>
 
-                    @if(isset($shippingFee) && $shippingFee > 0)
+                    <?php if(isset($shippingFee) && $shippingFee > 0): ?>
                     <div class="flex-w flex-sb-m m-t-10">
                         <span class="mtext-101 cl2">
                             Phí vận chuyển
-                            @if(isset($shippingCarrier) && $shippingCarrier)
-                                <small style="font-size:11px; color:#666;">({{ $shippingCarrier->name }})</small>
-                            @endif
+                            <?php if(isset($shippingCarrier) && $shippingCarrier): ?>
+                                <small style="font-size:11px; color:#666;">(<?php echo e($shippingCarrier->name); ?>)</small>
+                            <?php endif; ?>
                         </span>
-                        <span class="mtext-101 cl2">{{ number_format($shippingFee, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2"><?php echo e(number_format($shippingFee, 0, ',', '.')); ?> ₫</span>
                     </div>
-                    @endif
+                    <?php endif; ?>
 
                     <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
                         <span class="mtext-101 cl2" style="font-weight:700; font-size:16px;">Tổng cộng</span>
-                        <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;">{{ number_format($total, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;"><?php echo e(number_format($total, 0, ',', '.')); ?> ₫</span>
                     </div>
                 </div>
                 </div>
@@ -246,8 +274,8 @@
     </div>
 </div>
 
-@push('scripts')
-<script src="{{ asset('client/js/provinces-handler.js') }}"></script>
+<?php $__env->startPush('scripts'); ?>
+<script src="<?php echo e(asset('client/js/provinces-handler.js')); ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     var radios = document.querySelectorAll('input[name="payment_method"]');
@@ -264,9 +292,11 @@ document.addEventListener('DOMContentLoaded', function(){
     toggle();
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
 
 
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/checkout/index.blade.php ENDPATH**/ ?>

@@ -35,6 +35,7 @@ Route::prefix('cart')->as('client.cart.')->group(function () {
     Route::delete('/', [CartController::class, 'clear'])->name('clear');
     Route::post('/voucher/apply', [CartController::class, 'applyVoucher'])->name('voucher.apply');
     Route::post('/voucher/remove', [CartController::class, 'removeVoucher'])->name('voucher.remove');
+    Route::post('/shipping/select', [CartController::class, 'selectShipping'])->name('shipping.select');
 });
 
 // Checkout

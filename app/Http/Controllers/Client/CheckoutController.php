@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ShippingCarrier;
+use App\Models\TaxRate;
 use App\Services\VoucherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,11 +52,18 @@ class CheckoutController extends Controller
         return (float) $base;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $items = $this->baseCartQuery()
             ->with(['product.productImages', 'product.primaryImage', 'variant.size', 'variant.color', 'variant.texture'])
             ->get();
+
+        // Nếu giỏ hàng trống thì không cho vào trang thanh toán
+        if ($items->isEmpty()) {
+            return redirect()
+                ->route('client.cart.index')
+                ->with('error', 'Giỏ hàng trống, không thể thanh toán. Vui lòng thêm sản phẩm trước.');
+        }
 
         $cartData = [];
         $subtotal = 0.0;
@@ -76,17 +85,48 @@ class CheckoutController extends Controller
             ];
         }
 
-        // Calculate discount and total using VoucherService
+        // Calculate discount using VoucherService (trước thuế & phí ship)
         $voucherResult = $this->voucherService->recalculateDiscount($subtotal);
         $discount = $voucherResult['discount'];
-        $total = $voucherResult['total'];
+        $totalAfterDiscount = $voucherResult['total'];
         $appliedVoucher = $this->voucherService->getAppliedVoucher();
+
+        // Ưu tiên ID đơn vị vận chuyển từ query (chọn từ giỏ hàng) nếu có
+        $shippingCarrierId = $request->query('shipping_carrier_id');
+        if ($shippingCarrierId) {
+            session([
+                'cart.shipping_carrier_id' => (int) $shippingCarrierId,
+            ]);
+        } else {
+            $shippingCarrierId = session('cart.shipping_carrier_id');
+        }
+
+        // Lấy đơn vị vận chuyển đã chọn từ session (nếu có)
+        $shippingCarrier = $shippingCarrierId
+            ? ShippingCarrier::where('active', true)->find($shippingCarrierId)
+            : null;
+
+        $shippingFee = $shippingCarrier ? (float) ($shippingCarrier->fee ?? 0) : 0.0;
+
+        // Lấy thuế mặc định (VD: chọn mức VAT có rate lớn nhất)
+        $taxRate = TaxRate::orderByDesc('rate')->first();
+        $taxAmount = 0.0;
+        if ($taxRate && $subtotal > 0) {
+            $taxAmount = (float) round($subtotal * (float) $taxRate->rate);
+        }
+
+        // Tổng cuối cùng = tiền hàng - giảm giá + thuế + phí ship
+        $grandTotal = max(0, $subtotal - $discount + $taxAmount + $shippingFee);
 
         return view('client.checkout.index', [
             'cartData' => $cartData,
             'subtotal' => $subtotal,
             'discount' => $discount,
-            'total' => $total,
+            'total' => $grandTotal,
+            'taxAmount' => $taxAmount,
+            'taxRate' => $taxRate,
+            'shippingFee' => $shippingFee,
+            'shippingCarrier' => $shippingCarrier,
             'voucher' => $appliedVoucher,
         ]);
     }
@@ -114,14 +154,31 @@ class CheckoutController extends Controller
             $subtotal += $this->resolveItemPrice($it->product, $it->variant) * (int) $it->quantity;
         }
 
-        // Calculate discount and total using VoucherService
+        // Calculate discount using VoucherService (trước thuế & phí ship)
         $voucherResult = $this->voucherService->recalculateDiscount($subtotal);
         $discount = $voucherResult['discount'];
-        $total = $voucherResult['total'];
         $appliedVoucher = $this->voucherService->getAppliedVoucher();
 
+        // Lấy lại lựa chọn đơn vị vận chuyển từ session
+        $shippingCarrierId = session('cart.shipping_carrier_id');
+        $shippingCarrier = $shippingCarrierId
+            ? ShippingCarrier::where('active', true)->find($shippingCarrierId)
+            : null;
+
+        $shippingFee = $shippingCarrier ? (float) ($shippingCarrier->fee ?? 0) : 0.0;
+
+        // Lấy thuế mặc định
+        $taxRate = TaxRate::orderByDesc('rate')->first();
+        $taxAmount = 0.0;
+        if ($taxRate && $subtotal > 0) {
+            $taxAmount = (float) round($subtotal * (float) $taxRate->rate);
+        }
+
+        // Tổng cuối cùng
+        $grandTotal = max(0, $subtotal - $discount + $taxAmount + $shippingFee);
+
         // Tạo Order + OrderItems (transaction)
-        $order = DB::transaction(function() use ($request, $owner, $items, $subtotal, $discount, $total, $appliedVoucher) {
+        $order = DB::transaction(function() use ($request, $owner, $items, $subtotal, $discount, $taxRate, $taxAmount, $shippingCarrier, $shippingFee, $grandTotal, $appliedVoucher) {
             $order = Order::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
@@ -133,9 +190,12 @@ class CheckoutController extends Controller
                 'address' => $request->address,
                 'note' => $request->note,
                 'subtotal' => (int) $subtotal,
-                'shipping_fee' => 0,
+                'shipping_fee' => (int) $shippingFee,
                 'discount' => (int) $discount,
-                'total' => (int) $total,
+                'tax_rate_id' => $taxRate?->id,
+                'tax_amount' => (int) $taxAmount,
+                'shipping_carrier_id' => $shippingCarrier?->id,
+                'total' => (int) $grandTotal,
                 'payment_method' => $request->payment_method,
                 'payment_status' => $request->payment_method === 'online' ? 'paid' : 'unpaid',
                 'status' => 'pending',

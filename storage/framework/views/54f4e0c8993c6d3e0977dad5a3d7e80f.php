@@ -74,7 +74,7 @@
 
 	// Global Add-to-cart AJAX (opt-in only). Intercepts form posting to /cart/add when data-ajax="1"
     // Stylish toast (top-right, dark theme)
-    function showToast(message) {
+    function showToast(message, type) {
         // Create container once
         var $container = $('#toast-container-stylex');
         if (!$container.length) {
@@ -85,9 +85,23 @@
             $('body').append($container);
         }
 
+        type = type || 'success';
+
+        var baseBg = 'linear-gradient(135deg, #111, #1c1c1c)';
+        var borderColor = 'rgba(255,255,255,0.08)';
+        var iconChar = '✓';
+        var titleText = 'Thành công';
+        if (type === 'error') {
+            // Đỏ nhạt nhưng đậm hơn một chút cho dễ nhìn
+            baseBg = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+            borderColor = '#fca5a5';
+            iconChar = '!';
+            titleText = 'Lỗi';
+        }
+
         var $toast = $('<div class="toast-stylex"></div>').css({
-            background:'linear-gradient(135deg, #111, #1c1c1c)', color:'#fff',
-            border:'1px solid rgba(255,255,255,0.08)', borderRadius:'10px',
+            background: baseBg, color:'#fff',
+            border:'1px solid ' + borderColor, borderRadius:'10px',
             boxShadow:'0 10px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
             padding:'12px 14px 10px 12px', minWidth:'260px', maxWidth:'360px',
             display:'flex', alignItems:'flex-start', gap:'10px',
@@ -99,12 +113,12 @@
             background:'#2a2a2a', display:'flex', alignItems:'center', justifyContent:'center',
             boxShadow:'0 6px 12px rgba(0,0,0,0.35)'
         });
-        var $icon = $('<span>✓</span>').css({ fontWeight:700, color:'#fff' });
+        var $icon = $('<span></span>').text(iconChar).css({ fontWeight:700, color: type === 'error' ? '#b91c1c' : '#fff' });
         $iconWrap.append($icon);
 
         var $content = $('<div></div>').css({ flex:1 });
-        var $title = $('<div></div>').text('Thành công').css({ fontSize:'13px', opacity:.9, marginBottom:'2px' });
-        var $msg = $('<div></div>').text(message).css({ fontSize:'14px', fontWeight:600 });
+        var $title = $('<div></div>').text(titleText).css({ fontSize:'13px', opacity:.9, marginBottom:'2px', color: type === 'error' ? '#b91c1c' : '#fff' });
+        var $msg = $('<div></div>').text(message).css({ fontSize:'14px', fontWeight:600, color: type === 'error' ? '#7f1d1d' : '#fff' });
         var $bar = $('<div></div>').css({
             position:'relative', height:'3px', borderRadius:'10px',
             background:'rgba(255,255,255,0.08)', marginTop:'8px', overflow:'hidden'
