@@ -19,13 +19,13 @@
         .co-col-12 { grid-column: span 12; }
         @media (max-width: 991px){ .co-col-6 { grid-column: span 12; } }
         .co-summary { position:sticky; top:90px; }
-        .co-line { display:flex; gap:12px; align-items:center; padding:10px 0; border-bottom:1px dashed #eee; }
+        .co-line { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed #eee; }
         .co-line:last-child { border-bottom:none; }
-        .co-line img { width:58px; height:58px; border-radius:8px; object-fit:cover; }
-        .co-line__name { font-weight:700; color:#222; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .co-info { flex:1; min-width:0; }
-        .co-qty { width:64px; text-align:center; color:#333; }
-        .co-price { min-width:120px; text-align:right; font-weight:700; }
+        .co-line img { width:58px; height:58px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+        .co-line__name { font-weight:700; color:#222; max-width:100%; word-wrap:break-word; }
+        .co-info { flex:1; min-width:0; overflow:hidden; }
+        .co-qty { width:64px; text-align:center; color:#333; flex-shrink:0; }
+        .co-price { min-width:120px; text-align:right; font-weight:700; flex-shrink:0; }
         .co-actions { display:flex; gap:12px; }
         .btn-primary-x { background:#6777ef; color:#fff; border:none; border-radius:10px; padding:12px 16px; font-weight:700; }
         .btn-primary-x:hover { filter:brightness(.95); }
@@ -153,7 +153,7 @@
                         <img src="{{ $it['product']->default_image_url }}" alt="IMG">
                         <div class="co-info">
                             <div class="co-line__name">{{ $it['product']->name }}</div>
-                            <div class="stext-110 cl6" style="font-size:12px; margin-top:2px;">
+                            <div class="stext-110 cl6" style="font-size:12px; margin-top:2px; white-space:normal; word-break:break-word; word-wrap:break-word; overflow-wrap:break-word; line-height:1.5;">
                                 @php
                                     $variantParts = [];
                                     if ($it['variant'] && $it['variant']->size) {
@@ -168,7 +168,7 @@
                                     $variantDisplay = !empty($variantParts) ? implode(' - ', $variantParts) : '';
                                 @endphp
                                 @if($variantDisplay)
-                                    <strong>{{ $variantDisplay }}</strong>
+                                    <strong style="display:block; width:100%;">{{ $variantDisplay }}</strong>
                                 @endif
                             </div>
                         </div>

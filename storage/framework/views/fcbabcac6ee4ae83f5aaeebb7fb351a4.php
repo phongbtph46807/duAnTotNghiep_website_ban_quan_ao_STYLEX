@@ -69,14 +69,21 @@ unset($__errorArgs, $__bag); ?>
 
     <div class="col-md-4">
         <label class="form-label fw-semibold">Giảm tối đa (áp dụng với %)</label>
-        <input type="number" step="0.01" min="0" name="max_discount_amount" value="<?php echo e(old('max_discount_amount', $voucher->max_discount_amount ?? '')); ?>" class="form-control <?php $__errorArgs = ['max_discount_amount'];
+        <input type="text" 
+               name="max_discount_amount_display" 
+               id="max_discount_amount_display"
+               value="<?php echo e(old('max_discount_amount', $voucher->max_discount_amount ?? '') ? number_format(old('max_discount_amount', $voucher->max_discount_amount ?? ''), 0, ',', '.') : ''); ?>" 
+               class="form-control <?php $__errorArgs = ['max_discount_amount'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" placeholder="Không giới hạn nếu bỏ trống">
+unset($__errorArgs, $__bag); ?>" 
+               placeholder="Không giới hạn nếu bỏ trống"
+               data-format-number>
+        <input type="hidden" name="max_discount_amount" id="max_discount_amount" value="<?php echo e(old('max_discount_amount', $voucher->max_discount_amount ?? '')); ?>">
         <?php $__errorArgs = ['max_discount_amount'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -92,14 +99,21 @@ unset($__errorArgs, $__bag); ?>
 
     <div class="col-md-4">
         <label class="form-label fw-semibold">Đơn tối thiểu</label>
-        <input type="number" step="0.01" min="0" name="min_order_amount" value="<?php echo e(old('min_order_amount', $voucher->min_order_amount ?? '')); ?>" class="form-control <?php $__errorArgs = ['min_order_amount'];
+        <input type="text" 
+               name="min_order_amount_display" 
+               id="min_order_amount_display"
+               value="<?php echo e(old('min_order_amount', $voucher->min_order_amount ?? '') ? number_format(old('min_order_amount', $voucher->min_order_amount ?? ''), 0, ',', '.') : ''); ?>" 
+               class="form-control <?php $__errorArgs = ['min_order_amount'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" placeholder="Không bắt buộc">
+unset($__errorArgs, $__bag); ?>" 
+               placeholder="Không bắt buộc"
+               data-format-number>
+        <input type="hidden" name="min_order_amount" id="min_order_amount" value="<?php echo e(old('min_order_amount', $voucher->min_order_amount ?? '')); ?>">
         <?php $__errorArgs = ['min_order_amount'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -232,6 +246,72 @@ unset($__errorArgs, $__bag); ?>
         </div>
     </div>
 </div>
+
+<?php $__env->startPush('scripts'); ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hàm format số với dấu chấm ngăn cách
+    function formatNumber(value) {
+        if (!value) return '';
+        // Loại bỏ tất cả ký tự không phải số
+        var num = value.toString().replace(/[^\d]/g, '');
+        if (!num) return '';
+        // Format với dấu chấm ngăn cách hàng nghìn
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // Hàm lấy số thực (không có dấu chấm)
+    function getRawNumber(value) {
+        if (!value) return '';
+        return value.toString().replace(/[^\d]/g, '');
+    }
+
+    // Xử lý các trường có data-format-number
+    var formatInputs = document.querySelectorAll('[data-format-number]');
+    
+    formatInputs.forEach(function(input) {
+        // Format khi người dùng nhập
+        input.addEventListener('input', function(e) {
+            var rawValue = getRawNumber(e.target.value);
+            var formatted = formatNumber(rawValue);
+            e.target.value = formatted;
+            
+            // Cập nhật hidden input tương ứng
+            var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+            if (hiddenInput) {
+                hiddenInput.value = rawValue || '';
+            }
+        });
+
+        // Format khi blur (rời khỏi trường)
+        input.addEventListener('blur', function(e) {
+            var rawValue = getRawNumber(e.target.value);
+            var formatted = formatNumber(rawValue);
+            e.target.value = formatted;
+            
+            var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+            if (hiddenInput) {
+                hiddenInput.value = rawValue || '';
+            }
+        });
+    });
+
+    // Cập nhật hidden input trước khi submit form
+    var form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            formatInputs.forEach(function(input) {
+                var rawValue = getRawNumber(input.value);
+                var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+                if (hiddenInput) {
+                    hiddenInput.value = rawValue || '';
+                }
+            });
+        });
+    }
+});
+</script>
+<?php $__env->stopPush(); ?>
 
 
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\admin\vouchers\_form.blade.php ENDPATH**/ ?>

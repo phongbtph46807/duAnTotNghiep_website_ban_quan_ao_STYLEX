@@ -27,7 +27,14 @@
 
     <div class="col-md-4">
         <label class="form-label fw-semibold">Giảm tối đa (áp dụng với %)</label>
-        <input type="number" step="0.01" min="0" name="max_discount_amount" value="{{ old('max_discount_amount', $voucher->max_discount_amount ?? '') }}" class="form-control @error('max_discount_amount') is-invalid @enderror" placeholder="Không giới hạn nếu bỏ trống">
+        <input type="text" 
+               name="max_discount_amount_display" 
+               id="max_discount_amount_display"
+               value="{{ old('max_discount_amount', $voucher->max_discount_amount ?? '') ? number_format(old('max_discount_amount', $voucher->max_discount_amount ?? ''), 0, ',', '.') : '' }}" 
+               class="form-control @error('max_discount_amount') is-invalid @enderror" 
+               placeholder="Không giới hạn nếu bỏ trống"
+               data-format-number>
+        <input type="hidden" name="max_discount_amount" id="max_discount_amount" value="{{ old('max_discount_amount', $voucher->max_discount_amount ?? '') }}">
         @error('max_discount_amount')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -36,7 +43,14 @@
 
     <div class="col-md-4">
         <label class="form-label fw-semibold">Đơn tối thiểu</label>
-        <input type="number" step="0.01" min="0" name="min_order_amount" value="{{ old('min_order_amount', $voucher->min_order_amount ?? '') }}" class="form-control @error('min_order_amount') is-invalid @enderror" placeholder="Không bắt buộc">
+        <input type="text" 
+               name="min_order_amount_display" 
+               id="min_order_amount_display"
+               value="{{ old('min_order_amount', $voucher->min_order_amount ?? '') ? number_format(old('min_order_amount', $voucher->min_order_amount ?? ''), 0, ',', '.') : '' }}" 
+               class="form-control @error('min_order_amount') is-invalid @enderror" 
+               placeholder="Không bắt buộc"
+               data-format-number>
+        <input type="hidden" name="min_order_amount" id="min_order_amount" value="{{ old('min_order_amount', $voucher->min_order_amount ?? '') }}">
         @error('min_order_amount')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -106,5 +120,71 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Hàm format số với dấu chấm ngăn cách
+    function formatNumber(value) {
+        if (!value) return '';
+        // Loại bỏ tất cả ký tự không phải số
+        var num = value.toString().replace(/[^\d]/g, '');
+        if (!num) return '';
+        // Format với dấu chấm ngăn cách hàng nghìn
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // Hàm lấy số thực (không có dấu chấm)
+    function getRawNumber(value) {
+        if (!value) return '';
+        return value.toString().replace(/[^\d]/g, '');
+    }
+
+    // Xử lý các trường có data-format-number
+    var formatInputs = document.querySelectorAll('[data-format-number]');
+    
+    formatInputs.forEach(function(input) {
+        // Format khi người dùng nhập
+        input.addEventListener('input', function(e) {
+            var rawValue = getRawNumber(e.target.value);
+            var formatted = formatNumber(rawValue);
+            e.target.value = formatted;
+            
+            // Cập nhật hidden input tương ứng
+            var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+            if (hiddenInput) {
+                hiddenInput.value = rawValue || '';
+            }
+        });
+
+        // Format khi blur (rời khỏi trường)
+        input.addEventListener('blur', function(e) {
+            var rawValue = getRawNumber(e.target.value);
+            var formatted = formatNumber(rawValue);
+            e.target.value = formatted;
+            
+            var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+            if (hiddenInput) {
+                hiddenInput.value = rawValue || '';
+            }
+        });
+    });
+
+    // Cập nhật hidden input trước khi submit form
+    var form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            formatInputs.forEach(function(input) {
+                var rawValue = getRawNumber(input.value);
+                var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+                if (hiddenInput) {
+                    hiddenInput.value = rawValue || '';
+                }
+            });
+        });
+    }
+});
+</script>
+@endpush
 
 
