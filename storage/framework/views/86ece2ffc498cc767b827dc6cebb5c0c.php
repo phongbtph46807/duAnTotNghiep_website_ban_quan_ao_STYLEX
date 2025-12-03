@@ -17,27 +17,176 @@
 <section class="bg0 p-t-40 p-b-60">
 	<div class="container">
 		<div class="row">
-			<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
+			<div class="col-lg-10 col-xl-12 m-lr-auto m-b-50">
 				<div class="m-l-25 m-r--38 m-lr-0-xl">
 					<style>
 						/* Harmonize cart table columns */
-						.table-shopping-cart .table_head th { padding: 14px 12px; }
-						.table-shopping-cart .column-1 { width: 120px; }
-						.table-shopping-cart .column-2 { width: auto; padding-left: 16px; }
-						.table-shopping-cart .column-3 { width: 140px; text-align: center; }
-						.table-shopping-cart .column-4 { width: 160px; text-align: center; }
-						.table-shopping-cart .column-5 { width: 150px; text-align: right; }
-						.table-shopping-cart .column-6 { width: 100px; text-align: center; }
+						.table-shopping-cart { 
+							table-layout: fixed; 
+							width: 100%;
+						}
+						.table-shopping-cart .table_head th { 
+							padding: 14px 12px; 
+							vertical-align: middle; 
+							border-bottom: 1px solid #e6e6e6;
+						}
+						.table-shopping-cart .column-0 { 
+							width: 50px; 
+							text-align: center; 
+							vertical-align: middle; 
+						}
+						.table-shopping-cart .column-1 { 
+							width: 120px; 
+							vertical-align: middle; 
+							padding: 10px;
+						}
+						.table-shopping-cart .column-2 { 
+							width: 220px; 
+							padding: 10px 12px; 
+							vertical-align: middle; 
+						}
+						.table-shopping-cart .column-3 { 
+							width: 220px; 
+							padding: 10px 12px; 
+							vertical-align: middle; 
+						}
+						.table-shopping-cart .column-4 { 
+							width: 120px; 
+							text-align: center; 
+							vertical-align: middle; 
+						}
+						.table-shopping-cart .column-5 { 
+							width: 150px; 
+							text-align: center; 
+							vertical-align: middle; 
+						}
+						.table-shopping-cart .column-6 { 
+							width: 130px; 
+							text-align: right; 
+							vertical-align: middle; 
+							padding-right: 15px;
+						}
+						.table-shopping-cart .column-7 { 
+							width: 80px; 
+							text-align: center; 
+							vertical-align: middle; 
+						}
 
 						/* Align body cells same as headers */
-						.table-shopping-cart td.column-3,
+						.table-shopping-cart td.column-0 { 
+							text-align: center; 
+							vertical-align: middle; 
+							padding: 10px 5px;
+						}
+						.table-shopping-cart td.column-1 { 
+							vertical-align: middle; 
+							padding: 10px;
+						}
+						.table-shopping-cart td.column-2 { 
+							vertical-align: middle; 
+							padding: 10px 12px;
+						}
+						.table-shopping-cart td.column-3 { 
+							vertical-align: middle; 
+							padding: 10px 12px;
+						}
 						.table-shopping-cart td.column-4,
-						.table-shopping-cart td.column-6 { text-align: center; }
-						.table-shopping-cart td.column-5 { text-align: right; }
+						.table-shopping-cart td.column-5,
+						.table-shopping-cart td.column-7 { 
+							text-align: center; 
+							vertical-align: middle; 
+							padding: 10px;
+						}
+						.table-shopping-cart td.column-6 { 
+							text-align: right; 
+							vertical-align: middle; 
+							padding: 10px 15px 10px 10px;
+						}
+						
+						/* Align checkboxes */
+						.table-shopping-cart .column-0 input[type="checkbox"] {
+							width: 18px;
+							height: 18px;
+							cursor: pointer;
+							margin: 0 auto;
+							display: block;
+						}
+						
+						/* Product image alignment */
+						.table-shopping-cart .column-1 .how-itemcart1 {
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							width: 100%;
+							height: 100%;
+						}
+						
+						.table-shopping-cart .column-1 img {
+							max-width: 100px;
+							max-height: 100px;
+							width: auto;
+							height: auto;
+							display: block;
+							object-fit: contain;
+						}
+						
+						/* Product name alignment */
+						.table-shopping-cart .column-2 {
+							word-wrap: break-word;
+							overflow-wrap: break-word;
+						}
+						
+						.table-shopping-cart .column-2 a.stext-104 {
+							display: block;
+							word-wrap: break-word;
+							overflow-wrap: break-word;
+							line-height: 1.4;
+						}
+						
+						/* Variant info alignment */
+						.table-shopping-cart .column-3 {
+							word-wrap: break-word;
+							overflow-wrap: break-word;
+						}
+						
+						.table-shopping-cart .column-3 .stext-110 {
+							display: block;
+							word-wrap: break-word;
+							overflow-wrap: break-word;
+							line-height: 1.5;
+						}
+						
+						/* Ensure table cells don't overlap */
+						.table-shopping-cart td {
+							white-space: normal;
+							overflow: visible;
+						}
+						
+						/* Table row styling */
+						.table-shopping-cart .table_row {
+							border-bottom: 1px solid #f0f0f0;
+						}
+						
+						.table-shopping-cart .table_row:hover {
+							background-color: #fafafa;
+						}
 
 						/* Tidy action button */
-						.table-shopping-cart .delete-line { color: #999; }
-						.table-shopping-cart .delete-line:hover { color: #333; }
+						.table-shopping-cart .delete-line { 
+							color: #999; 
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							margin: 0 auto;
+							width: 30px;
+							height: 30px;
+						}
+						.table-shopping-cart .delete-line:hover { 
+							color: #333; 
+						}
+						.table-shopping-cart .delete-line i {
+							font-size: 20px;
+						}
 
 						/* Product name readability */
 						.table-shopping-cart td.column-2 a.stext-104 {
@@ -50,97 +199,30 @@
 							line-height: 1.35;
 						}
 					</style>
-					<div class="wrap-table-shopping-cart">
-						<table class="table-shopping-cart">
-							<tr class="table_head">
-								<th class="column-1">Sản phẩm</th>
-								<th class="column-2">Tên</th>
-								<th class="column-3">Giá</th>
-								<th class="column-4">Số lượng</th>
-								<th class="column-5">Tạm tính</th>
-								<th class="column-6">Thao tác</th>
-							</tr>
-
-							<?php /* grand from controller-provided $total; avoid heavy PHP in Blade */ ?>
-							<?php if(!empty($cartData) && count($cartData)): ?>
-								<?php $__currentLoopData = $cartData; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-								<?php
-									$img = $item['image_url'] ?? ($item['product']->default_image_url ?? asset('client/images/product-01.jpg'));
-									$qty = (int)($item['quantity'] ?? 1);
-									$price = (float)($item['price'] ?? 0);
-									$line = (float)($item['line_total'] ?? ($qty * $price));
-									$varObj = $item['variant'] ?? null;
-									$sizeName = $item['size'] ?? ($varObj && isset($varObj->size) ? ($varObj->size->name ?? null) : null);
-									$colorName = $item['color'] ?? ($varObj && isset($varObj->color) ? ($varObj->color->name ?? null) : null);
-								?>
-								<tr class="table_row align-middle" data-cart-id="<?php echo e($item['id']); ?>" data-price="<?php echo e($price); ?>" data-qty="<?php echo e($qty); ?>">
-									<td class="column-1">
-										<div class="how-itemcart1">
-											<img src="<?php echo e($img); ?>" alt="IMG">
-										</div>
-									</td>
-									<td class="column-2">
-										<a href="<?php echo e(route('client.products.show', $item['product']->id)); ?>" class="stext-104 cl4 hov-cl1 trans-04"><?php echo e($item['product']->name); ?></a>
-								<?php if($sizeName || $colorName): ?>
-									<div class="stext-110" style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
-										<?php if($sizeName): ?>
-											<span style="background:#f3f3f3; color:#333; border:1px solid #e5e5e5; border-radius:12px; padding:2px 8px; font-size:12px;">Size: <?php echo e($sizeName); ?></span>
-										<?php endif; ?>
-										<?php if($colorName): ?>
-											<span style="background:#f3f3f3; color:#333; border:1px solid #e5e5e5; border-radius:12px; padding:2px 8px; font-size:12px;">Màu: <?php echo e($colorName); ?></span>
-										<?php endif; ?>
-									</div>
-								<?php endif; ?>
-									</td>
-									<td class="column-3"><?php echo e(number_format($price, 0, ',', '.')); ?> ₫</td>
-									<td class="column-4">
-										<div class="wrap-num-product flex-w m-l-auto m-r-0">
-											<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-action="dec" data-cart-id="<?php echo e($item['id']); ?>">
-												<i class="fs-16 zmdi zmdi-minus"></i>
-											</div>
-											<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product-<?php echo e($item['id']); ?>" value="<?php echo e($qty); ?>" min="1" data-cart-id="<?php echo e($item['id']); ?>">
-											<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-action="inc" data-cart-id="<?php echo e($item['id']); ?>">
-												<i class="fs-16 zmdi zmdi-plus"></i>
-											</div>
-										</div>
-									</td>
-									<td class="column-5 line-total"><?php echo e(number_format($line, 0, ',', '.')); ?> ₫</td>
-									<td class="column-6">
-										<button type="button" class="delete-line" data-cart-id="<?php echo e($item['id']); ?>" title="Xóa" style="background:none;border:none;cursor:pointer;">
-											<i class="zmdi zmdi-close"></i>
-										</button>
-									</td>
-								</tr>
-								<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-							<?php else: ?>
-								<tr>
-									<td colspan="5" class="text-center p-tb-40">
-										<p class="stext-106 cl6">Giỏ hàng trống</p>
-										<a href="<?php echo e(route('client.products.index')); ?>" class="stext-106 cl6 hov1 trans-04">Tiếp tục mua sắm</a>
-									</td>
-								</tr>
-							<?php endif; ?>
-						</table>
+					<div class="wrap-table-shopping-cart" id="cart-table-container">
+						<?php echo $__env->make('client.carts.partials.table', ['cartData' => $cartData], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 					</div>
 
 						<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-						<div class="flex-w flex-m m-r-20 m-tb-5" style="flex: 1;">
-							<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" 
-								   type="text" 
-								   id="voucherCode" 
-								   name="coupon" 
-								   placeholder="Nhập mã voucher"
-								   style="flex: 1;">
-							<button type="button" 
-									id="applyVoucherBtn" 
-									class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
-								Áp dụng mã
+						<div class="flex-w flex-m m-tb-10" style="gap: 10px;">
+							<button type="button" id="delete-selected-items" class="flex-c-m stext-101 cl0 size-119 bg1 bor13 hov-btn1 p-lr-15 trans-04" style="display: none;">
+								Xóa đã chọn
 							</button>
 						</div>
-						<div id="voucherMessage" class="w-full m-tb-5" style="font-size: 12px; color: #28a745;"></div>
-						<div id="voucherInfo" class="w-full m-tb-5" style="display: none;">
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-10 col-xl-12 m-lr-auto m-b-50" style="margin-top: 30px;">
+				<div class="m-l-25 m-r--38 m-lr-0-xl">
+					<div class="bor10 p-lr-40 p-t-30 p-b-40 p-lr-15-sm">
+						<h4 class="mtext-109 cl2 p-b-30">Tổng cộng</h4>
+					
+					<!-- Voucher Section -->
+					<div class="bor12 p-b-15 m-b-20">
+						<div id="voucherInfo" class="w-full m-b-10" style="display: none;">
 							<span class="stext-110 cl2" style="color: #28a745; font-weight: 600;">
-								Mã: <span id="appliedVoucherCode"></span>
+								Mã voucher: <span id="appliedVoucherCode"></span>
 							</span>
 							<button type="button" 
 									id="removeVoucherBtn" 
@@ -149,14 +231,93 @@
 								(Xóa)
 							</button>
 						</div>
-						<div id="update-cart-btn" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">Cập nhật giỏ hàng</div>
+						<a href="javascript:void(0);" 
+						   id="openVoucherModal" 
+						   class="stext-110 cl2 hov-cl1 trans-04" 
+						   style="display: inline-block; text-decoration: underline; cursor: pointer;">
+							<i class="zmdi zmdi-ticket-star" style="margin-right: 5px;"></i>
+							Chọn hoặc nhập mã voucher
+						</a>
+						<div id="voucherMessage" class="w-full m-t-10" style="font-size: 12px; color: #28a745;"></div>
 					</div>
-				</div>
-			</div>
+					
+					<!-- Voucher Modal -->
+					<div id="voucherModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; overflow-y: auto;">
+						<div style="position: relative; max-width: 600px; margin: 50px auto; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+							<div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+								<h4 class="mtext-109 cl2" style="margin: 0;">Chọn hoặc nhập mã voucher</h4>
+								<button type="button" 
+										id="closeVoucherModal" 
+										style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+									<i class="zmdi zmdi-close"></i>
+								</button>
+							</div>
+							<div style="padding: 20px;">
+								<div style="margin-bottom: 20px;">
+									<label class="stext-110 cl2" style="display: block; margin-bottom: 8px; font-weight: 600;">Nhập mã voucher:</label>
+									<input type="text" 
+										   id="voucherCodeInput" 
+										   class="stext-104 cl2 plh4 size-117 bor13 p-lr-15" 
+										   placeholder="Nhập mã voucher"
+										   style="width: 100%;">
+									<button type="button" 
+											id="applyVoucherBtn" 
+											class="flex-c-m stext-101 cl0 size-118 bg1 bor13 hov-btn1 p-lr-15 trans-04 pointer m-t-10"
+											style="width: 100%;">
+										Áp dụng mã
+									</button>
+								</div>
+								<div>
+									<label class="stext-110 cl2" style="display: block; margin-bottom: 10px; font-weight: 600;">Danh sách voucher có sẵn:</label>
+									<div id="voucherList" style="max-height: 400px; overflow-y: auto;">
+										<?php if(!empty($availableVouchers) && count($availableVouchers) > 0): ?>
+											<?php $__currentLoopData = $availableVouchers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $v): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+											<div class="voucher-item" 
+												 data-code="<?php echo e($v['code']); ?>"
+												 style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;"
+												 onmouseover="this.style.backgroundColor='#f5f5f5'; this.style.borderColor='#333';"
+												 onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#e0e0e0';">
+												<div style="display: flex; justify-content: space-between; align-items: center;">
+													<div style="flex: 1;">
+														<div class="stext-110 cl2" style="font-weight: 600; color: #333; margin-bottom: 4px;">
+															<?php echo e($v['code']); ?>
 
-			<div class="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
-				<div class="bor10 p-lr-40 p-t-30 p-b-40 m-l-63 m-r-40 m-lr-0-xl p-lr-15-sm">
-					<h4 class="mtext-109 cl2 p-b-30">Tổng cộng</h4>
+														</div>
+														<?php if($v['description']): ?>
+														<div class="stext-110 cl6" style="font-size: 12px; margin-bottom: 4px;">
+															<?php echo e($v['description']); ?>
+
+														</div>
+														<?php endif; ?>
+														<div class="stext-110 cl2" style="font-size: 13px; color: #28a745; font-weight: 600;">
+															Giảm <?php echo e($v['discount_display']); ?>
+
+															<?php if($v['type'] === 'percent' && $v['max_discount_amount']): ?>
+																(tối đa <?php echo e(number_format($v['max_discount_amount'], 0, ',', '.')); ?> ₫)
+															<?php endif; ?>
+														</div>
+													</div>
+													<button type="button" 
+															class="select-voucher-btn flex-c-m stext-101 cl0 size-118 bg1 bor13 hov-btn1 p-lr-15 trans-04"
+															data-code="<?php echo e($v['code']); ?>"
+															style="margin-left: 10px; white-space: nowrap;">
+														Chọn
+													</button>
+												</div>
+											</div>
+											<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+										<?php else: ?>
+											<div class="stext-110 cl6" style="text-align: center; padding: 20px; color: #999;">
+												Không có voucher nào khả dụng
+											</div>
+										<?php endif; ?>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- End Voucher Section -->
+					
 					<div class="flex-w flex-t bor12 p-b-13">
 						<div class="size-208"><span class="stext-110 cl2">Tạm tính:</span></div>
 						<div class="size-209"><span class="mtext-110 cl2" id="cart-subtotal"><?php echo e(number_format($total ?? 0, 0, ',', '.')); ?> ₫</span></div>
@@ -167,13 +328,43 @@
 					</div>
 					<div class="flex-w flex-t bor12 p-t-15 p-b-30">
 						<div class="size-208 w-full-ssm"><span class="stext-110 cl2">Vận chuyển:</span></div>
-						<div class="size-209 p-r-18 p-r-0-sm w-full-ssm"><span class="stext-111 cl6 p-t-2">Tính khi thanh toán</span></div>
+						<div class="size-209 p-r-18 p-r-0-sm w-full-ssm">
+							<?php if(!empty($shippingCarriers) && count($shippingCarriers) > 0): ?>
+								<div class="shipping-carriers-list" style="display: flex; flex-wrap: wrap; gap: 8px;">
+									<?php $__currentLoopData = $shippingCarriers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $carrier): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+									<div class="shipping-carrier-box" 
+										 data-carrier-id="<?php echo e($carrier->id); ?>"
+										 data-carrier-fee="<?php echo e(isset($carrier->fee) ? $carrier->fee : 0); ?>"
+										 style="display: inline-block; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: #fff; margin-right: 8px; margin-bottom: 8px;"
+										 onmouseover="this.style.borderColor='#333'; this.style.backgroundColor='#f9f9f9';"
+										 onmouseout="if(!this.classList.contains('selected')) { this.style.borderColor='#e0e0e0'; this.style.backgroundColor='#fff'; }">
+										<input type="radio" 
+											   name="shipping_carrier" 
+											   id="carrier_<?php echo e($carrier->id); ?>" 
+											   value="<?php echo e($carrier->id); ?>"
+											   data-fee="<?php echo e(isset($carrier->fee) ? $carrier->fee : 0); ?>"
+											   style="margin-right: 6px; vertical-align: middle;">
+										<label for="carrier_<?php echo e($carrier->id); ?>" style="cursor: pointer; margin: 0; font-weight: 600; color: #333; font-size: 14px; vertical-align: middle;">
+											<?php echo e($carrier->name); ?>
+
+											<span style="margin-left: 8px; color: #666; font-weight: 500;">
+												(<?php echo e(number_format(isset($carrier->fee) ? $carrier->fee : 0, 0, ',', '.')); ?> ₫)
+											</span>
+										</label>
+									</div>
+									<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+								</div>
+							<?php else: ?>
+								<span class="stext-111 cl6 p-t-2">Tính khi thanh toán</span>
+							<?php endif; ?>
+						</div>
 					</div>
 					<div class="flex-w flex-t p-t-27 p-b-33">
 						<div class="size-208"><span class="mtext-101 cl2">Tổng:</span></div>
 						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal"><?php echo e(number_format($total ?? 0, 0, ',', '.')); ?> ₫</span></div>
 					</div>
 						<a href="<?php echo e(route('client.checkout.index')); ?>" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -194,8 +385,6 @@
 			currentDiscount = parseFloat('<?php echo e($discount ?? 0); ?>') || 0;
 			$('#voucherInfo').show();
 			$('#appliedVoucherCode').text(appliedVoucher.code);
-			$('#voucherCode').val('').prop('disabled', true);
-			$('#applyVoucherBtn').hide();
 			updateGrandTotal();
 		}
 	});
@@ -229,8 +418,10 @@
 		updateGrandTotal();
 	}
 
+	var currentShippingFee = 0;
+	
 	function updateGrandTotal(){
-		var finalTotal = currentSubtotal - currentDiscount;
+		var finalTotal = currentSubtotal - currentDiscount + currentShippingFee;
 		if (finalTotal < 0) finalTotal = 0;
 		$('#cart-grandtotal').text(format(finalTotal));
 		if (currentDiscount > 0) {
@@ -240,72 +431,367 @@
 			$('#discountRow').hide();
 		}
 	}
-	// Mark dirty on +/- and change, do not call server
-	$(document).on('click', 'table.table-shopping-cart .btn-num-product-up, table.table-shopping-cart .btn-num-product-down', function(e){
-		e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-		var $btn = $(this);
-		var $row = $btn.closest('tr.table_row');
-		var $input = $row.find('input.num-product');
-		setTimeout(function(){
-			var current = parseInt($input.val(), 10);
-			if (isNaN(current) || current < 1) { current = 1; $input.val(current); }
-			$row.addClass('dirty');
-		}, 0);
-		return false;
+	
+	// Shipping carrier selection
+	$(document).on('change', 'input[name="shipping_carrier"]', function(){
+		var $radio = $(this);
+		var fee = parseFloat($radio.data('fee') || 0);
+		currentShippingFee = fee;
+		
+		// Update UI
+		$('.shipping-carrier-box').removeClass('selected').css({
+			'borderColor': '#e0e0e0',
+			'backgroundColor': '#fff'
+		});
+		$radio.closest('.shipping-carrier-box').addClass('selected').css({
+			'borderColor': '#333',
+			'backgroundColor': '#f9f9f9'
+		});
+		
+		// Update total
+		updateGrandTotal();
 	});
-	$(document).on('change', 'table.table-shopping-cart input.num-product', function(e){
-		e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-		var $input = $(this);
-		var $row = $input.closest('tr.table_row');
-		var val = parseInt($input.val(), 10);
-		if (isNaN(val) || val < 1) { val = 1; $input.val(val); }
-		$row.addClass('dirty');
-	});
-	// Update button: only recompute totals and commit values client-side
-	$(document).on('click', '#update-cart-btn', function(e){
-		e.preventDefault();
-		var rows = $('table.table-shopping-cart tr.table_row.dirty');
-		if (!rows.length) {
-			if (typeof showToast === 'function') { showToast('Không có thay đổi số lượng'); }
-			return;
+	
+	// Initialize first carrier as selected if available
+	$(document).ready(function(){
+		var $firstCarrier = $('input[name="shipping_carrier"]:first');
+		if ($firstCarrier.length > 0) {
+			$firstCarrier.prop('checked', true).trigger('change');
 		}
-		var ajaxCount = 0, failCount = 0;
-		rows.each(function(){
-			var $row = $(this);
-			var qty = parseInt($row.find('input.num-product').val(), 10);
-			if (isNaN(qty) || qty < 1) qty = 1;
-			var cartId = $row.data('cart-id');
+	});
+	// Function to reload cart table only (not full page)
+	function reloadCartTable() {
+		$.ajax({
+			url: '<?php echo e(route("client.cart.table")); ?>',
+			method: 'GET',
+			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
+		}).done(function(html){
+			$('#cart-table-container').html(html);
+			// Update totals from server
+			updateTotalsFromServer();
+			// Re-initialize checkbox state after reload
+			setTimeout(function() {
+				updateSelectAllState();
+			}, 100);
+			// Reload mini cart in menu
+			reloadMiniCart();
+		}).fail(function(){
+			console.error('Failed to reload cart table');
+		});
+	}
+	
+	// Function to reload mini cart in menu
+	function reloadMiniCart() {
+		$.ajax({
+			url: '/cart/get',
+			method: 'GET',
+			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+		}).done(function(cartData) {
+			if (cartData && cartData.cart_items) {
+				var $cartItems = $('#cartItems');
+				var $cartFooter = $('#cartFooter');
+				$cartItems.empty();
+				
+				if (cartData.cart_items.length > 0) {
+					cartData.cart_items.forEach(function(item) {
+						var imagePath = (item.product && item.product.default_image_url) ? item.product.default_image_url : '/client/images/product/product-01.jpg';
+						var name = (item.product && item.product.name) ? item.product.name : 'Sản phẩm';
+						var productId = (item.product && item.product.id) ? item.product.id : (item.product_id || item.id);
+						var price = item.price || 0;
+						var quantity = item.quantity || 1;
+						
+						// Get variant info
+						var variant = item.variant || {};
+						var sizeName = item.size || (variant.size ? (variant.size.name || '') : '');
+						var colorName = item.color || (variant.color ? (variant.color.name || '') : '');
+						var variantInfo = '';
+						if (sizeName || colorName) {
+							var parts = [];
+							if (sizeName) parts.push('Size: ' + sizeName);
+							if (colorName) parts.push('Màu: ' + colorName);
+							variantInfo = '<div class="stext-110" style="margin: 2px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">' +
+								parts.map(function(p) {
+									return '<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">' + p + '</span>';
+								}).join('') +
+								'</div>';
+						}
+						
+						var html = '<li class="header-cart-item flex-w flex-t m-b-12" data-cart-id="' + item.id + '">' +
+							'<div class="header-cart-item-img"><img src="' + imagePath + '" alt="' + name + '"></div>' +
+							'<div class="header-cart-item-txt p-t-8" style="flex:1;">' +
+							'<a href="/products/' + productId + '" class="header-cart-item-name m-b-5 hov-cl1 trans-04">' + name + '</a>' +
+							variantInfo +
+							'<span class="header-cart-item-info">' + quantity + ' x ' + new Intl.NumberFormat('vi-VN').format(price) + ' ₫</span>' +
+							'</div>' +
+							'<button class="delete-item" type="button" data-cart-id="' + item.id + '" title="Xóa" style="margin-left:auto; background: none; border: none; cursor: pointer; align-self:center;"><i class="zmdi zmdi-close"></i></button>' +
+							'</li>';
+						$cartItems.append(html);
+					});
+					
+					// Update total and count
+					var finalCount = cartData.item_count || 0;
+					var totalAmount = cartData.total_amount || 0;
+					
+					// Update cart count badge
+					$('#cartItemCount').text('(' + finalCount + ')');
+					$('.icon-header-noti.js-show-cart').attr('data-notify', finalCount);
+					
+					// Create or update footer with total and button
+					var $cartContent = $cartItems.closest('.header-cart-content');
+					if ($cartFooter.length === 0) {
+						var footerHtml = '<div class="w-full" id="cartFooter" style="flex-shrink: 0; border-top: 1px solid #e8e8e8; margin-top: auto;">' +
+							'<div class="header-cart-total w-full p-tb-30" id="cartTotal">' +
+							'<div class="flex-w flex-sb-m">' +
+							'<span class="mtext-107 cl2" style="font-size: 18px; font-weight: 600;">Tổng cộng:</span>' +
+							'<span class="mtext-106 cl2" id="totalAmount" style="font-size: 20px; font-weight: 700; color: #666;">' + new Intl.NumberFormat('vi-VN').format(totalAmount) + ' ₫</span>' +
+							'</div>' +
+							'</div>' +
+							'<div class="header-cart-buttons flex-w w-full" style="gap: 10px;">' +
+							'<a href="/cart" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10" style="flex: 1; text-align: center; text-decoration: none;">Xem Giỏ Hàng</a>' +
+							'</div>' +
+							'</div>';
+						$cartContent.append(footerHtml);
+					} else {
+						$('#totalAmount').text(new Intl.NumberFormat('vi-VN').format(totalAmount) + ' ₫');
+						$cartFooter.css('display', 'block').show();
+					}
+				} else {
+					$cartItems.html('<li class="header-cart-empty" style="padding: 60px 20px; text-align: center; color: #999;"><p style="margin-top: 20px; font-size: 16px;">Giỏ hàng trống</p></li>');
+					if ($cartFooter.length > 0) {
+						$cartFooter.hide();
+					}
+				}
+			}
+		}).fail(function(xhr, status, error) {
+			console.error('Error loading mini cart:', error);
+		});
+	}
+	
+	// Function to get totals from server
+	function updateTotalsFromServer() {
+		$.ajax({
+			url: '<?php echo e(route("client.cart.index")); ?>',
+			method: 'GET',
+			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+			data: { ajax: 1, totals_only: 1 }
+		}).done(function(data){
+			if (data && data.subtotal !== undefined) {
+				$('#cart-subtotal').text(format(data.subtotal));
+				if (data.discount > 0) {
+					$('#discountRow').show();
+					$('#discountAmount').text(format(data.discount));
+				} else {
+					$('#discountRow').hide();
+				}
+				$('#cart-grandtotal').text(format(data.total || data.subtotal));
+			}
+		}).fail(function(){
+			// Fallback: reload full page if AJAX fails
+			location.reload();
+		});
+	}
+	
+	// Function to update cart automatically
+	function updateCartItem($row) {
+		var qty = parseInt($row.find('input.num-product').val(), 10);
+		if (isNaN(qty) || qty < 1) {
+			qty = 1;
+			$row.find('input.num-product').val(1);
+		}
+		
+		// Check if this row has multiple cart IDs (grouped items)
+		var cartIds = $row.data('cart-ids');
+		if (!cartIds || !Array.isArray(cartIds)) {
+			// Fallback to single cart ID
+			cartIds = [$row.data('cart-id')];
+		}
+		
+		// Get item data to calculate proportions
+		var itemData = $row.data('item-data') || [];
+		var totalOldQty = 0;
+		if (itemData.length > 0) {
+			itemData.forEach(function(item) {
+				totalOldQty += parseInt(item.quantity || 1, 10);
+			});
+		} else {
+			totalOldQty = qty; // If no item data, assume equal distribution
+		}
+		
+		var ajaxCount = 0;
+		var successCount = 0;
+		
+		// Update all cart items in this group
+		cartIds.forEach(function(cartId) {
+			if (!cartId) return;
+			
+			// Calculate quantity for this item (proportional to old quantity)
+			var itemQty = qty;
+			if (itemData.length > 0 && totalOldQty > 0) {
+				var item = itemData.find(function(i) { return i.id == cartId; });
+				if (item) {
+					var proportion = parseInt(item.quantity || 1, 10) / totalOldQty;
+					itemQty = Math.max(1, Math.round(qty * proportion));
+				}
+			}
+			
 			ajaxCount++;
 			$.ajax({
 				url: '/cart/'+cartId,
 				method: 'PUT',
 				headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-				data: { quantity: qty, _token: $('meta[name="csrf-token"]').attr('content') }
+				data: { quantity: itemQty, _token: $('meta[name="csrf-token"]').attr('content'), ajax: 1 }
 			}).done(function(res){
-				// ... nothing to do here per item ...
-			}).fail(function(){ failCount++; })
-			.always(function(){
-				ajaxCount--;
-				if (ajaxCount===0) {
-					rows.removeClass('dirty').attr('data-qty', function(){ return $(this).find('input.num-product').val(); });
-					recalcTotals();
-					if (failCount === 0) {
-						if (typeof showToast === 'function') { showToast('Đã cập nhật giỏ hàng'); }
+				successCount++;
+				// Update totals from response if available
+				if (res && res.subtotal !== undefined) {
+					$('#cart-subtotal').text(format(res.subtotal));
+					if (res.discount > 0) {
+						$('#discountRow').show();
+						$('#discountAmount').text(format(res.discount));
 					} else {
-						if (typeof swal === 'function') { swal('Thông báo', 'Có lỗi với '+failCount+' sản phẩm khi cập nhật', 'warning'); }
+						$('#discountRow').hide();
+					}
+					$('#cart-grandtotal').text(format(res.total || res.subtotal));
+				}
+			}).fail(function(){ 
+				// Revert quantity on error
+				var oldQty = $row.data('qty') || 1;
+				$row.find('input.num-product').val(oldQty);
+			}).always(function(){
+				ajaxCount--;
+				if (ajaxCount === 0) {
+					if (successCount > 0) {
+						// Update row data
+						$row.attr('data-qty', qty);
+						// Reload only cart table, not full page
+						reloadCartTable();
 					}
 				}
 			});
 		});
+	}
+	
+	// Auto-update when +/- buttons are clicked
+	$(document).on('click', 'table.table-shopping-cart .btn-num-product-up, table.table-shopping-cart .btn-num-product-down', function(e){
+		e.preventDefault();
+		e.stopPropagation();
+		var $btn = $(this);
+		var $row = $btn.closest('tr.table_row');
+		var $input = $row.find('input.num-product');
+		var currentValue = parseInt($input.val(), 10) || 1;
+		
+		if ($btn.data('action') === 'inc') {
+			$input.val(currentValue + 1);
+		} else if ($btn.data('action') === 'dec' && currentValue > 1) {
+			$input.val(currentValue - 1);
+		}
+		
+		// Trigger update immediately
+		updateCartItem($row);
+		return false;
 	});
+	
+	// Auto-update when quantity input changes (with debounce)
+	var updateTimeout;
+	$(document).on('change', 'table.table-shopping-cart input.num-product', function(e){
+		var $input = $(this);
+		var $row = $input.closest('tr.table_row');
+		var val = parseInt($input.val(), 10);
+		if (isNaN(val) || val < 1) { 
+			val = 1; 
+			$input.val(val); 
+		}
+		
+		clearTimeout(updateTimeout);
+		updateTimeout = setTimeout(function() {
+			updateCartItem($row);
+		}, 500); // Debounce 500ms
+	});
+	// Delete single item handler
+	$(document).on('click', '.delete-line', function(e){
+		e.preventDefault();
+		var $btn = $(this);
+		var cartIds = $btn.data('cart-ids');
+		if (!cartIds || !Array.isArray(cartIds)) {
+			cartIds = [];
+		}
+		
+		if (cartIds.length === 0) {
+			alert('Không tìm thấy sản phẩm để xóa.');
+			return;
+		}
+		
+		if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?')) {
+			return;
+		}
+		
+		var deleteCount = 0;
+		var failCount = 0;
+		
+		cartIds.forEach(function(cartId) {
+			if (!cartId) return;
+			deleteCount++;
+			$.ajax({ 
+				url: '/cart/' + cartId, 
+				method: 'DELETE', 
+				data: { _token: $('meta[name="csrf-token"]').attr('content') }, 
+				headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+			})
+			.done(function(res){
+				if (!res || !res.success) { failCount++; return; }
+			})
+			.fail(function(){ failCount++; })
+			.always(function(){
+				deleteCount--;
+				if (deleteCount === 0) {
+					if (failCount === 0) {
+						// Reload only cart table, not full page
+						reloadCartTable();
+					} else {
+						alert('Có lỗi khi xóa sản phẩm. Vui lòng thử lại.');
+					}
+				}
+			});
+		});
+		
+		return false;
+	});
+	
 	// Initial totals
 	recalcTotals();
 
-	// Apply voucher
-	$(document).on('click', '#applyVoucherBtn', function(e){
+	// Open voucher modal
+	$(document).on('click', '#openVoucherModal', function(e){
 		e.preventDefault();
-		var code = $('#voucherCode').val().trim();
-		if (!code) {
+		$('#voucherModal').fadeIn(200);
+		$('#voucherCodeInput').focus();
+	});
+	
+	// Close voucher modal
+	$(document).on('click', '#closeVoucherModal, #voucherModal', function(e){
+		if (e.target === this) {
+			$('#voucherModal').fadeOut(200);
+		}
+	});
+	
+	// Prevent modal close when clicking inside modal content
+	$(document).on('click', '#voucherModal > div', function(e){
+		e.stopPropagation();
+	});
+	
+	// Select voucher from list
+	$(document).on('click', '.select-voucher-btn, .voucher-item', function(e){
+		e.preventDefault();
+		var code = $(this).data('code') || $(this).closest('.voucher-item').data('code');
+		if (code) {
+			$('#voucherCodeInput').val(code);
+			applyVoucherCode(code);
+		}
+	});
+	
+	// Apply voucher function
+	function applyVoucherCode(code) {
+		if (!code || !code.trim()) {
 			$('#voucherMessage').text('Vui lòng nhập mã voucher').css('color', '#dc3545');
 			return;
 		}
@@ -315,7 +801,7 @@
 			url: '/cart/voucher/apply',
 			method: 'POST',
 			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-			data: { code: code, _token: $('meta[name="csrf-token"]').attr('content') }
+			data: { code: code.trim(), _token: $('meta[name="csrf-token"]').attr('content') }
 		}).done(function(res){
 			if (res.success) {
 				currentDiscount = res.discount;
@@ -323,8 +809,8 @@
 				$('#voucherMessage').text(res.message).css('color', '#28a745');
 				$('#voucherInfo').show();
 				$('#appliedVoucherCode').text(res.voucher.code);
-				$('#voucherCode').val('').prop('disabled', true);
-				$('#applyVoucherBtn').hide();
+				$('#voucherCodeInput').val(res.voucher.code);
+				$('#voucherModal').fadeOut(200);
 			} else {
 				$('#voucherMessage').text(res.message || 'Có lỗi xảy ra').css('color', '#dc3545');
 			}
@@ -337,6 +823,13 @@
 		}).always(function(){
 			$('#applyVoucherBtn').prop('disabled', false).text('Áp dụng mã');
 		});
+	}
+	
+	// Apply voucher button click
+	$(document).on('click', '#applyVoucherBtn', function(e){
+		e.preventDefault();
+		var code = $('#voucherCodeInput').val().trim();
+		applyVoucherCode(code);
 	});
 
 	// Remove voucher
@@ -353,8 +846,7 @@
 				updateGrandTotal();
 				$('#voucherMessage').text(res.message).css('color', '#28a745');
 				$('#voucherInfo').hide();
-				$('#voucherCode').val('').prop('disabled', false);
-				$('#applyVoucherBtn').show();
+				$('#voucherCodeInput').val('');
 				setTimeout(function(){
 					$('#voucherMessage').text('');
 				}, 3000);
@@ -363,26 +855,97 @@
 	});
 
 	// Enter key to apply voucher
-	$(document).on('keypress', '#voucherCode', function(e){
+	$(document).on('keypress', '#voucherCodeInput, #voucherCode', function(e){
 		if (e.which === 13) {
-			$('#applyVoucherBtn').click();
+			var code = $('#voucherCodeInput').val().trim() || $('#voucherCode').val().trim();
+			applyVoucherCode(code);
 		}
 	});
 
-	// Delete line from main cart (AJAX)
-	$(document).on('click', 'table.table-shopping-cart .delete-line', function(e){
-		e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-		var $btn = $(this);
-		var cartId = $btn.data('cart-id');
-		$.ajax({ url: '/cart/' + cartId, method: 'DELETE', data: { _token: $('meta[name="csrf-token"]').attr('content') }, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }})
-		.done(function(res){
-			if (!res || !res.success) return;
-			$btn.closest('tr.table_row').remove();
-			recalcTotals();
-			if (typeof res.cart_count !== 'undefined') {
-				$('.icon-header-noti.js-show-cart').attr('data-notify', res.cart_count);
+	// Checkbox functionality
+	function updateSelectAllState() {
+		var totalCheckboxes = $('.item-checkbox').length;
+		var checkedCheckboxes = $('.item-checkbox:checked').length;
+		
+		// Update select all checkbox state
+		if (totalCheckboxes > 0) {
+			$('#select-all-header').prop('checked', checkedCheckboxes === totalCheckboxes);
+		}
+		
+		// Show/hide delete button
+		if (checkedCheckboxes > 0) {
+			$('#delete-selected-items').show();
+		} else {
+			$('#delete-selected-items').hide();
+		}
+	}
+	
+	// Initialize on page load
+	$(document).ready(function() {
+		updateSelectAllState();
+	});
+	
+	// Select all checkboxes when header checkbox is clicked (use event delegation)
+	$(document).on('change', '#select-all-header', function() {
+		var isChecked = $(this).prop('checked');
+		$('.item-checkbox').prop('checked', isChecked);
+		updateSelectAllState();
+	});
+	
+	// Individual checkbox change
+	$(document).on('change', '.item-checkbox', function() {
+		updateSelectAllState();
+	});
+	
+	// Delete selected items
+	$('#delete-selected-items').on('click', function() {
+		var selectedIds = [];
+		$('.item-checkbox:checked').each(function() {
+			var cartIds = $(this).data('cart-ids');
+			if (cartIds && Array.isArray(cartIds)) {
+				selectedIds = selectedIds.concat(cartIds);
 			}
 		});
+		
+		if (selectedIds.length === 0) {
+			alert('Vui lòng chọn ít nhất một sản phẩm để xóa.');
+			return;
+		}
+		
+		if (!confirm('Bạn có chắc chắn muốn xóa ' + selectedIds.length + ' sản phẩm đã chọn khỏi giỏ hàng?')) {
+			return;
+		}
+		
+		var deleteCount = 0;
+		var failCount = 0;
+		var rowsToRemove = [];
+		
+		selectedIds.forEach(function(cartId) {
+			if (!cartId) return;
+			deleteCount++;
+			$.ajax({ 
+				url: '/cart/' + cartId, 
+				method: 'DELETE', 
+				data: { _token: $('meta[name="csrf-token"]').attr('content') }, 
+				headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+			})
+			.done(function(res){
+				if (!res || !res.success) { failCount++; return; }
+			})
+			.fail(function(){ failCount++; })
+			.always(function(){
+				deleteCount--;
+				if (deleteCount === 0) {
+					if (failCount === 0) {
+						// Reload only cart table, not full page
+						reloadCartTable();
+					} else {
+						alert('Có lỗi khi xóa một số sản phẩm. Vui lòng thử lại.');
+					}
+				}
+			});
+		});
+		
 		return false;
 	});
 })(jQuery);

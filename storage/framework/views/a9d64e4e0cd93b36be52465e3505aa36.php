@@ -14,13 +14,57 @@
 
 				<?php if(isset($categories) && $categories->count() > 0): ?>
 					<?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-						<a href="<?php echo e(route('client.products.index', ['category' => $category->id])); ?>" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 <?php echo e(request('category') == $category->id ? 'how-active1' : ''); ?>" data-filter=".category-<?php echo e($category->id); ?>">
-							<?php echo e($category->name); ?>
+						<div class="category-menu-item" style="position: relative; display: inline-block;">
+							<a href="<?php echo e(route('client.products.index', ['category' => $category->id])); ?>" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 <?php echo e(request('category') == $category->id || (request('category') && in_array(request('category'), $category->children->pluck('id')->toArray())) ? 'how-active1' : ''); ?>" data-filter=".category-<?php echo e($category->id); ?>">
+								<?php echo e($category->name); ?>
 
-						</a>
+								<?php if($category->children && $category->children->count() > 0): ?>
+									<i class="zmdi zmdi-chevron-down" style="font-size: 14px; margin-left: 4px;"></i>
+								<?php endif; ?>
+							</a>
+							
+							<?php if($category->children && $category->children->count() > 0): ?>
+								<div class="category-submenu" style="position: absolute; top: 100%; left: 0; background: #fff; border: 1px solid #e6e6e6; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 200px; z-index: 100; display: none; margin-top: 0; padding: 5px 0;">
+									<?php $__currentLoopData = $category->children; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $child): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+										<a href="<?php echo e(route('client.products.index', ['category' => $child->id])); ?>" class="submenu-item stext-106 cl6 hov1 bor3 trans-04" style="display: block; padding: 8px 20px; margin: 0 10px; border-bottom: 1px solid #f0f0f0; <?php echo e(request('category') == $child->id ? 'how-active1' : ''); ?>">
+											<?php echo e($child->name); ?>
+
+										</a>
+									<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+								</div>
+							<?php endif; ?>
+						</div>
 					<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 				<?php endif; ?>
 			</div>
+			
+			<style>
+				.category-menu-item {
+					position: relative;
+					display: inline-block;
+				}
+				.category-menu-item:hover .category-submenu {
+					display: block !important;
+				}
+				.category-submenu:hover {
+					display: block !important;
+				}
+				.submenu-item {
+					text-decoration: none;
+				}
+				.submenu-item:hover,
+				.submenu-item.how-active1 {
+					color: #333 !important;
+					border-color: #797979 !important;
+				}
+				.category-submenu .submenu-item:last-child {
+					border-bottom: none !important;
+				}
+				.category-submenu .submenu-item {
+					border-bottom-width: 1px;
+					border-bottom-style: solid;
+				}
+			</style>
 
 			<div class="flex-w flex-c-m m-tb-10">
 				<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
@@ -96,13 +140,6 @@
 					<p class="text-muted">Không tìm thấy sản phẩm nào</p>
 				</div>
 			<?php endif; ?>
-		</div>
-
-		<!-- Load more -->
-		<div class="flex-c-m flex-w w-full p-t-45">
-			<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-				Tải Thêm
-			</a>
 		</div>
 	</div>
 </div>

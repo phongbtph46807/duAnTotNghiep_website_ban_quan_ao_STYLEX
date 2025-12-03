@@ -1,12 +1,12 @@
-﻿@extends('client.layouts.app')
+﻿
 
-@section('title', 'Giỏ hàng - ' . env('APP_NAME'))
+<?php $__env->startSection('title', 'Giỏ hàng - ' . env('APP_NAME')); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
 <div class="container">
 	<div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
-		<a href="{{ route('home') }}" class="stext-109 cl8 hov-cl1 trans-04">
+		<a href="<?php echo e(route('home')); ?>" class="stext-109 cl8 hov-cl1 trans-04">
 			Trang Chủ
 			<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 		</a>
@@ -200,7 +200,7 @@
 						}
 					</style>
 					<div class="wrap-table-shopping-cart" id="cart-table-container">
-						@include('client.carts.partials.table', ['cartData' => $cartData])
+						<?php echo $__env->make('client.carts.partials.table', ['cartData' => $cartData], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 					</div>
 
 						<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
@@ -270,44 +270,47 @@
 								<div>
 									<label class="stext-110 cl2" style="display: block; margin-bottom: 10px; font-weight: 600;">Danh sách voucher có sẵn:</label>
 									<div id="voucherList" style="max-height: 400px; overflow-y: auto;">
-										@if(!empty($availableVouchers) && count($availableVouchers) > 0)
-											@foreach($availableVouchers as $v)
+										<?php if(!empty($availableVouchers) && count($availableVouchers) > 0): ?>
+											<?php $__currentLoopData = $availableVouchers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $v): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 											<div class="voucher-item" 
-												 data-code="{{ $v['code'] }}"
+												 data-code="<?php echo e($v['code']); ?>"
 												 style="padding: 12px; border: 1px solid #e0e0e0; border-radius: 4px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;"
 												 onmouseover="this.style.backgroundColor='#f5f5f5'; this.style.borderColor='#333';"
 												 onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#e0e0e0';">
 												<div style="display: flex; justify-content: space-between; align-items: center;">
 													<div style="flex: 1;">
 														<div class="stext-110 cl2" style="font-weight: 600; color: #333; margin-bottom: 4px;">
-															{{ $v['code'] }}
+															<?php echo e($v['code']); ?>
+
 														</div>
-														@if($v['description'])
+														<?php if($v['description']): ?>
 														<div class="stext-110 cl6" style="font-size: 12px; margin-bottom: 4px;">
-															{{ $v['description'] }}
+															<?php echo e($v['description']); ?>
+
 														</div>
-														@endif
+														<?php endif; ?>
 														<div class="stext-110 cl2" style="font-size: 13px; color: #28a745; font-weight: 600;">
-															Giảm {{ $v['discount_display'] }}
-															@if($v['type'] === 'percent' && $v['max_discount_amount'])
-																(tối đa {{ number_format($v['max_discount_amount'], 0, ',', '.') }} ₫)
-															@endif
+															Giảm <?php echo e($v['discount_display']); ?>
+
+															<?php if($v['type'] === 'percent' && $v['max_discount_amount']): ?>
+																(tối đa <?php echo e(number_format($v['max_discount_amount'], 0, ',', '.')); ?> ₫)
+															<?php endif; ?>
 														</div>
 													</div>
 													<button type="button" 
 															class="select-voucher-btn flex-c-m stext-101 cl0 size-118 bg1 bor13 hov-btn1 p-lr-15 trans-04"
-															data-code="{{ $v['code'] }}"
+															data-code="<?php echo e($v['code']); ?>"
 															style="margin-left: 10px; white-space: nowrap;">
 														Chọn
 													</button>
 												</div>
 											</div>
-											@endforeach
-										@else
+											<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+										<?php else: ?>
 											<div class="stext-110 cl6" style="text-align: center; padding: 20px; color: #999;">
 												Không có voucher nào khả dụng
 											</div>
-										@endif
+										<?php endif; ?>
 									</div>
 								</div>
 							</div>
@@ -317,7 +320,7 @@
 					
 					<div class="flex-w flex-t bor12 p-b-13">
 						<div class="size-208"><span class="stext-110 cl2">Tạm tính:</span></div>
-						<div class="size-209"><span class="mtext-110 cl2" id="cart-subtotal">{{ number_format($total ?? 0, 0, ',', '.') }} ₫</span></div>
+						<div class="size-209"><span class="mtext-110 cl2" id="cart-subtotal"><?php echo e(number_format($total ?? 0, 0, ',', '.')); ?> ₫</span></div>
 					</div>
 					<div class="flex-w flex-t bor12 p-b-13" id="discountRow" style="display: none;">
 						<div class="size-208"><span class="stext-110 cl2" style="color: #28a745;">Giảm giá:</span></div>
@@ -326,40 +329,41 @@
 					<div class="flex-w flex-t bor12 p-t-15 p-b-30">
 						<div class="size-208 w-full-ssm"><span class="stext-110 cl2">Vận chuyển:</span></div>
 						<div class="size-209 p-r-18 p-r-0-sm w-full-ssm">
-							@if(!empty($shippingCarriers) && count($shippingCarriers) > 0)
+							<?php if(!empty($shippingCarriers) && count($shippingCarriers) > 0): ?>
 								<div class="shipping-carriers-list" style="display: flex; flex-wrap: wrap; gap: 8px;">
-									@foreach($shippingCarriers as $carrier)
+									<?php $__currentLoopData = $shippingCarriers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $carrier): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 									<div class="shipping-carrier-box" 
-										 data-carrier-id="{{ $carrier->id }}"
-										 data-carrier-fee="{{ isset($carrier->fee) ? $carrier->fee : 0 }}"
+										 data-carrier-id="<?php echo e($carrier->id); ?>"
+										 data-carrier-fee="<?php echo e(isset($carrier->fee) ? $carrier->fee : 0); ?>"
 										 style="display: inline-block; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: #fff; margin-right: 8px; margin-bottom: 8px;"
 										 onmouseover="this.style.borderColor='#333'; this.style.backgroundColor='#f9f9f9';"
 										 onmouseout="if(!this.classList.contains('selected')) { this.style.borderColor='#e0e0e0'; this.style.backgroundColor='#fff'; }">
 										<input type="radio" 
 											   name="shipping_carrier" 
-											   id="carrier_{{ $carrier->id }}" 
-											   value="{{ $carrier->id }}"
-											   data-fee="{{ isset($carrier->fee) ? $carrier->fee : 0 }}"
+											   id="carrier_<?php echo e($carrier->id); ?>" 
+											   value="<?php echo e($carrier->id); ?>"
+											   data-fee="<?php echo e(isset($carrier->fee) ? $carrier->fee : 0); ?>"
 											   style="margin-right: 6px; vertical-align: middle;">
-										<label for="carrier_{{ $carrier->id }}" style="cursor: pointer; margin: 0; font-weight: 600; color: #333; font-size: 14px; vertical-align: middle;">
-											{{ $carrier->name }}
+										<label for="carrier_<?php echo e($carrier->id); ?>" style="cursor: pointer; margin: 0; font-weight: 600; color: #333; font-size: 14px; vertical-align: middle;">
+											<?php echo e($carrier->name); ?>
+
 											<span style="margin-left: 8px; color: #666; font-weight: 500;">
-												({{ number_format(isset($carrier->fee) ? $carrier->fee : 0, 0, ',', '.') }} ₫)
+												(<?php echo e(number_format(isset($carrier->fee) ? $carrier->fee : 0, 0, ',', '.')); ?> ₫)
 											</span>
 										</label>
 									</div>
-									@endforeach
+									<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 								</div>
-							@else
+							<?php else: ?>
 								<span class="stext-111 cl6 p-t-2">Tính khi thanh toán</span>
-							@endif
+							<?php endif; ?>
 						</div>
 					</div>
 					<div class="flex-w flex-t p-t-27 p-b-33">
 						<div class="size-208"><span class="mtext-101 cl2">Tổng:</span></div>
-						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal">{{ number_format($total ?? 0, 0, ',', '.') }} ₫</span></div>
+						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal"><?php echo e(number_format($total ?? 0, 0, ',', '.')); ?> ₫</span></div>
 					</div>
-						<a href="{{ route('client.checkout.index') }}" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
+						<a href="<?php echo e(route('client.checkout.index')); ?>" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
 					</div>
 				</div>
 			</div>
@@ -367,18 +371,18 @@
 	</div>
 </section>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 (function($){
 	function format(n){ try { return new Intl.NumberFormat('vi-VN').format(n) + ' ₫'; } catch(e){ return n + ' ₫'; } }
-	var currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
+	var currentDiscount = parseFloat('<?php echo e($discount ?? 0); ?>') || 0;
 	var currentSubtotal = 0;
 	var appliedVoucher = <?php echo json_encode($voucher); ?>;
 
 	// Initialize voucher UI if voucher is applied
 	$(document).ready(function(){
 		if (appliedVoucher) {
-			currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
+			currentDiscount = parseFloat('<?php echo e($discount ?? 0); ?>') || 0;
 			$('#voucherInfo').show();
 			$('#appliedVoucherCode').text(appliedVoucher.code);
 			updateGrandTotal();
@@ -458,7 +462,7 @@
 	// Function to reload cart table only (not full page)
 	function reloadCartTable() {
 		$.ajax({
-			url: '{{ route("client.cart.table") }}',
+			url: '<?php echo e(route("client.cart.table")); ?>',
 			method: 'GET',
 			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'text/html' }
 		}).done(function(html){
@@ -566,7 +570,7 @@
 	// Function to get totals from server
 	function updateTotalsFromServer() {
 		$.ajax({
-			url: '{{ route("client.cart.index") }}',
+			url: '<?php echo e(route("client.cart.index")); ?>',
 			method: 'GET',
 			headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
 			data: { ajax: 1, totals_only: 1 }
@@ -946,7 +950,9 @@
 	});
 })(jQuery);
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/carts/shopping.blade.php ENDPATH**/ ?>

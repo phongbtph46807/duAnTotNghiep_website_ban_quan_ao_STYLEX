@@ -147,44 +147,9 @@
     $(document).on('submit', 'form[data-ajax="1"][action$="/cart/add"]', function(e){
 		e.preventDefault();
 		var $form = $(this);
-        // Require variant selection if product actually has variants (based on nearest data-variants)
-        var variantId = ($form.find('input[name="variant_id"]').val() || '').trim();
-        var $container = $form.closest('[data-variants]');
-        var requiresVariant = false;
-        var variantsArr = [];
-        if ($container.length) {
-            try { variantsArr = JSON.parse($container.attr('data-variants') || '[]'); requiresVariant = Array.isArray(variantsArr) && variantsArr.length > 0; } catch(e){ requiresVariant = false; }
-        }
-        // Last-chance resolve variant on submit using current selections
-        var sizeName = ($('#size-select').val() || '').trim();
-        var colorName = ($('#color-select').val() || '').trim();
-        var textureName = ($('#texture-select').val() || '').trim();
-        // If requires variant and any dimension select exists, force user to make a choice on all existing selects
-        if (requiresVariant && (!sizeName && $('#size-select').length || !colorName && $('#color-select').length || !textureName && $('#texture-select').length)) {
-            swal('Thông báo', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).', 'error');
-            return false;
-        }
-        if (requiresVariant && !variantId) {
-            var found = null;
-            for (var i=0;i<variantsArr.length;i++){
-                var v = variantsArr[i];
-                var vSize = v.size && v.size.name ? String(v.size.name).trim() : '';
-                var vColor = v.color && v.color.name ? String(v.color.name).trim() : '';
-                var vTexture = v.texture && v.texture.name ? String(v.texture.name).trim() : '';
-                var okS = sizeName ? sizeName === vSize : true;
-                var okC = colorName ? colorName === vColor : true;
-                var okT = textureName ? textureName === vTexture : true;
-                if (okS && okC && okT) { found = v; break; }
-            }
-            if (found && found.id){
-                variantId = String(found.id);
-                $form.find('input[name="variant_id"]').val(variantId);
-            }
-        }
-        if (requiresVariant && !variantId) {
-            swal('Thông báo', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).', 'error');
-            return false;
-        }
+        
+        // Đơn giản: chỉ cần lấy variant_id từ form (đã được set sẵn từ detail page)
+        // Không cần tìm variant phức tạp nữa vì đã có variant mặc định và cập nhật khi user chọn
 		var payload = $form.serialize() + '&ajax=1';
 		$.ajax({
 			url: $form.attr('action'),
@@ -192,7 +157,11 @@
 			headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
 			data: payload
         }).done(function(res){
-            if (!res || !res.success) { swal('Thông báo', (res && res.message) ? res.message : 'Không thể thêm vào giỏ', 'error'); return; }
+            if (!res || !res.success) { 
+                // Không hiển thị thông báo lỗi
+                return; 
+            }
+            
 			var count = res.cart_count || 0;
 			$('.icon-header-noti.js-show-cart').attr('data-notify', count);
 			// Reload cart mini to update items and total
@@ -214,10 +183,10 @@
 									var price = item.price || 0;
 									var quantity = item.quantity || 1;
 									
-									// Get variant info
+									// Get variant info (use grouped data if available)
 									var variant = item.variant || {};
-									var sizeName = variant.size ? (variant.size.name || '') : '';
-									var colorName = variant.color ? (variant.color.name || '') : '';
+									var sizeName = item.size || (variant.size ? (variant.size.name || '') : '');
+									var colorName = item.color || (variant.color ? (variant.color.name || '') : '');
 									var variantInfo = '';
 									if (sizeName || colorName) {
 										var parts = [];
@@ -285,9 +254,7 @@
 				});
             showToast('Đã thêm vào giỏ hàng');
         }).fail(function(xhr){
-            var msg = 'Không thể thêm vào giỏ';
-            if (xhr && xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
-            swal('Thông báo', msg, 'error');
+            // Không hiển thị thông báo lỗi
 		});
 		return false;
 	});

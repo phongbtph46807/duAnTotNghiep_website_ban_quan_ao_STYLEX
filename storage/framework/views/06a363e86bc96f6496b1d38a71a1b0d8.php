@@ -182,8 +182,22 @@ unset($__errorArgs, $__bag); ?>
                         <div class="co-info">
                             <div class="co-line__name"><?php echo e($it['product']->name); ?></div>
                             <div class="stext-110 cl6" style="font-size:12px; margin-top:2px;">
-                                <?php if($it['variant'] && $it['variant']->size): ?> Size: <?php echo e($it['variant']->size->name); ?> <?php endif; ?>
-                                <?php if($it['variant'] && $it['variant']->color): ?> • Màu: <?php echo e($it['variant']->color->name); ?> <?php endif; ?>
+                                <?php
+                                    $variantParts = [];
+                                    if ($it['variant'] && $it['variant']->size) {
+                                        $variantParts[] = 'Size: ' . $it['variant']->size->name;
+                                    }
+                                    if ($it['variant'] && $it['variant']->color) {
+                                        $variantParts[] = 'Màu: ' . $it['variant']->color->name;
+                                    }
+                                    if ($it['variant'] && $it['variant']->texture) {
+                                        $variantParts[] = 'Chất liệu: ' . $it['variant']->texture->name;
+                                    }
+                                    $variantDisplay = !empty($variantParts) ? implode(' - ', $variantParts) : '';
+                                ?>
+                                <?php if($variantDisplay): ?>
+                                    <strong><?php echo e($variantDisplay); ?></strong>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="co-qty">x <?php echo e($it['quantity']); ?></div>

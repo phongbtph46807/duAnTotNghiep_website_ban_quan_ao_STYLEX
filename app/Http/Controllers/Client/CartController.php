@@ -7,12 +7,13 @@ use App\Http\Requests\Client\ApplyVoucherRequest;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ShippingCarrier;
 use App\Models\Voucher;
 use App\Services\VoucherService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-// removed FormRequest for add to cart
+use Illuminate\Support\Facades\Log;
 
 class CartController extends Controller
 {
@@ -32,20 +33,6 @@ class CartController extends Controller
         return ['user_id' => null, 'session_id' => session()->getId()];
     }
 
-    private function buildSessionItemId(int $productId, $variantId): string
-    {
-        return sha1('p'.$productId.'-v'.($variantId ?? 'null'));
-    }
-
-    private function getSessionCartItems(): array
-    {
-        return session()->get('cart.items', []);
-    }
-
-    private function putSessionCartItems(array $items): void
-    {
-        session()->put('cart.items', $items);
-    }
 
     private function baseCartQuery()
     {
@@ -60,11 +47,15 @@ class CartController extends Controller
 
     private function resolveItemPrice(Product $product, ?ProductVariant $variant): int|float
     {
-        if ($variant && $variant->price) {
+        // Ưu tiên: variant price > product price_sale > product price
+        if ($variant && $variant->price && $variant->price > 0) {
             return (float) $variant->price;
         }
-        $base = $product->price_sale ?? $product->price;
-        return (float) $base;
+        // Chỉ dùng price_sale nếu có, nếu không có thì dùng price
+        if ($product->price_sale && $product->price_sale > 0) {
+            return (float) $product->price_sale;
+        }
+        return (float) $product->price;
     }
 
     /**
@@ -89,24 +80,124 @@ class CartController extends Controller
         return (float) $subtotal;
     }
 
+    /**
+     * Group cart items by product_id + size + color
+     * 
+     * @param \Illuminate\Database\Eloquent\Collection $cartItems
+     * @return array
+     */
+    private function groupCartItems($cartItems): array
+    {
+        $groupedItems = [];
+        $total = 0;
+        $itemCount = 0;
+
+        foreach ($cartItems as $item) {
+            $variant = $item->variant;
+            $product = $item->product;
+            $size = $variant && $variant->size ? $variant->size->name : null;
+            $color = $variant && $variant->color ? $variant->color->name : null;
+            $texture = $variant && $variant->texture ? $variant->texture->name : null;
+            $price = $this->resolveItemPrice($product, $variant);
+            
+            // Create a key for grouping: product_id + size + color (mỗi màu là 1 item riêng)
+            $groupKey = $product->id . '_' . ($size ?? 'no_size') . '_' . ($color ?? 'no_color');
+            
+            if (!isset($groupedItems[$groupKey])) {
+                $groupedItems[$groupKey] = [
+                    'product' => $product,
+                    'size' => $size,
+                    'color' => $color,
+                    'textures' => [],
+                    'items' => [],
+                ];
+            }
+            
+            // Add texture to the group if it exists
+            if ($texture && !in_array($texture, $groupedItems[$groupKey]['textures'])) {
+                $groupedItems[$groupKey]['textures'][] = $texture;
+            }
+            
+            // Store individual item data
+            $itemData = [
+                'id' => $item->id,
+                'variant_id' => $item->variant_id,
+                'quantity' => $item->quantity,
+                'price' => $price,
+                'color' => $color,
+                'line_total' => $price * $item->quantity,
+            ];
+            
+            $groupedItems[$groupKey]['items'][] = $itemData;
+            $total += $price * $item->quantity;
+            $itemCount += $item->quantity;
+        }
+
+        return [
+            'groupedItems' => $groupedItems,
+            'total' => $total,
+            'itemCount' => $itemCount,
+        ];
+    }
+
     private function resolveVariantByAttributes(int $productId, ?string $sizeName, ?string $colorName, ?string $textureName): ?ProductVariant
     {
         // If no attribute provided, do NOT guess a variant
         if (!$sizeName && !$colorName && !$textureName) {
             return null;
         }
-        $q = ProductVariant::query()->where('product_id', $productId)
-            ->with(['size', 'color', 'texture']);
-        if ($sizeName) {
-            $q->whereHas('size', function($qq) use ($sizeName){ $qq->where('name', $sizeName); });
+        
+        // Lấy tất cả variants của sản phẩm với relationships
+        $variants = ProductVariant::where('product_id', $productId)
+            ->with(['size', 'color', 'texture'])
+            ->get();
+        
+        if ($variants->isEmpty()) {
+            return null;
         }
-        if ($colorName) {
-            $q->whereHas('color', function($qq) use ($colorName){ $qq->where('name', $colorName); });
+        
+        // Normalize input values
+        $sizeName = $sizeName ? trim($sizeName) : null;
+        $colorName = $colorName ? trim($colorName) : null;
+        $textureName = $textureName ? trim($textureName) : null;
+        
+        // Tìm variant khớp: chỉ tìm dựa trên size + color (bỏ texture vì texture không cho chọn)
+        // Phải khớp CHÍNH XÁC size và color nếu đã được cung cấp
+        foreach ($variants as $variant) {
+            $vSize = $variant->size ? trim($variant->size->name) : '';
+            $vColor = $variant->color ? trim($variant->color->name) : '';
+            
+            // Nếu user đã chọn size, variant PHẢI có size và khớp CHÍNH XÁC
+            if ($sizeName && $sizeName !== '') {
+                if ($vSize === '' || $sizeName !== $vSize) {
+                    continue; // Không khớp size, bỏ qua variant này
+                }
+            } else {
+                // Nếu user không chọn size, variant có thể có hoặc không có size
+                // Nhưng nếu variant có size mà user không chọn, thì không khớp
+                if ($vSize !== '') {
+                    continue; // Variant có size nhưng user không chọn, không khớp
+                }
+            }
+            
+            // Nếu user đã chọn color, variant PHẢI có color và khớp CHÍNH XÁC
+            if ($colorName && $colorName !== '') {
+                if ($vColor === '' || $colorName !== $vColor) {
+                    continue; // Không khớp color, bỏ qua variant này
+                }
+            } else {
+                // Nếu user không chọn color, variant có thể có hoặc không có color
+                // Nhưng nếu variant có color mà user không chọn, thì không khớp
+                if ($vColor !== '') {
+                    continue; // Variant có color nhưng user không chọn, không khớp
+                }
+            }
+            
+            // Nếu đến đây thì đã khớp size và color
+            return $variant;
         }
-        if ($textureName) {
-            $q->whereHas('texture', function($qq) use ($textureName){ $qq->where('name', $textureName); });
-        }
-        return $q->first();
+        
+        return null;
     }
 
     /** Get cart data (AJAX) */
@@ -122,38 +213,53 @@ class CartController extends Controller
             ])
             ->get();
 
+        $grouped = $this->groupCartItems($cartItems);
+        $groupedItems = $grouped['groupedItems'];
+        $total = $grouped['total'];
+        $itemCount = $grouped['itemCount'];
+        
+        // Convert grouped items to display format
         $cartData = [];
-        $total = 0;
-        $itemCount = 0;
-
-        foreach ($cartItems as $item) {
-            $variant = $item->variant;
-            $product = $item->product;
-            $size = $variant && $variant->size ? $variant->size->name : null;
-            $color = $variant && $variant->color ? $variant->color->name : null;
-            $texture = $variant && $variant->texture ? $variant->texture->name : null;
-            $price = $variant && $variant->price ? (float) $variant->price : (float) ($product->price_sale ?? $product->price);
+        foreach ($groupedItems as $group) {
+            $totalQty = 0;
+            $totalLine = 0;
+            $minPrice = PHP_INT_MAX;
+            $maxPrice = 0;
+            
+            foreach ($group['items'] as $item) {
+                $totalQty += $item['quantity'];
+                $totalLine += $item['line_total'];
+                if ($item['price'] < $minPrice) $minPrice = $item['price'];
+                if ($item['price'] > $maxPrice) $maxPrice = $item['price'];
+            }
+            
+            $firstItem = $group['items'][0];
+            $avgPrice = $totalQty > 0 ? $totalLine / $totalQty : $firstItem['price'];
+            
+            // For mini cart, we'll use the first variant for display
+            $firstVariant = ProductVariant::with(['size', 'color', 'texture'])->find($firstItem['variant_id']);
             
             $cartData[] = [
-                'id' => $item->id,
+                'id' => $firstItem['id'],
+                'ids' => array_column($group['items'], 'id'),
                 'product' => [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'default_image_url' => $product->default_image_url,
+                    'id' => $group['product']->id,
+                    'name' => $group['product']->name,
+                    'default_image_url' => $group['product']->default_image_url,
                 ],
-                'variant' => $variant ? [
-                    'id' => $variant->id,
-                    'size' => $variant->size ? ['name' => $variant->size->name] : null,
-                    'color' => $variant->color ? ['name' => $variant->color->name] : null,
-                    'texture' => $variant->texture ? ['name' => $variant->texture->name] : null,
+                'variant' => $firstVariant ? [
+                    'id' => $firstVariant->id,
+                    'size' => $firstVariant->size ? ['name' => $firstVariant->size->name] : null,
+                    'color' => $firstVariant->color ? ['name' => $firstVariant->color->name] : null,
+                    'texture' => $firstVariant->texture ? ['name' => $firstVariant->texture->name] : null,
                 ] : null,
-                'variant_id' => $item->variant_id,
-                'quantity' => (int) $item->quantity,
-                'price' => (float) $price,
+                'variant_id' => $firstItem['variant_id'],
+                'quantity' => $totalQty,
+                'price' => $avgPrice,
+                'size' => $group['size'],
+                'color' => $group['color'] ?? null,
+                'textures' => $group['textures'] ?? [],
             ];
-            
-            $total += $price * $item->quantity;
-            $itemCount += $item->quantity;
         }
 
         return response()->json([
@@ -164,95 +270,230 @@ class CartController extends Controller
     }
 
     /** Display cart page */
-    public function index()
+    public function index(Request $request)
     {
-        // Unified: always read cart from DB, keyed by user_id or session_id
+        // If AJAX request for totals only
+        if ($request->ajax() && $request->boolean('totals_only')) {
+            $cartItems = $this->baseCartQuery()->get();
+            $grouped = $this->groupCartItems($cartItems);
+            $total = $grouped['total'];
+            $discountData = $this->voucherService->recalculateDiscount($total);
+            
+            return response()->json([
+                'subtotal' => $total,
+                'discount' => $discountData['discount'],
+                'total' => $discountData['total']
+            ]);
+        }
+        
         $cartItems = $this->baseCartQuery()
-        ->with([
-            'product.productImages',
-            'product.primaryImage',
-            'product.productVariants.size',
-            'product.productVariants.color',
-            'product.productVariants.texture',
-            'variant.color',
-            'variant.size',
-            'variant.texture'
-        ])
-        ->get();
+            ->with([
+                'product.productImages',
+                'product.primaryImage',
+                'product.productVariants.size',
+                'product.productVariants.color',
+                'product.productVariants.texture',
+                'variant.color',
+                'variant.size',
+                'variant.texture'
+            ])
+            ->get();
 
+        $grouped = $this->groupCartItems($cartItems);
+        $groupedItems = $grouped['groupedItems'];
+        $total = $grouped['total'];
+        
+        // Convert grouped items to display format
         $cartData = [];
-        $total = 0;
-
-        foreach ($cartItems as $item) {
-            $variant = $item->variant;
-            $product = $item->product;
-            $size = $variant && $variant->size ? $variant->size->name : null;
-            $color = $variant && $variant->color ? $variant->color->name : null;
-            $texture = $variant && $variant->texture ? $variant->texture->name : null;
-            $price = $variant && $variant->price ? (float) $variant->price : (float) ($product->price_sale ?? $product->price);
+        foreach ($groupedItems as $group) {
+            $totalQty = 0;
+            $totalLine = 0;
+            $minPrice = PHP_INT_MAX;
+            $maxPrice = 0;
+            
+            foreach ($group['items'] as $item) {
+                $totalQty += $item['quantity'];
+                $totalLine += $item['line_total'];
+                if ($item['price'] < $minPrice) $minPrice = $item['price'];
+                if ($item['price'] > $maxPrice) $maxPrice = $item['price'];
+            }
+            
+            $firstItem = $group['items'][0];
+            $avgPrice = $totalQty > 0 ? $totalLine / $totalQty : $firstItem['price'];
+            
+            // Get ALL textures from ALL variants of this product (not just from cart items)
+            $allTextures = [];
+            $productVariants = ProductVariant::where('product_id', $group['product']->id)
+                ->whereHas('texture')
+                ->with('texture')
+                ->get();
+            
+            foreach ($productVariants as $pv) {
+                if ($pv->texture && $pv->texture->name) {
+                    $textureName = $pv->texture->name;
+                    if (!in_array($textureName, $allTextures)) {
+                        $allTextures[] = $textureName;
+                    }
+                }
+            }
+            
+            // Merge with textures from cart items (in case there are textures not in variants)
+            $allTextures = array_unique(array_merge($allTextures, $group['textures'] ?? []));
             
             $cartData[] = [
-                'id' => $item->id,
-                'product' => $product,
-                'variant_id' => $item->variant_id,
-                'quantity' => $item->quantity,
-                'price' => $price,
-                'size' => $size,
-                'color' => $color,
-                'texture' => $texture,
-                'image_url' => $product->default_image_url,
-                'line_total' => $price * $item->quantity,
+                'id' => $firstItem['id'],
+                'ids' => array_column($group['items'], 'id'),
+                'product' => $group['product'],
+                'variant_ids' => array_column($group['items'], 'variant_id'),
+                'quantity' => $totalQty,
+                'price' => $avgPrice,
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
+                'size' => $group['size'],
+                'color' => $group['color'] ?? null,
+                'textures' => array_values($allTextures), // Ensure all textures are included
+                'image_url' => $group['product']->default_image_url,
+                'line_total' => $totalLine,
+                'items' => $group['items'],
             ];
-            
-            $total += $price * $item->quantity;
         }
 
         // Calculate discount using VoucherService
         $discountData = $this->voucherService->recalculateDiscount($total);
         $voucherData = $this->voucherService->getAppliedVoucher();
 
+        // Get available vouchers for user
+        $availableVouchers = $this->getAvailableVouchers($total);
+        
+        // Get all active shipping carriers
+        $shippingCarriers = ShippingCarrier::where('active', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
         return view('client.carts.shopping', [
             'cartData' => $cartData,
             'total' => $total,
             'discount' => $discountData['discount'],
             'finalTotal' => $discountData['total'],
-            'voucher' => $voucherData
+            'voucher' => $voucherData,
+            'availableVouchers' => $availableVouchers,
+            'shippingCarriers' => $shippingCarriers
         ]);
+    }
+    
+    /** Get available vouchers for current user */
+    private function getAvailableVouchers(float $subtotal): array
+    {
+        $now = now();
+        
+        // Get all active vouchers that are valid
+        $vouchers = Voucher::where('is_active', true)
+            ->where(function($query) use ($now) {
+                $query->whereNull('starts_at')
+                      ->orWhere('starts_at', '<=', $now);
+            })
+            ->where(function($query) use ($now) {
+                $query->whereNull('ends_at')
+                      ->orWhere('ends_at', '>=', $now);
+            })
+            ->where(function($query) {
+                $query->whereNull('usage_limit')
+                      ->orWhereRaw('used_count < usage_limit');
+            })
+            ->where(function($query) use ($subtotal) {
+                $query->whereNull('min_order_amount')
+                      ->orWhere('min_order_amount', '<=', $subtotal);
+            })
+            ->orderBy('value', 'desc')
+            ->get();
+        
+        $availableVouchers = [];
+        foreach ($vouchers as $voucher) {
+            $discount = $this->voucherService->calculateDiscount($voucher, $subtotal);
+            $availableVouchers[] = [
+                'id' => $voucher->id,
+                'code' => $voucher->code,
+                'description' => $voucher->description,
+                'type' => $voucher->type,
+                'value' => $voucher->value,
+                'max_discount_amount' => $voucher->max_discount_amount,
+                'min_order_amount' => $voucher->min_order_amount,
+                'discount_amount' => $discount,
+                'discount_display' => $voucher->type === 'percent' 
+                    ? $voucher->value . '%' 
+                    : number_format($voucher->value, 0, ',', '.') . ' ₫'
+            ];
+        }
+        
+        return $availableVouchers;
     }
 
     /** Add item to cart (redirect only) */
     public function addToCart(Request $request)
     {
+        // Log request để debug
+        Log::info('=== ADD TO CART REQUEST ===');
+        Log::info('Product ID: ' . $request->product_id);
+        Log::info('Variant ID: ' . ($request->variant_id ?? 'null'));
+        Log::info('Size Name: ' . ($request->input('size_name', '') ?: 'empty'));
+        Log::info('Color Name: ' . ($request->input('color_name', '') ?: 'empty'));
+        Log::info('Texture Name: ' . ($request->input('texture_name', '') ?: 'empty'));
+        Log::info('Quantity: ' . ($request->quantity ?? 1));
+        Log::info('All Request Data: ' . json_encode($request->all()));
+        
         $product = Product::findOrFail($request->product_id);
         $variant = null;
-        if ($request->filled('variant_id')) {
-            $variant = ProductVariant::findOrFail($request->variant_id);
-        } else {
-            // Hard-require each attribute if that dimension exists on any variant
-            $hasSize = ProductVariant::where('product_id', (int) $request->product_id)->whereNotNull('size_id')->exists();
-            $hasColor = ProductVariant::where('product_id', (int) $request->product_id)->whereNotNull('color_id')->exists();
-            $hasTexture = ProductVariant::where('product_id', (int) $request->product_id)->whereNotNull('texture_id')->exists();
-            $sizeNameIn = trim((string) $request->input('size_name'));
-            $colorNameIn = trim((string) $request->input('color_name'));
-            $textureNameIn = trim((string) $request->input('texture_name'));
-
-            if (($hasSize && $sizeNameIn === '') || ($hasColor && $colorNameIn === '') || ($hasTexture && $textureNameIn === '')) {
-                if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
-                    return response()->json(['success' => false, 'message' => 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).'], 422);
-                }
-                return back()->with('error', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).')->withInput();
-            }
-
-            // Fallback: resolve by attribute names only when provided
+        
+        // Get attribute values from request
+        $sizeNameIn = trim((string) $request->input('size_name', ''));
+        $colorNameIn = trim((string) $request->input('color_name', ''));
+        $textureNameIn = trim((string) $request->input('texture_name', ''));
+        
+        // Nếu có size_name hoặc color_name, luôn tìm variant mới dựa trên attributes (không dùng variant_id cũ)
+        // Điều này đảm bảo khi user chọn màu mới, nó sẽ tìm variant mới thay vì dùng variant_id cũ
+        if (!empty($sizeNameIn) || !empty($colorNameIn) || !empty($textureNameIn)) {
+            Log::info('Finding variant by attributes - Size: ' . $sizeNameIn . ', Color: ' . $colorNameIn . ', Texture: ' . $textureNameIn);
+            
+            // Tìm variant dựa trên attributes
             $variant = $this->resolveVariantByAttributes(
                 (int) $request->product_id,
-                $sizeNameIn,
-                $colorNameIn,
-                $textureNameIn
+                !empty($sizeNameIn) ? $sizeNameIn : null,
+                !empty($colorNameIn) ? $colorNameIn : null,
+                !empty($textureNameIn) ? $textureNameIn : null
             );
+            
             if ($variant) {
-                $request->merge(['variant_id' => $variant->id]);
+                Log::info('Variant found by attributes - ID: ' . $variant->id . ', Size: ' . ($variant->size ? $variant->size->name : 'null') . ', Color: ' . ($variant->color ? $variant->color->name : 'null'));
+            } else {
+                Log::warning('Variant NOT found by attributes');
             }
+            
+            if (!$variant) {
+                // Nếu không tìm thấy variant, kiểm tra xem có variant nào không
+                $allVariants = ProductVariant::where('product_id', (int) $request->product_id)
+                    ->with(['size', 'color', 'texture'])
+                    ->get();
+                
+                // Log tất cả variants có sẵn để debug
+                Log::warning('Variant NOT found. Available variants for product ' . $request->product_id . ':');
+                foreach ($allVariants as $v) {
+                    Log::warning('  - Variant ID: ' . $v->id . ', Size: ' . ($v->size ? $v->size->name : 'null') . ', Color: ' . ($v->color ? $v->color->name : 'null') . ', Texture: ' . ($v->texture ? $v->texture->name : 'null'));
+                }
+                Log::warning('  - Requested: Size=' . $sizeNameIn . ', Color=' . $colorNameIn . ', Texture=' . $textureNameIn);
+                
+                if ($allVariants->isEmpty()) {
+                    $variant = null;
+                } else {
+                    if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
+                        return response()->json(['success' => false], 422);
+                    }
+                    return back()->withInput();
+                }
+            }
+        } elseif ($request->filled('variant_id')) {
+            // Chỉ dùng variant_id nếu không có size_name, color_name, texture_name
+            Log::info('Using variant_id directly: ' . $request->variant_id);
+            $variant = ProductVariant::findOrFail($request->variant_id);
         }
 
         // Validate: if product has variants, a valid variant must be selected
@@ -266,82 +507,51 @@ class CartController extends Controller
             return back()->with('error', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).')->withInput();
         }
 
-        if (!Auth::check()) {
-            // Store guest cart in DB using session_id
-            $owner = $this->getOwnerKeys();
-            $existingItem = $this->baseCartQuery()
-                ->where('product_id', $request->product_id)
-                ->where('variant_id', $request->variant_id)
-                ->first();
-            if ($existingItem) {
-                $existingItem->quantity += (int) $request->quantity;
-                $existingItem->save();
-            } else {
-                Cart::create([
-                    'user_id' => $owner['user_id'],
-                    'session_id' => $owner['session_id'],
-                    'product_id' => $request->product_id,
-                    'variant_id' => $request->variant_id,
-                    'quantity' => (int) $request->quantity,
-                ]);
-            }
-
+        // Ensure variant_id is set
+        if (!$variant) {
             if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
-                $count = (int) $this->baseCartQuery()->sum('quantity');
-                $item = $this->baseCartQuery()
-                    ->where('product_id', $request->product_id)
-                    ->where('variant_id', $request->variant_id)
-                    ->with(['product', 'variant.size', 'variant.color', 'variant.texture'])
-                    ->first();
-                $price = $this->resolveItemPrice($product, $variant);
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Đã thêm vào giỏ hàng',
-                    'cart_count' => (int) $count,
-                    'cart_item' => $item ? [
-                        'id' => $item->id,
-                        'product' => [
-                            'id' => $item->product->id,
-                            'name' => $item->product->name,
-                            // computed URL for immediate use on client
-                            'default_image_url' => $item->product->default_image_url,
-                        ],
-                        'variant' => $item->variant,
-                        'variant_id' => $item->variant_id,
-                        'quantity' => (int) $item->quantity,
-                        'price' => $price,
-                    ] : null,
-                ]);
+                return response()->json(['success' => false], 422);
             }
-            return redirect()->route('client.cart.index')->with('success', 'Đã thêm vào giỏ hàng');
+            return back()->with('error', 'Không tìm thấy biến thể phù hợp.')->withInput();
         }
+        
+        $variantId = $variant->id;
 
         $owner = $this->getOwnerKeys();
+        
+        Log::info('Final Variant ID: ' . $variantId);
+        Log::info('Owner: User ID=' . ($owner['user_id'] ?? 'null') . ', Session ID=' . ($owner['session_id'] ?? 'null'));
+        
+        // Kiểm tra xem đã có variant này chưa
         $existingItem = $this->baseCartQuery()
             ->where('product_id', $request->product_id)
-            ->where('variant_id', $request->variant_id)
+            ->where('variant_id', $variantId)
             ->first();
 
         if ($existingItem) {
+            Log::info('Existing item found - ID: ' . $existingItem->id . ', Current Qty: ' . $existingItem->quantity . ', Adding: ' . $request->quantity);
+            // Nếu đã có variant này, tăng quantity
             $existingItem->quantity += (int) $request->quantity;
             $existingItem->save();
+            Log::info('Updated Qty: ' . $existingItem->quantity);
         } else {
-            Cart::create([
+            Log::info('Creating new cart item - Product ID: ' . $request->product_id . ', Variant ID: ' . $variantId . ', Qty: ' . $request->quantity);
+            // Nếu chưa có variant này, tạo mới
+            $newCartItem = Cart::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
                 'product_id' => $request->product_id,
-                'variant_id' => $request->variant_id,
+                'variant_id' => $variantId,
                 'quantity' => (int) $request->quantity,
             ]);
+            Log::info('New cart item created - ID: ' . $newCartItem->id);
         }
 
         if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
-            $count = (int) Cart::query()
-                ->when($owner['user_id'], fn($q) => $q->where('user_id', $owner['user_id']), fn($q) => $q->where('session_id', $owner['session_id']))
-                ->sum('quantity');
+            $count = (int) $this->baseCartQuery()->sum('quantity');
             $item = $this->baseCartQuery()
                 ->where('product_id', $request->product_id)
-                ->where('variant_id', $request->variant_id)
+                ->where('variant_id', $variantId)
                 ->with(['product', 'variant.size', 'variant.color', 'variant.texture'])
                 ->first();
             $price = $this->resolveItemPrice($product, $variant);
@@ -370,23 +580,13 @@ class CartController extends Controller
     /** Remove item from cart (AJAX-friendly) */
     public function remove(Request $request, $id)
     {
-        // Guest cart (session)
-        if (!Auth::check()) {
-            $items = $this->getSessionCartItems();
-            if (isset($items[$id])) {
-                unset($items[$id]);
-                $this->putSessionCartItems($items);
-            }
-            $count = 0; foreach ($items as $it) { $count += (int) ($it['quantity'] ?? 1); }
-            return response()->json(['success' => true, 'cart_count' => $count]);
-        }
-
-        // Authenticated cart (database)
         $owner = $this->getOwnerKeys();
         $cart = $this->baseCartQuery()->where('id', $id)->first();
+        
         if ($cart) {
             $cart->delete();
         }
+        
         $count = (int) $this->baseCartQuery()->sum('quantity');
         return response()->json(['success' => true, 'cart_count' => $count]);
     }
@@ -394,25 +594,145 @@ class CartController extends Controller
     public function update(Request $request, $id)
     {
         $qty = max(1, (int)($request->input('quantity', 1)));
-        $success = false;
-        if (!Auth::check()) {
-            // Cập nhật session cart nếu là guest
-            $items = $this->getSessionCartItems();
-            if (isset($items[$id])) {
-                $items[$id]['quantity'] = $qty;
-                $this->putSessionCartItems($items);
-                $success = true;
+        $owner = $this->getOwnerKeys();
+        $item = $this->baseCartQuery()->where('id', $id)->first();
+        
+        if ($item) {
+            $item->quantity = $qty;
+            $item->save();
+            
+            // If AJAX request, return updated cart data
+            if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
+                // Recalculate totals
+                $cartItems = $this->baseCartQuery()
+                    ->with([
+                        'product.productImages',
+                        'product.primaryImage',
+                        'product.productVariants.size',
+                        'product.productVariants.color',
+                        'product.productVariants.texture',
+                        'variant.color',
+                        'variant.size',
+                        'variant.texture'
+                    ])
+                    ->get();
+                
+                $grouped = $this->groupCartItems($cartItems);
+                $total = $grouped['total'];
+                
+                // Calculate discount
+                $discountData = $this->voucherService->recalculateDiscount($total);
+                
+                return response()->json([
+                    'success' => true,
+                    'subtotal' => $total,
+                    'discount' => $discountData['discount'],
+                    'total' => $discountData['total']
+                ]);
             }
-        } else {
-            $owner = $this->getOwnerKeys();
-            $item = $this->baseCartQuery()->where('id', $id)->first();
-            if ($item) {
-                $item->quantity = $qty;
-                $item->save();
-                $success = true;
-            }
+            
+            return response()->json(['success' => true]);
         }
-        return response()->json(['success' => $success]);
+        
+        return response()->json(['success' => false], 404);
+    }
+    
+    /** Get cart table HTML (for AJAX reload) */
+    public function getCartTable(Request $request)
+    {
+        $cartItems = $this->baseCartQuery()
+            ->with([
+                'product.productImages',
+                'product.primaryImage',
+                'product.productVariants.size',
+                'product.productVariants.color',
+                'product.productVariants.texture',
+                'variant.color',
+                'variant.size',
+                'variant.texture'
+            ])
+            ->get();
+
+        $grouped = $this->groupCartItems($cartItems);
+        $groupedItems = $grouped['groupedItems'];
+        $total = $grouped['total'];
+        
+        // Convert grouped items to display format
+        $cartData = [];
+        foreach ($groupedItems as $group) {
+            $totalQty = 0;
+            $totalLine = 0;
+            $minPrice = PHP_INT_MAX;
+            $maxPrice = 0;
+            
+            foreach ($group['items'] as $item) {
+                $totalQty += $item['quantity'];
+                $totalLine += $item['line_total'];
+                if ($item['price'] < $minPrice) $minPrice = $item['price'];
+                if ($item['price'] > $maxPrice) $maxPrice = $item['price'];
+            }
+            
+            $firstItem = $group['items'][0];
+            $avgPrice = $totalQty > 0 ? $totalLine / $totalQty : $firstItem['price'];
+            
+            // Get ALL textures from ALL variants of this product (not just from cart items)
+            $allTextures = [];
+            $productVariants = ProductVariant::where('product_id', $group['product']->id)
+                ->whereHas('texture')
+                ->with('texture')
+                ->get();
+            
+            foreach ($productVariants as $pv) {
+                if ($pv->texture && $pv->texture->name) {
+                    $textureName = $pv->texture->name;
+                    if (!in_array($textureName, $allTextures)) {
+                        $allTextures[] = $textureName;
+                    }
+                }
+            }
+            
+            // Merge with textures from cart items (in case there are textures not in variants)
+            $allTextures = array_unique(array_merge($allTextures, $group['textures'] ?? []));
+            
+            $cartData[] = [
+                'id' => $firstItem['id'],
+                'ids' => array_column($group['items'], 'id'),
+                'product' => $group['product'],
+                'variant_ids' => array_column($group['items'], 'variant_id'),
+                'quantity' => $totalQty,
+                'price' => $avgPrice,
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
+                'size' => $group['size'],
+                'color' => $group['color'] ?? null,
+                'textures' => array_values($allTextures), // Ensure all textures are included
+                'image_url' => $group['product']->default_image_url,
+                'line_total' => $totalLine,
+                'items' => $group['items'],
+            ];
+        }
+
+        // Calculate discount
+        $discountData = $this->voucherService->recalculateDiscount($total);
+        $voucherData = $this->voucherService->getAppliedVoucher();
+
+        // Get available vouchers for user
+        $availableVouchers = $this->getAvailableVouchers($total);
+        
+        // Get all active shipping carriers
+        $shippingCarriers = ShippingCarrier::where('active', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('client.carts.partials.table', [
+            'cartData' => $cartData,
+            'total' => $total,
+            'discount' => $discountData['discount'],
+            'finalTotal' => $discountData['total'],
+            'voucher' => $voucherData,
+            'availableVouchers' => $availableVouchers,
+            'shippingCarriers' => $shippingCarriers
+        ]);
     }
 
     /** Apply voucher code */

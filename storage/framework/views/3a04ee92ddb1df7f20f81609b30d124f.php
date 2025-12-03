@@ -189,9 +189,10 @@
 											<?php $__currentLoopData = $colors; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $color): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 											<?php
 												$isSelected = $color == $defaultColor;
+												// Dùng style giống nút kích thước để màu sắc nhìn đồng bộ
 												$btnStyle = $isSelected 
-													? 'min-width: 80px; padding: 8px 12px; border-radius: 50px; cursor: pointer; transition: all 0.3s; background-color: #333; color: #fff; border-color: #333;'
-													: 'min-width: 80px; padding: 8px 12px; border-radius: 50px; cursor: pointer; transition: all 0.3s; background-color: #f5f5f5; color: #666; border-color: #e0e0e0;';
+													? 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #333; color: #fff; border-color: #333;'
+													: 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #f5f5f5; color: #666; border-color: #e0e0e0;';
 											?>
 											<button type="button" 
 													class="color-variant-btn stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04" 
@@ -622,9 +623,10 @@ $(document).ready(function() {
                     .attr('data-color', color)
                     .text(color)
                     .css({
-                        'min-width': '80px',
+                        // Dùng style giống nút kích thước
+                        'min-width': '60px',
                         'padding': '8px 12px',
-                        'border-radius': '50px',
+                        'border-radius': '4px',
                         'cursor': 'pointer',
                         'transition': 'all 0.3s',
                         'background-color': isSelected ? '#333' : '#f5f5f5',
@@ -828,4 +830,4 @@ $(document).ready(function() {
 <?php $__env->stopPush(); ?>
 
 
-<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\products\detail.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/products/detail.blade.php ENDPATH**/ ?>
