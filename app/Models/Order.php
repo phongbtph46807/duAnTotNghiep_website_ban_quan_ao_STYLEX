@@ -46,6 +46,11 @@ class Order extends Model
     {
         return $this->belongsTo(ShippingCarrier::class, 'shipping_carrier_id');
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
 }
 
 

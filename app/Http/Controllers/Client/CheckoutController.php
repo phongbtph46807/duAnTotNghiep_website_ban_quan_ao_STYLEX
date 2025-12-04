@@ -267,10 +267,19 @@ class CheckoutController extends Controller
                 'items.product.productVariants.texture',
                 'items.variant.size',
                 'items.variant.color',
-                'items.variant.texture'
+                'items.variant.texture',
+                'reviews' // Load reviews để kiểm tra đã đánh giá chưa
             ])
                 ->where('code', $request->code)->orWhere('id', $request->code)
                 ->orWhere('phone', $request->code)->latest()->first();
+            
+            // Nếu có order, kiểm tra xem sản phẩm nào đã được đánh giá
+            if ($order) {
+                $reviewedProductIds = $order->reviews->pluck('product_id')->toArray();
+                foreach ($order->items as $item) {
+                    $item->is_reviewed = in_array($item->product_id, $reviewedProductIds);
+                }
+            }
         }
         return view('client.orders.track', compact('order'));
     }
@@ -300,11 +309,25 @@ class CheckoutController extends Controller
             ->orderByDesc('created_at')
             ->with([
                 'items.product.productVariants.texture',
+                'items.product.productImages',
+                'items.product.primaryImage',
+                'items.variant',
                 'items.variant.size',
                 'items.variant.color',
-                'items.variant.texture'
+                'items.variant.texture',
+                'reviews' // Load reviews để kiểm tra đã đánh giá chưa
             ])
             ->get();
+        
+        // Đánh dấu sản phẩm đã được đánh giá
+        foreach ($orders as $order) {
+            if (in_array($order->status, ['completed', 'delivered'])) {
+                $reviewedProductIds = $order->reviews->pluck('product_id')->toArray();
+                foreach ($order->items as $item) {
+                    $item->is_reviewed = in_array($item->product_id, $reviewedProductIds);
+                }
+            }
+        }
 
         return view('client.orders.index', [
             'orders' => $orders,
@@ -331,6 +354,79 @@ class CheckoutController extends Controller
         $order->save();
 
         return back()->with('success', 'Đơn hàng đã được hủy thành công.');
+    }
+
+    public function storeReview(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'order_item_id' => 'required|exists:order_items,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'content' => 'nullable|string|max:1000',
+        ]);
+
+        $userId = Auth::id();
+        $sessionId = session()->getId();
+
+        // Kiểm tra quyền sở hữu đơn hàng
+        $order = Order::where('id', $request->order_id)
+            ->where(function($q) use ($userId, $sessionId) {
+                if ($userId) {
+                    $q->where('user_id', $userId);
+                } else {
+                    $q->where('session_id', $sessionId);
+                }
+            })
+            ->firstOrFail();
+
+        // Kiểm tra đơn hàng đã hoàn thành chưa
+        if (!in_array($order->status, ['completed', 'delivered'])) {
+            return back()->with('error', 'Chỉ có thể đánh giá sản phẩm từ đơn hàng đã hoàn thành.');
+        }
+
+        // Lấy order item
+        $orderItem = $order->items()->findOrFail($request->order_item_id);
+        $productId = $orderItem->product_id;
+        $variantId = $orderItem->variant_id;
+
+        // Kiểm tra variant_id có tồn tại trong product_variants không
+        $validVariantId = null;
+        if ($variantId) {
+            $variantExists = \App\Models\ProductVariant::where('id', $variantId)->exists();
+            if ($variantExists) {
+                $validVariantId = $variantId;
+            }
+        }
+
+        // Kiểm tra đã đánh giá chưa
+        $existingReview = \App\Models\Review::where('order_id', $order->id)
+            ->where(function($q) use ($productId, $validVariantId) {
+                $q->where('product_id', $productId);
+                if ($validVariantId) {
+                    $q->where('product_variant_id', $validVariantId);
+                } else {
+                    $q->whereNull('product_variant_id');
+                }
+            })
+            ->first();
+
+        if ($existingReview) {
+            return back()->with('error', 'Bạn đã đánh giá sản phẩm này rồi.');
+        }
+
+        // Tạo review
+        \App\Models\Review::create([
+            'user_id' => $userId,
+            'product_id' => $productId,
+            'product_variant_id' => $validVariantId,
+            'order_id' => $order->id,
+            'rating' => $request->rating,
+            'content' => $request->input('content', ''),
+            'tags' => [],
+            'status' => 'public',
+        ]);
+
+        return back()->with('success', 'Cảm ơn bạn đã đánh giá sản phẩm!');
     }
 }
 

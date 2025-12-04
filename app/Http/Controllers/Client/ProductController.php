@@ -50,10 +50,19 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
+        $product = Product::with([
+            'category',
+            'productImages',
+            'productVariants.color',
+            'productVariants.size',
+            'productVariants.texture',
+            'reviews.user',
+            'reviews.media',
+            'reviews.experiences',
+        ])
             ->where('is_active', 1)
             ->findOrFail($id);
-        
+
         // Lấy sản phẩm liên quan (cùng danh mục)
         $relatedProducts = Product::with(['category', 'primaryImage'])
             ->where('is_active', 1)
@@ -61,10 +70,39 @@ class ProductController extends Controller
             ->where('id', '!=', $product->id)
             ->limit(8)
             ->get();
+
+        // === Lấy tất cả review của sản phẩm (chỉ public) ===
+        $reviews = $product->reviews()
+            ->where('status', 'public')
+            ->with(['user', 'productVariant', 'media', 'experiences'])
+            ->get()
+            ->sortByDesc('created_at');
         
+        // Tính trung bình rating
+        $avgRating = round($reviews->avg('rating') ?? 0, 1);
+        
+        // === Lấy một vài đánh giá gần nhất ===
+        $latestReviews = $reviews->take(5)->map(function ($review) {
+            return [
+                'id' => $review->id,
+                'user' => [
+                    'name' => $review->user->name ?? 'Ẩn danh',
+                    'avatar' => $review->user->avatar ?? null,
+                ],
+                'rating' => (int)$review->rating,
+                'comment' => $review->content,
+                'variant' => $review->productVariant?->attribute_summary,
+                'tags'  => $review->tags ?? [],
+                'media' => $review->media->pluck('url')->toArray(),
+                'created_at' => $review->created_at->diffForHumans(),
+            ];
+        });
+
         return view('client.products.detail', [
             'product' => $product,
             'relatedProducts' => $relatedProducts,
+            'latestReviews' => $latestReviews,
+            'avgRating' => $avgRating,
         ]);
     }
 }
