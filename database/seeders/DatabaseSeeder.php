@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             BannerSeeder::class,
             PostSeeder::class,
             TagSeeder::class,
+            VoucherSeeder::class,
         ]);
     }
 }

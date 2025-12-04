@@ -50,7 +50,7 @@ class BlogController extends Controller
             ->take(3)
             ->get();
 
-        return view('client.blog.index', compact(
+        return view('client.blogs.index', compact(
             'blogs',
             'categories',
             'tags',
@@ -78,7 +78,7 @@ class BlogController extends Controller
             ->take(3)
             ->get();
 
-        return view('client.blog.detail', compact(
+        return view('client.blogs.detail', compact(
             'blog',
             'categories',
             'tags',

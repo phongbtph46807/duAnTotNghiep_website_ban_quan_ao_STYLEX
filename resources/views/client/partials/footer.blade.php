@@ -7,40 +7,48 @@
 						Danh Mục
 					</h4>
 
+					@php
+						// Lấy danh mục hiển thị ở footer: ưu tiên $categories nếu controller đã truyền
+						$footerCategories = null;
+						if (isset($categories) && $categories instanceof \Illuminate\Support\Collection && $categories->count() > 0) {
+							$footerCategories = $categories->take(4);
+						} else {
+							$footerCategories = \App\Models\Category::query()
+								->where('status', 1)
+								->orderBy('id')
+								->take(4)
+								->get();
+						}
+					@endphp
 					<ul>
-						@if(isset($categories) && $categories->count() > 0)
-							@foreach($categories->take(4) as $category)
+						@forelse($footerCategories as $category)
 							<li class="p-b-10">
 								<a href="{{ route('client.products.index', ['category' => $category->id]) }}" class="stext-107 cl7 hov-cl1 trans-04">
 									{{ $category->name }}
 								</a>
 							</li>
-							@endforeach
-						@else
+						@empty
 							<li class="p-b-10">
 								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
-									Women
+									Nữ
 								</a>
 							</li>
-
 							<li class="p-b-10">
 								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
-									Men
+									Nam
 								</a>
 							</li>
-
 							<li class="p-b-10">
 								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
-									Shoes
+									Giày dép
 								</a>
 							</li>
-
 							<li class="p-b-10">
 								<a href="{{ route('client.products.index') }}" class="stext-107 cl7 hov-cl1 trans-04">
-									Watches
+									Phụ kiện
 								</a>
 							</li>
-						@endif
+						@endforelse
 					</ul>
 				</div>
 

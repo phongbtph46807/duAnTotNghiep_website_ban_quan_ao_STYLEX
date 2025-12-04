@@ -1,3 +1,4 @@
+﻿
 <?php $__env->startSection('title', 'Hoàn tất đặt hàng - ' . env('APP_NAME')); ?>
 <?php $__env->startSection('content'); ?>
 <div class="container p-t-60 p-b-60">
@@ -19,4 +20,5 @@
 </div>
 <?php $__env->stopSection(); ?>
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\checkout\thankyou.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\checkout\thankyou.blade.php ENDPATH**/ ?>

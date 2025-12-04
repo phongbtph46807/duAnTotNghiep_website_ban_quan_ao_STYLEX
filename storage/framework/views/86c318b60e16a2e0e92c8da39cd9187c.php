@@ -148,7 +148,7 @@
         });
     </script>
     <script>
-        <?php if (! $__env->hasRenderedOnce('afa79af1-02c6-4914-b387-3fb51721819d')): $__env->markAsRenderedOnce('afa79af1-02c6-4914-b387-3fb51721819d'); ?>
+        <?php if (! $__env->hasRenderedOnce('2cc02c01-8830-4f54-b349-82bcd1784b16')): $__env->markAsRenderedOnce('2cc02c01-8830-4f54-b349-82bcd1784b16'); ?>
         let myEditor;
         ClassicEditor.create(document.querySelector('#description'))
             .then(editor => {

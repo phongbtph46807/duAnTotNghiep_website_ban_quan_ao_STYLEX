@@ -2,6 +2,41 @@
 	<section class="section-slide">
 		<div class="wrap-slick1">
 			<div class="slick1">
+				@php
+					// Lấy danh sách banner đã được truyền từ HomeController (nếu có)
+					$bannersList = isset($banners) ? $banners : collect();
+				@endphp
+
+				@if($bannersList->count() > 0)
+					@foreach($bannersList as $banner)
+					<div class="item-slick1" style="background-image: url('{{ $banner->image }}');">
+						<div class="container h-full">
+							<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
+								<div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
+									<span class="ltext-101 cl2 respon2">
+										{{ $banner->title }}
+									</span>
+								</div>
+									
+								@if(!empty($banner->content))
+								<div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
+									<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1">
+										{{ $banner->content }}
+									</h2>
+								</div>
+								@endif
+									
+								<div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
+									<a href="{{ $banner->redirect_url ? url($banner->redirect_url) : route('client.products.index') }}" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+										Truy cập ngay
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+					@endforeach
+				@else
+					{{-- Fallback: giữ nguyên 3 slide tĩnh nếu chưa có banner nào trong admin --}}
 				<div class="item-slick1" style="background-image: url(images/slide-01.jpg);">
 					<div class="container h-full">
 						<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
@@ -73,6 +108,7 @@
 						</div>
 					</div>
 				</div>
+				@endif
 			</div>
 		</div>
 	</section>

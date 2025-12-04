@@ -12,26 +12,31 @@ class VerificationController extends Controller
 {
     //
     public function verify($token){
-       $user = User::where('verification_token', $token)->first(); 
-    
-        if(!$user){
-            return abort(404, "Có gì đó không ổn!");
-        }
+        try {
+            $user = User::where('verification_token', $token)->first(); 
+        
+            if(!$user){
+                $msg = 'Mã xác thực không hợp lệ hoặc đã được sử dụng. Vui lòng kiểm tra lại email hoặc đăng ký tài khoản mới.';
+                return view('admin.auth.verification.verification-message', compact('msg'));
+            }
 
-        if($user->token_expires_at < Carbon::now()){
-            $msg = 'Mã xác minh đã hết hạn. Vui lòng yêu cầu gửi email xác minh mới.';
+            if($user->token_expires_at && $user->token_expires_at < Carbon::now()){
+                $msg = 'Mã xác minh đã hết hạn. Vui lòng yêu cầu gửi email xác minh mới.';
+                return view('admin.auth.verification.verification-message', compact('msg'));
+            }
+
+            // Xác thực thành công
+            $user->is_verified = 1;
+            $user->email_verified_at = Carbon::now();
+            $user->verification_token = null;
+            $user->token_expires_at = null;
+            $user->save();
+
+            $msg = 'Xác thực email thành công! Bạn có thể đăng nhập ngay bây giờ.';
+            return view('admin.auth.verification.verification-message', compact('msg'));
+        } catch (\Exception $e) {
+            $msg = 'Đã xảy ra lỗi trong quá trình xác thực. Vui lòng thử lại sau.';
             return view('admin.auth.verification.verification-message', compact('msg'));
         }
-
-        $user->is_verified = 1;
-        $user->email_verified_at = Carbon::now();
-        $user->verification_token = null;
-        $user->token_expires_at = null;
-        $user->save();
-
-        $msg = 'Xác thực email thành công!';
-        return view('admin.auth.verification.verification-message', compact('msg'));
-        
-
     }
 }

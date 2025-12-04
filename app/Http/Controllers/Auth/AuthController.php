@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Cart;
 use App\Models\User;
 use App\Traits\LoggableTrait;
@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -51,12 +52,27 @@ class AuthController extends Controller
 
     protected function sendVerificationMail($user)
     {
-        $verificationUrl = url('/verify/'.$user->verification_token);
-        Mail::send('admin.mails.verification',['name' => $user->name, 'url' => $verificationUrl], function($message) use ($user){
-        $message->to($user->email);  
-        $message->subject('Xác thực email');  
-
-    });
+        try {
+            $verificationUrl = url('/verify/'.$user->verification_token);
+            $fromEmail = config('mail.from.address', env('MAIL_FROM_ADDRESS', 'noreply@stylex.com'));
+            $fromName = config('mail.from.name', env('MAIL_FROM_NAME', 'StyleX'));
+            
+            Mail::send('admin.mails.verification', [
+                'name' => $user->name, 
+                'url' => $verificationUrl
+            ], function($message) use ($user, $fromEmail, $fromName) {
+                $message->from($fromEmail, $fromName);
+                $message->to($user->email);
+                $message->subject('Xác thực email - ' . config('app.name'));
+            });
+        } catch (\Exception $e) {
+            Log::error('Lỗi gửi email xác thực: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
         public function loginView(){

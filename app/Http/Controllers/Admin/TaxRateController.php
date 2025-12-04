@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\TaxRateRequest;
+use App\Http\Requests\Admin\TaxRate\TaxRateRequest;
 use App\Models\TaxRate;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;

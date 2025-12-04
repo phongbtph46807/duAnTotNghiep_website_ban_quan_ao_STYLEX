@@ -31,7 +31,11 @@ Route::prefix('cart')->as('client.cart.')->group(function () {
     Route::get('/get', [CartController::class, 'getCart'])->name('get');
     Route::put('/{id}', [CartController::class, 'update'])->name('update');
     Route::delete('/{id}', [CartController::class, 'remove'])->name('remove');
+    Route::get('/table', [CartController::class, 'getCartTable'])->name('table');
     Route::delete('/', [CartController::class, 'clear'])->name('clear');
+    Route::post('/voucher/apply', [CartController::class, 'applyVoucher'])->name('voucher.apply');
+    Route::post('/voucher/remove', [CartController::class, 'removeVoucher'])->name('voucher.remove');
+    Route::post('/shipping/select', [CartController::class, 'selectShipping'])->name('shipping.select');
 });
 
 // Checkout
@@ -43,13 +47,15 @@ Route::prefix('checkout')->as('client.checkout.')->group(function(){
 Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
+Route::post('/order/{order}/cancel', [CheckoutController::class, 'cancel'])->name('client.order.cancel');
+
+// Email verification - public route (no auth required)
+Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
 
 // Auth & verification
 Route::group(['middleware' => ['isAuthenticated']], function(){
     Route::get('/register', [AuthController::class,'registerView'])->name('registerView');
     Route::post('/register', [AuthController::class,'register'])->name('register');
-
-    Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
 
     Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
     Route::post('/login', [AuthController::class,'login'])->name('login');

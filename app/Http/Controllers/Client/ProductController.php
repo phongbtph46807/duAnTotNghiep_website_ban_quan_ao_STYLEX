@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Texture;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -14,30 +15,33 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // Lấy danh mục từ database
+        // Lấy danh mục cha và danh mục con từ database
         $categories = Category::whereNull('parent_id')
             ->where('status', 1)
+            ->with(['children' => function($query) {
+                $query->where('status', 1);
+            }])
             ->get();
         
-        // Query sản phẩm
-        $query = Product::with(['category', 'primaryImage'])
-            ->where('is_active', 1);
+        // Lấy danh sách chất liệu đang hoạt động để lọc
+        $textures = Texture::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get();
         
-        // Filter theo danh mục
-        if ($request->has('category') && $request->category) {
-            $query->where('category_id', $request->category);
+        // Quick view (server-rendered)
+        $quickProduct = null;
+        if ($request->filled('quick_view')) {
+            $quickProduct = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
+                ->where('is_active', 1)
+                ->find($request->quick_view);
         }
-        
-        // Sắp xếp mặc định
-        $query->orderBy('created_at', 'desc');
-        
-        // Phân trang
-        $products = $query->paginate(12);
-        
-        return view('client.product.index', [
-            'products' => $products,
-            'categories' => $categories,
+
+        return view('client.products.index', [
+            'categories'       => $categories,
             'selectedCategory' => $request->category,
+            'quickProduct'     => $quickProduct,
+            'textures'         => $textures,
         ]);
     }
     
@@ -58,7 +62,7 @@ class ProductController extends Controller
             ->limit(8)
             ->get();
         
-        return view('client.product.detail', [
+        return view('client.products.detail', [
             'product' => $product,
             'relatedProducts' => $relatedProducts,
         ]);

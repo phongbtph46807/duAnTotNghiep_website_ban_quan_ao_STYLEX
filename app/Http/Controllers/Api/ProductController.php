@@ -5,15 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductFilterRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Category;
 use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
     public function index(ProductFilterRequest $request)
     {
-        $q = Product::query()->with(['brand','category','images','variants.color','variants.size']);
+        $q = Product::query()
+            ->with([
+                'brand',
+                'category',
+                'images',
+                'variants.color',
+                'variants.size',
+            ]);
 
         // only active/visible products (optional)
         $q->where('is_active', true);
@@ -31,7 +38,17 @@ class ProductController extends Controller
 
         // filters
         if ($category = $request->input('category_id')) {
+            $categoryIds = Category::query()
+                ->where('id', $category)
+                ->orWhere('parent_id', $category)
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($categoryIds)) {
+                $q->whereIn('category_id', $categoryIds);
+            } else {
             $q->where('category_id', $category);
+            }
         }
         if ($brand = $request->input('brand_id')) {
             $q->where('brand_id', $brand);
@@ -40,12 +57,15 @@ class ProductController extends Controller
         // price range filter — consider base_price or variant price
         $min = $request->input('min_price');
         $max = $request->input('max_price');
-        if ($min !== null && $max !== null) {
-            $q->whereBetween('base_price', [$min, $max]);
-        } elseif ($min !== null) {
-            $q->where('base_price', '>=', $min);
-        } elseif ($max !== null) {
-            $q->where('base_price', '<=', $max);
+        if ($min !== null || $max !== null) {
+            $q->where(function($qq) use ($min, $max) {
+                if ($min !== null) {
+                    $qq->whereRaw('COALESCE(price_sale, price) >= ?', [$min]);
+                }
+                if ($max !== null) {
+                    $qq->whereRaw('COALESCE(price_sale, price) <= ?', [$max]);
+                }
+            });
         }
 
         // filters that require variants (color/size/texture/in_stock)
@@ -74,9 +94,9 @@ class ProductController extends Controller
         // sort
         $sort = $request->input('sort','relevance');
         if ($sort === 'price_asc') {
-            $q->orderBy('base_price','asc');
+            $q->orderByRaw('COALESCE(price_sale, price) ASC');
         } elseif ($sort === 'price_desc') {
-            $q->orderBy('base_price','desc');
+            $q->orderByRaw('COALESCE(price_sale, price) DESC');
         } elseif ($sort === 'newest') {
             $q->orderBy('created_at','desc');
         } else {

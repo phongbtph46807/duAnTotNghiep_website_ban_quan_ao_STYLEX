@@ -8,37 +8,25 @@
 
 			<ul>
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-sort-filter" data-sort="relevance">
 						Mặc Định
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
-						Phổ Biến
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
-						Đánh Giá Trung Bình
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="newest">
 						Mới Nhất
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="price_asc">
 						Giá: Thấp Đến Cao
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="price_desc">
 						Giá: Cao Đến Thấp
 					</a>
 				</li>
@@ -52,37 +40,37 @@
 
 			<ul>
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-price-filter" data-min="" data-max="">
 						Tất Cả
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="0" data-max="500000">
 						0đ - 500.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="500000" data-max="1000000">
 						500.000đ - 1.000.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="1000000" data-max="1500000">
 						1.000.000đ - 1.500.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="1500000" data-max="2000000">
 						1.500.000đ - 2.000.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="2000000" data-max="">
 						2.000.000đ+
 					</a>
 				</li>
@@ -91,98 +79,28 @@
 
 		<div class="filter-col3 p-r-15 p-b-27">
 			<div class="mtext-102 cl2 p-b-15">
-				Màu Sắc
+				Chất liệu
 			</div>
 
 			<ul>
 				<li class="p-b-6">
-					<span class="fs-15 lh-12 m-r-6" style="color: #222;">
-						<i class="zmdi zmdi-circle"></i>
-					</span>
-
-					<a href="#" class="filter-link stext-106 trans-04">
-						Đen
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-texture-filter" data-texture-id="">
+						Tất cả
 					</a>
 				</li>
 
-				<li class="p-b-6">
-					<span class="fs-15 lh-12 m-r-6" style="color: #4272d7;">
-						<i class="zmdi zmdi-circle"></i>
-					</span>
-
-					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
-						Xanh Dương
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<span class="fs-15 lh-12 m-r-6" style="color: #b3b3b3;">
-						<i class="zmdi zmdi-circle"></i>
-					</span>
-
-					<a href="#" class="filter-link stext-106 trans-04">
-						Xám
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<span class="fs-15 lh-12 m-r-6" style="color: #00ad5f;">
-						<i class="zmdi zmdi-circle"></i>
-					</span>
-
-					<a href="#" class="filter-link stext-106 trans-04">
-						Xanh Lá
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<span class="fs-15 lh-12 m-r-6" style="color: #fa4251;">
-						<i class="zmdi zmdi-circle"></i>
-					</span>
-
-					<a href="#" class="filter-link stext-106 trans-04">
-						Đỏ
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<span class="fs-15 lh-12 m-r-6" style="color: #aaa;">
-						<i class="zmdi zmdi-circle-o"></i>
-					</span>
-
-					<a href="#" class="filter-link stext-106 trans-04">
-						Trắng
-					</a>
-				</li>
+				@isset($textures)
+					@foreach($textures as $texture)
+						<li class="p-b-6">
+							<a href="#"
+							   class="filter-link stext-106 trans-04 js-texture-filter"
+							   data-texture-id="{{ $texture->id }}">
+								{{ $texture->name }}
+							</a>
+						</li>
+					@endforeach
+				@endisset
 			</ul>
-		</div>
-
-		<div class="filter-col4 p-b-27">
-			<div class="mtext-102 cl2 p-b-15">
-				Tags
-			</div>
-
-			<div class="flex-w p-t-4 m-r--5">
-				<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-					Thời Trang
-				</a>
-
-				<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-					Phong Cách
-				</a>
-
-				<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-					Denim
-				</a>
-
-				<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-					Street Style
-				</a>
-
-				<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-					Thủ Công
-				</a>
-			</div>
 		</div>
 	</div>
 </div>
