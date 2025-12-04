@@ -14,7 +14,6 @@
             <th>#</th>
             <th>Tên</th>
             <th>Mô tả</th>
-            <th>Quyền</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -24,11 +23,6 @@
             <td>{{ $role->id }}</td>
             <td>{{ $role->name }}</td>
             <td>{{ $role->description }}</td>
-            <td>
-              @foreach($role->permissions as $perm)
-                <span class="badge bg-secondary me-1">{{ $perm->name }}</span>
-              @endforeach
-            </td>
             <td>
               <a class="btn btn-sm btn-warning" href="{{ route('admin.rbac.roles.edit', $role) }}">Sửa</a>
               <form class="d-inline" method="POST" action="{{ route('admin.rbac.roles.destroy', $role) }}">
