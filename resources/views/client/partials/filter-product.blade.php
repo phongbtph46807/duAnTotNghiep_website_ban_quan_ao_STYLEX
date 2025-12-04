@@ -91,13 +91,13 @@
 
 				@isset($textures)
 					@foreach($textures as $texture)
-						<li class="p-b-6">
+				<li class="p-b-6">
 							<a href="#"
 							   class="filter-link stext-106 trans-04 js-texture-filter"
 							   data-texture-id="{{ $texture->id }}">
 								{{ $texture->name }}
-							</a>
-						</li>
+					</a>
+				</li>
 					@endforeach
 				@endisset
 			</ul>

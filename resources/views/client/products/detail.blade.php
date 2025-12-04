@@ -309,13 +309,7 @@
 						<li class="nav-item p-b-10">
 							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">
 								Đánh giá 
-								@if(isset($product->reviews_count))
-									({{ $product->reviews_count }})
-								@elseif(isset($product->reviews) && method_exists($product->reviews, 'count'))
-									({{ $product->reviews->count() }})
-								@else
-									(0)
-								@endif
+								({{ $product->reviews()->where('status', 'public')->count() }})
 							</a>
 						</li>
 					</ul>
@@ -393,58 +387,122 @@
 
 						<!-- Reviews -->
 						<div class="tab-pane fade" id="reviews" role="tabpanel">
-							<div class="row">
-								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-									<div class="p-b-30 m-lr-15-sm">
-										<!-- Add review -->
-										<form class="w-full">
-											<h5 class="mtext-108 cl2 p-b-7">
-												Thêm đánh giá
-											</h5>
-
-											<p class="stext-102 cl6">
-												Email của bạn sẽ không được công khai. Các trường bắt buộc được đánh dấu *
-											</p>
-
-											<div class="flex-w flex-m p-t-50 p-b-23">
-												<span class="stext-102 cl3 m-r-16">
-													Đánh giá của bạn
-												</span>
-
-												<span class="wrap-rating fs-18 cl11 pointer">
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<input class="dis-none" type="number" name="rating">
-												</span>
+							<div class="how-pos2 p-lr-15-md">
+								@php
+									$fullStars = floor($avgRating ?? 0);
+									$hasHalfStar = ($avgRating ?? 0) - $fullStars >= 0.5;
+									$reviewsCount = $product->reviews()->where('status', 'public')->count();
+								@endphp
+								
+								<!-- Tổng quan đánh giá -->
+								@if($reviewsCount > 0)
+									<div class="p-b-30 bor12">
+										<div class="flex-w flex-m p-b-20 p-t-20">
+											<div class="p-r-30">
+												<div class="mtext-102 cl2 p-b-5">
+													Đánh giá trung bình
+												</div>
+												<div class="mtext-105 cl2 p-b-10">
+													{{ number_format($avgRating ?? 0, 1) }}<span class="stext-102 cl6">/5</span>
+												</div>
+												<div class="flex-w flex-m p-b-10">
+													@for ($i = 1; $i <= 5; $i++)
+														@if ($i <= $fullStars)
+															<i class="fa fa-star cl2" style="font-size:20px;color:#ffc107;"></i>
+														@elseif ($i == $fullStars + 1 && $hasHalfStar)
+															<i class="fa fa-star-half-o cl2" style="font-size:20px;color:#ffc107;"></i>
+														@else
+															<i class="fa fa-star-o cl6" style="font-size:20px;"></i>
+														@endif
+													@endfor
+												</div>
+												<p class="stext-102 cl6">
+													Dựa trên {{ $reviewsCount }} đánh giá
+												</p>
 											</div>
-
-											<div class="row p-b-25">
-												<div class="col-12 p-b-5">
-													<label class="stext-102 cl3" for="review">Đánh giá của bạn</label>
-													<textarea class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10" id="review" name="review"></textarea>
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="name">Tên</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name" type="text" name="name">
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="email">Email</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="email" type="text" name="email">
-												</div>
-											</div>
-
-											<button class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
-												Gửi đánh giá
-											</button>
-										</form>
+										</div>
 									</div>
-								</div>
+								@endif
+
+								<!-- Danh sách đánh giá -->
+								@if($latestReviews && $latestReviews->count() > 0)
+									<div class="p-t-10">
+										@foreach ($latestReviews as $review)
+											<div class="flex-w flex-t p-b-20 bor12 p-t-20">
+												<div class="size-209 p-r-20">
+													<div class="flex-c-m size-108 how-pos1 bor0" style="width:60px;height:60px;border-radius:50%;background:#e6e6e6;color:#333;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:24px;">
+														@if ($review['user']['avatar'])
+															<img src="{{ $review['user']['avatar'] }}"
+																alt="{{ $review['user']['name'] }}"
+																style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
+														@else
+															{{ strtoupper(substr($review['user']['name'], 0, 1)) }}
+														@endif
+													</div>
+												</div>
+												<div class="size-207">
+													<div class="flex-w flex-sb-m p-b-10">
+														<span class="stext-102 cl3 m-r-20" style="font-weight:600;">
+															{{ $review['user']['name'] }}
+														</span>
+														<span class="stext-102 cl6">
+															{{ $review['created_at'] }}
+														</span>
+													</div>
+													<div class="flex-w flex-m p-b-10">
+														@for ($i = 1; $i <= 5; $i++)
+															@if ($i <= $review['rating'])
+																<i class="fa fa-star cl2" style="font-size:16px;color:#ffc107;"></i>
+															@else
+																<i class="fa fa-star-o cl6" style="font-size:16px;"></i>
+															@endif
+														@endfor
+													</div>
+													@if($review['variant'])
+														<p class="stext-102 cl6 p-b-10">
+															<strong>Phân loại hàng:</strong> {{ $review['variant'] }}
+														</p>
+													@endif
+													@if (!empty($review['comment']))
+														<p class="stext-102 cl6 p-b-10" style="line-height:1.8;">
+															{{ $review['comment'] }}
+														</p>
+													@endif
+													@if (!empty($review['tags']))
+														<div class="p-b-10">
+															@foreach ($review['tags'] as $tag)
+																<span class="stext-102 cl6" style="background:#f5f5f5;padding:4px 10px;border-radius:3px;margin-right:8px;display:inline-block;margin-bottom:4px;">
+																	{{ $tag }}
+																</span>
+															@endforeach
+														</div>
+													@endif
+													@if (!empty($review['media']))
+														<div class="flex-w flex-m p-t-10">
+															@foreach ($review['media'] as $mediaUrl)
+																<div class="p-r-10">
+																	<img src="{{ $mediaUrl }}"
+																		alt="Ảnh đánh giá"
+																		class="hov-img0"
+																		style="width:80px;height:80px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid #e6e6e6;"
+																		onclick="window.open('{{ $mediaUrl }}', '_blank')">
+																</div>
+															@endforeach
+														</div>
+													@endif
+												</div>
+											</div>
+										@endforeach
+									</div>
+								@else
+									<div class="p-t-20 p-b-20">
+										<p class="stext-102 cl6 text-center">
+											Chưa có đánh giá nào cho sản phẩm này.
+										</p>
+									</div>
+								@endif
 							</div>
+						</div>
 						</div>
 					</div>
 				</div>

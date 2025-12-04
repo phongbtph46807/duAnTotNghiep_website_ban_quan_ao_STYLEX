@@ -191,6 +191,56 @@
                     </div>
             @endforeach
 
+                {{-- Hiển thị form đánh giá nếu đơn hàng đã hoàn thành --}}
+                @if($order && in_array($order->status, ['completed', 'delivered']))
+                    <div class="m-t-30" style="border-top:2px solid #eee;padding-top:20px;">
+                        <h5 style="font-weight:700;margin-bottom:16px;">Đánh giá sản phẩm</h5>
+                        @foreach($order->items as $item)
+                            @if(!isset($item->is_reviewed) || !$item->is_reviewed)
+                                <div class="review-item-card" data-item-id="{{ $item->id }}" style="background:#f9f9f9;border-radius:8px;padding:16px;margin-bottom:12px;">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <img src="{{ $item->product->default_image_url ?? asset('client/images/product/product-01.jpg') }}" 
+                                             alt="{{ $item->product->name }}" 
+                                             style="width:60px;height:60px;border-radius:8px;object-fit:cover;">
+                                        <div style="flex:1;">
+                                            <div style="font-weight:600;margin-bottom:4px;">{{ $item->product->name }}</div>
+                                            <div style="font-size:12px;color:#666;">Số lượng: {{ $item->quantity }}</div>
+                                            
+                                            <div class="review-form" style="margin-top:12px;">
+                                                <div style="margin-bottom:8px;">
+                                                    <label style="font-size:13px;font-weight:600;margin-bottom:4px;display:block;">Đánh giá của bạn:</label>
+                                                    <div class="star-rating" data-item-id="{{ $item->id }}">
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            <span class="star" data-rating="{{ $i }}" style="font-size:20px;color:#ddd;cursor:pointer;margin-right:4px;">★</span>
+                                                        @endfor
+                                                    </div>
+                                                </div>
+                                                <textarea class="review-content" 
+                                                          data-item-id="{{ $item->id }}" 
+                                                          placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
+                                                          style="width:100%;min-height:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;"></textarea>
+                                                <button type="button" 
+                                                        class="submit-review-btn" 
+                                                        data-order-id="{{ $order->id }}" 
+                                                        data-item-id="{{ $item->id }}"
+                                                        data-product-id="{{ $item->product_id }}"
+                                                        data-variant-id="{{ $item->variant_id }}"
+                                                        style="margin-top:8px;padding:8px 16px;background:#6777ef;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">
+                                                    Gửi đánh giá
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div style="background:#f0f9ff;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#1677ff;">
+                                    ✓ Bạn đã đánh giá sản phẩm: <strong>{{ $item->product->name }}</strong>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+
                 <div class="order-summary">
                     <div class="order-summary-line">
                         <span>Tạm tính</span>
@@ -236,4 +286,96 @@
     @endif
   </div>
 </div>
+
+@if($order && in_array($order->status, ['completed', 'delivered']))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý đánh giá sao
+    document.querySelectorAll('.star-rating').forEach(function(ratingEl) {
+        const stars = ratingEl.querySelectorAll('.star');
+        let selectedRating = 0;
+        
+        stars.forEach(function(star, index) {
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(stars, rating);
+            });
+            
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                highlightStars(stars, selectedRating);
+                ratingEl.dataset.selectedRating = selectedRating;
+            });
+        });
+        
+        ratingEl.addEventListener('mouseleave', function() {
+            highlightStars(stars, selectedRating);
+        });
+    });
+    
+    function highlightStars(stars, rating) {
+        stars.forEach(function(star, index) {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#ddd';
+            }
+        });
+    }
+    
+    // Xử lý submit review
+    document.querySelectorAll('.submit-review-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            const itemId = this.dataset.itemId;
+            const ratingEl = document.querySelector(`.star-rating[data-item-id="${itemId}"]`);
+            const contentEl = document.querySelector(`.review-content[data-item-id="${itemId}"]`);
+            const rating = ratingEl ? parseInt(ratingEl.dataset.selectedRating || 0) : 0;
+            const content = contentEl ? contentEl.value.trim() : '';
+            
+            if (rating === 0) {
+                alert('Vui lòng chọn số sao đánh giá!');
+                return;
+            }
+            
+            // Disable button
+            this.disabled = true;
+            this.textContent = 'Đang gửi...';
+            
+            // Gửi request
+            fetch('/api/reviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                },
+                body: JSON.stringify({
+                    order_id: orderId,
+                    order_item_id: itemId,
+                    rating: rating,
+                    content: content
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Cảm ơn bạn đã đánh giá!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+                    this.disabled = false;
+                    this.textContent = 'Gửi đánh giá';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                this.disabled = false;
+                this.textContent = 'Gửi đánh giá';
+            });
+        });
+    });
+});
+</script>
+@endif
 @endsection

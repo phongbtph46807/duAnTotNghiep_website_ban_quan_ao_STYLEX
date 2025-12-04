@@ -48,6 +48,7 @@ Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
 Route::post('/order/{order}/cancel', [CheckoutController::class, 'cancel'])->name('client.order.cancel');
+Route::post('/order/review', [CheckoutController::class, 'storeReview'])->name('client.order.review');
 
 // Email verification - public route (no auth required)
 Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');
