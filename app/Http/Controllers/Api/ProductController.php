@@ -47,7 +47,7 @@ class ProductController extends Controller
             if (!empty($categoryIds)) {
                 $q->whereIn('category_id', $categoryIds);
             } else {
-                $q->where('category_id', $category);
+            $q->where('category_id', $category);
             }
         }
         if ($brand = $request->input('brand_id')) {

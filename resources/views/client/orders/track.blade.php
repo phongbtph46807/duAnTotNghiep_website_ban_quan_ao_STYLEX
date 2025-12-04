@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container p-t-40 p-b-60">
-    <style>
+<style>
         .order-track-card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.05);padding:24px;max-width:960px;margin:0 auto;}
         .order-track-title{font-weight:800;font-size:22px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
         .order-track-title:before{content:"";width:6px;height:24px;background:#6777ef;border-radius:6px;}
@@ -38,7 +38,7 @@
             .order-item-row{flex-wrap:wrap;}
             .order-item-price{text-align:left;}
         }
-    </style>
+</style>
 
     @if(session('success'))
         <div class="alert alert-success" role="alert">{{ session('success') }}</div>
@@ -60,14 +60,14 @@
                         <button class="btn-primary-x w-100">Tra cứu đơn hàng</button>
                     </div>
                 </div>
-            </form>
+    </form>
         @else
             <div class="order-track-meta">
                 <div><strong>Mã đơn:</strong> {{ $order->code }}</div>
                 <div><strong>Ngày đặt:</strong> {{ $order->created_at?->format('d/m/Y H:i') }}</div>
                 <div>
                     <strong>Trạng thái:</strong>
-                    @php
+        @php
                         $statusClass = [
                             'pending' => 'status-pending',
                             'processing' => 'status-processing',
@@ -87,7 +87,7 @@
                             'cancelled' => 'Đã hủy',
                             'returned' => 'Trả hàng/Hoàn tiền',
                         ][$order->status] ?? 'Chờ xử lý';
-                    @endphp
+        @endphp
                     <span class="order-badge {{ $statusClass }}">{{ $statusLabel }}</span>
                 </div>
                 <div style="margin-top:6px;">
@@ -106,8 +106,8 @@
                         @case('refunded') Đã hoàn tiền @break
                         @default Chưa thanh toán
                     @endswitch
-                </div>
-            </div>
+      </div>
+      </div>
 
             @php
                 $timelineSteps = [
@@ -159,7 +159,7 @@
 
             <div class="order-items">
                 <h5 style="font-weight:700;margin-bottom:8px;">Sản phẩm trong đơn</h5>
-                @foreach($order->items as $item)
+            @foreach($order->items as $item)
                     <div class="order-item-row">
                         <img src="{{ $item->product->default_image_url ?? asset('client/images/product/product-01.jpg') }}" alt="IMG">
                         <div class="order-item-info">
@@ -180,8 +180,8 @@
                                 $parts[] = 'Chất liệu: '.implode(', ', $textureNames);
                             } elseif($item->variant && $item->variant->texture){
                                 $parts[] = 'Chất liệu: '.$item->variant->texture->name;
-                            }
-                        @endphp
+                  }
+                @endphp
                         @if(!empty($parts))
                             <div class="order-item-attrs">{{ implode(' - ', $parts) }}</div>
                         @endif
@@ -189,7 +189,7 @@
                         <div class="order-item-qty">x {{ $item->quantity }}</div>
                         <div class="order-item-price">{{ number_format($item->line_total, 0, ',', '.') }} ₫</div>
                     </div>
-                @endforeach
+            @endforeach
 
                 <div class="order-summary">
                     <div class="order-summary-line">
@@ -232,8 +232,8 @@
                     @endif
                     <a href="{{ route('home') }}" class="btn-primary-x">Tiếp tục mua sắm</a>
                 </div>
-            </div>
-        @endif
-</div>
+      </div>
+    @endif
+  </div>
 </div>
 @endsection

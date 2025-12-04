@@ -4,7 +4,7 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="container p-t-40 p-b-60">
-    <style>
+<style>
         .order-track-card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.05);padding:24px;max-width:960px;margin:0 auto;}
         .order-track-title{font-weight:800;font-size:22px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
         .order-track-title:before{content:"";width:6px;height:24px;background:#6777ef;border-radius:6px;}
@@ -38,7 +38,7 @@
             .order-item-row{flex-wrap:wrap;}
             .order-item-price{text-align:left;}
         }
-    </style>
+</style>
 
     <?php if(session('success')): ?>
         <div class="alert alert-success" role="alert"><?php echo e(session('success')); ?></div>
@@ -60,14 +60,14 @@
                         <button class="btn-primary-x w-100">Tra cứu đơn hàng</button>
                     </div>
                 </div>
-            </form>
+    </form>
         <?php else: ?>
             <div class="order-track-meta">
                 <div><strong>Mã đơn:</strong> <?php echo e($order->code); ?></div>
                 <div><strong>Ngày đặt:</strong> <?php echo e($order->created_at?->format('d/m/Y H:i')); ?></div>
                 <div>
                     <strong>Trạng thái:</strong>
-                    <?php
+        <?php
                         $statusClass = [
                             'pending' => 'status-pending',
                             'processing' => 'status-processing',
@@ -87,7 +87,7 @@
                             'cancelled' => 'Đã hủy',
                             'returned' => 'Trả hàng/Hoàn tiền',
                         ][$order->status] ?? 'Chờ xử lý';
-                    ?>
+        ?>
                     <span class="order-badge <?php echo e($statusClass); ?>"><?php echo e($statusLabel); ?></span>
                 </div>
                 <div style="margin-top:6px;">
@@ -106,8 +106,8 @@
                         <?php case ('refunded'): ?> Đã hoàn tiền <?php break; ?>
                         <?php default: ?> Chưa thanh toán
                     <?php endswitch; ?>
-                </div>
-            </div>
+      </div>
+      </div>
 
             <?php
                 $timelineSteps = [
@@ -160,7 +160,7 @@
 
             <div class="order-items">
                 <h5 style="font-weight:700;margin-bottom:8px;">Sản phẩm trong đơn</h5>
-                <?php $__currentLoopData = $order->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php $__currentLoopData = $order->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="order-item-row">
                         <img src="<?php echo e($item->product->default_image_url ?? asset('client/images/product/product-01.jpg')); ?>" alt="IMG">
                         <div class="order-item-info">
@@ -181,8 +181,8 @@
                                 $parts[] = 'Chất liệu: '.implode(', ', $textureNames);
                             } elseif($item->variant && $item->variant->texture){
                                 $parts[] = 'Chất liệu: '.$item->variant->texture->name;
-                            }
-                        ?>
+                  }
+                ?>
                         <?php if(!empty($parts)): ?>
                             <div class="order-item-attrs"><?php echo e(implode(' - ', $parts)); ?></div>
                         <?php endif; ?>
@@ -190,7 +190,7 @@
                         <div class="order-item-qty">x <?php echo e($item->quantity); ?></div>
                         <div class="order-item-price"><?php echo e(number_format($item->line_total, 0, ',', '.')); ?> ₫</div>
                     </div>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                 <div class="order-summary">
                     <div class="order-summary-line">
@@ -233,9 +233,9 @@
                     <?php endif; ?>
                     <a href="<?php echo e(route('home')); ?>" class="btn-primary-x">Tiếp tục mua sắm</a>
                 </div>
-            </div>
-        <?php endif; ?>
-</div>
+      </div>
+    <?php endif; ?>
+  </div>
 </div>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\orders\track.blade.php ENDPATH**/ ?>

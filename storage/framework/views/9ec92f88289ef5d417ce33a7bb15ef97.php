@@ -908,7 +908,7 @@
                                                 </td>
                                                 <td>Syntyce Solutions</td>
                                                 <td>
-                                                    <span class="badge bg-danger-subtle text-danger">Unpaid</span>
+                                                    <span class="badge bg-danger-subtle text-danger">Chưa thanh toán</span>
                                                 </td>
                                                 <td>
                                                     <h5 class="fs-14 fw-medium mb-0">4.3<span
@@ -935,7 +935,7 @@
                                                 </td>
                                                 <td>iTest Factory</td>
                                                 <td>
-                                                    <span class="badge bg-success-subtle text-success">Paid</span>
+                                                    <span class="badge bg-success-subtle text-success">Đã thanh toán</span>
                                                 </td>
                                                 <td>
                                                     <h5 class="fs-14 fw-medium mb-0">4.7<span

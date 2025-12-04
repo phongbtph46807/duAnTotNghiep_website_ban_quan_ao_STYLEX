@@ -111,8 +111,10 @@
         }
         .status-pill.status-pending { background: #fff7ed; color: #c2410c; }
         .status-pill.status-processing { background: #eff6ff; color: #1d4ed8; }
+        .status-pill.status-shipping { background: #e0f2fe; color: #0369a1; }
         .status-pill.status-completed { background: #ecfdf5; color: #059669; }
         .status-pill.status-cancelled { background: #fef2f2; color: #b91c1c; }
+        .status-pill.status-returned { background: #fef3c7; color: #92400e; }
         .btn-icon {
             width: 32px;
             height: 32px;
@@ -139,8 +141,10 @@
         }
         .status-dot.status-pending { background: #fb923c; }
         .status-dot.status-processing { background: #3b82f6; }
+        .status-dot.status-shipping { background: #0ea5e9; }
         .status-dot.status-completed { background: #22c55e; }
         .status-dot.status-cancelled { background: #ef4444; }
+        .status-dot.status-returned { background: #f97316; }
         .status-action.disabled {
             pointer-events: none;
             opacity: 0.5;
@@ -152,21 +156,28 @@
     <?php
         $statusStyles = [
             'pending' => [
-                'label' => 'Chờ xử lý',
+                'label' => 'Chờ xác nhận',
                 'class' => 'text-warning',
                 'icon' => 'ri-time-line',
                 'pill' => 'status-pending',
-                'desc' => 'Đang đợi xác nhận'
+                'desc' => 'Đơn mới, chờ nhân viên xác nhận'
             ],
             'processing' => [
                 'label' => 'Đang xử lý',
                 'class' => 'text-primary',
                 'icon' => 'ri-loader-4-line',
                 'pill' => 'status-processing',
-                'desc' => 'Đang chuẩn bị & đóng gói'
+                'desc' => 'Đang chuẩn bị & đóng gói tại kho'
+            ],
+            'shipping' => [
+                'label' => 'Chờ giao hàng',
+                'class' => 'text-info',
+                'icon' => 'ri-truck-line',
+                'pill' => 'status-shipping',
+                'desc' => 'Đã bàn giao cho đơn vị vận chuyển'
             ],
             'completed' => [
-                'label' => 'Hoàn tất',
+                'label' => 'Hoàn thành',
                 'class' => 'text-success',
                 'icon' => 'ri-check-double-line',
                 'pill' => 'status-completed',
@@ -179,12 +190,22 @@
                 'pill' => 'status-cancelled',
                 'desc' => 'Đơn bị hủy theo yêu cầu'
             ],
+            'returned' => [
+                'label' => 'Trả hàng/Hoàn tiền',
+                'class' => 'text-warning',
+                'icon' => 'ri-refund-2-line',
+                'pill' => 'status-returned',
+                'desc' => 'Đơn đã được trả lại hoặc hoàn tiền'
+            ],
         ];
+        // Quy tắc chuyển trạng thái hợp lệ
         $statusTransitions = [
             'pending' => ['pending', 'processing', 'cancelled'],
-            'processing' => ['processing', 'completed', 'cancelled'],
+            'processing' => ['processing', 'shipping', 'cancelled'],
+            'shipping' => ['shipping', 'completed', 'returned'],
             'completed' => ['completed'],
             'cancelled' => ['cancelled'],
+            'returned' => ['returned'],
         ];
     ?>
 
@@ -198,8 +219,9 @@
 
     <?php
         $totalOrders = $orderStats->total_orders ?? 0;
+        $processingCount = ($orderStats->processing_orders ?? 0) + ($orderStats->shipping_orders ?? 0);
         $processingPercent = $totalOrders > 0
-            ? max(5, min(100, (($orderStats->processing_orders ?? 0) / max(1, $totalOrders)) * 100))
+            ? max(5, min(100, ($processingCount / max(1, $totalOrders)) * 100))
             : 0;
         $completionPercent = $totalOrders > 0
             ? round((($orderStats->completed_orders ?? 0) / max(1, $totalOrders)) * 100)
@@ -217,8 +239,8 @@
         </div>
         <div class="col-md-3 mb-3">
             <div class="stat-card bg-white">
-                <span class="stat-label">Đang xử lý</span>
-                <span class="stat-value text-warning"><?php echo e($orderStats->processing_orders ?? 0); ?></span>
+                <span class="stat-label">Đang xử lý / Giao hàng</span>
+                <span class="stat-value text-warning"><?php echo e($processingCount); ?></span>
                 <div class="progress progress-sm mt-2" style="height: 6px;">
                     <div class="progress-bar bg-warning" role="progressbar"
                         style="<?php echo 'width: ' . $processingPercent . '%'; ?>"
@@ -236,8 +258,8 @@
         </div>
         <div class="col-md-3 mb-3">
             <div class="stat-card bg-white">
-                <span class="stat-label">Bị hủy</span>
-                <span class="stat-value text-danger"><?php echo e($orderStats->cancelled_orders ?? 0); ?></span>
+                <span class="stat-label">Bị hủy / Hoàn tiền</span>
+                <span class="stat-value text-danger"><?php echo e(($orderStats->cancelled_orders ?? 0) + ($orderStats->returned_orders ?? 0)); ?></span>
                 <span class="stat-trend text-muted"><i class="ri-alert-line text-danger"></i> Cần xử lý nhanh</span>
             </div>
         </div>
@@ -283,11 +305,12 @@
                         <label class="form-label fw-semibold">Trạng thái đơn</label>
                         <select name="status" class="form-select">
                             <option value="">-- Tất cả --</option>
-                            <option value="pending" <?php echo e(request('status') == 'pending' ? 'selected' : ''); ?>>Chờ xử lý</option>
-                            <option value="processing" <?php echo e(request('status') == 'processing' ? 'selected' : ''); ?>>Đang xử lý
-                            </option>
-                            <option value="completed" <?php echo e(request('status') == 'completed' ? 'selected' : ''); ?>>Hoàn tất</option>
+                            <option value="pending" <?php echo e(request('status') == 'pending' ? 'selected' : ''); ?>>Chờ xác nhận</option>
+                            <option value="processing" <?php echo e(request('status') == 'processing' ? 'selected' : ''); ?>>Đang xử lý</option>
+                            <option value="shipping" <?php echo e(request('status') == 'shipping' ? 'selected' : ''); ?>>Chờ giao hàng</option>
+                            <option value="completed" <?php echo e(request('status') == 'completed' ? 'selected' : ''); ?>>Hoàn thành</option>
                             <option value="cancelled" <?php echo e(request('status') == 'cancelled' ? 'selected' : ''); ?>>Đã hủy</option>
+                            <option value="returned" <?php echo e(request('status') == 'returned' ? 'selected' : ''); ?>>Trả hàng/Hoàn tiền</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -327,10 +350,25 @@
 
         
         <div class="card-body">
+            <?php
+                $totalActive   = $activeOrders->total();
+                $totalArchived = $archivedOrders->total();
+                $totalAll      = $totalActive + $totalArchived;
+            ?>
+
+            
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                 <div class="text-muted small">
-                    <?php if($orders->total() > 0): ?>
-                        Hiển thị <?php echo e($orders->firstItem()); ?> - <?php echo e($orders->lastItem()); ?> trên tổng <?php echo e($orders->total()); ?> đơn
+                    <?php if($totalAll > 0): ?>
+                        <span class="me-3">Tổng: <?php echo e($totalAll); ?> đơn</span>
+                        <span class="badge bg-warning-subtle text-warning me-2">
+                            Đang xử lý / giao hàng: <?php echo e($totalActive); ?>
+
+                        </span>
+                        <span class="badge bg-success-subtle text-success">
+                            Hoàn thành / hủy / hoàn tiền: <?php echo e($totalArchived); ?>
+
+                        </span>
                     <?php else: ?>
                         Không có đơn hàng nào khớp bộ lọc
                     <?php endif; ?>
@@ -355,158 +393,335 @@
                     </select>
                 </form>
             </div>
-            <div class="listjs-table" id="orderList">
-                <div class="table-responsive table-card mt-3 mb-1">
-                    <table class="table align-middle text-center table-nowrap order-table" id="orderTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Mã đơn</th>
-                                <th>Khách hàng</th>
-                                <th>Sản phẩm</th>
-                                <th>Tổng tiền</th>
-                                <th>Thanh toán</th>
-                                <th>Trạng thái</th>
-                                <th>Ngày tạo</th>
-                                <th>Cập nhật</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <?php
-                                    $paymentStatusClass = match ($order->payment_status) {
-                                        'paid' => 'bg-success-subtle text-success',
-                                        'unpaid' => 'bg-warning-subtle text-warning',
-                                        'refunded' => 'bg-info-subtle text-info',
-                                        default => 'bg-secondary-subtle text-secondary'
-                                    };
-                                    $statusClasses = [
-                                        'pending' => 'badge-dot bg-pending text-warning fw-semibold',
-                                        'processing' => 'badge-dot bg-processing text-primary fw-semibold',
-                                        'completed' => 'badge-dot bg-completed text-success fw-semibold',
-                                        'cancelled' => 'badge-dot bg-cancelled text-danger fw-semibold',
-                                    ];
-                                    $detailPayload = [
-                                        'id' => $order->id,
-                                        'code' => $order->code,
-                                        'full_name' => $order->full_name,
-                                        'email' => $order->email,
-                                        'phone' => $order->phone,
-                                        'address' => $order->address,
-                                        'total' => number_format($order->total, 0, ',', '.'),
-                                        'status' => $order->status,
-                                        'payment_status' => $order->payment_status,
-                                        'payment_method' => strtoupper($order->payment_method ?? 'COD'),
-                                        'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
-                                        'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
-                                        'notes' => $order->note ?? 'Không có ghi chú',
-                                        'items' => $order->items->map(function ($item) {
-                                            return [
-                                                'name' => $item->product->name ?? 'Sản phẩm',
-                                                'sku' => $item->product->sku ?? 'N/A',
-                                                'quantity' => $item->quantity,
-                                                'price' => number_format($item->price ?? 0, 0, ',', '.'),
-                                                'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
-                                                'image' => $item->product->default_image_url ?? asset('client/images/product-01.jpg'),
-                                            ];
-                                        })->values()->all(),
-                                    ];
-                                ?>
+
+            
+            <ul class="nav nav-pills mb-3" id="orderTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-active-orders"
+                            data-bs-toggle="tab" data-bs-target="#pane-active-orders"
+                            type="button" role="tab" aria-controls="pane-active-orders" aria-selected="true">
+                        Đang xử lý / giao hàng (<?php echo e($totalActive); ?>)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-archived-orders"
+                            data-bs-toggle="tab" data-bs-target="#pane-archived-orders"
+                            type="button" role="tab" aria-controls="pane-archived-orders" aria-selected="false">
+                        Hoàn thành / hủy / hoàn tiền (<?php echo e($totalArchived); ?>)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="orderTabsContent">
+                <?php
+                    $activeStatuses = ['pending', 'processing', 'shipping'];
+                    $archivedStatuses = ['completed', 'delivered', 'cancelled', 'returned'];
+                ?>
+
+                
+                <div class="tab-pane fade show active" id="pane-active-orders" role="tabpanel" aria-labelledby="tab-active-orders">
+                    <div class="table-responsive table-card">
+                        <table class="table align-middle text-center table-nowrap order-table">
+                            <thead class="table-light">
                                 <tr>
-                                    <td><?php echo e($order->id); ?></td>
-                                    <td><?php echo e($order->code); ?></td>
-                                    <td class="text-start">
-                                        <div class="fw-bold"><?php echo e($order->full_name); ?></div>
-                                        <small class="text-muted"><?php echo e($order->email); ?></small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-soft-dark text-body">
-                                            <?php echo e($order->items->count()); ?> sản phẩm
-                                        </span>
-                                    </td>
-                                    <td class="fw-semibold text-primary"><?php echo e(number_format($order->total)); ?>₫</td>
-                                    <td>
-                                        <span class="badge <?php echo e($paymentStatusClass); ?>">
-                                            <?php echo e(ucfirst($order->payment_status ?? 'N/A')); ?>
-
-                                        </span>
-                                        <div class="small text-muted">
-                                            <?php echo e(strtoupper($order->payment_method ?? 'COD')); ?>
-
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?php
-                                            $currentStatusKey = $order->status ?? 'pending';
-                                            $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
-                                            $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
-                                        ?>
-                                        <div class="status-control d-inline-flex align-items-center gap-2"
-                                            data-order-id="<?php echo e($order->id); ?>"
-                                            data-current="<?php echo e($currentStatusKey); ?>">
-                                            <span class="status-pill <?php echo e($currentStatus['pill']); ?>">
-                                                <i class="<?php echo e($currentStatus['icon']); ?> me-1"></i>
-                                                <?php echo e($currentStatus['label']); ?>
+                                    <th>ID</th>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Thanh toán</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Cập nhật</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $__empty_1 = true; $__currentLoopData = $activeOrders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <?php
+                                        $paymentStatusClass = match ($order->payment_status) {
+                                            'paid' => 'bg-success-subtle text-success',
+                                            'unpaid' => 'bg-warning-subtle text-warning',
+                                            'refunded' => 'bg-info-subtle text-info',
+                                            default => 'bg-secondary-subtle text-secondary'
+                                        };
+                                        $detailPayload = [
+                                            'id' => $order->id,
+                                            'code' => $order->code,
+                                            'full_name' => $order->full_name,
+                                            'email' => $order->email,
+                                            'phone' => $order->phone,
+                                            'address' => $order->address,
+                                            'total' => number_format($order->total, 0, ',', '.'),
+                                            'status' => $order->status,
+                                            'payment_status' => $order->payment_status,
+                                            'payment_method' => strtoupper($order->payment_method ?? 'COD'),
+                                            'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
+                                            'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
+                                            'notes' => $order->note ?? 'Không có ghi chú',
+                                            'items' => $order->items->map(function ($item) {
+                                                return [
+                                                    'name' => $item->product->name ?? 'Sản phẩm',
+                                                    'sku' => $item->product->sku ?? 'N/A',
+                                                    'quantity' => $item->quantity,
+                                                    'price' => number_format($item->price ?? 0, 0, ',', '.'),
+                                                    'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
+                                                    'image' => $item->product->default_image_url ?? asset('client/images/product-01.jpg'),
+                                                ];
+                                            })->values()->all(),
+                                        ];
+                                        $currentStatusKey = $order->status ?? 'pending';
+                                        $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
+                                        $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
+                                    ?>
+                                    <tr>
+                                        <td><?php echo e($order->id); ?></td>
+                                        <td><?php echo e($order->code); ?></td>
+                                        <td class="text-start">
+                                            <div class="fw-bold"><?php echo e($order->full_name); ?></div>
+                                            <small class="text-muted"><?php echo e($order->email); ?></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-soft-dark text-body">
+                                                <?php echo e($order->items->count()); ?> sản phẩm
+                                            </span>
+                                        </td>
+                                        <td class="fw-semibold text-primary"><?php echo e(number_format($order->total)); ?>₫</td>
+                                        <td>
+                                            <span class="badge <?php echo e($paymentStatusClass); ?>">
+                                                <?php echo e(ucfirst($order->payment_status ?? 'N/A')); ?>
 
                                             </span>
-                                            <div class="dropdown">
-                                                <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="ri-arrow-down-s-line"></i>
-                                                </button>
-                                                <div class="dropdown-menu dropdown-menu-end status-menu">
-                                                    <?php $__currentLoopData = $statusStyles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                        <?php
-                                                            $isActive = $currentStatusKey === $key;
-                                                            $disabled = !in_array($key, $allowedStatuses, true);
-                                                        ?>
-                                                        <button type="button"
-                                                            class="dropdown-item status-action d-flex justify-content-between align-items-start <?php echo e($isActive ? 'active' : ''); ?> <?php echo e($disabled ? 'disabled' : ''); ?>"
-                                                            data-status="<?php echo e($key); ?>">
-                                                            <span class="d-flex gap-2">
-                                                                <span class="status-dot <?php echo e($option['pill']); ?>"></span>
-                                                                <span>
-                                                                    <span class="fw-semibold d-block"><?php echo e($option['label']); ?></span>
-                                                                    <small class="text-muted"><?php echo e($option['desc']); ?></small>
+                                            <div class="small text-muted">
+                                                <?php echo e(strtoupper($order->payment_method ?? 'COD')); ?>
+
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="status-control d-inline-flex align-items-center gap-2"
+                                                 data-order-id="<?php echo e($order->id); ?>"
+                                                 data-current="<?php echo e($currentStatusKey); ?>">
+                                                <span class="status-pill <?php echo e($currentStatus['pill']); ?>">
+                                                    <i class="<?php echo e($currentStatus['icon']); ?> me-1"></i>
+                                                    <?php echo e($currentStatus['label']); ?>
+
+                                                </span>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="ri-arrow-down-s-line"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end status-menu">
+                                                        <?php $__currentLoopData = $statusStyles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                            <?php
+                                                                $isActive = $currentStatusKey === $key;
+                                                                $disabled = !in_array($key, $allowedStatuses, true);
+                                                            ?>
+                                                            <button type="button"
+                                                                    class="dropdown-item status-action d-flex justify-content-between align-items-start <?php echo e($isActive ? 'active' : ''); ?> <?php echo e($disabled ? 'disabled' : ''); ?>"
+                                                                    data-status="<?php echo e($key); ?>">
+                                                                <span class="d-flex gap-2">
+                                                                    <span class="status-dot <?php echo e($option['pill']); ?>"></span>
+                                                                    <span>
+                                                                        <span class="fw-semibold d-block"><?php echo e($option['label']); ?></span>
+                                                                        <small class="text-muted"><?php echo e($option['desc']); ?></small>
+                                                                    </span>
                                                                 </span>
-                                                            </span>
-                                                            <i class="ri-check-line status-check <?php echo e($isActive ? '' : 'opacity-0'); ?>"></i>
-                                                        </button>
-                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                                <i class="ri-check-line status-check <?php echo e($isActive ? '' : 'opacity-0'); ?>"></i>
+                                                            </button>
+                                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td><?php echo e(optional($order->created_at)->format('d/m/Y H:i')); ?></td>
-                                    <td><?php echo e($order->updated_at->format('d/m/Y H:i')); ?></td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-soft-primary view-order-detail"
-                                                data-order='<?php echo json_encode($detailPayload, 15, 512) ?>'>
-                                                <i class="ri-file-text-line"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-soft-secondary"
-                                                onclick="window.print()">
-                                                <i class="ri-printer-line"></i>
-                                            </button>
-                                        </div>
-                                    </td>
+                                        </td>
+                                        <td><?php echo e(optional($order->created_at)->format('d/m/Y H:i')); ?></td>
+                                        <td><?php echo e($order->updated_at->format('d/m/Y H:i')); ?></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-soft-primary view-order-detail"
+                                                        data-order='<?php echo json_encode($detailPayload, 15, 512) ?>'>
+                                                    <i class="ri-file-text-line"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-soft-secondary"
+                                                        onclick="window.print()">
+                                                    <i class="ri-printer-line"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr>
+                                        <td colspan="10" class="text-muted">Không có đơn hàng đang xử lý / giao hàng trên trang này.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <div class="text-muted small">
+                            Trang: <?php echo e($activeOrders->currentPage()); ?> / <?php echo e($activeOrders->lastPage()); ?>
+
+                        </div>
+                        <div>
+                            <?php echo e($activeOrders->onEachSide(1)->appends(request()->except('active_page', 'page'))->links('pagination::bootstrap-5')); ?>
+
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="tab-pane fade" id="pane-archived-orders" role="tabpanel" aria-labelledby="tab-archived-orders">
+                    <div class="table-responsive table-card">
+                        <table class="table align-middle text-center table-nowrap order-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Sản phẩm</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Thanh toán</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Cập nhật</th>
+                                    <th>Hành động</th>
                                 </tr>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                            </thead>
+                            <tbody>
+                                <?php $__empty_1 = true; $__currentLoopData = $archivedOrders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <?php
+                                        $paymentStatusClass = match ($order->payment_status) {
+                                            'paid' => 'bg-success-subtle text-success',
+                                            'unpaid' => 'bg-warning-subtle text-warning',
+                                            'refunded' => 'bg-info-subtle text-info',
+                                            default => 'bg-secondary-subtle text-secondary'
+                                        };
+                                        $detailPayload = [
+                                            'id' => $order->id,
+                                            'code' => $order->code,
+                                            'full_name' => $order->full_name,
+                                            'email' => $order->email,
+                                            'phone' => $order->phone,
+                                            'address' => $order->address,
+                                            'total' => number_format($order->total, 0, ',', '.'),
+                                            'status' => $order->status,
+                                            'payment_status' => $order->payment_status,
+                                            'payment_method' => strtoupper($order->payment_method ?? 'COD'),
+                                            'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
+                                            'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
+                                            'notes' => $order->note ?? 'Không có ghi chú',
+                                            'items' => $order->items->map(function ($item) {
+                                                return [
+                                                    'name' => $item->product->name ?? 'Sản phẩm',
+                                                    'sku' => $item->product->sku ?? 'N/A',
+                                                    'quantity' => $item->quantity,
+                                                    'price' => number_format($item->price ?? 0, 0, ',', '.'),
+                                                    'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
+                                                    'image' => $item->product->default_image_url ?? asset('client/images/product-01.jpg'),
+                                                ];
+                                            })->values()->all(),
+                                        ];
+                                        $currentStatusKey = $order->status ?? 'pending';
+                                        $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
+                                        $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
+                                    ?>
+                                    <tr>
+                                        <td><?php echo e($order->id); ?></td>
+                                        <td><?php echo e($order->code); ?></td>
+                                        <td class="text-start">
+                                            <div class="fw-bold"><?php echo e($order->full_name); ?></div>
+                                            <small class="text-muted"><?php echo e($order->email); ?></small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-soft-dark text-body">
+                                                <?php echo e($order->items->count()); ?> sản phẩm
+                                            </span>
+                                        </td>
+                                        <td class="fw-semibold text-primary"><?php echo e(number_format($order->total)); ?>₫</td>
+                                        <td>
+                                            <span class="badge <?php echo e($paymentStatusClass); ?>">
+                                                <?php echo e(ucfirst($order->payment_status ?? 'N/A')); ?>
 
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
-                <div class="text-muted small">
-                    Trang <?php echo e($orders->currentPage()); ?> / <?php echo e($orders->lastPage()); ?>
+                                            </span>
+                                            <div class="small text-muted">
+                                                <?php echo e(strtoupper($order->payment_method ?? 'COD')); ?>
 
-                </div>
-                <div>
-                    <?php echo e($orders->onEachSide(1)->links('pagination::bootstrap-5')); ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="status-control d-inline-flex align-items-center gap-2"
+                                                 data-order-id="<?php echo e($order->id); ?>"
+                                                 data-current="<?php echo e($currentStatusKey); ?>">
+                                                <span class="status-pill <?php echo e($currentStatus['pill']); ?>">
+                                                    <i class="<?php echo e($currentStatus['icon']); ?> me-1"></i>
+                                                    <?php echo e($currentStatus['label']); ?>
 
+                                                </span>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
+                                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="ri-arrow-down-s-line"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end status-menu">
+                                                        <?php $__currentLoopData = $statusStyles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                            <?php
+                                                                $isActive = $currentStatusKey === $key;
+                                                                $disabled = !in_array($key, $allowedStatuses, true);
+                                                            ?>
+                                                            <button type="button"
+                                                                    class="dropdown-item status-action d-flex justify-content-between align-items-start <?php echo e($isActive ? 'active' : ''); ?> <?php echo e($disabled ? 'disabled' : ''); ?>"
+                                                                    data-status="<?php echo e($key); ?>">
+                                                                <span class="d-flex gap-2">
+                                                                    <span class="status-dot <?php echo e($option['pill']); ?>"></span>
+                                                                    <span>
+                                                                        <span class="fw-semibold d-block"><?php echo e($option['label']); ?></span>
+                                                                        <small class="text-muted"><?php echo e($option['desc']); ?></small>
+                                                                    </span>
+                                                                </span>
+                                                                <i class="ri-check-line status-check <?php echo e($isActive ? '' : 'opacity-0'); ?>"></i>
+                                                            </button>
+                                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><?php echo e(optional($order->created_at)->format('d/m/Y H:i')); ?></td>
+                                        <td><?php echo e($order->updated_at->format('d/m/Y H:i')); ?></td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-soft-primary view-order-detail"
+                                                        data-order='<?php echo json_encode($detailPayload, 15, 512) ?>'>
+                                                    <i class="ri-file-text-line"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-soft-secondary"
+                                                        onclick="window.print()">
+                                                    <i class="ri-printer-line"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <tr>
+                                        <td colspan="10" class="text-muted">Không có đơn hàng hoàn thành / đã hủy trên trang này.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <div class="text-muted small">
+                            Trang: <?php echo e($archivedOrders->currentPage()); ?> / <?php echo e($archivedOrders->lastPage()); ?>
+
+                        </div>
+                        <div>
+                            <?php echo e($archivedOrders->onEachSide(1)->appends(request()->except('archived_page', 'page'))->links('pagination::bootstrap-5')); ?>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -709,17 +924,21 @@
             });
         }
         const statusMeta = {
-            pending: { label: 'Chờ xử lý', class: 'text-warning', icon: 'ri-time-line', pill: 'status-pending', desc: 'Đang đợi xác nhận' },
-            processing: { label: 'Đang xử lý', class: 'text-primary', icon: 'ri-loader-4-line', pill: 'status-processing', desc: 'Đang chuẩn bị & đóng gói' },
-            completed: { label: 'Hoàn tất', class: 'text-success', icon: 'ri-check-double-line', pill: 'status-completed', desc: 'Đơn đã giao thành công' },
-            cancelled: { label: 'Đã hủy', class: 'text-danger', icon: 'ri-close-line', pill: 'status-cancelled', desc: 'Đơn bị hủy theo yêu cầu' }
+            pending:   { label: 'Chờ xác nhận', class: 'text-warning', icon: 'ri-time-line',        pill: 'status-pending',   desc: 'Đơn mới, chờ nhân viên xác nhận' },
+            processing:{ label: 'Đang xử lý',   class: 'text-primary', icon: 'ri-loader-4-line',    pill: 'status-processing',desc: 'Đang chuẩn bị & đóng gói tại kho' },
+            shipping:  { label: 'Chờ giao hàng',class: 'text-info',    icon: 'ri-truck-line',       pill: 'status-shipping',  desc: 'Đã bàn giao cho đơn vị vận chuyển' },
+            completed: { label: 'Hoàn thành',   class: 'text-success', icon: 'ri-check-double-line',pill: 'status-completed', desc: 'Đơn đã giao thành công' },
+            cancelled: { label: 'Đã hủy',       class: 'text-danger',  icon: 'ri-close-line',       pill: 'status-cancelled', desc: 'Đơn bị hủy theo yêu cầu' },
+            returned:  { label: 'Trả hàng/Hoàn tiền', class: 'text-warning', icon: 'ri-refund-2-line', pill: 'status-returned', desc: 'Đơn đã được trả lại hoặc hoàn tiền' },
         };
 
         const statusTransitions = {
-            pending: ['pending', 'processing', 'cancelled'],
-            processing: ['processing', 'completed', 'cancelled'],
+            pending:   ['pending', 'processing', 'cancelled'],
+            processing:['processing', 'shipping', 'cancelled'],
+            shipping:  ['shipping', 'completed', 'returned'],
             completed: ['completed'],
-            cancelled: ['cancelled']
+            cancelled: ['cancelled'],
+            returned:  ['returned'],
         };
 
         function applyStatusUI(control, status) {

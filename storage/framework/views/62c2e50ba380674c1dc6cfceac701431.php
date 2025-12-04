@@ -4,7 +4,7 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="container p-t-40 p-b-60">
-    <style>
+<style>
         .order-tabs{display:flex;gap:20px;overflow-x:auto;margin-bottom:20px;border-bottom:1px solid #f0f0f0;padding-bottom:5px;}
         .order-tab{position:relative;padding-bottom:10px;font-weight:600;color:#666;text-decoration:none;white-space:nowrap;}
         .order-tab.active{color:#ff4d4f;}
@@ -43,8 +43,8 @@
             .order-item{flex-wrap:wrap;}
             .order-item__price{text-align:left;}
             .order-card__footer{flex-direction:column;align-items:flex-start;}
-        }
-    </style>
+}
+</style>
 
     <?php
         $tabLinks = [
@@ -58,7 +58,7 @@
             'cancelled' => 'Đã hủy',
             'returned' => 'Trả hàng/Hoàn tiền',
         ];
-    ?>
+            ?>
 
     <?php if(session('success')): ?>
         <div class="alert alert-success" role="alert"><?php echo e(session('success')); ?></div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Texture;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -22,6 +23,12 @@ class ProductController extends Controller
             }])
             ->get();
         
+        // Lấy danh sách chất liệu đang hoạt động để lọc
+        $textures = Texture::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get();
+        
         // Quick view (server-rendered)
         $quickProduct = null;
         if ($request->filled('quick_view')) {
@@ -31,9 +38,10 @@ class ProductController extends Controller
         }
 
         return view('client.products.index', [
-            'categories' => $categories,
+            'categories'       => $categories,
             'selectedCategory' => $request->category,
-            'quickProduct' => $quickProduct,
+            'quickProduct'     => $quickProduct,
+            'textures'         => $textures,
         ]);
     }
     

@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		sort: 'relevance',
 		minPrice: null,
 		maxPrice: null,
+		textureId: null,
 		page: 1,
 		perPage: config.perPage,
 		isLoading: false
@@ -202,6 +203,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (state.maxPrice !== null && state.maxPrice !== '') {
 			params.max_price = state.maxPrice;
 		}
+		if (state.textureId) {
+			params.texture_id = state.textureId;
+		}
 
 		return params;
 	}
@@ -238,8 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						<div class="block2-pic hov-img0">
 							<img src="${imageUrl}" alt="${escapeHtml(product.name ?? '')}">
 							<a href="${quickViewUrl}" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
-								Xem nhanh
-							</a>
+                                Xem nhanh
+                            </a>
 						</div>
 						<div class="block2-txt flex-w flex-t p-t-14">
 							<div class="block2-txt-child1 flex-col-l">
@@ -302,6 +306,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	function setActivePrice(min, max) {
 		$('.js-price-filter').removeClass('filter-link-active');
 		const selector = `.js-price-filter[data-min="${min ?? ''}"][data-max="${max ?? ''}"]`;
+		const $target = $(selector);
+		if ($target.length) {
+			$target.addClass('filter-link-active');
+		}
+	}
+
+	function setActiveTexture(textureId) {
+		$('.js-texture-filter').removeClass('filter-link-active');
+		const id = textureId ?? '';
+		const selector = `.js-texture-filter[data-texture-id="${id}"]`;
 		const $target = $(selector);
 		if ($target.length) {
 			$target.addClass('filter-link-active');
@@ -379,6 +393,15 @@ document.addEventListener('DOMContentLoaded', function() {
 		fetchProducts();
 	});
 
+	$(document).on('click', '.js-texture-filter', function(e) {
+		e.preventDefault();
+		const textureId = $(this).data('texture-id');
+		state.textureId = textureId ? Number(textureId) : null;
+		state.page = 1;
+		setActiveTexture(textureId || '');
+		fetchProducts();
+	});
+
 	$(document).on('click', '.product-pagination-link', function(e) {
 		e.preventDefault();
 		const targetPage = Number($(this).data('page'));
@@ -402,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	setActiveCategory(state.categoryId || '');
 	setActiveSort(state.sort);
 	setActivePrice('', '');
+	setActiveTexture('');
 
 	fetchProducts();
 });
