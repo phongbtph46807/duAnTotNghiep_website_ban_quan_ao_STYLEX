@@ -8,37 +8,25 @@
 
 			<ul>
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-sort-filter" data-sort="relevance">
 						Mặc Định
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
-						Phổ Biến
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
-						Đánh Giá Trung Bình
-					</a>
-				</li>
-
-				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="newest">
 						Mới Nhất
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="price_asc">
 						Giá: Thấp Đến Cao
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="price_desc">
 						Giá: Cao Đến Thấp
 					</a>
 				</li>
@@ -52,37 +40,37 @@
 
 			<ul>
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-price-filter" data-min="" data-max="">
 						Tất Cả
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="0" data-max="500000">
 						0đ - 500.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="500000" data-max="1000000">
 						500.000đ - 1.000.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="1000000" data-max="1500000">
 						1.000.000đ - 1.500.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="1500000" data-max="2000000">
 						1.500.000đ - 2.000.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
-					<a href="#" class="filter-link stext-106 trans-04">
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="2000000" data-max="">
 						2.000.000đ+
 					</a>
 				</li>

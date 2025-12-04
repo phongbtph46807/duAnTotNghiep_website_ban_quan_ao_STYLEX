@@ -303,8 +303,8 @@
 												</div>
 											</div>
 											@endforeach
-									</div>
-									@endif
+											</div>
+										@endif
 								</div>
 							</div>
 						</div>

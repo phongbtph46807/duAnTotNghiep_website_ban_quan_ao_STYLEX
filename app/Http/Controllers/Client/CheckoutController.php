@@ -55,7 +55,14 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
         $items = $this->baseCartQuery()
-            ->with(['product.productImages', 'product.primaryImage', 'variant.size', 'variant.color', 'variant.texture'])
+            ->with([
+                'product.productImages',
+                'product.primaryImage',
+                'product.productVariants.texture',
+                'variant.size',
+                'variant.color',
+                'variant.texture'
+            ])
             ->get();
 
         // Nếu giỏ hàng trống thì không cho vào trang thanh toán
@@ -74,6 +81,19 @@ class CheckoutController extends Controller
             $price = $this->resolveItemPrice($product, $variant);
             $line = $price * (int) $it->quantity;
             $subtotal += $line;
+
+            $textureNames = [];
+            if ($product && $product->relationLoaded('productVariants')) {
+                $textureNames = $product->productVariants
+                    ->map(function ($variant) {
+                        return optional($variant->texture)->name;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->toArray();
+            }
+
             $cartData[] = [
                 'id' => $it->id,
                 'product' => $product,
@@ -82,6 +102,7 @@ class CheckoutController extends Controller
                 'quantity' => (int) $it->quantity,
                 'price' => $price,
                 'line_total' => $line,
+                'textures' => $textureNames,
             ];
         }
 
@@ -134,6 +155,9 @@ class CheckoutController extends Controller
     public function place(Request $request)
     {
         $request->validate([
+            'buyer_full_name' => 'required|string|max:255',
+            'buyer_phone' => 'required|string|max:30',
+            'buyer_email' => 'nullable|email',
             'full_name' => 'required|string|max:255',
             'phone' => 'required|string|max:30',
             'email' => 'nullable|email',
@@ -183,6 +207,9 @@ class CheckoutController extends Controller
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
                 'code' => 'OD'.strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
+                'buyer_name' => $request->buyer_full_name,
+                'buyer_phone' => $request->buyer_phone,
+                'buyer_email' => $request->buyer_email,
                 'full_name' => $request->full_name,
                 'phone' => $request->phone,
                 'email' => $request->email,
@@ -248,14 +275,62 @@ class CheckoutController extends Controller
         return view('client.orders.track', compact('order'));
     }
 
-    public function orderList() {
+    public function orderList(Request $request) {
         $userId = Auth::id();
         $sessionId = session()->getId();
+        $statusTabs = [
+            'pending' => 'Chờ xác nhận',
+            'processing' => 'Vận chuyển',
+            'shipping' => 'Chờ giao hàng',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+            'returned' => 'Trả hàng/Hoàn tiền',
+        ];
+        $statusFilter = $request->query('status');
+        if ($statusFilter && !array_key_exists($statusFilter, $statusTabs)) {
+            $statusFilter = null;
+        }
+
         $orders = \App\Models\Order::query()
             ->when($userId, function($q) use ($userId){ $q->where('user_id', $userId); })
             ->when(!$userId, function($q) use ($sessionId){ $q->where('session_id', $sessionId); })
-            ->orderByDesc('created_at')->with(['items.product','items.variant.size','items.variant.color','items.variant.texture'])->get();
-        return view('client.orders.index', compact('orders'));
+            ->when($statusFilter, function($q) use ($statusFilter){
+                $q->where('status', $statusFilter);
+            })
+            ->orderByDesc('created_at')
+            ->with([
+                'items.product.productVariants.texture',
+                'items.variant.size',
+                'items.variant.color',
+                'items.variant.texture'
+            ])
+            ->get();
+
+        return view('client.orders.index', [
+            'orders' => $orders,
+            'activeStatus' => $statusFilter,
+            'statusTabs' => $statusTabs,
+        ]);
+    }
+
+    public function cancel(Request $request, Order $order)
+    {
+        $userId = Auth::id();
+        $sessionId = session()->getId();
+
+        if (($order->user_id && $order->user_id !== $userId) ||
+            (!$order->user_id && $order->session_id !== $sessionId)) {
+            abort(403, 'Bạn không có quyền hủy đơn này.');
+        }
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Chỉ có thể hủy các đơn đang ở trạng thái chờ xác nhận.');
+        }
+
+        $order->status = 'cancelled';
+        $order->save();
+
+        return back()->with('success', 'Đơn hàng đã được hủy thành công.');
     }
 }
 

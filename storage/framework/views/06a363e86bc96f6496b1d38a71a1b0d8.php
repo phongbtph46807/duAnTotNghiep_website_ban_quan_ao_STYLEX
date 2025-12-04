@@ -43,11 +43,14 @@
             <?php endif; ?>
             <form method="POST" action="<?php echo e(route('client.checkout.place')); ?>" id="checkout-form">
                 <?php echo csrf_field(); ?>
+                <div class="p-b-10">
+                    <h5 class="co-title" style="font-size:18px;">Thông tin người đặt</h5>
+                </div>
                 <div class="co-grid">
                     <div class="co-col-6">
                         <label class="co-label">Họ và tên *</label>
-                        <input name="full_name" class="co-input" value="<?php echo e(old('full_name', auth()->user()->name ?? '')); ?>" required>
-                        <?php $__errorArgs = ['full_name'];
+                        <input name="buyer_full_name" class="co-input" value="<?php echo e(old('buyer_full_name', optional(auth()->user())->name)); ?>" required>
+                        <?php $__errorArgs = ['buyer_full_name'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -58,6 +61,53 @@ unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Số điện thoại *</label>
+                        <input name="buyer_phone" class="co-input" value="<?php echo e(old('buyer_phone', optional(auth()->user())->phone)); ?>" required>
+                        <?php $__errorArgs = ['buyer_phone'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    </div>
+                    <div class="co-col-6">
+                        <label class="co-label">Email</label>
+                        <input name="buyer_email" type="email" class="co-input" value="<?php echo e(old('buyer_email', optional(auth()->user())->email)); ?>">
+                        <?php $__errorArgs = ['buyer_email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    </div>
+                </div>
+
+                <div class="p-t-20 p-b-10 d-flex align-items-center justify-content-between">
+                    <h5 class="co-title" style="font-size:18px; margin-bottom:0;">Thông tin người nhận</h5>
+                    <label style="font-size:13px; color:#555; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="copy-buyer-info" style="width:16px; height:16px;">
+                        Giống người đặt
+                    </label>
+                </div>
+
+                <div class="co-grid">
+                    <div class="co-col-6">
+                        <label class="co-label">Họ và tên người nhận *</label>
+                        <input name="full_name" class="co-input" value="<?php echo e(old('full_name', optional(auth()->user())->name)); ?>" required>
+                        <?php $__errorArgs = ['full_name'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="co-error"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                    </div>
+                    <div class="co-col-6">
+                        <label class="co-label">Số điện thoại người nhận *</label>
                         <input name="phone" class="co-input" value="<?php echo e(old('phone')); ?>" required>
                         <?php $__errorArgs = ['phone'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -69,8 +119,8 @@ endif;
 unset($__errorArgs, $__bag); ?>
                     </div>
                     <div class="co-col-6">
-                        <label class="co-label">Email</label>
-                        <input name="email" type="email" class="co-input" value="<?php echo e(old('email', auth()->user()->email ?? '')); ?>">
+                        <label class="co-label">Email người nhận</label>
+                        <input name="email" type="email" class="co-input" value="<?php echo e(old('email', optional(auth()->user())->email)); ?>">
                         <?php $__errorArgs = ['email'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -190,13 +240,15 @@ unset($__errorArgs, $__bag); ?>
                                     if ($it['variant'] && $it['variant']->color) {
                                         $variantParts[] = 'Màu: ' . $it['variant']->color->name;
                                     }
-                                    if ($it['variant'] && $it['variant']->texture) {
-                                        $variantParts[] = 'Chất liệu: ' . $it['variant']->texture->name;
-                                    }
                                     $variantDisplay = !empty($variantParts) ? implode(' - ', $variantParts) : '';
+                                    $textures = $it['textures'] ?? [];
+                                    $materialDisplay = !empty($textures) ? 'Chất liệu: ' . implode(', ', $textures) : '';
                                 ?>
                                 <?php if($variantDisplay): ?>
                                     <strong style="display:block; width:100%;"><?php echo e($variantDisplay); ?></strong>
+                                <?php endif; ?>
+                                <?php if($materialDisplay): ?>
+                                    <span style="display:block; margin-top:2px;"><?php echo e($materialDisplay); ?></span>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -280,6 +332,18 @@ unset($__errorArgs, $__bag); ?>
 document.addEventListener('DOMContentLoaded', function(){
     var radios = document.querySelectorAll('input[name="payment_method"]');
     var payOptions = document.querySelectorAll('.pay-option');
+    var buyerFields = {
+        name: document.querySelector('input[name="buyer_full_name"]'),
+        phone: document.querySelector('input[name="buyer_phone"]'),
+        email: document.querySelector('input[name="buyer_email"]')
+    };
+    var receiverFields = {
+        name: document.querySelector('input[name="full_name"]'),
+        phone: document.querySelector('input[name="phone"]'),
+        email: document.querySelector('input[name="email"]')
+    };
+    var copyCheckbox = document.getElementById('copy-buyer-info');
+
     function toggle(){
         var val = document.querySelector('input[name="payment_method"]:checked').value;
         var show = (val === 'online');
@@ -287,8 +351,35 @@ document.addEventListener('DOMContentLoaded', function(){
         var logos = document.getElementById('payment-logos'); if (logos) logos.style.display = show ? 'block' : 'none';
         payOptions.forEach(function(el){ el.classList.toggle('active', el.querySelector('input').checked); });
     }
+
+    function copyBuyerInfo(){
+        if (!buyerFields.name || !receiverFields.name) return;
+        receiverFields.name.value = buyerFields.name.value || '';
+        receiverFields.phone.value = buyerFields.phone ? buyerFields.phone.value || '' : receiverFields.phone.value;
+        if (receiverFields.email && buyerFields.email) {
+            receiverFields.email.value = buyerFields.email.value || '';
+        }
+    }
+
     payOptions.forEach(function(el){ el.addEventListener('click', function(){ var inp = el.querySelector('input'); if (inp) { inp.checked = true; toggle(); } }); });
     radios.forEach(function(r){ r.addEventListener('change', toggle); });
+
+    if (copyCheckbox) {
+        copyCheckbox.addEventListener('change', function(){
+            if (this.checked) {
+                copyBuyerInfo();
+            }
+        });
+    }
+    Object.values(buyerFields).forEach(function(field){
+        if (!field || !copyCheckbox) return;
+        field.addEventListener('input', function(){
+            if (copyCheckbox.checked) {
+                copyBuyerInfo();
+            }
+        });
+    });
+
     toggle();
 });
 </script>

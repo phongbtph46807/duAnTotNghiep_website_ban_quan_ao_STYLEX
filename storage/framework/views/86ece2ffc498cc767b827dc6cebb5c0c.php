@@ -306,8 +306,8 @@
 												</div>
 											</div>
 											<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-									</div>
-									<?php endif; ?>
+											</div>
+										<?php endif; ?>
 								</div>
 							</div>
 						</div>

@@ -9,7 +9,7 @@ if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" required>
+unset($__errorArgs, $__bag); ?>">
         <?php $__errorArgs = ['code'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -30,7 +30,7 @@ if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" required>
+unset($__errorArgs, $__bag); ?>">
             <option value="percent" <?php echo e(old('type', $voucher->type ?? 'percent') === 'percent' ? 'selected' : ''); ?>>Phần trăm (%)</option>
             <option value="fixed" <?php echo e(old('type', $voucher->type ?? '') === 'fixed' ? 'selected' : ''); ?>>Cố định (₫)</option>
         </select>
@@ -47,14 +47,25 @@ unset($__errorArgs, $__bag); ?>
     </div>
     <div class="col-md-4">
         <label class="form-label fw-semibold">Giá trị <span class="text-danger">*</span></label>
-        <input type="number" step="0.01" min="0" name="value" value="<?php echo e(old('value', $voucher->value ?? 0)); ?>" class="form-control <?php $__errorArgs = ['value'];
+        <?php
+            $value = old('value', $voucher->value ?? 0);
+            $valueFormatted = $value ? (fmod($value, 1) == 0 ? number_format($value, 0, ',', '.') : number_format($value, 2, ',', '.')) : '0';
+        ?>
+        <input type="text" 
+               name="value_display" 
+               id="value_display"
+               value="<?php echo e($valueFormatted); ?>" 
+               class="form-control <?php $__errorArgs = ['value'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" required>
+unset($__errorArgs, $__bag); ?>" 
+               placeholder="Nhập giá trị"
+               data-format-number-decimal>
+        <input type="hidden" name="value" id="value" value="<?php echo e($value); ?>">
         <?php $__errorArgs = ['value'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -250,7 +261,7 @@ unset($__errorArgs, $__bag); ?>
 <?php $__env->startPush('scripts'); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Hàm format số với dấu chấm ngăn cách
+    // Hàm format số nguyên với dấu chấm ngăn cách
     function formatNumber(value) {
         if (!value) return '';
         // Loại bỏ tất cả ký tự không phải số
@@ -260,13 +271,66 @@ document.addEventListener('DOMContentLoaded', function() {
         return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
 
-    // Hàm lấy số thực (không có dấu chấm)
+    // Hàm format số thập phân với dấu chấm ngăn cách hàng nghìn và dấu phẩy cho phần thập phân
+    function formatDecimalNumber(value) {
+        if (!value) return '0';
+        var str = value.toString();
+        
+        // Thay tất cả dấu chấm và phẩy thành ký tự tạm để xử lý
+        // Giả sử dấu phẩy hoặc dấu chấm cuối cùng là dấu thập phân
+        var lastComma = str.lastIndexOf(',');
+        var lastDot = str.lastIndexOf('.');
+        var decimalSeparatorPos = Math.max(lastComma, lastDot);
+        
+        if (decimalSeparatorPos > -1) {
+            // Có phần thập phân
+            var integerPart = str.substring(0, decimalSeparatorPos).replace(/[^\d]/g, '');
+            var decimalPart = str.substring(decimalSeparatorPos + 1).replace(/[^\d]/g, '').substring(0, 2);
+            
+            // Format phần nguyên
+            integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            if (!integerPart) integerPart = '0';
+            
+            return decimalPart ? integerPart + ',' + decimalPart : integerPart;
+        } else {
+            // Không có phần thập phân, chỉ format phần nguyên
+            var num = str.replace(/[^\d]/g, '');
+            if (!num) return '0';
+            return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+    }
+
+    // Hàm lấy số thực (không có dấu chấm ngăn cách, dùng dấu chấm cho phần thập phân)
     function getRawNumber(value) {
         if (!value) return '';
         return value.toString().replace(/[^\d]/g, '');
     }
 
-    // Xử lý các trường có data-format-number
+    // Hàm lấy số thập phân thực (không có dấu chấm ngăn cách, dùng dấu chấm cho phần thập phân)
+    function getRawDecimalNumber(value) {
+        if (!value) return '0';
+        var str = value.toString();
+        
+        // Tìm vị trí dấu phân cách thập phân (dấu phẩy hoặc chấm cuối cùng)
+        var lastComma = str.lastIndexOf(',');
+        var lastDot = str.lastIndexOf('.');
+        var decimalSeparatorPos = Math.max(lastComma, lastDot);
+        
+        if (decimalSeparatorPos > -1) {
+            // Có phần thập phân
+            var integerPart = str.substring(0, decimalSeparatorPos).replace(/[^\d]/g, '');
+            var decimalPart = str.substring(decimalSeparatorPos + 1).replace(/[^\d]/g, '').substring(0, 2);
+            
+            if (!integerPart) integerPart = '0';
+            return decimalPart ? integerPart + '.' + decimalPart : integerPart;
+        } else {
+            // Không có phần thập phân
+            var num = str.replace(/[^\d]/g, '');
+            return num || '0';
+        }
+    }
+
+    // Xử lý các trường có data-format-number (số nguyên)
     var formatInputs = document.querySelectorAll('[data-format-number]');
     
     formatInputs.forEach(function(input) {
@@ -296,15 +360,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Xử lý các trường có data-format-number-decimal (số thập phân)
+    var formatDecimalInputs = document.querySelectorAll('[data-format-number-decimal]');
+    
+    formatDecimalInputs.forEach(function(input) {
+        // Format khi người dùng nhập
+        input.addEventListener('input', function(e) {
+            var rawValue = getRawDecimalNumber(e.target.value);
+            var formatted = formatDecimalNumber(e.target.value);
+            e.target.value = formatted;
+            
+            // Cập nhật hidden input tương ứng
+            var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+            if (hiddenInput) {
+                hiddenInput.value = rawValue || '0';
+            }
+        });
+
+        // Format khi blur (rời khỏi trường)
+        input.addEventListener('blur', function(e) {
+            var rawValue = getRawDecimalNumber(e.target.value);
+            var formatted = formatDecimalNumber(e.target.value);
+            e.target.value = formatted;
+            
+            var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+            if (hiddenInput) {
+                hiddenInput.value = rawValue || '0';
+            }
+        });
+    });
+
     // Cập nhật hidden input trước khi submit form
     var form = document.querySelector('form');
     if (form) {
         form.addEventListener('submit', function(e) {
+            // Xử lý số nguyên
             formatInputs.forEach(function(input) {
                 var rawValue = getRawNumber(input.value);
                 var hiddenInput = document.getElementById(input.id.replace('_display', ''));
                 if (hiddenInput) {
                     hiddenInput.value = rawValue || '';
+                }
+            });
+            
+            // Xử lý số thập phân
+            formatDecimalInputs.forEach(function(input) {
+                var rawValue = getRawDecimalNumber(input.value);
+                var hiddenInput = document.getElementById(input.id.replace('_display', ''));
+                if (hiddenInput) {
+                    hiddenInput.value = rawValue || '0';
                 }
             });
         });

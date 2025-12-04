@@ -80,6 +80,21 @@
 					border-bottom-width: 1px;
 					border-bottom-style: solid;
 				}
+				.product-price {
+					display: inline-flex;
+					align-items: center;
+					gap: 6px;
+					flex-wrap: wrap;
+				}
+				.product-price .sale-price {
+					font-weight: 600;
+					color: #111;
+				}
+				.product-price .original-price {
+					text-decoration: line-through;
+					color: #dc3545;
+					font-size: 0.95rem;
+				}
 			</style>
 
 			<div class="flex-w flex-c-m m-tb-10">
@@ -203,13 +218,17 @@ document.addEventListener('DOMContentLoaded', function() {
 				? `${config.indexUrl}?quick_view=${product.id}&category=${state.categoryId}`
 				: `${config.indexUrl}?quick_view=${product.id}`;
 
-			let priceHtml = `<span class="stext-105 cl3">${formatCurrency(product.price)}</span>`;
-			if (product.price_sale && Number(product.price_sale) < Number(product.price)) {
-				priceHtml = `
-					<span class="d-block fw-bold">${formatCurrency(product.price_sale)}</span>
-					<span class="d-block" style="text-decoration: line-through; color: #dc3545;">${formatCurrency(product.price)}</span>
+			const hasSale = product.price_sale && Number(product.price_sale) < Number(product.price);
+			let priceHtml = `<span class="stext-105 cl3 product-price">`;
+			if (hasSale) {
+				priceHtml += `
+					<span class="sale-price">${formatCurrency(product.price_sale)}</span>
+					<span class="original-price">${formatCurrency(product.price)}</span>
 				`;
+			} else {
+				priceHtml += formatCurrency(product.price);
 			}
+			priceHtml += `</span>`;
 
 			const imageUrl = product.default_image_url || product.default_image || config.defaultImage;
 

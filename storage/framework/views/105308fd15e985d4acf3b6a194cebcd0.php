@@ -7,38 +7,46 @@
 						Danh Mục
 					</h4>
 
+					<?php
+						// Lấy danh mục hiển thị ở footer: ưu tiên $categories nếu controller đã truyền
+						$footerCategories = null;
+						if (isset($categories) && $categories instanceof \Illuminate\Support\Collection && $categories->count() > 0) {
+							$footerCategories = $categories->take(4);
+						} else {
+							$footerCategories = \App\Models\Category::query()
+								->where('status', 1)
+								->orderBy('id')
+								->take(4)
+								->get();
+						}
+					?>
 					<ul>
-						<?php if(isset($categories) && $categories->count() > 0): ?>
-							<?php $__currentLoopData = $categories->take(4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+						<?php $__empty_1 = true; $__currentLoopData = $footerCategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index', ['category' => $category->id])); ?>" class="stext-107 cl7 hov-cl1 trans-04">
 									<?php echo e($category->name); ?>
 
 								</a>
 							</li>
-							<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-						<?php else: ?>
+						<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
-									Women
+									Nữ
 								</a>
 							</li>
-
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
-									Men
+									Nam
 								</a>
 							</li>
-
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
-									Shoes
+									Giày dép
 								</a>
 							</li>
-
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
-									Watches
+									Phụ kiện
 								</a>
 							</li>
 						<?php endif; ?>

@@ -22,27 +22,6 @@ class ProductController extends Controller
             }])
             ->get();
         
-        // Query sản phẩm
-        $query = Product::with(['category', 'primaryImage'])
-            ->where('is_active', 1);
-        
-        // Filter theo danh mục (bao gồm cả category con)
-        if ($request->has('category') && $request->category) {
-            $categoryId = $request->category;
-            // Lấy tất cả category con của category được chọn
-            $categoryIds = Category::where('id', $categoryId)
-                ->orWhere('parent_id', $categoryId)
-                ->pluck('id')
-                ->toArray();
-            $query->whereIn('category_id', $categoryIds);
-        }
-        
-        // Sắp xếp mặc định
-        $query->orderBy('created_at', 'desc');
-        
-        // Lấy tất cả sản phẩm (không phân trang)
-        $products = $query->get();
-
         // Quick view (server-rendered)
         $quickProduct = null;
         if ($request->filled('quick_view')) {
@@ -52,7 +31,6 @@ class ProductController extends Controller
         }
 
         return view('client.products.index', [
-            'products' => $products,
             'categories' => $categories,
             'selectedCategory' => $request->category,
             'quickProduct' => $quickProduct,

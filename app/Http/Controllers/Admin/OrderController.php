@@ -50,13 +50,15 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // 📊 Thống kê
+        // 📊 Thống kê theo trạng thái
         $orderStats = Order::selectRaw("
             COUNT(id) as total_orders,
-            SUM(status = 'pending') as pending_orders,
-            SUM(status = 'processing') as processing_orders,
-            SUM(status = 'completed') as completed_orders,
-            SUM(status = 'cancelled') as cancelled_orders
+            SUM(status = 'pending')     as pending_orders,
+            SUM(status = 'processing')  as processing_orders,
+            SUM(status = 'shipping')    as shipping_orders,
+            SUM(status = 'completed')   as completed_orders,
+            SUM(status = 'cancelled')   as cancelled_orders,
+            SUM(status = 'returned')    as returned_orders
         ")->first();
 
         // Phân trang linh hoạt

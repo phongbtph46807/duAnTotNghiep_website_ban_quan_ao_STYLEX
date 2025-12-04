@@ -10,6 +10,7 @@ class Order extends Model
 {
     protected $fillable = [
         'user_id','session_id','code',
+        'buyer_name','buyer_phone','buyer_email',
         'full_name','phone','email','city','address','note',
         'subtotal','shipping_fee','discount',
         'tax_rate_id','tax_amount',

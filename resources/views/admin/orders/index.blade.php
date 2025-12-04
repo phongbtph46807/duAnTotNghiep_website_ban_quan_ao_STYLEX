@@ -112,8 +112,10 @@
         }
         .status-pill.status-pending { background: #fff7ed; color: #c2410c; }
         .status-pill.status-processing { background: #eff6ff; color: #1d4ed8; }
+        .status-pill.status-shipping { background: #e0f2fe; color: #0369a1; }
         .status-pill.status-completed { background: #ecfdf5; color: #059669; }
         .status-pill.status-cancelled { background: #fef2f2; color: #b91c1c; }
+        .status-pill.status-returned { background: #fef3c7; color: #92400e; }
         .btn-icon {
             width: 32px;
             height: 32px;
@@ -140,8 +142,10 @@
         }
         .status-dot.status-pending { background: #fb923c; }
         .status-dot.status-processing { background: #3b82f6; }
+        .status-dot.status-shipping { background: #0ea5e9; }
         .status-dot.status-completed { background: #22c55e; }
         .status-dot.status-cancelled { background: #ef4444; }
+        .status-dot.status-returned { background: #f97316; }
         .status-action.disabled {
             pointer-events: none;
             opacity: 0.5;
@@ -153,21 +157,28 @@
     @php
         $statusStyles = [
             'pending' => [
-                'label' => 'Chờ xử lý',
+                'label' => 'Chờ xác nhận',
                 'class' => 'text-warning',
                 'icon' => 'ri-time-line',
                 'pill' => 'status-pending',
-                'desc' => 'Đang đợi xác nhận'
+                'desc' => 'Đơn mới, chờ nhân viên xác nhận'
             ],
             'processing' => [
                 'label' => 'Đang xử lý',
                 'class' => 'text-primary',
                 'icon' => 'ri-loader-4-line',
                 'pill' => 'status-processing',
-                'desc' => 'Đang chuẩn bị & đóng gói'
+                'desc' => 'Đang chuẩn bị & đóng gói tại kho'
+            ],
+            'shipping' => [
+                'label' => 'Chờ giao hàng',
+                'class' => 'text-info',
+                'icon' => 'ri-truck-line',
+                'pill' => 'status-shipping',
+                'desc' => 'Đã bàn giao cho đơn vị vận chuyển'
             ],
             'completed' => [
-                'label' => 'Hoàn tất',
+                'label' => 'Hoàn thành',
                 'class' => 'text-success',
                 'icon' => 'ri-check-double-line',
                 'pill' => 'status-completed',
@@ -180,12 +191,22 @@
                 'pill' => 'status-cancelled',
                 'desc' => 'Đơn bị hủy theo yêu cầu'
             ],
+            'returned' => [
+                'label' => 'Trả hàng/Hoàn tiền',
+                'class' => 'text-warning',
+                'icon' => 'ri-refund-2-line',
+                'pill' => 'status-returned',
+                'desc' => 'Đơn đã được trả lại hoặc hoàn tiền'
+            ],
         ];
+        // Quy tắc chuyển trạng thái hợp lệ
         $statusTransitions = [
             'pending' => ['pending', 'processing', 'cancelled'],
-            'processing' => ['processing', 'completed', 'cancelled'],
+            'processing' => ['processing', 'shipping', 'cancelled'],
+            'shipping' => ['shipping', 'completed', 'returned'],
             'completed' => ['completed'],
             'cancelled' => ['cancelled'],
+            'returned' => ['returned'],
         ];
     @endphp
 

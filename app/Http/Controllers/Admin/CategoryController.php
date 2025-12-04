@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Category\StoreCategoryRequest;
+use App\Http\Requests\Admin\Category\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Traits\LoggableTrait;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class CategoryController extends Controller
 {
@@ -73,15 +76,9 @@ class CategoryController extends Controller
         }
     }
 
-    public function update(Request $request, $id){
+    public function update(UpdateCategoryRequest $request, $id){
         try {
             $category = Category::findOrFail($id);
-            
-            $request->validate([
-                'category_name' => 'required|unique:categories,name,' . $id,
-                'parent_id' => 'nullable|exists:categories,id|not_in:' . $id,
-                'status' => 'required|in:0,1'
-            ]);
 
             $oldStatus = $category->status;
             $newStatus = $request->status;
@@ -120,12 +117,18 @@ class CategoryController extends Controller
                 'success' => true,
                 'msg' => 'Cập nhật danh mục thành công!'
             ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             $this->logError($e);
             return response()->json([
                 'success' => false,
                 'msg' => 'Có lỗi xảy ra khi cập nhật danh mục: ' . $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -157,30 +160,29 @@ class CategoryController extends Controller
             ]);
         }
     }
-    public function store(Request $request){
+    public function store(StoreCategoryRequest $request){
         try {
-            //code...
-            $request->validate([
-                'category_name' => 'required|unique:categories,name',
-                'parent_id' => 'nullable|exists:categories,id'
-            ]);
-
             Category::create([
                 'name' => $request->category_name,
                 'parent_id' => $request->parent_id 
-
             ]);
 
            return response()->json([
                 'success' => true,
                 'msg' => 'Thêm Danh Mục Thành Công!'
            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'msg' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
                $this->logError($e);
                 return response()->json([
                 'success' => false,
                 'msg' => $e->getMessage()
-           ]);
+           ], 500);
         }
     }
 

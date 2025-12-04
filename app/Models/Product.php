@@ -40,6 +40,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
     public function productVariants()
     {
         return $this->hasMany(ProductVariant::class);
@@ -48,6 +53,16 @@ class Product extends Model
     public function productImages()
     {
         return $this->hasMany(ProductImage::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+    
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
     }
 
     public function primaryImage()
