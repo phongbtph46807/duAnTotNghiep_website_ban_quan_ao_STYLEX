@@ -94,6 +94,57 @@ class User extends Authenticatable
         return $this->role === $role;
     }
 
+    /**
+     * Kiểm tra user có permission không thông qua role
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        // Map role integer sang role name
+        $roleName = match($this->role) {
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_STAFF => 'Staff',
+            default => null
+        };
+
+        if (!$roleName) {
+            return false;
+        }
+
+        // Lấy role từ database
+        $role = Role::where('name', $roleName)->first();
+        
+        if (!$role) {
+            return false;
+        }
+
+        // Kiểm tra role có permission này không
+        return $role->permissions()->where('name', $permissionName)->exists();
+    }
+
+    /**
+     * Lấy tất cả permissions của user thông qua role
+     */
+    public function getPermissions()
+    {
+        $roleName = match($this->role) {
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_STAFF => 'Staff',
+            default => null
+        };
+
+        if (!$roleName) {
+            return collect([]);
+        }
+
+        $role = Role::where('name', $roleName)->first();
+        
+        if (!$role) {
+            return collect([]);
+        }
+
+        return $role->permissions;
+    }
+
     // Dynamic RBAC relations (Phase 2)
     public function roles()
     {
