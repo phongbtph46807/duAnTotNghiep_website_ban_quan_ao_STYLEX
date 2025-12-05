@@ -120,7 +120,7 @@ unset($__errorArgs, $__bag); ?>
                                     <?php if($roles && $roles->count() > 0): ?>
                                         <div class="d-flex flex-wrap gap-3">
                                             <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                <div class="form-check">
+                                        <div class="form-check">
                                                     <input class="form-check-input <?php $__errorArgs = ['role_ids'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -140,7 +140,7 @@ unset($__errorArgs, $__bag); ?>"
                                                         <?php if($role->description): ?>
                                                             <small class="text-muted d-block"><?php echo e($role->description); ?></small>
                                                         <?php endif; ?>
-                                                    </label>
+                                            </label>
                                                 </div>
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>

@@ -159,7 +159,7 @@ class RoleEntityController extends Controller
             }
 
             // Xóa role
-            $role->delete();
+        $role->delete();
             
             return redirect()->route('admin.rbac.roles.index')
                 ->with('success', 'Đã xóa role thành công');

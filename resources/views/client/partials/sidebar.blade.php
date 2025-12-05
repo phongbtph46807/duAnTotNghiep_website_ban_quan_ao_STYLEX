@@ -11,9 +11,15 @@
 							Trợ giúp & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
+						@auth
+							<a href="{{ route('client.profile.index') }}" class="flex-c-m trans-04 p-lr-25">
+								Tài Khoản
+							</a>
+						@else
+							<a href="{{ route('loginView') }}" class="flex-c-m trans-04 p-lr-25">
 							Tài Khoản
 						</a>
+						@endauth
 
 					</div>
 				</div>
@@ -85,6 +91,34 @@
 								$currentTier = $loyaltyService->getCurrentTier($authUser);
 								$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
 								$totalSpent = $authUser->getTotalSpent();
+								
+								// Tính toán màu sắc cho badge
+								$tierBgColor = '#b9f2ff';
+								$tierTextColor = '#fff';
+								if ($currentTier) {
+									if ($currentTier->name === 'Bronze') {
+										$tierBgColor = '#cd7f32';
+									} elseif ($currentTier->name === 'Silver') {
+										$tierBgColor = '#c0c0c0';
+									} elseif ($currentTier->name === 'Gold') {
+										$tierBgColor = '#ffd700';
+										$tierTextColor = '#000';
+									} elseif ($currentTier->name === 'Platinum') {
+										$tierBgColor = '#e5e4e2';
+										$tierTextColor = '#000';
+									}
+								}
+								
+								// Tính toán progress width
+								$progressWidth = 0;
+								if ($nextTierProgress) {
+									$progressWidth = min(100, $nextTierProgress['progress']);
+								}
+								
+								// Tính toán các style strings
+								$badgeStyle = "background: {$tierBgColor}; color: {$tierTextColor}; font-size: 9px; padding: 2px 5px; border-radius: 3px; line-height: 1.2; flex-shrink: 0;";
+								$badgeStyleLarge = "background: {$tierBgColor}; color: {$tierTextColor}; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600;";
+								$progressStyle = "background: #6777ef; height: 100%; width: {$progressWidth}%; transition: width 0.3s;";
 							@endphp
 							<!-- User đã đăng nhập -->
 							<div class="dropdown">
@@ -92,7 +126,7 @@
 									<i class="zmdi zmdi-account"></i>
 									<span class="ml-2" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $authUser->name ?? 'Tài khoản' }}</span>
 									@if($currentTier)
-										<span class="badge" style="background: {{ $currentTier->name === 'Bronze' ? '#cd7f32' : ($currentTier->name === 'Silver' ? '#c0c0c0' : ($currentTier->name === 'Gold' ? '#ffd700' : ($currentTier->name === 'Platinum' ? '#e5e4e2' : '#b9f2ff'))) }}; color: {{ in_array($currentTier->name, ['Gold', 'Platinum']) ? '#000' : '#fff' }}; font-size: 9px; padding: 2px 5px; border-radius: 3px; line-height: 1.2; flex-shrink: 0;">
+										<span class="badge" {!! 'style="' . $badgeStyle . '"' !!}>
 											{{ $currentTier->name }}
 										</span>
 									@endif
@@ -104,7 +138,7 @@
 												<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
 													<div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
 														<span style="font-size: 11px; color: #666; font-weight: 500;">Hạng:</span>
-														<span class="badge" style="background: {{ $currentTier->name === 'Bronze' ? '#cd7f32' : ($currentTier->name === 'Silver' ? '#c0c0c0' : ($currentTier->name === 'Gold' ? '#ffd700' : ($currentTier->name === 'Platinum' ? '#e5e4e2' : '#b9f2ff'))) }}; color: {{ in_array($currentTier->name, ['Gold', 'Platinum']) ? '#000' : '#fff' }}; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600;">
+														<span class="badge" {!! 'style="' . $badgeStyleLarge . '"' !!}>
 															{{ $currentTier->name }}
 														</span>
 														@if($currentTier->discount_rate > 0)
@@ -121,7 +155,7 @@
 																Lên <strong>{{ $nextTierProgress['next_tier']->name }}</strong> còn: <strong style="color: #6777ef;">{{ number_format($nextTierProgress['remaining'], 0, ',', '.') }} ₫</strong>
 															</div>
 															<div style="background: #f0f0f0; border-radius: 4px; height: 6px; overflow: hidden;">
-																<div style="background: #6777ef; height: 100%; width: {{ min(100, $nextTierProgress['progress']) }}%; transition: width 0.3s;"></div>
+																<div {!! 'style="' . $progressStyle . '"' !!}></div>
 															</div>
 														</div>
 													@endif
@@ -130,7 +164,7 @@
 										</div>
 									</div>
 									<div class="dropdown-divider"></div>
-									<a class="dropdown-item" href="#">
+									<a class="dropdown-item" href="{{ route('client.profile.index') }}">
 										<i class="zmdi zmdi-account-circle me-2"></i>
 										Hồ sơ cá nhân
 									</a>

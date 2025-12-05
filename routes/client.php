@@ -6,6 +6,8 @@ use App\Http\Controllers\Client\ProductController as ClientProductController;
 use App\Http\Controllers\Client\CartController;
 use App\Http\Controllers\Client\CheckoutController;
 use App\Http\Controllers\Client\BlogController;
+use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Client\AddressController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 
@@ -71,6 +73,23 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 // User dashboard (khách đăng nhập)
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
     Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
+    
+    // Profile routes
+    Route::prefix('profile')->as('client.profile.')->group(function(){
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
+        Route::put('/', [ProfileController::class, 'update'])->name('update');
+        
+        // Address routes
+        Route::prefix('addresses')->as('addresses.')->group(function(){
+            Route::get('/', [AddressController::class, 'index'])->name('index');
+            Route::get('/create', [AddressController::class, 'create'])->name('create');
+            Route::post('/', [AddressController::class, 'store'])->name('store');
+            Route::get('/{address}/edit', [AddressController::class, 'edit'])->name('edit');
+            Route::put('/{address}', [AddressController::class, 'update'])->name('update');
+            Route::delete('/{address}', [AddressController::class, 'destroy'])->name('destroy');
+            Route::post('/{address}/set-default', [AddressController::class, 'setDefault'])->name('set-default');
+        });
+    });
 });
 
 

@@ -80,7 +80,7 @@
                                     @if($roles && $roles->count() > 0)
                                         <div class="d-flex flex-wrap gap-3">
                                             @foreach($roles as $role)
-                                                <div class="form-check">
+                                        <div class="form-check">
                                                     <input class="form-check-input @error('role_ids') is-invalid @enderror" 
                                                            type="checkbox" 
                                                            name="role_ids[]" 
@@ -92,7 +92,7 @@
                                                         @if($role->description)
                                                             <small class="text-muted d-block">{{ $role->description }}</small>
                                                         @endif
-                                                    </label>
+                                            </label>
                                                 </div>
                                             @endforeach
                                         </div>
