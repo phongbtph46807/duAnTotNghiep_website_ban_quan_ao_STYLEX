@@ -40,8 +40,8 @@
 			</a>
 		@else
 			<a href="{{ route('loginView') }}" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
-				<i class="zmdi zmdi-account"></i>
-			</a>
+						<i class="zmdi zmdi-account"></i>
+					</a>
 		@endauth
 			
 			</div>
@@ -106,12 +106,12 @@
 					<li>
 						<a href="#" class="js-toggle-account-menu">Tài Khoản</a>
 						<ul class="sub-menu-m account-menu-mobile">
-							<li>
+				<li>
 								<div style="padding: 10px 15px; border-bottom: 1px solid #eee;">
 									<div style="font-weight: 600;">{{ Auth::user()->name ?? '' }}</div>
 									<div style="font-size: 12px; color: #666;">{{ Auth::user()->email ?? '' }}</div>
 								</div>
-							</li>
+				</li>
 							<li><a href="{{ route('client.order.list') }}"><i class="zmdi zmdi-shopping-cart" style="margin-right: 8px;"></i>Đơn hàng của tôi</a></li>
 							<li><a href="{{ route('client.order.track') }}"><i class="zmdi zmdi-search" style="margin-right: 8px;"></i>Tra cứu đơn hàng</a></li>
 							<li><a href="#"><i class="zmdi zmdi-favorite" style="margin-right: 8px;"></i>Yêu thích</a></li>
@@ -127,7 +127,7 @@
 						<span class="arrow-main-menu-m">
 							<i class="fa fa-angle-right" aria-hidden="true"></i>
 						</span>
-					</li>
+				</li>
 				@endauth
 			</ul>
 		</div>

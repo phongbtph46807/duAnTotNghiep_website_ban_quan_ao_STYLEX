@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Quản lý Admin & Staff')
+@section('title', 'Quản lý tài khoản có quyền')
 
 @section('content')
 <div class="container-fluid">
@@ -8,11 +8,11 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lý Admin & Staff</h4>
+                <h4 class="mb-sm-0">Quản lý tài khoản có quyền</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Quản lý Admin & Staff</li>
+                        <li class="breadcrumb-item active">Quản lý tài khoản có quyền</li>
                     </ol>
                 </div>
             </div>
@@ -25,15 +25,16 @@
         <div class="col-12">
             <div class="alert alert-info border-0" role="alert">
                 <h5 class="alert-heading">
-                    <i class="ri-information-line me-2"></i>Hướng dẫn quản lý Admin & Staff
+                    <i class="ri-information-line me-2"></i>Hướng dẫn quản lý tài khoản có quyền
                 </h5>
                 <p class="mb-2">
-                    <strong>Quy trình quản lý Admin & Staff:</strong>
+                    <strong>Quy trình quản lý tài khoản có quyền:</strong>
                 </p>
                 <ol class="mb-0">
-                    <li><strong>Quản lý Admin:</strong> Tạo và quản lý tài khoản Admin</li>
-                    <li><strong>Quản lý Staff:</strong> Tạo và quản lý tài khoản Staff</li>
-                    <li><strong>Thay đổi quyền:</strong> Chọn người dùng → "Thay đổi quyền" → Chọn Admin hoặc Staff</li>
+                    <li><strong>Tạo tài khoản:</strong> Tạo tài khoản mới và gán vai trò, quyền cụ thể</li>
+                    <li><strong>Quản lý vai trò:</strong> Gán một hoặc nhiều vai trò cho tài khoản</li>
+                    <li><strong>Phân quyền:</strong> Gán các quyền cụ thể cho tài khoản</li>
+                    <li><strong>Thay đổi quyền:</strong> Chọn người dùng → "Thay đổi quyền" → Chọn vai trò mới</li>
                     <li><strong>Cập nhật hàng loạt:</strong> Chọn nhiều người dùng → "Cập nhật hàng loạt" → Chọn vai trò mới</li>
                 </ol>
             </div>
@@ -51,63 +52,66 @@
                         </div>
                         <div class="flex-shrink-0">
                             <h5 class="text-primary fs-14 mb-0">
-                                <i class="ri-arrow-up-s-line fs-13 align-middle"></i>
+                                <i class="ri-user-line fs-13 align-middle"></i>
                             </h5>
                         </div>
                     </div>
                     <div class="d-flex align-items-center mt-3">
                         <div class="flex-grow-1">
-                            <h4 class="fs-22 fw-semibold ff-secondary mb-0">{{ $roleStats->total_users ?? 0 }}</h4>
+                            <h4 class="fs-22 fw-semibold ff-secondary mb-0">{{ $totalUsers ?? 0 }}</h4>
                         </div>
                     </div>
+                    <p class="text-muted mb-0 mt-1">
+                        <small>Tài khoản có quyền</small>
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card card-animate">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1 overflow-hidden">
-                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Admin</p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <h5 class="text-danger fs-14 mb-0">
-                                <i class="ri-arrow-down-s-line fs-13 align-middle"></i>
-                            </h5>
+        @if(isset($roleStats) && count($roleStats) > 0)
+            @foreach($roleStats as $stat)
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-animate">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <p class="text-uppercase fw-medium text-muted text-truncate mb-0">
+                                        {{ $stat['role']->name }}
+                                    </p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <h5 class="text-info fs-14 mb-0">
+                                        <i class="ri-shield-user-line fs-13 align-middle"></i>
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mt-3">
+                                <div class="flex-grow-1">
+                                    <h4 class="fs-22 fw-semibold ff-secondary mb-0">{{ $stat['count'] }}</h4>
+                                </div>
+                            </div>
+                            @if($stat['role']->description)
+                                <p class="text-muted mb-0 mt-1">
+                                    <small>{{ Str::limit($stat['role']->description, 30) }}</small>
+                                </p>
+                            @endif
                         </div>
                     </div>
-                    <div class="d-flex align-items-center mt-3">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-22 fw-semibold ff-secondary mb-0">{{ $roleStats->admin_count ?? 0 }}</h4>
+                </div>
+            @endforeach
+        @else
+            <div class="col-xl-9 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            <i class="ri-information-line me-2"></i>
+                            Chưa có vai trò nào trong hệ thống. 
+                            <a href="{{ route('admin.rbac.roles.create') }}" class="alert-link">Tạo vai trò mới</a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card card-animate">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1 overflow-hidden">
-                            <p class="text-uppercase fw-medium text-muted text-truncate mb-0">Staff</p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <h5 class="text-warning fs-14 mb-0">
-                                <i class="ri-arrow-up-s-line fs-13 align-middle"></i>
-                            </h5>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center mt-3">
-                        <div class="flex-grow-1">
-                            <h4 class="fs-22 fw-semibold ff-secondary mb-0">{{ $roleStats->staff_count ?? 0 }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        @endif
     </div>
 
     <!-- Filter and Search -->
