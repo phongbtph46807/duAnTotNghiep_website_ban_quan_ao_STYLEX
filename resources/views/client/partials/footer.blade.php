@@ -54,31 +54,31 @@
 
 				<div class="col-sm-6 col-lg-3 p-b-50">
 					<h4 class="stext-301 cl0 p-b-30">
-						Help
+						Hỗ trợ
 					</h4>
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Track Order
+							<a href="{{ route('client.order.track') }}" class="stext-107 cl7 hov-cl1 trans-04">
+								Theo dõi đơn hàng
 							</a>
 						</li>
 
 						<li class="p-b-10">
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Returns 
+								Đổi trả hàng
 							</a>
 						</li>
 
 						<li class="p-b-10">
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Shipping
+								Vận chuyển
 							</a>
 						</li>
 
 						<li class="p-b-10">
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								FAQs
+								Câu hỏi thường gặp
 							</a>
 						</li>
 					</ul>
@@ -86,11 +86,11 @@
 
 				<div class="col-sm-6 col-lg-3 p-b-50">
 					<h4 class="stext-301 cl0 p-b-30">
-						GET IN TOUCH
+						Liên hệ
 					</h4>
 
 					<p class="stext-107 cl7 size-201">
-						Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
+						Có câu hỏi? Hãy đến cửa hàng của chúng tôi hoặc liên hệ với chúng tôi qua số điện thoại để được hỗ trợ tốt nhất.
 					</p>
 
 					<div class="p-t-27">
@@ -110,7 +110,7 @@
 
 				<div class="col-sm-6 col-lg-3 p-b-50">
 					<h4 class="stext-301 cl0 p-b-30">
-						Newsletter
+						Đăng ký nhận tin
 					</h4>
 
 					<form>
@@ -121,7 +121,7 @@
 
 						<div class="p-t-18">
 							<button class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
-								Subscribe
+								Đăng ký
 							</button>
 						</div>
 					</form>
@@ -152,7 +152,7 @@
 				</div>
 
 				<p class="stext-107 cl6 txt-center">
-					Copyright &copy;2025
+					Bản quyền &copy; 2025 STYLEX. Tất cả các quyền được bảo lưu.
 			</div>
 		</div>
 	</footer>

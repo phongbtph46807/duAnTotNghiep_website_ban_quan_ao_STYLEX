@@ -31,7 +31,10 @@ unset($__errorArgs, $__bag); ?>
               <div class="col-md-3 mb-2">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" name="permission_ids[]" value="<?php echo e($perm->id); ?>" id="perm_<?php echo e($perm->id); ?>" <?php echo e(in_array($perm->id, $assigned) ? 'checked' : ''); ?>>
-                  <label class="form-check-label" for="perm_<?php echo e($perm->id); ?>"><?php echo e($perm->name); ?></label>
+                  <label class="form-check-label" for="perm_<?php echo e($perm->id); ?>" title="<?php echo e($perm->name); ?>">
+                    <?php echo e($perm->description ?? $perm->name); ?>
+
+                  </label>
                 </div>
               </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

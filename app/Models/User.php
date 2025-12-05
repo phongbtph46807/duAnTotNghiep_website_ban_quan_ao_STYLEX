@@ -155,4 +155,37 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Permission::class, 'permission_user', 'user_id', 'permission_id');
     }
+
+    /**
+     * Lấy thông tin hạng thành viên của user
+     */
+    public function userLoyalty()
+    {
+        return $this->hasOne(UserLoyalty::class);
+    }
+
+    /**
+     * Lấy hạng thành viên hiện tại của user
+     */
+    public function getCurrentLoyaltyTier()
+    {
+        return $this->userLoyalty?->loyaltyTier;
+    }
+
+    /**
+     * Lấy tổng chi tiêu của user
+     */
+    public function getTotalSpent()
+    {
+        return $this->userLoyalty?->total_spent ?? 0;
+    }
+
+    /**
+     * Lấy tỷ lệ giảm giá của hạng thành viên hiện tại
+     */
+    public function getLoyaltyDiscountRate()
+    {
+        $tier = $this->getCurrentLoyaltyTier();
+        return $tier ? (float) $tier->discount_rate : 0;
+    }
 }

@@ -16,7 +16,8 @@ class Order extends Model
         'tax_rate_id','tax_amount',
         'shipping_carrier_id',
         'total',
-        'payment_method','payment_status','status'
+        'payment_method','payment_status','status',
+        'momo_order_id','momo_trans_id'
     ];
 
     protected $casts = [
@@ -52,5 +53,3 @@ class Order extends Model
         return $this->hasMany(Review::class);
     }
 }
-
-

@@ -42,11 +42,14 @@ Route::prefix('cart')->as('client.cart.')->group(function () {
 Route::prefix('checkout')->as('client.checkout.')->group(function(){
     Route::get('/', [CheckoutController::class, 'index'])->name('index');
     Route::post('/place', [CheckoutController::class, 'place'])->name('place');
+    Route::get('/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('vnpayReturn');
 });
 
 Route::get('/checkout/thankyou/{id}', [CheckoutController::class, 'thankyou'])->name('client.checkout.thankyou');
 Route::get('/order/track', [CheckoutController::class, 'track'])->name('client.order.track');
 Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('client.order.list');
+// TODO: Uncomment when invoice method is ready
+// Route::get('/order/invoice/{code}', [CheckoutController::class, 'invoice'])->name('client.order.invoice');
 Route::post('/order/{order}/cancel', [CheckoutController::class, 'cancel'])->name('client.order.cancel');
 Route::post('/order/review', [CheckoutController::class, 'storeReview'])->name('client.order.review');
 

@@ -28,7 +28,7 @@ class ProductController extends Controller
             ->where('status', 1)
             ->orderBy('name')
             ->get();
-        
+
         // Quick view (server-rendered)
         $quickProduct = null;
         if ($request->filled('quick_view')) {
@@ -62,7 +62,7 @@ class ProductController extends Controller
         ])
             ->where('is_active', 1)
             ->findOrFail($id);
-
+        
         // Lấy sản phẩm liên quan (cùng danh mục)
         $relatedProducts = Product::with(['category', 'primaryImage'])
             ->where('is_active', 1)
@@ -70,7 +70,7 @@ class ProductController extends Controller
             ->where('id', '!=', $product->id)
             ->limit(8)
             ->get();
-
+        
         // === Lấy tất cả review của sản phẩm (chỉ public) ===
         $reviews = $product->reviews()
             ->where('status', 'public')

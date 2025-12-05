@@ -112,15 +112,24 @@
 
             <?php $__currentLoopData = $order->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <div class="order-item">
-                    <img src="<?php echo e($item->product->default_image_url ?? asset('client/images/product/product-01.jpg')); ?>" alt="IMG">
+                    <?php
+                        $product = $item->product;
+                        // Nếu product null, thử load lại với withTrashed
+                        if (!$product && $item->product_id) {
+                            $product = \App\Models\Product::withTrashed()->find($item->product_id);
+                        }
+                        $productName = $product ? $product->name : ('Sản phẩm #' . $item->product_id);
+                        $productImage = $product ? ($product->default_image_url ?? asset('client/images/product/product-01.jpg')) : asset('client/images/product/product-01.jpg');
+                    ?>
+                    <img src="<?php echo e($productImage); ?>" alt="<?php echo e($productName); ?>">
                     <div class="order-item__info">
-                        <div class="order-item__name"><?php echo e($item->product->name ?? 'Sản phẩm'); ?></div>
+                        <div class="order-item__name"><?php echo e($productName); ?></div>
                         <?php
                             $parts = [];
                             if($item->variant && $item->variant->size){ $parts[] = 'Size: '.$item->variant->size->name; }
                             if($item->variant && $item->variant->color){ $parts[] = 'Màu: '.$item->variant->color->name; }
-                            $textureNames = $item->product && $item->product->relationLoaded('productVariants')
-                                ? $item->product->productVariants
+                            $textureNames = $product && $product->relationLoaded('productVariants')
+                                ? $product->productVariants
                                     ->map(fn($variant) => optional($variant->texture)->name)
                                     ->filter()
                                     ->unique()
@@ -135,6 +144,26 @@
                         ?>
                         <?php if(!empty($parts)): ?>
                             <div class="order-item__attrs"><?php echo e(implode(' - ', $parts)); ?></div>
+                        <?php endif; ?>
+                        
+                        <?php if(in_array($order->status, ['completed', 'delivered'])): ?>
+                            <div class="mt-2">
+                                <?php if(isset($item->is_reviewed) && $item->is_reviewed): ?>
+                                    <span class="text-success" style="font-size:12px;">
+                                        ✓ Đã đánh giá
+                                    </span>
+                                <?php else: ?>
+                                    <button type="button" 
+                                            class="btn-review-item" 
+                                            data-order-id="<?php echo e($order->id); ?>"
+                                            data-item-id="<?php echo e($item->id); ?>"
+                                            data-product-id="<?php echo e($item->product_id); ?>"
+                                            data-product-name="<?php echo e($productName); ?>"
+                                            style="background:#6777ef;color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;">
+                                        ★ Đánh giá
+                                    </button>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
                     </div>
                     <div class="order-item__price">
@@ -162,7 +191,175 @@
         </div>
     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 </div>
-<?php $__env->stopSection(); ?>
 
+
+<div id="reviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:90vh;overflow-y:auto;position:relative;">
+        <button type="button" id="closeReviewModal" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
+        <h5 style="margin-bottom:20px;font-weight:600;">Đánh giá sản phẩm</h5>
+        
+        <form id="reviewForm" method="POST" action="<?php echo e(route('client.order.review')); ?>">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="order_id" id="reviewOrderId">
+            <input type="hidden" name="order_item_id" id="reviewItemId">
+            <input type="hidden" name="rating" id="reviewRating">
+            
+            <div style="margin-bottom:16px;">
+                <strong id="reviewProductName"></strong>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;margin-bottom:8px;font-weight:600;">Đánh giá của bạn:</label>
+                <div class="star-rating-review" id="starRatingReview" style="display:flex;gap:4px;">
+                    <?php for($i = 1; $i <= 5; $i++): ?>
+                        <span class="star-review" data-rating="<?php echo e($i); ?>" style="font-size:24px;color:#ddd;cursor:pointer;">★</span>
+                    <?php endfor; ?>
+                </div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;margin-bottom:8px;font-weight:600;">Nội dung đánh giá (tùy chọn):</label>
+                <textarea name="content" id="reviewContent" rows="4" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:14px;resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" id="closeReviewModalBtn" style="padding:8px 16px;background:#f0f0f0;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Đóng</button>
+                <button type="submit" id="submitReviewBtn" style="padding:8px 16px;background:#6777ef;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Gửi đánh giá</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    let currentOrderId = null;
+    let currentItemId = null;
+    let selectedRating = 0;
+    let reviewModal = null;
+
+    function openModal() {
+        if (reviewModal) {
+            reviewModal.style.display = 'flex';
+        }
+    }
+
+    function closeModal() {
+        if (reviewModal) {
+            reviewModal.style.display = 'none';
+        }
+    }
+
+    function highlightStars(rating) {
+        document.querySelectorAll('.star-review').forEach(function(star, index) {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#ddd';
+            }
+        });
+    }
+
+    function resetStars() {
+        document.querySelectorAll('.star-review').forEach(function(star) {
+            star.style.color = '#ddd';
+        });
+    }
+
+    function initReviewModal() {
+        reviewModal = document.getElementById('reviewModal');
+        if (!reviewModal) {
+            console.error('Review modal not found');
+            return;
+        }
+
+        // Xử lý click nút đánh giá
+        const reviewButtons = document.querySelectorAll('.btn-review-item');
+        console.log('Found review buttons:', reviewButtons.length);
+        
+        reviewButtons.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Review button clicked', this.dataset);
+                currentOrderId = this.dataset.orderId;
+                currentItemId = this.dataset.itemId;
+                const productNameEl = document.getElementById('reviewProductName');
+                if (productNameEl) {
+                    productNameEl.textContent = this.dataset.productName || 'Sản phẩm';
+                }
+                selectedRating = 0;
+                resetStars();
+                const contentEl = document.getElementById('reviewContent');
+                if (contentEl) {
+                    contentEl.value = '';
+                }
+                openModal();
+            });
+        });
+
+        // Đóng modal khi click nút đóng
+        const closeBtn1 = document.getElementById('closeReviewModal');
+        const closeBtn2 = document.getElementById('closeReviewModalBtn');
+        if (closeBtn1) closeBtn1.addEventListener('click', closeModal);
+        if (closeBtn2) closeBtn2.addEventListener('click', closeModal);
+        
+        // Đóng modal khi click bên ngoài
+        reviewModal.addEventListener('click', function(e) {
+            if (e.target === reviewModal) {
+                closeModal();
+            }
+        });
+
+        // Xử lý đánh giá sao
+        document.querySelectorAll('.star-review').forEach(function(star) {
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+            });
+            
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                highlightStars(selectedRating);
+            });
+        });
+
+        const starRatingEl = document.getElementById('starRatingReview');
+        if (starRatingEl) {
+            starRatingEl.addEventListener('mouseleave', function() {
+                highlightStars(selectedRating);
+            });
+        }
+
+        // Xử lý submit review form
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                if (selectedRating === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn số sao đánh giá!');
+                    return false;
+                }
+
+                // Set giá trị vào hidden inputs
+                document.getElementById('reviewOrderId').value = currentOrderId;
+                document.getElementById('reviewItemId').value = currentItemId;
+                document.getElementById('reviewRating').value = selectedRating;
+
+                // Disable button để tránh submit nhiều lần
+                const submitBtn = document.getElementById('submitReviewBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Đang gửi...';
+                }
+            });
+        }
+    }
+
+    // Khởi tạo khi DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initReviewModal);
+    } else {
+        initReviewModal();
+    }
+})();
+</script>
+<?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\orders\index.blade.php ENDPATH**/ ?>

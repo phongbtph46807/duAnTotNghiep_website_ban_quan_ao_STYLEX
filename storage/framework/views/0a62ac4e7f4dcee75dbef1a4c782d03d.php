@@ -33,9 +33,16 @@
 			<i class="zmdi zmdi-favorite-outline"></i>
 		</a>
 											
-					<a href="login.html" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+		<?php if(auth()->guard()->check()): ?>
+			<?php $authUser = Auth::user(); ?>
+			<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-account-menu">
+				<i class="zmdi zmdi-account"></i>
+			</a>
+		<?php else: ?>
+			<a href="<?php echo e(route('loginView')); ?>" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
 						<i class="zmdi zmdi-account"></i>
 					</a>
+		<?php endif; ?>
 			
 			</div>
 
@@ -80,36 +87,48 @@
 
 			<ul class="main-menu-m">
 				<li>
-					<a href="index.html">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
+					<a href="<?php echo e(route('home')); ?>">Trang Chủ</a>
 				</li>
 
 				<li>
-					<a href="product.html">Shop</a>
+					<a href="<?php echo e(route('client.products.index')); ?>">Sản Phẩm</a>
 				</li>
 
 				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
+					<a href="<?php echo e(route('blog.index')); ?>">Blog</a>
 				</li>
 
 				<li>
-					<a href="blog.html">Blog</a>
+					<a href="contact.html">Liên Hệ</a>
 				</li>
 
+				<?php if(auth()->guard()->check()): ?>
+					<li>
+						<a href="#" class="js-toggle-account-menu">Tài Khoản</a>
+						<ul class="sub-menu-m account-menu-mobile">
 				<li>
-					<a href="about.html">About</a>
+								<div style="padding: 10px 15px; border-bottom: 1px solid #eee;">
+									<div style="font-weight: 600;"><?php echo e(Auth::user()->name ?? ''); ?></div>
+									<div style="font-size: 12px; color: #666;"><?php echo e(Auth::user()->email ?? ''); ?></div>
+								</div>
 				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
+							<li><a href="<?php echo e(route('client.order.list')); ?>"><i class="zmdi zmdi-shopping-cart" style="margin-right: 8px;"></i>Đơn hàng của tôi</a></li>
+							<li><a href="<?php echo e(route('client.order.track')); ?>"><i class="zmdi zmdi-search" style="margin-right: 8px;"></i>Tra cứu đơn hàng</a></li>
+							<li><a href="#"><i class="zmdi zmdi-favorite" style="margin-right: 8px;"></i>Yêu thích</a></li>
+							<li>
+								<form method="POST" action="<?php echo e(route('logout')); ?>" style="margin: 0;">
+									<?php echo csrf_field(); ?>
+									<button type="submit" style="background: none; border: none; color: inherit; width: 100%; text-align: left; padding: 10px 15px; cursor: pointer;">
+										<i class="zmdi zmdi-power" style="margin-right: 8px;"></i>Đăng xuất
+									</button>
+								</form>
+							</li>
+						</ul>
+						<span class="arrow-main-menu-m">
+							<i class="fa fa-angle-right" aria-hidden="true"></i>
+						</span>
 				</li>
+				<?php endif; ?>
 			</ul>
 		</div>
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\partials\mobile.blade.php ENDPATH**/ ?>

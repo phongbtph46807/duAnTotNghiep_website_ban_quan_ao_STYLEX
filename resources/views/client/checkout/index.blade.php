@@ -145,16 +145,22 @@
 
                         <label class="pay-option" data-method="online">
                             <input type="radio" name="payment_method" value="online" {{ old('payment_method')=='online' ? 'checked' : '' }}>
-                            <div class="pay-option__icon"><img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:18px"></div>
+                            <div class="pay-option__icon" style="background:#fff;">
+                                <img src="https://sandbox.vnpayment.vn/apis/assets/images/logo-icon/logo-primary.svg"
+                                     alt="VNPAY"
+                                     style="height:20px"
+                                     onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
+                            </div>
                             <div>
-                                <div class="pay-option__title">Thanh toán Online</div>
-                                <div class="pay-option__desc">Hỗ trợ MoMo, thẻ Visa/Mastercard</div>
+                                <div class="pay-option__title">Thanh toán Online (VNPAY)</div>
+                                <div class="pay-option__desc">Hỗ trợ thẻ ngân hàng, QR, ví điện tử</div>
                             </div>
                         </label>
                     </div>
 
                     <div id="online-hint" class="co-hint" style="display:none; margin-top:10px;">Bạn sẽ được chuyển tới cổng thanh toán an toàn để hoàn tất.</div>
                     <div id="payment-logos" class="p-t-10" style="display:none;">
+                        <img src="https://sandbox.vnpayment.vn/apis/assets/images/logo-icon/logo-primary.svg" alt="VNPAY" style="height:30px; margin-right:12px;" onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
                         <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:28px; margin-right:10px; background:#fff; border-radius:4px; padding:2px;" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png';">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:22px; margin-right:8px; opacity:.9;" onerror="this.style.display='none';">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height:22px; opacity:.9;" onerror="this.style.display='none';">
@@ -235,13 +241,23 @@
                         <span class="mtext-101 cl2">Tạm tính</span>
                         <span class="mtext-101 cl2">{{ number_format($subtotal, 0, ',', '.') }} ₫</span>
                     </div>
-                    @if($discount > 0 && $voucher)
+                    @if(isset($voucherDiscount) && $voucherDiscount > 0 && $voucher)
                     <div class="flex-w flex-sb-m m-t-10" style="color:#28a745;">
                         <span class="mtext-101 cl2">
-                            Giảm giá 
+                            Giảm giá Voucher
                             <small style="font-size:11px; color:#666;">({{ $voucher['code'] }})</small>
                         </span>
-                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ number_format($discount, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ number_format($voucherDiscount, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @endif
+
+                    @if(isset($loyaltyDiscount) && $loyaltyDiscount > 0 && isset($currentTier) && $currentTier)
+                    <div class="flex-w flex-sb-m m-t-10" style="color:#6777ef;">
+                        <span class="mtext-101 cl2">
+                            Giảm giá thành viên
+                            <small style="font-size:11px; color:#666;">({{ $currentTier->name }} -{{ number_format($currentTier->discount_rate, 0) }}%)</small>
+                        </span>
+                        <span class="mtext-101 cl2" style="color:#6777ef; font-weight:700;">-{{ number_format($loyaltyDiscount, 0, ',', '.') }} ₫</span>
                     </div>
                     @endif
 
