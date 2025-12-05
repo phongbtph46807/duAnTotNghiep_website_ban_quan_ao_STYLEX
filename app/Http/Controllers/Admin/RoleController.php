@@ -245,14 +245,14 @@ class RoleController extends Controller
                 }
 
                 $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
                     'role' => $roleInteger,
                     'is_admin' => $roleInteger == User::ROLE_ADMIN ? 1 : 0,
-                    'status' => $request->status,
-                    'email_verified_at' => now()
-                ]);
+                'status' => $request->status,
+                'email_verified_at' => now()
+            ]);
 
                 // Gán roles
                 try {
@@ -328,22 +328,22 @@ class RoleController extends Controller
                         'staff' => User::ROLE_STAFF,
                         default => User::ROLE_USER
                     };
-                }
+            }
 
-                $updateData = [
-                    'name' => $request->name,
-                    'email' => $request->email,
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
                     'role' => $roleInteger,
                     'is_admin' => $roleInteger == User::ROLE_ADMIN ? 1 : 0,
-                    'status' => $request->status
-                ];
+                'status' => $request->status
+            ];
 
-                // Chỉ cập nhật password nếu có
-                if ($request->filled('password')) {
-                    $updateData['password'] = Hash::make($request->password);
-                }
+            // Chỉ cập nhật password nếu có
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
 
-                $user->update($updateData);
+            $user->update($updateData);
 
                 // Cập nhật roles
                 try {

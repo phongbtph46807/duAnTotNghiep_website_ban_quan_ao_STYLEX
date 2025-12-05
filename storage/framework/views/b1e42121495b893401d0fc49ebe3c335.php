@@ -68,24 +68,24 @@
 
         <?php if(isset($roleStats) && count($roleStats) > 0): ?>
             <?php $__currentLoopData = $roleStats; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-animate">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-grow-1 overflow-hidden">
+        <div class="col-xl-3 col-md-6">
+            <div class="card card-animate">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1 overflow-hidden">
                                     <p class="text-uppercase fw-medium text-muted text-truncate mb-0">
                                         <?php echo e($stat['role']->name); ?>
 
                                     </p>
-                                </div>
-                                <div class="flex-shrink-0">
+                        </div>
+                        <div class="flex-shrink-0">
                                     <h5 class="text-info fs-14 mb-0">
                                         <i class="ri-shield-user-line fs-13 align-middle"></i>
-                                    </h5>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center mt-3">
-                                <div class="flex-grow-1">
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="flex-grow-1">
                                     <h4 class="fs-22 fw-semibold ff-secondary mb-0"><?php echo e($stat['count']); ?></h4>
                                 </div>
                             </div>
@@ -101,7 +101,7 @@
         <?php else: ?>
             <div class="col-xl-9 col-md-6">
                 <div class="card">
-                    <div class="card-body">
+                <div class="card-body">
                         <div class="alert alert-info mb-0">
                             <i class="ri-information-line me-2"></i>
                             Chưa có vai trò nào trong hệ thống. 

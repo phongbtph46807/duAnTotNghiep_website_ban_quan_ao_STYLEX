@@ -188,4 +188,20 @@ class User extends Authenticatable
         $tier = $this->getCurrentLoyaltyTier();
         return $tier ? (float) $tier->discount_rate : 0;
     }
+
+    /**
+     * Quan hệ với Addresses
+     */
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    /**
+     * Lấy địa chỉ mặc định
+     */
+    public function defaultAddress()
+    {
+        return $this->hasOne(Address::class)->where('is_default', true);
+    }
 }

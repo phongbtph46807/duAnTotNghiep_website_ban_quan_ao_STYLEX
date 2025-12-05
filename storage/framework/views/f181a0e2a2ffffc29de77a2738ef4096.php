@@ -54,13 +54,13 @@
             <td><?php echo e($role->description); ?></td>
             <td>
               <div class="d-flex gap-2 align-items-center">
-                <a class="btn btn-sm btn-warning" href="<?php echo e(route('admin.rbac.roles.edit', $role)); ?>">Sửa</a>
+              <a class="btn btn-sm btn-warning" href="<?php echo e(route('admin.rbac.roles.edit', $role)); ?>">Sửa</a>
                 <?php if($canDelete): ?>
-                  <form class="d-inline" method="POST" action="<?php echo e(route('admin.rbac.roles.destroy', $role)); ?>">
-                    <?php echo csrf_field(); ?>
-                    <?php echo method_field('DELETE'); ?>
+              <form class="d-inline" method="POST" action="<?php echo e(route('admin.rbac.roles.destroy', $role)); ?>">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
                     <button class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa role này?')">Xóa</button>
-                  </form>
+              </form>
                 <?php else: ?>
                   <button class="btn btn-sm btn-danger" disabled title="<?php echo e($isAdmin ? 'Không thể xóa role Admin' : 'Role đang được sử dụng bởi ' . $userCount . ' tài khoản'); ?>">
                     Xóa
