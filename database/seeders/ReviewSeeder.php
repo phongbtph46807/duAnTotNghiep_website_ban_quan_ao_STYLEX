@@ -18,7 +18,7 @@ class ReviewSeeder extends Seeder
     {
         // Lấy danh sách sản phẩm có sẵn
         $products = Product::withTrashed()->get();
-        
+
         if ($products->isEmpty()) {
             $this->command->warn('⚠️ Không tìm thấy sản phẩm nào trong database');
             return;
@@ -63,7 +63,7 @@ class ReviewSeeder extends Seeder
         foreach ($products->take(10) as $product) {
             // Lấy variant của sản phẩm (nếu có)
             $variants = ProductVariant::where('product_id', $product->id)->get();
-            
+
             // Tạo 3-8 review ngẫu nhiên cho mỗi sản phẩm
             $reviewCount = rand(3, 8);
             
@@ -84,38 +84,38 @@ class ReviewSeeder extends Seeder
                 $order = $completedOrders->isNotEmpty() ? $completedOrders->random() : null;
                 
                 // Tạo review
-                $review = Review::create([
+            $review = Review::create([
                     'user_id' => $user->id,
-                    'product_id' => $product->id,
+                'product_id' => $product->id,
                     'product_variant_id' => $variantId,
                     'order_id' => $order ? $order->id : null,
                     'rating' => rand(3, 5), // Rating từ 3-5 sao
                     'content' => $sampleContents[array_rand($sampleContents)],
                     'tags' => $sampleTags[array_rand($sampleTags)],
                     'status' => 'public',
-                ]);
+            ]);
 
                 // Thêm ảnh mẫu (50% khả năng có ảnh)
                 if (rand(1, 2) === 1) {
-                    ReviewMedia::create([
-                        'review_id' => $review->id,
-                        'url' => 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
-                        'type' => 'image',
-                    ]);
+            ReviewMedia::create([
+                'review_id' => $review->id,
+                'url' => 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+                'type' => 'image',
+            ]);
                 }
 
                 // Thêm đánh giá chi tiết theo trải nghiệm (70% khả năng)
                 if (rand(1, 10) <= 7) {
-                    $criteria = ['Chất liệu vải', 'Độ vừa vặn', 'Màu sắc'];
-                    foreach ($criteria as $criterion) {
-                        ReviewExperience::create([
-                            'review_id' => $review->id,
-                            'criterion' => $criterion,
-                            'rating' => rand(3, 5),
-                        ]);
-                    }
-                }
-                
+            $criteria = ['Chất liệu vải', 'Độ vừa vặn', 'Màu sắc'];
+            foreach ($criteria as $criterion) {
+                ReviewExperience::create([
+                    'review_id' => $review->id,
+                    'criterion' => $criterion,
+                    'rating' => rand(3, 5),
+                ]);
+            }
+        }
+
                 $totalReviews++;
             }
             

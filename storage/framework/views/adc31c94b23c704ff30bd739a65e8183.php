@@ -79,18 +79,56 @@
 						</a>
 						
 						<?php if(auth()->guard()->check()): ?>
-							<?php $authUser = Auth::user(); ?>
+							<?php 
+								$authUser = Auth::user();
+								$loyaltyService = app(\App\Services\LoyaltyService::class);
+								$currentTier = $loyaltyService->getCurrentTier($authUser);
+								$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
+								$totalSpent = $authUser->getTotalSpent();
+							?>
 							<!-- User đã đăng nhập -->
 							<div class="dropdown">
-								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown">
+								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown" style="display: flex; align-items: center; gap: 6px;">
 									<i class="zmdi zmdi-account"></i>
-									<span class="ml-2"><?php echo e($authUser->name ?? ''); ?></span>
+									<span class="ml-2" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?php echo e($authUser->name ?? 'Tài khoản'); ?></span>
+									<?php if($currentTier): ?>
+										<span class="badge" style="background: <?php echo e($currentTier->name === 'Bronze' ? '#cd7f32' : ($currentTier->name === 'Silver' ? '#c0c0c0' : ($currentTier->name === 'Gold' ? '#ffd700' : ($currentTier->name === 'Platinum' ? '#e5e4e2' : '#b9f2ff')))); ?>; color: <?php echo e(in_array($currentTier->name, ['Gold', 'Platinum']) ? '#000' : '#fff'); ?>; font-size: 9px; padding: 2px 5px; border-radius: 3px; line-height: 1.2; flex-shrink: 0;">
+											<?php echo e($currentTier->name); ?>
+
+										</span>
+									<?php endif; ?>
 								</a>
-								<div class="dropdown-menu dropdown-menu-end">
-									<div class="dropdown-header">
+								<div class="dropdown-menu dropdown-menu-end" style="min-width: 280px;">
+									<div class="dropdown-header" style="padding: 12px 16px;">
 										<div class="user-info">
-											<div class="user-name"><?php echo e($authUser->name ?? ''); ?></div>
-											<div class="user-email"><?php echo e($authUser->email ?? ''); ?></div>
+											<?php if($currentTier): ?>
+												<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+													<div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+														<span style="font-size: 11px; color: #666; font-weight: 500;">Hạng:</span>
+														<span class="badge" style="background: <?php echo e($currentTier->name === 'Bronze' ? '#cd7f32' : ($currentTier->name === 'Silver' ? '#c0c0c0' : ($currentTier->name === 'Gold' ? '#ffd700' : ($currentTier->name === 'Platinum' ? '#e5e4e2' : '#b9f2ff')))); ?>; color: <?php echo e(in_array($currentTier->name, ['Gold', 'Platinum']) ? '#000' : '#fff'); ?>; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600;">
+															<?php echo e($currentTier->name); ?>
+
+														</span>
+														<?php if($currentTier->discount_rate > 0): ?>
+															<span style="font-size: 11px; color: #28a745; font-weight: 600;">-<?php echo e(number_format($currentTier->discount_rate, 0)); ?>%</span>
+														<?php endif; ?>
+														<span style="font-size: 11px; color: #888;">•</span>
+														<span style="font-size: 11px; color: #888;">
+															Đã chi: <strong style="color: #333;"><?php echo e(number_format($totalSpent, 0, ',', '.')); ?> ₫</strong>
+														</span>
+													</div>
+													<?php if($nextTierProgress): ?>
+														<div style="margin-top: 8px;">
+															<div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+																Lên <strong><?php echo e($nextTierProgress['next_tier']->name); ?></strong> còn: <strong style="color: #6777ef;"><?php echo e(number_format($nextTierProgress['remaining'], 0, ',', '.')); ?> ₫</strong>
+															</div>
+															<div style="background: #f0f0f0; border-radius: 4px; height: 6px; overflow: hidden;">
+																<div style="background: #6777ef; height: 100%; width: <?php echo e(min(100, $nextTierProgress['progress'])); ?>%; transition: width 0.3s;"></div>
+															</div>
+														</div>
+													<?php endif; ?>
+												</div>
+											<?php endif; ?>
 										</div>
 									</div>
 									<div class="dropdown-divider"></div>
@@ -101,6 +139,10 @@
 									<a class="dropdown-item" href="<?php echo e(route('client.order.list')); ?>">
 										<i class="zmdi zmdi-shopping-cart me-2"></i>
 										Đơn hàng của tôi
+									</a>
+									<a class="dropdown-item" href="<?php echo e(route('client.order.track')); ?>">
+										<i class="zmdi zmdi-search me-2"></i>
+										Tra cứu đơn hàng
 									</a>
 									<a class="dropdown-item" href="#">
 										<i class="zmdi zmdi-favorite me-2"></i>

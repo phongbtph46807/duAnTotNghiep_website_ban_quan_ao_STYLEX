@@ -13,7 +13,6 @@
             <th>#</th>
             <th>Tên</th>
             <th>Mô tả</th>
-            <th>Quyền</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -23,11 +22,6 @@
             <td><?php echo e($role->id); ?></td>
             <td><?php echo e($role->name); ?></td>
             <td><?php echo e($role->description); ?></td>
-            <td>
-              <?php $__currentLoopData = $role->permissions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $perm): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <span class="badge bg-secondary me-1"><?php echo e($perm->name); ?></span>
-              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-            </td>
             <td>
               <a class="btn btn-sm btn-warning" href="<?php echo e(route('admin.rbac.roles.edit', $role)); ?>">Sửa</a>
               <form class="d-inline" method="POST" action="<?php echo e(route('admin.rbac.roles.destroy', $role)); ?>">

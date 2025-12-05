@@ -91,14 +91,14 @@
 
 				<?php if(isset($textures)): ?>
 					<?php $__currentLoopData = $textures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $texture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-						<li class="p-b-6">
+				<li class="p-b-6">
 							<a href="#"
 							   class="filter-link stext-106 trans-04 js-texture-filter"
 							   data-texture-id="<?php echo e($texture->id); ?>">
 								<?php echo e($texture->name); ?>
 
-							</a>
-						</li>
+					</a>
+				</li>
 					<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 				<?php endif; ?>
 			</ul>

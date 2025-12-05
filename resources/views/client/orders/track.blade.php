@@ -33,7 +33,15 @@
         .order-item-price{text-align:right;font-weight:600;min-width:90px;}
         .order-summary-line{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;}
         .order-summary-total{font-size:16px;font-weight:700;color:#6777ef;margin-top:8px;border-top:1px solid #eee;padding-top:8px;}
-        .btn-outline{border:1px solid #d9d9d9;color:#555;background:#fff;border-radius:8px;padding:10px 14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
+        .btn-outline{border:1px solid #d9d9d9;color:#555;background:#fff;border-radius:8px;padding:10px 14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;position:relative;z-index:10;pointer-events:auto;}
+        .btn-outline:hover{background:#f5f5f5;}
+        .btn-outline:active{transform:scale(0.98);}
+        .btn-outline:disabled{opacity:0.6;cursor:not-allowed;pointer-events:none;}
+        .btn-primary-x{background:#6777ef;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;position:relative;z-index:10;pointer-events:auto;}
+        .btn-primary-x:hover{filter:brightness(0.95);}
+        .btn-primary-x:active{transform:scale(0.98);}
+        form.cancel-order-form{position:relative;z-index:10;pointer-events:auto;display:inline-block;}
+        form[action*="cancel"]{position:relative;z-index:1;display:inline-block;}
         @media(max-width:767px){
             .order-item-row{flex-wrap:wrap;}
             .order-item-price{text-align:left;}
@@ -271,16 +279,20 @@
                 </div>
             </div>
 
-            <div class="m-t-20 d-flex justify-content-between flex-wrap" style="gap:10px;">
-                <a href="{{ route('client.order.list') }}" class="co-hint" style="text-decoration:none;">← Xem lịch sử đơn hàng</a>
-                <div class="d-flex gap-2 flex-wrap">
+            <div class="m-t-20 d-flex justify-content-between flex-wrap" style="gap:10px;position:relative;z-index:1;">
+                <a href="{{ route('client.order.list') }}" class="co-hint" style="text-decoration:none;position:relative;z-index:1;">← Xem lịch sử đơn hàng</a>
+                <div class="d-flex gap-2 flex-wrap" style="align-items:center;position:relative;z-index:1;">
                     @if($order->status === 'pending')
-                        <form method="POST" action="{{ route('client.order.cancel', $order) }}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn hàng này?');">
+                        <form method="POST" action="{{ route('client.order.cancel', $order) }}" class="cancel-order-form" style="display:inline-block;margin:0;position:relative;z-index:1;">
                             @csrf
-                            <button type="submit" class="btn-outline" style="border:1px solid #ff4d4f;color:#ff4d4f;border-radius:8px;padding:10px 14px;background:#fff;">Hủy đơn hàng</button>
+                            <button type="submit" class="btn-outline cancel-order-btn" style="border:1px solid #ff4d4f;color:#ff4d4f;background:#fff;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;transition:all 0.3s;">
+                                Hủy đơn hàng
+                            </button>
                         </form>
                     @endif
-                    <a href="{{ route('home') }}" class="btn-primary-x">Tiếp tục mua sắm</a>
+                    <a href="{{ route('home') }}" class="btn-primary-x continue-shopping-btn" style="margin-left: 10px; white-space:nowrap;display:inline-block;text-decoration:none;padding:10px 14px;border-radius:8px;background:#6777ef;color:#fff;font-weight:600;transition:all 0.3s;border:none;cursor:pointer;">
+                        Tiếp tục mua sắm
+                    </a>
                 </div>
       </div>
     @endif
@@ -378,4 +390,38 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý form hủy đơn hàng
+    const cancelForm = document.querySelector('.cancel-order-form');
+    if (cancelForm) {
+        cancelForm.addEventListener('submit', function(e) {
+            const confirmed = confirm('Bạn chắc chắn muốn hủy đơn hàng này?');
+            if (!confirmed) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            // Disable button để tránh double submit
+            const submitBtn = this.querySelector('.cancel-order-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Đang xử lý...';
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+        });
+    }
+
+    // Đảm bảo link "Tiếp tục mua sắm" hoạt động
+    const continueShoppingLink = document.querySelector('.continue-shopping-btn');
+    if (continueShoppingLink) {
+        continueShoppingLink.addEventListener('click', function(e) {
+            // Đảm bảo link hoạt động bình thường
+            // Không preventDefault để cho phép navigation
+        });
+    }
+});
+</script>
 @endsection

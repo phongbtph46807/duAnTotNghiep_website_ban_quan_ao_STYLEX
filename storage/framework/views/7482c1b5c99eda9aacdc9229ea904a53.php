@@ -422,82 +422,82 @@
                 <div class="tab-pane fade show active" id="pane-active-orders" role="tabpanel" aria-labelledby="tab-active-orders">
                     <div class="table-responsive table-card">
                         <table class="table align-middle text-center table-nowrap order-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Mã đơn</th>
-                                    <th>Khách hàng</th>
-                                    <th>Sản phẩm</th>
-                                    <th>Tổng tiền</th>
-                                    <th>Thanh toán</th>
-                                    <th>Trạng thái</th>
-                                    <th>Ngày tạo</th>
-                                    <th>Cập nhật</th>
-                                    <th>Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Thanh toán</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Cập nhật</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                                 <?php $__empty_1 = true; $__currentLoopData = $activeOrders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                    <?php
-                                        $paymentStatusClass = match ($order->payment_status) {
-                                            'paid' => 'bg-success-subtle text-success',
-                                            'unpaid' => 'bg-warning-subtle text-warning',
-                                            'refunded' => 'bg-info-subtle text-info',
-                                            default => 'bg-secondary-subtle text-secondary'
-                                        };
-                                        $detailPayload = [
-                                            'id' => $order->id,
-                                            'code' => $order->code,
-                                            'full_name' => $order->full_name,
-                                            'email' => $order->email,
-                                            'phone' => $order->phone,
-                                            'address' => $order->address,
-                                            'total' => number_format($order->total, 0, ',', '.'),
-                                            'status' => $order->status,
-                                            'payment_status' => $order->payment_status,
-                                            'payment_method' => strtoupper($order->payment_method ?? 'COD'),
-                                            'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
-                                            'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
-                                            'notes' => $order->note ?? 'Không có ghi chú',
-                                            'items' => $order->items->map(function ($item) {
-                                                return [
-                                                    'name' => $item->product->name ?? 'Sản phẩm',
-                                                    'sku' => $item->product->sku ?? 'N/A',
-                                                    'quantity' => $item->quantity,
-                                                    'price' => number_format($item->price ?? 0, 0, ',', '.'),
-                                                    'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
-                                                    'image' => $item->product->default_image_url ?? asset('client/images/product-01.jpg'),
-                                                ];
-                                            })->values()->all(),
-                                        ];
+                                <?php
+                                    $paymentStatusClass = match ($order->payment_status) {
+                                        'paid' => 'bg-success-subtle text-success',
+                                        'unpaid' => 'bg-warning-subtle text-warning',
+                                        'refunded' => 'bg-info-subtle text-info',
+                                        default => 'bg-secondary-subtle text-secondary'
+                                    };
+                                    $detailPayload = [
+                                        'id' => $order->id,
+                                        'code' => $order->code,
+                                        'full_name' => $order->full_name,
+                                        'email' => $order->email,
+                                        'phone' => $order->phone,
+                                        'address' => $order->address,
+                                        'total' => number_format($order->total, 0, ',', '.'),
+                                        'status' => $order->status,
+                                        'payment_status' => $order->payment_status,
+                                        'payment_method' => strtoupper($order->payment_method ?? 'COD'),
+                                        'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
+                                        'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
+                                        'notes' => $order->note ?? 'Không có ghi chú',
+                                        'items' => $order->items->map(function ($item) {
+                                            return [
+                                                'name' => $item->product->name ?? 'Sản phẩm',
+                                                'sku' => $item->product->sku ?? 'N/A',
+                                                'quantity' => $item->quantity,
+                                                'price' => number_format($item->price ?? 0, 0, ',', '.'),
+                                                'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
+                                                'image' => $item->product->default_image_url ?? asset('client/images/product-01.jpg'),
+                                            ];
+                                        })->values()->all(),
+                                    ];
                                         $currentStatusKey = $order->status ?? 'pending';
                                         $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
                                         $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
-                                    ?>
-                                    <tr>
-                                        <td><?php echo e($order->id); ?></td>
-                                        <td><?php echo e($order->code); ?></td>
-                                        <td class="text-start">
-                                            <div class="fw-bold"><?php echo e($order->full_name); ?></div>
-                                            <small class="text-muted"><?php echo e($order->email); ?></small>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-soft-dark text-body">
-                                                <?php echo e($order->items->count()); ?> sản phẩm
-                                            </span>
-                                        </td>
-                                        <td class="fw-semibold text-primary"><?php echo e(number_format($order->total)); ?>₫</td>
-                                        <td>
-                                            <span class="badge <?php echo e($paymentStatusClass); ?>">
-                                                <?php echo e(ucfirst($order->payment_status ?? 'N/A')); ?>
+                                ?>
+                                <tr>
+                                    <td><?php echo e($order->id); ?></td>
+                                    <td><?php echo e($order->code); ?></td>
+                                    <td class="text-start">
+                                        <div class="fw-bold"><?php echo e($order->full_name); ?></div>
+                                        <small class="text-muted"><?php echo e($order->email); ?></small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-soft-dark text-body">
+                                            <?php echo e($order->items->count()); ?> sản phẩm
+                                        </span>
+                                    </td>
+                                    <td class="fw-semibold text-primary"><?php echo e(number_format($order->total)); ?>₫</td>
+                                    <td>
+                                        <span class="badge <?php echo e($paymentStatusClass); ?>">
+                                            <?php echo e(ucfirst($order->payment_status ?? 'N/A')); ?>
 
-                                            </span>
-                                            <div class="small text-muted">
-                                                <?php echo e(strtoupper($order->payment_method ?? 'COD')); ?>
+                                        </span>
+                                        <div class="small text-muted">
+                                            <?php echo e(strtoupper($order->payment_method ?? 'COD')); ?>
 
-                                            </div>
-                                        </td>
-                                        <td>
+                                        </div>
+                                    </td>
+                                    <td>
                                             <div class="status-control d-inline-flex align-items-center gap-2"
                                                  data-order-id="<?php echo e($order->id); ?>"
                                                  data-current="<?php echo e($currentStatusKey); ?>">
@@ -623,10 +623,10 @@
                                                 ];
                                             })->values()->all(),
                                         ];
-                                        $currentStatusKey = $order->status ?? 'pending';
-                                        $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
-                                        $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
-                                    ?>
+                                            $currentStatusKey = $order->status ?? 'pending';
+                                            $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
+                                            $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
+                                        ?>
                                     <tr>
                                         <td><?php echo e($order->id); ?></td>
                                         <td><?php echo e($order->code); ?></td>
@@ -651,73 +651,73 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="status-control d-inline-flex align-items-center gap-2"
-                                                 data-order-id="<?php echo e($order->id); ?>"
-                                                 data-current="<?php echo e($currentStatusKey); ?>">
-                                                <span class="status-pill <?php echo e($currentStatus['pill']); ?>">
-                                                    <i class="<?php echo e($currentStatus['icon']); ?> me-1"></i>
-                                                    <?php echo e($currentStatus['label']); ?>
+                                        <div class="status-control d-inline-flex align-items-center gap-2"
+                                            data-order-id="<?php echo e($order->id); ?>"
+                                            data-current="<?php echo e($currentStatusKey); ?>">
+                                            <span class="status-pill <?php echo e($currentStatus['pill']); ?>">
+                                                <i class="<?php echo e($currentStatus['icon']); ?> me-1"></i>
+                                                <?php echo e($currentStatus['label']); ?>
 
-                                                </span>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
-                                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <i class="ri-arrow-down-s-line"></i>
-                                                    </button>
-                                                    <div class="dropdown-menu dropdown-menu-end status-menu">
-                                                        <?php $__currentLoopData = $statusStyles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                            <?php
-                                                                $isActive = $currentStatusKey === $key;
-                                                                $disabled = !in_array($key, $allowedStatuses, true);
-                                                            ?>
-                                                            <button type="button"
-                                                                    class="dropdown-item status-action d-flex justify-content-between align-items-start <?php echo e($isActive ? 'active' : ''); ?> <?php echo e($disabled ? 'disabled' : ''); ?>"
-                                                                    data-status="<?php echo e($key); ?>">
-                                                                <span class="d-flex gap-2">
-                                                                    <span class="status-dot <?php echo e($option['pill']); ?>"></span>
-                                                                    <span>
-                                                                        <span class="fw-semibold d-block"><?php echo e($option['label']); ?></span>
-                                                                        <small class="text-muted"><?php echo e($option['desc']); ?></small>
-                                                                    </span>
+                                            </span>
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="ri-arrow-down-s-line"></i>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-end status-menu">
+                                                    <?php $__currentLoopData = $statusStyles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $option): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                        <?php
+                                                            $isActive = $currentStatusKey === $key;
+                                                            $disabled = !in_array($key, $allowedStatuses, true);
+                                                        ?>
+                                                        <button type="button"
+                                                            class="dropdown-item status-action d-flex justify-content-between align-items-start <?php echo e($isActive ? 'active' : ''); ?> <?php echo e($disabled ? 'disabled' : ''); ?>"
+                                                            data-status="<?php echo e($key); ?>">
+                                                            <span class="d-flex gap-2">
+                                                                <span class="status-dot <?php echo e($option['pill']); ?>"></span>
+                                                                <span>
+                                                                    <span class="fw-semibold d-block"><?php echo e($option['label']); ?></span>
+                                                                    <small class="text-muted"><?php echo e($option['desc']); ?></small>
                                                                 </span>
-                                                                <i class="ri-check-line status-check <?php echo e($isActive ? '' : 'opacity-0'); ?>"></i>
-                                                            </button>
-                                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                                    </div>
+                                                            </span>
+                                                            <i class="ri-check-line status-check <?php echo e($isActive ? '' : 'opacity-0'); ?>"></i>
+                                                        </button>
+                                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td><?php echo e(optional($order->created_at)->format('d/m/Y H:i')); ?></td>
-                                        <td><?php echo e($order->updated_at->format('d/m/Y H:i')); ?></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-soft-primary view-order-detail"
-                                                        data-order='<?php echo json_encode($detailPayload, 15, 512) ?>'>
-                                                    <i class="ri-file-text-line"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-soft-secondary"
-                                                        onclick="window.print()">
-                                                    <i class="ri-printer-line"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                    </td>
+                                    <td><?php echo e(optional($order->created_at)->format('d/m/Y H:i')); ?></td>
+                                    <td><?php echo e($order->updated_at->format('d/m/Y H:i')); ?></td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-soft-primary view-order-detail"
+                                                data-order='<?php echo json_encode($detailPayload, 15, 512) ?>'>
+                                                <i class="ri-file-text-line"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-soft-secondary"
+                                                onclick="window.print()">
+                                                <i class="ri-printer-line"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                     <tr>
                                         <td colspan="10" class="text-muted">Không có đơn hàng hoàn thành / đã hủy trên trang này.</td>
                                     </tr>
                                 <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                        </tbody>
+                    </table>
+            </div>
 
                     
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
-                        <div class="text-muted small">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                <div class="text-muted small">
                             Trang: <?php echo e($archivedOrders->currentPage()); ?> / <?php echo e($archivedOrders->lastPage()); ?>
 
-                        </div>
-                        <div>
+                </div>
+                <div>
                             <?php echo e($archivedOrders->onEachSide(1)->appends(request()->except('archived_page', 'page'))->links('pagination::bootstrap-5')); ?>
 
                         </div>

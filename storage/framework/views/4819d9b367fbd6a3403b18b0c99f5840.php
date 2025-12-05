@@ -292,7 +292,7 @@ unset($__errorArgs, $__bag); ?>
     <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
     <script src="<?php echo e(asset('vendor/laraberg/js/laraberg.js')); ?>"></script>
         <script>
-        <?php if (! $__env->hasRenderedOnce('95f7e1dc-1ae8-46b2-bf89-cca222bc2105')): $__env->markAsRenderedOnce('95f7e1dc-1ae8-46b2-bf89-cca222bc2105'); ?>
+        <?php if (! $__env->hasRenderedOnce('46d11eaf-9a8f-4fb5-b3c1-ce223a26ba6f')): $__env->markAsRenderedOnce('46d11eaf-9a8f-4fb5-b3c1-ce223a26ba6f'); ?>
         let myEditor;
         ClassicEditor.create(document.querySelector('#description'))
             .then(editor => {
