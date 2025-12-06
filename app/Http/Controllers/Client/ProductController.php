@@ -68,7 +68,7 @@ class ProductController extends Controller
             ->get();
 
         // === Lấy tất cả review của sản phẩm ===
-        $reviews = $product->reviews->sortByDesc('created_at');;
+        $reviews = $product->reviews->sortByDesc('created_at')->where('status','public');
         //  Tính trung bình rating
         $avgRating = round($reviews->avg('rating'), 1);
         // ===  Lấy một vài đánh giá gần nhất ===
