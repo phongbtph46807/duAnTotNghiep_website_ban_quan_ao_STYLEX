@@ -26,11 +26,11 @@ class LoyaltyService
     }
 
     /**
-     * Lấy ID của hạng mặc định (Bronze)
+     * Lấy ID của hạng mặc định (Đồng)
      */
     protected function getDefaultTierId(): int
     {
-        // Tìm tier có min_spend_required = 0 (Bronze)
+        // Tìm tier có min_spend_required = 0 (Đồng)
         $defaultTier = LoyaltyTier::where('min_spend_required', 0)->first();
         
         if ($defaultTier) {
@@ -44,14 +44,14 @@ class LoyaltyService
             return $firstTier->id;
         }
 
-        // Nếu vẫn không có, tạo tier Bronze mặc định
-        $bronzeTier = LoyaltyTier::create([
-            'name' => 'Bronze',
+        // Nếu vẫn không có, tạo tier Đồng mặc định
+        $defaultTier = LoyaltyTier::create([
+            'name' => 'Đồng',
             'min_spend_required' => 0,
             'discount_rate' => 0.0,
         ]);
 
-        return $bronzeTier->id;
+        return $defaultTier->id;
     }
 
     /**
@@ -105,6 +105,25 @@ class LoyaltyService
         $userLoyalty = $this->initializeUserLoyalty($user);
         $currentTier = $userLoyalty->loyaltyTier;
         $totalSpent = $userLoyalty->total_spent;
+
+        // Nếu không có current tier, lấy tier mặc định
+        if (!$currentTier) {
+            $currentTier = $this->calculateTierForSpending($totalSpent);
+            if (!$currentTier) {
+                // Nếu vẫn không có, lấy tier đầu tiên (Đồng)
+                $currentTier = LoyaltyTier::orderBy('min_spend_required')->first();
+            }
+            // Cập nhật lại userLoyalty với tier đúng
+            if ($currentTier) {
+                $userLoyalty->loyalty_tier_id = $currentTier->id;
+                $userLoyalty->save();
+            }
+        }
+
+        // Nếu vẫn không có current tier, return null
+        if (!$currentTier) {
+            return null;
+        }
 
         // Tìm hạng tiếp theo
         $nextTier = LoyaltyTier::where('min_spend_required', '>', $totalSpent)

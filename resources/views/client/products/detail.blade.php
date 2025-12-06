@@ -101,7 +101,7 @@
 							{{ $product->name }}
 						</h4>
 
-						<span class="mtext-106 cl2">
+						<span class="mtext-106 cl2" id="product-price-display">
 							@if($product->price_sale && $product->price_sale < $product->price)
 								<span class="fw-bold">{{ number_format($product->price_sale, 0, ',', '.') }}đ</span>
 								<span style="text-decoration: line-through; color: red; margin-left: 8px;">
@@ -764,18 +764,18 @@ $(document).ready(function() {
             // DEBUG: Log variant found
             console.log('Variant found - ID:', variant.id, 'Size:', size, 'Color:', color, 'Texture:', texture);
             
-            // Cập nhật giá hiển thị
+            // Cập nhật giá hiển thị - chỉ cập nhật giá sản phẩm, không ảnh hưởng đến mini cart
             if (variant.price && parseFloat(variant.price) > 0) {
-                $('.mtext-106').html('<span class="fw-bold">' + 
+                $('#product-price-display').html('<span class="fw-bold">' + 
                     new Intl.NumberFormat('vi-VN').format(variant.price) + 'đ</span>');
             } else {
                 if (hasPriceSale) {
-                    $('.mtext-106').html('<span class="fw-bold">' + 
+                    $('#product-price-display').html('<span class="fw-bold">' + 
                         new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
                         '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
                         new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
                 } else {
-                    $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
+                    $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
                 }
             }
         } else {
@@ -786,14 +786,14 @@ $(document).ready(function() {
             // DEBUG: Log variant not found
             console.log('Variant NOT found for Size:', size, 'Color:', color);
             
-            // Nếu không tìm thấy variant, giữ nguyên giá mặc định
+            // Nếu không tìm thấy variant, giữ nguyên giá mặc định - chỉ cập nhật giá sản phẩm
             if (hasPriceSale) {
-                $('.mtext-106').html('<span class="fw-bold">' + 
+                $('#product-price-display').html('<span class="fw-bold">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
                     '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
                     new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
             } else {
-                $('.mtext-106').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
+                $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
             }
         }
         
@@ -852,19 +852,32 @@ $(document).ready(function() {
         updateVariant();
     });
     
-    // Quantity controls
-    $('.btn-num-product-down').on('click', function() {
+    // Quantity controls - tắt event listener từ main.js trước, rồi đăng ký lại
+    // Tắt tất cả event listener cũ (từ main.js và các script khác)
+    $('.btn-num-product-down').off('click');
+    $('.btn-num-product-up').off('click');
+    
+    // Đăng ký lại với namespace để quản lý dễ hơn
+    $('.btn-num-product-down').on('click.quantity', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // Ngăn các event listener khác chạy
         const input = $(this).siblings('.num-product');
-        const currentValue = parseInt(input.val());
+        const currentValue = parseInt(input.val()) || 1;
         if (currentValue > 1) {
             input.val(currentValue - 1);
         }
+        return false;
     });
     
-    $('.btn-num-product-up').on('click', function() {
+    $('.btn-num-product-up').on('click.quantity', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // Ngăn các event listener khác chạy
         const input = $(this).siblings('.num-product');
-        const currentValue = parseInt(input.val());
+        const currentValue = parseInt(input.val()) || 1;
         input.val(currentValue + 1);
+        return false;
     });
     
     // Sync trước khi submit - Đảm bảo giá trị mới nhất được cập nhật

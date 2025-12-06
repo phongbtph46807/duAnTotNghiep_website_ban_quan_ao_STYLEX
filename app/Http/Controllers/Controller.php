@@ -27,12 +27,21 @@ abstract class Controller extends BaseController
         $total = 0;
 
         if (Auth::check()) {
-            $rows = Cart::with(['product', 'variant.size', 'variant.color', 'variant.texture'])
+            $rows = Cart::with(['product', 'variant'])
                 ->where('user_id', Auth::id())
                 ->get();
             foreach ($rows as $row) {
                 $variant = $row->variant;
-                $price = $variant && $variant->price ? (float) $variant->price : (float) ($row->product->price_sale ?? $row->product->price);
+                $product = $row->product;
+                // Sử dụng cùng logic với CartController::resolveItemPrice()
+                // Ưu tiên: variant price > product price_sale > product price
+                if ($variant && $variant->price && $variant->price > 0) {
+                    $price = (float) $variant->price;
+                } elseif ($product->price_sale && $product->price_sale > 0) {
+                    $price = (float) $product->price_sale;
+                } else {
+                    $price = (float) $product->price;
+                }
                 $itemCount += (int) $row->quantity;
                 $total += $price * (int) $row->quantity;
                 $items[] = [
@@ -49,7 +58,15 @@ abstract class Controller extends BaseController
                 $product = Product::find($it['product_id']);
                 if (!$product) { continue; }
                 $variant = isset($it['variant_id']) && $it['variant_id'] ? ProductVariant::find($it['variant_id']) : null;
-                $price = $variant && $variant->price ? (float) $variant->price : (float) ($product->price_sale ?? $product->price);
+                // Sử dụng cùng logic với CartController::resolveItemPrice()
+                // Ưu tiên: variant price > product price_sale > product price
+                if ($variant && $variant->price && $variant->price > 0) {
+                    $price = (float) $variant->price;
+                } elseif ($product->price_sale && $product->price_sale > 0) {
+                    $price = (float) $product->price_sale;
+                } else {
+                    $price = (float) $product->price;
+                }
                 $key = sha1('p' . $product->id . '-v' . (($it['variant_id'] ?? null) ?: 'null'));
                 $qty = (int) ($it['quantity'] ?? 1);
                 $itemCount += $qty;
@@ -68,7 +85,15 @@ abstract class Controller extends BaseController
                 $product = Product::find($it['product_id']);
                 if (!$product) { continue; }
                 $variant = isset($it['variant_id']) && $it['variant_id'] ? ProductVariant::find($it['variant_id']) : null;
-                $price = $variant && $variant->price ? (float) $variant->price : (float) ($product->price_sale ?? $product->price);
+                // Sử dụng cùng logic với CartController::resolveItemPrice()
+                // Ưu tiên: variant price > product price_sale > product price
+                if ($variant && $variant->price && $variant->price > 0) {
+                    $price = (float) $variant->price;
+                } elseif ($product->price_sale && $product->price_sale > 0) {
+                    $price = (float) $product->price_sale;
+                } else {
+                    $price = (float) $product->price;
+                }
                 $key = sha1('p' . $product->id . '-v' . (($it['variant_id'] ?? null) ?: 'null'));
                 $qty = (int) ($it['quantity'] ?? 1);
                 $itemCount += $qty;

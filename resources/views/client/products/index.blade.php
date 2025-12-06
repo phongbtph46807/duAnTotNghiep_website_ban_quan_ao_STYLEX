@@ -9,7 +9,7 @@
 	 data-api-url="{{ url('/api/products/filter') }}"
 	 data-index-url="{{ route('client.products.index') }}"
 	 data-initial-category="{{ $selectedCategory ?? '' }}"
-	 data-per-page="12"
+	 data-per-page="1000"
 >
 	<div class="container">
 		<div class="flex-w flex-sb-m p-b-52">

@@ -88,25 +88,23 @@
 							@php 
 								$authUser = Auth::user();
 								$loyaltyService = app(\App\Services\LoyaltyService::class);
-								$currentTier = $loyaltyService->getCurrentTier($authUser);
-								$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
-								$totalSpent = $authUser->getTotalSpent();
+								$currentTier = null;
+								$nextTierProgress = null;
+								$totalSpent = 0;
+								if ($authUser instanceof \App\Models\User) {
+									$currentTier = $loyaltyService->getCurrentTier($authUser);
+									$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
+									$totalSpent = $authUser->getTotalSpent();
+								}
 								
-								// Tính toán màu sắc cho badge
-								$tierBgColor = '#b9f2ff';
+								// Tính toán màu sắc cho badge từ database
+								$tierBgColor = '#8B4513'; // Màu mặc định: nâu đồng (Đồng)
 								$tierTextColor = '#fff';
 								if ($currentTier) {
-									if ($currentTier->name === 'Bronze') {
-										$tierBgColor = '#cd7f32';
-									} elseif ($currentTier->name === 'Silver') {
-										$tierBgColor = '#c0c0c0';
-									} elseif ($currentTier->name === 'Gold') {
-										$tierBgColor = '#ffd700';
-										$tierTextColor = '#000';
-									} elseif ($currentTier->name === 'Platinum') {
-										$tierBgColor = '#e5e4e2';
-										$tierTextColor = '#000';
-									}
+									// Refresh tier từ database để đảm bảo có đầy đủ thông tin
+									$currentTier->refresh();
+									$tierBgColor = $currentTier->color ?? '#8B4513';
+									$tierTextColor = $currentTier->text_color ?? '#fff';
 								}
 								
 								// Tính toán progress width
@@ -126,7 +124,7 @@
 									<i class="zmdi zmdi-account"></i>
 									<span class="ml-2" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $authUser->name ?? 'Tài khoản' }}</span>
 									@if($currentTier)
-										<span class="badge" {!! 'style="' . $badgeStyle . '"' !!}>
+										<span class="badge" style="{{ $badgeStyle }}">
 											{{ $currentTier->name }}
 										</span>
 									@endif
@@ -138,7 +136,7 @@
 												<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
 													<div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
 														<span style="font-size: 11px; color: #666; font-weight: 500;">Hạng:</span>
-														<span class="badge" {!! 'style="' . $badgeStyleLarge . '"' !!}>
+														<span class="badge" style="{{ $badgeStyleLarge }}">
 															{{ $currentTier->name }}
 														</span>
 														@if($currentTier->discount_rate > 0)
@@ -155,7 +153,7 @@
 																Lên <strong>{{ $nextTierProgress['next_tier']->name }}</strong> còn: <strong style="color: #6777ef;">{{ number_format($nextTierProgress['remaining'], 0, ',', '.') }} ₫</strong>
 															</div>
 															<div style="background: #f0f0f0; border-radius: 4px; height: 6px; overflow: hidden;">
-																<div {!! 'style="' . $progressStyle . '"' !!}></div>
+																<div style="{{ $progressStyle }}"></div>
 															</div>
 														</div>
 													@endif

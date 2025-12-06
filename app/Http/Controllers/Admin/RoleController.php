@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class RoleController extends Controller
 {
@@ -380,7 +381,7 @@ class RoleController extends Controller
     {
         try {
             // Không cho phép xóa chính mình
-            if ($user->id === auth()->id()) {
+            if ($user->id === Auth::id()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Bạn không thể xóa chính tài khoản của mình!'

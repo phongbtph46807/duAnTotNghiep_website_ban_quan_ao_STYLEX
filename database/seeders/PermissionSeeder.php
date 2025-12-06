@@ -592,12 +592,18 @@ class PermissionSeeder extends Seeder
 
         $this->command->info('Đã tạo/cập nhật ' . count($permissions) . ' permissions.');
 
-        // Cập nhật mô tả cho role Admin
+        // Cập nhật mô tả và gán TẤT CẢ permissions cho role Admin
         $adminRole = Role::where('name', 'Admin')->first();
         
         if ($adminRole) {
             $adminRole->update(['description' => 'Quản lý toàn bộ website']);
+            
+            // Gán TẤT CẢ permissions cho Admin
+            $allPermissionIds = Permission::pluck('id')->toArray();
+            $adminRole->permissions()->sync($allPermissionIds);
+            
             $this->command->info("Đã cập nhật mô tả cho role Admin: 'Quản lý toàn bộ website'");
+            $this->command->info("Đã gán " . count($allPermissionIds) . " permissions cho role Admin (ID: {$adminRole->id})");
         } else {
             $this->command->warn('Không tìm thấy role Admin!');
         }
