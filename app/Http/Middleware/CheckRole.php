@@ -26,8 +26,40 @@ class CheckRole
         // Convert string roles to integers for comparison
         $requiredRoles = array_map('intval', $roles);
         
-        // Check if user has any of the required roles
-        if (!in_array($user->role, $requiredRoles)) {
+        // Map role integers to role names
+        $roleNameMap = [
+            1 => 'Admin',
+            2 => 'Staff',
+        ];
+        
+        $hasAccess = false;
+        
+        // Check old role field (backward compatibility)
+        if (in_array($user->role, $requiredRoles)) {
+            $hasAccess = true;
+        }
+        
+        // Check new roles relationship (many-to-many)
+        if (!$hasAccess) {
+            $requiredRoleNames = [];
+            foreach ($requiredRoles as $roleInt) {
+                if (isset($roleNameMap[$roleInt])) {
+                    $requiredRoleNames[] = $roleNameMap[$roleInt];
+                }
+            }
+            
+            if (!empty($requiredRoleNames)) {
+                $userRoles = $user->roles()->pluck('name')->toArray();
+                foreach ($requiredRoleNames as $requiredName) {
+                    if (in_array($requiredName, $userRoles)) {
+                        $hasAccess = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!$hasAccess) {
             abort(403, 'Bạn không có quyền truy cập trang này.');
         }
 

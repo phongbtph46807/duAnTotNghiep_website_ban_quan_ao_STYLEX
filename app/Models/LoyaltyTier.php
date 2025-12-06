@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoyaltyTier extends Model
 {
-    protected $fillable = ['name', 'min_spend_required', 'discount_rate'];
+    protected $fillable = ['name', 'min_spend_required', 'discount_rate', 'color', 'text_color'];
 
     /**
      * Lấy tất cả các bản ghi UserLoyalty (trạng thái người dùng) đang thuộc cấp bậc này.

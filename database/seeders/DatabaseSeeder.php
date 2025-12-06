@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             PostSeeder::class,
             TagSeeder::class,
             VoucherSeeder::class,
+            RoleSeeder::class, // Phải chạy trước PermissionSeeder
             PermissionSeeder::class,
         ]);
     }
