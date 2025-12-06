@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', 'Thanh toán - ' . env('APP_NAME'))
 
@@ -19,13 +19,13 @@
         .co-col-12 { grid-column: span 12; }
         @media (max-width: 991px){ .co-col-6 { grid-column: span 12; } }
         .co-summary { position:sticky; top:90px; }
-        .co-line { display:flex; gap:12px; align-items:center; padding:10px 0; border-bottom:1px dashed #eee; }
+        .co-line { display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed #eee; }
         .co-line:last-child { border-bottom:none; }
-        .co-line img { width:58px; height:58px; border-radius:8px; object-fit:cover; }
-        .co-line__name { font-weight:700; color:#222; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-        .co-info { flex:1; min-width:0; }
-        .co-qty { width:64px; text-align:center; color:#333; }
-        .co-price { min-width:120px; text-align:right; font-weight:700; }
+        .co-line img { width:58px; height:58px; border-radius:8px; object-fit:cover; flex-shrink:0; }
+        .co-line__name { font-weight:700; color:#222; max-width:100%; word-wrap:break-word; }
+        .co-info { flex:1; min-width:0; overflow:hidden; }
+        .co-qty { width:64px; text-align:center; color:#333; flex-shrink:0; }
+        .co-price { min-width:120px; text-align:right; font-weight:700; flex-shrink:0; }
         .co-actions { display:flex; gap:12px; }
         .btn-primary-x { background:#6777ef; color:#fff; border:none; border-radius:10px; padding:12px 16px; font-weight:700; }
         .btn-primary-x:hover { filter:brightness(.95); }
@@ -43,20 +43,49 @@
             @endif
             <form method="POST" action="{{ route('client.checkout.place') }}" id="checkout-form">
                 @csrf
+                <div class="p-b-10">
+                    <h5 class="co-title" style="font-size:18px;">Thông tin người đặt</h5>
+                </div>
                 <div class="co-grid">
                     <div class="co-col-6">
                         <label class="co-label">Họ và tên *</label>
-                        <input name="full_name" class="co-input" value="{{ old('full_name', auth()->user()->name ?? '') }}" required>
-                        @error('full_name')<div class="co-error">{{ $message }}</div>@enderror
+                        <input name="buyer_full_name" class="co-input" value="{{ old('buyer_full_name', optional(auth()->user())->name) }}" required>
+                        @error('buyer_full_name')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Số điện thoại *</label>
+                        <input name="buyer_phone" class="co-input" value="{{ old('buyer_phone', optional(auth()->user())->phone) }}" required>
+                        @error('buyer_phone')<div class="co-error">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="co-col-6">
+                        <label class="co-label">Email</label>
+                        <input name="buyer_email" type="email" class="co-input" value="{{ old('buyer_email', optional(auth()->user())->email) }}">
+                        @error('buyer_email')<div class="co-error">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
+                <div class="p-t-20 p-b-10 d-flex align-items-center justify-content-between">
+                    <h5 class="co-title" style="font-size:18px; margin-bottom:0;">Thông tin người nhận</h5>
+                    <label style="font-size:13px; color:#555; display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" id="copy-buyer-info" style="width:16px; height:16px;">
+                        Giống người đặt
+                    </label>
+                </div>
+
+                <div class="co-grid">
+                    <div class="co-col-6">
+                        <label class="co-label">Họ và tên người nhận *</label>
+                        <input name="full_name" class="co-input" value="{{ old('full_name', optional(auth()->user())->name) }}" required>
+                        @error('full_name')<div class="co-error">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="co-col-6">
+                        <label class="co-label">Số điện thoại người nhận *</label>
                         <input name="phone" class="co-input" value="{{ old('phone') }}" required>
                         @error('phone')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
-                        <label class="co-label">Email</label>
-                        <input name="email" type="email" class="co-input" value="{{ old('email', auth()->user()->email ?? '') }}">
+                        <label class="co-label">Email người nhận</label>
+                        <input name="email" type="email" class="co-input" value="{{ old('email', optional(auth()->user())->email) }}">
                         @error('email')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
@@ -116,16 +145,22 @@
 
                         <label class="pay-option" data-method="online">
                             <input type="radio" name="payment_method" value="online" {{ old('payment_method')=='online' ? 'checked' : '' }}>
-                            <div class="pay-option__icon"><img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:18px"></div>
+                            <div class="pay-option__icon" style="background:#fff;">
+                                <img src="https://sandbox.vnpayment.vn/apis/assets/images/logo-icon/logo-primary.svg"
+                                     alt="VNPAY"
+                                     style="height:20px"
+                                     onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
+                            </div>
                             <div>
-                                <div class="pay-option__title">Thanh toán Online</div>
-                                <div class="pay-option__desc">Hỗ trợ MoMo, thẻ Visa/Mastercard</div>
+                                <div class="pay-option__title">Thanh toán Online (VNPAY)</div>
+                                <div class="pay-option__desc">Hỗ trợ thẻ ngân hàng, QR, ví điện tử</div>
                             </div>
                         </label>
                     </div>
 
                     <div id="online-hint" class="co-hint" style="display:none; margin-top:10px;">Bạn sẽ được chuyển tới cổng thanh toán an toàn để hoàn tất.</div>
                     <div id="payment-logos" class="p-t-10" style="display:none;">
+                        <img src="https://sandbox.vnpayment.vn/apis/assets/images/logo-icon/logo-primary.svg" alt="VNPAY" style="height:30px; margin-right:12px;" onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
                         <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:28px; margin-right:10px; background:#fff; border-radius:4px; padding:2px;" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png';">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:22px; margin-right:8px; opacity:.9;" onerror="this.style.display='none';">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height:22px; opacity:.9;" onerror="this.style.display='none';">
@@ -153,9 +188,25 @@
                         <img src="{{ $it['product']->default_image_url }}" alt="IMG">
                         <div class="co-info">
                             <div class="co-line__name">{{ $it['product']->name }}</div>
-                            <div class="stext-110 cl6" style="font-size:12px; margin-top:2px;">
-                                @if($it['variant'] && $it['variant']->size) Size: {{ $it['variant']->size->name }} @endif
-                                @if($it['variant'] && $it['variant']->color) • Màu: {{ $it['variant']->color->name }} @endif
+                            <div class="stext-110 cl6" style="font-size:12px; margin-top:2px; white-space:normal; word-break:break-word; word-wrap:break-word; overflow-wrap:break-word; line-height:1.5;">
+                                @php
+                                    $variantParts = [];
+                                    if ($it['variant'] && $it['variant']->size) {
+                                        $variantParts[] = 'Size: ' . $it['variant']->size->name;
+                                    }
+                                    if ($it['variant'] && $it['variant']->color) {
+                                        $variantParts[] = 'Màu: ' . $it['variant']->color->name;
+                                    }
+                                    $variantDisplay = !empty($variantParts) ? implode(' - ', $variantParts) : '';
+                                    $textures = $it['textures'] ?? [];
+                                    $materialDisplay = !empty($textures) ? 'Chất liệu: ' . implode(', ', $textures) : '';
+                                @endphp
+                                @if($variantDisplay)
+                                    <strong style="display:block; width:100%;">{{ $variantDisplay }}</strong>
+                                @endif
+                                @if($materialDisplay)
+                                    <span style="display:block; margin-top:2px;">{{ $materialDisplay }}</span>
+                                @endif
                             </div>
                         </div>
                         <div class="co-qty">x {{ $it['quantity'] }}</div>
@@ -163,9 +214,78 @@
                     </li>
                     @endforeach
                 </ul>
-                <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
-                    <span class="mtext-101 cl2">Tổng cộng</span>
-                    <span class="mtext-101 cl2 co-price">{{ number_format($total, 0, ',', '.') }} ₫</span>
+
+                {{-- Thông tin thêm về vận chuyển & thuế --}}
+                <div class="co-hint m-t-15" style="font-size:13px;">
+                    <div><strong>Đơn vị vận chuyển:</strong>
+                        @if(isset($shippingCarrier) && $shippingCarrier)
+                            {{ $shippingCarrier->name }} @if(isset($shippingFee)) - {{ number_format($shippingFee, 0, ',', '.') }} ₫ @endif
+                        @else
+                            Chưa chọn
+                        @endif
+                    </div>
+                    <div><strong>Mức thuế áp dụng:</strong>
+                        @if(isset($taxRate) && $taxRate)
+                            {{ $taxRate->name }} ({{ number_format($taxRate->rate * 100, 2, ',', '.') }} %)
+                        @else
+                            Không áp dụng
+                        @endif
+                    </div>
+                    @if(isset($voucher) && $voucher)
+                        <div><strong>Voucher:</strong> {{ $voucher['code'] }}</div>
+                    @endif
+                </div>
+
+                <div style="padding-top:10px; border-top:1px solid #eee; margin-top:10px;">
+                    <div class="flex-w flex-sb-m m-t-10">
+                        <span class="mtext-101 cl2">Tạm tính</span>
+                        <span class="mtext-101 cl2">{{ number_format($subtotal, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @if(isset($voucherDiscount) && $voucherDiscount > 0 && $voucher)
+                    <div class="flex-w flex-sb-m m-t-10" style="color:#28a745;">
+                        <span class="mtext-101 cl2">
+                            Giảm giá Voucher
+                            <small style="font-size:11px; color:#666;">({{ $voucher['code'] }})</small>
+                        </span>
+                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ number_format($voucherDiscount, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @endif
+
+                    @if(isset($loyaltyDiscount) && $loyaltyDiscount > 0 && isset($currentTier) && $currentTier)
+                    <div class="flex-w flex-sb-m m-t-10" style="color:#6777ef;">
+                        <span class="mtext-101 cl2">
+                            Giảm giá thành viên
+                            <small style="font-size:11px; color:#666;">({{ $currentTier->name }} -{{ number_format($currentTier->discount_rate, 0) }}%)</small>
+                        </span>
+                        <span class="mtext-101 cl2" style="color:#6777ef; font-weight:700;">-{{ number_format($loyaltyDiscount, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @endif
+
+                    @if(isset($taxAmount) && $taxAmount > 0 && isset($taxRate))
+                    <div class="flex-w flex-sb-m m-t-10">
+                        <span class="mtext-101 cl2">
+                            Thuế ({{ $taxRate->name }})
+                        </span>
+                        <span class="mtext-101 cl2">{{ number_format($taxAmount, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @endif
+
+                    @if(isset($shippingFee) && $shippingFee > 0)
+                    <div class="flex-w flex-sb-m m-t-10">
+                        <span class="mtext-101 cl2">
+                            Phí vận chuyển
+                            @if(isset($shippingCarrier) && $shippingCarrier)
+                                <small style="font-size:11px; color:#666;">({{ $shippingCarrier->name }})</small>
+                            @endif
+                        </span>
+                        <span class="mtext-101 cl2">{{ number_format($shippingFee, 0, ',', '.') }} ₫</span>
+                    </div>
+                    @endif
+
+                    <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
+                        <span class="mtext-101 cl2" style="font-weight:700; font-size:16px;">Tổng cộng</span>
+                        <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;">{{ number_format($total, 0, ',', '.') }} ₫</span>
+                    </div>
                 </div>
                 </div>
             </div>
@@ -179,6 +299,18 @@
 document.addEventListener('DOMContentLoaded', function(){
     var radios = document.querySelectorAll('input[name="payment_method"]');
     var payOptions = document.querySelectorAll('.pay-option');
+    var buyerFields = {
+        name: document.querySelector('input[name="buyer_full_name"]'),
+        phone: document.querySelector('input[name="buyer_phone"]'),
+        email: document.querySelector('input[name="buyer_email"]')
+    };
+    var receiverFields = {
+        name: document.querySelector('input[name="full_name"]'),
+        phone: document.querySelector('input[name="phone"]'),
+        email: document.querySelector('input[name="email"]')
+    };
+    var copyCheckbox = document.getElementById('copy-buyer-info');
+
     function toggle(){
         var val = document.querySelector('input[name="payment_method"]:checked').value;
         var show = (val === 'online');
@@ -186,13 +318,41 @@ document.addEventListener('DOMContentLoaded', function(){
         var logos = document.getElementById('payment-logos'); if (logos) logos.style.display = show ? 'block' : 'none';
         payOptions.forEach(function(el){ el.classList.toggle('active', el.querySelector('input').checked); });
     }
+
+    function copyBuyerInfo(){
+        if (!buyerFields.name || !receiverFields.name) return;
+        receiverFields.name.value = buyerFields.name.value || '';
+        receiverFields.phone.value = buyerFields.phone ? buyerFields.phone.value || '' : receiverFields.phone.value;
+        if (receiverFields.email && buyerFields.email) {
+            receiverFields.email.value = buyerFields.email.value || '';
+        }
+    }
+
     payOptions.forEach(function(el){ el.addEventListener('click', function(){ var inp = el.querySelector('input'); if (inp) { inp.checked = true; toggle(); } }); });
     radios.forEach(function(r){ r.addEventListener('change', toggle); });
+
+    if (copyCheckbox) {
+        copyCheckbox.addEventListener('change', function(){
+            if (this.checked) {
+                copyBuyerInfo();
+            }
+        });
+    }
+    Object.values(buyerFields).forEach(function(field){
+        if (!field || !copyCheckbox) return;
+        field.addEventListener('input', function(){
+            if (copyCheckbox.checked) {
+                copyBuyerInfo();
+            }
+        });
+    });
+
     toggle();
 });
 </script>
 @endpush
 
 @endsection
+
 
 

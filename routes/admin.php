@@ -100,6 +100,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
             Route::get('/{review}', [ReviewController::class, 'show'])->name('show');
             Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])
                 ->name('toggleStatus');
+            Route::delete('/{id}', [ReviewController::class, 'destroy'])->name('destroy');
         });
     });
 });

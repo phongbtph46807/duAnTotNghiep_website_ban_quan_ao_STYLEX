@@ -1,10 +1,7 @@
+﻿
 <?php $__env->startSection('title', 'Bài Viết - ' . env('APP_NAME')); ?>
 <?php $__env->startSection('content'); ?>
-    
-    <?php
-        use Illuminate\Support\Str;
-    ?>
-    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url(<?php echo e(asset('assets/images/posts/bg-02.jpg')); ?>);">
+    <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="<?php echo 'background-image: url(' . asset('assets/images/posts/bg-02.jpg') . ');'; ?>">
         <h2 class="ltext-105 cl0 txt-center">
             Blog
         </h2>
@@ -20,15 +17,15 @@
                                 <img src="<?php echo e(asset('assets/images/posts/blog-04.jpg')); ?>" alt="IMG-BLOG">
 
                                 <div class="flex-col-c-m size-123 bg9 how-pos5">
-									<span class="ltext-107 cl2 txt-center">
-										<?php echo e($post -> created_at->format('d')); ?>
+								<span class="ltext-107 cl2 txt-center">
+									<?php echo e($post -> created_at->format('d')); ?>
 
-									</span>
+								</span>
 
                                     <span class="stext-109 cl3 txt-center">
-										<?php echo e($post -> created_at->format('M Y')); ?>
+									<?php echo e($post -> created_at->format('M Y')); ?>
 
-									</span>
+								</span>
                                 </div>
                             </a>
 
@@ -41,45 +38,40 @@
                                 </h4>
 
                                 <p class="stext-117 cl6">
-                                    <?php echo e(Str::limit(strip_tags($post->content), 150, '...')); ?>
+                                    <?php echo e(\Illuminate\Support\Str::limit(strip_tags($post->content), 150, '...')); ?>
 
                                 </p>
 
                                 <div class="flex-w flex-sb-m p-t-18">
-									<span class="flex-w flex-m stext-111 cl2 p-r-30 m-tb-10">
-										<span>
-											<span class="cl4">By</span> <?php echo e($post->author->name ?? 'Admin'); ?>
-
-
-										</span>
-
-
-
-
-
-
-
+								<span class="flex-w flex-m stext-111 cl2 p-r-30 m-tb-10">
+									<span>
+										<span class="cl4">By</span> <?php echo e($post->author->name ?? 'Admin'); ?>
 
 
 									</span>
 
-                                    <a href="<?php echo e(route('client.posts.show', $post->slug)); ?>" class="stext-101 cl2 hov-cl1 trans-04 m-tb-10">
-                                        Continue Reading
 
-                                        <i class="fa fa-long-arrow-right m-l-9"></i>
-                                    </a>
+
+
+
+
+
+
+
+								</span>
+
+                                <a href="<?php echo e(route('client.posts.show', $post->slug)); ?>" class="stext-101 cl2 hov-cl1 trans-04 m-tb-10">
+                                    Continue Reading
+
+                                    <i class="fa fa-long-arrow-right m-l-9"></i>
+                                </a>
                                 </div>
                             </div>
                         </div>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <div class="flex-l-m flex-w w-full p-t-10 m-lr--7">
-                            <a href="#" class="flex-c-m how-pagination1 trans-04 m-all-7 active-pagination1">
-                                1
-                            </a>
+                            <?php echo e($posts->links('client.posts.pagination')); ?>
 
-                            <a href="#" class="flex-c-m how-pagination1 trans-04 m-all-7">
-                                2
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -148,8 +140,8 @@
                                         </a>
 
                                         <span class="stext-116 cl6 p-t-20">
-											$19.00
-										</span>
+										$19.00
+									</span>
                                     </div>
                                 </li>
 
@@ -164,8 +156,8 @@
                                         </a>
 
                                         <span class="stext-116 cl6 p-t-20">
-											$39.00
-										</span>
+										$39.00
+									</span>
                                     </div>
                                 </li>
 
@@ -180,8 +172,8 @@
                                         </a>
 
                                         <span class="stext-116 cl6 p-t-20">
-											$17.00
-										</span>
+										$17.00
+									</span>
                                     </div>
                                 </li>
                             </ul>
@@ -195,97 +187,97 @@
                             <ul>
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											July 2018
-										</span>
+									<span>
+										July 2018
+									</span>
 
                                         <span>
-											(9)
-										</span>
+										(9)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											June 2018
-										</span>
+									<span>
+										June 2018
+									</span>
 
                                         <span>
-											(39)
-										</span>
+										(39)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											May 2018
-										</span>
+									<span>
+										May 2018
+									</span>
 
                                         <span>
-											(29)
-										</span>
+										(29)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											April  2018
-										</span>
+									<span>
+										April  2018
+									</span>
 
                                         <span>
-											(35)
-										</span>
+										(35)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											March 2018
-										</span>
+									<span>
+										March 2018
+									</span>
 
                                         <span>
-											(22)
-										</span>
+										(22)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											February 2018
-										</span>
+									<span>
+										February 2018
+									</span>
 
                                         <span>
-											(32)
-										</span>
+										(32)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											January 2018
-										</span>
+									<span>
+										January 2018
+									</span>
 
                                         <span>
-											(21)
-										</span>
+										(21)
+									</span>
                                     </a>
                                 </li>
 
                                 <li class="p-b-7">
                                     <a href="#" class="flex-w flex-sb-m stext-115 cl6 hov-cl1 trans-04 p-tb-2">
-										<span>
-											December 2017
-										</span>
+									<span>
+										December 2017
+									</span>
 
                                         <span>
-											(26)
-										</span>
+										(26)
+									</span>
                                     </a>
                                 </li>
                             </ul>
@@ -326,4 +318,5 @@
 <?php $__env->stopSection(); ?>
 
 
-<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\posts\index.blade.php ENDPATH**/ ?>
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views\client\posts\index.blade.php ENDPATH**/ ?>

@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', $post->title . ' - ' . env('APP_NAME'))
 
@@ -346,3 +346,4 @@
         </div>
     </section>
 @endsection
+

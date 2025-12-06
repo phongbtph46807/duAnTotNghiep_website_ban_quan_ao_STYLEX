@@ -40,6 +40,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
     public function productVariants()
     {
         return $this->hasMany(ProductVariant::class);
@@ -50,9 +55,24 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+    
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
     public function primaryImage()
     {
         return $this->hasOne(ProductImage::class)->where('is_primary', true);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 
     // Accessor để lấy URL ảnh thumbnail
@@ -67,13 +87,48 @@ class Product extends Model
     // Accessor để lấy URL ảnh chính
     public function getDefaultImageUrlAttribute()
     {
-        if ($this->primaryImage) {
-            return \Storage::url($this->primaryImage->image_path);
+        // Helper function để kiểm tra và trả về URL ảnh
+        $getImageUrl = function($path) {
+            if (!$path) return null;
+            
+            // Nếu path bắt đầu bằng 'client/images' thì dùng asset
+            if (str_starts_with($path, 'client/images/')) {
+                return asset($path);
+            }
+            
+            // Nếu là path trong storage, kiểm tra file có tồn tại không
+            $fullPath = storage_path('app/public/' . $path);
+            if (file_exists($fullPath)) {
+                return \Storage::url($path);
+            }
+            
+            return null;
+        };
+        
+        // 1. Kiểm tra primaryImage
+        if ($this->primaryImage && $this->primaryImage->image_path) {
+            $url = $getImageUrl($this->primaryImage->image_path);
+            if ($url) return $url;
         }
+        
+        // 2. Kiểm tra ảnh đầu tiên trong productImages
+        if ($this->productImages && $this->productImages->count() > 0) {
+            foreach ($this->productImages as $image) {
+                if ($image->image_path) {
+                    $url = $getImageUrl($image->image_path);
+                    if ($url) return $url;
+                }
+            }
+        }
+        
+        // 3. Kiểm tra thumbnail
         if ($this->thumbnail) {
-            return \Storage::url($this->thumbnail);
+            $url = $getImageUrl($this->thumbnail);
+            if ($url) return $url;
         }
-        return asset('client/images/no-image.jpg'); // Ảnh mặc định
+        
+        // 4. Fallback về ảnh mặc định
+        return asset('client/images/banner-01.jpg');
     }
     public function reviews()
     {

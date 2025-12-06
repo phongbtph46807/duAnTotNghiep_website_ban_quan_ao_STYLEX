@@ -24,6 +24,7 @@ class ShippingCarrierRequest extends FormRequest
                 'required','max:20',
                 Rule::unique('shipping_carriers','code')->ignore($id)
             ],
+            'fee' => ['required','numeric','min:0'],
             'active' => ['nullable','boolean'],
         ];
     }

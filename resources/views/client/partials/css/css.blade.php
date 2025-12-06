@@ -27,7 +27,13 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="{{ asset('client/css/util.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ asset('client/css/main.css') }}">
+<<<<<<< HEAD
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+=======
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{{ asset('client/css/chat.css') }}">
+	
+>>>>>>> 670ba37de60521cf87491101646e80c825f6699a
 	<!-- Custom CSS for User Dropdown -->
 	<style>
 		.dropdown {

@@ -15,11 +15,13 @@ class ReviewController extends Controller
         // --- FILTERS ---
         $status = $request->status ?? null;        // public / hidden
         $rating = $request->rating ?? null;        // 1-5
-        $product = $request->product ?? null;      // ID sản phẩm
+        $product = $request->product ?? null;      // ID sản phẩm    
 
         $query = Review::with([
             'user:id,name,email',
-            'product:id,name',
+            'product' => function($q) {
+                $q->withTrashed()->select('id', 'name');
+            },
             'productVariant',
             'media',
             'experiences'
@@ -56,30 +58,38 @@ class ReviewController extends Controller
         return view('admin.reviews.index', compact('reviews', 'summary', 'products'));
     }
 
-
-
     public function show($id)
     {
-        $review = Review::with(['user', 'product', 'productVariant', 'media', 'experiences'])
-            ->findOrFail($id);
+        $review = Review::with([
+            'user',
+            'product' => function($q) {
+                $q->withTrashed();
+            },
+            'productVariant',
+            'media',
+            'experiences'
+        ])->findOrFail($id);
 
         return view('admin.reviews.show', compact('review'));
     }
 
     public function toggleStatus($id)
-{
-    $review = Review::findOrFail($id);
+    {
+        $review = Review::findOrFail($id);
 
-    // Đảo trạng thái
-    $review->status = $review->status === 'public' ? 'hidden' : 'public';
-    $review->save();
+        // Đảo trạng thái
+        $review->status = $review->status === 'public' ? 'hidden' : 'public';       
+        $review->save();
 
-        $message = $review->status === 'public'
-        ? 'Hiển thị đánh giá thành công!'
-        : 'Ẩn đánh giá thành công!';
+        return redirect()->route('admin.reviews.index')
+            ->with('success', 'Đã cập nhật trạng thái đánh giá thành công');
+    }
 
-    return redirect()->back()->with('success', $message);
-}
+    public function destroy($id)
+    {
+        $review = Review::findOrFail($id);
+        $review->delete();
 
-
+        return redirect()->route('admin.reviews.index')->with('success', 'Đã xóa đánh giá thành công');
+    }
 }

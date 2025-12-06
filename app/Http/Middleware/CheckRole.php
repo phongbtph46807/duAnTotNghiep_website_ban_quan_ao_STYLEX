@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
@@ -15,11 +16,12 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         
         // Convert string roles to integers for comparison
         $requiredRoles = array_map('intval', $roles);
@@ -27,6 +29,15 @@ class CheckRole
         // Check if user has any of the required roles
         if (!in_array($user->role, $requiredRoles)) {
             abort(403, 'Bạn không có quyền truy cập trang này.');
+        }
+
+        // Kiểm tra permission nếu route có tên (dựa trên route name)
+        $route = $request->route();
+        if ($route && $route->getName()) {
+            $routeName = $route->getName();
+            if (!$user->hasPermission($routeName)) {
+                abort(403, 'Bạn không có quyền thực hiện hành động này.');
+            }
         }
 
         return $next($request);

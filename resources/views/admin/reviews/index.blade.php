@@ -38,11 +38,11 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lí đánh giá</h4>
+                <h4 class="mb-sm-0">Quản lý đánh giá</h4>
 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lí đánh giá</a></li>
+                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lý đánh giá</a></li>
                         <li class="breadcrumb-item">Danh sách đánh giá</li>
                     </ol>
                 </div>
@@ -113,13 +113,6 @@
                 <div class="card-body" id="filterForm" style="display: none;">
                     <form action="{{ route('admin.reviews.index') }}" method="GET">
                         <div class="row g-3">
-                            {{-- Họ tên --}}
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">Người đánh giá</label>
-                                <input type="text" name="us" value="{{ request('us') }}" class="form-control"
-                                    placeholder="Nhập tên người dùng">
-                            </div>
-
                             {{-- Sản phẩm --}}
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold">Sản phẩm</label>
@@ -173,6 +166,13 @@
                     </form>
                 </div>
                 <div class="card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
                     <div class="listjs-table" id="customerList">
 
                         <div class="table-responsive table-card mt-3 mb-1">
@@ -210,7 +210,7 @@
 
                                             {{-- Sản phẩm --}}
                                             <td>
-                                                {{ $review->product->name ?? '---' }} <br>
+                                                {{ $review->product ? $review->product->name : 'Sản phẩm đã bị xóa (ID: ' . $review->product_id . ')' }} <br>
                                                 {{ $review->productVariant->attribute_summary ?? '---' }}
                                             </td>
 
@@ -316,11 +316,19 @@
                                                             <i class="las la-eye"></i>
                                                         </button>
                                                     </div>
-
-
-
-
-
+                                                    <div class="delete">
+                                                        <form action="{{ route('admin.reviews.destroy', $review->id) }}" 
+                                                              method="POST" 
+                                                              style="display:inline;"
+                                                              onsubmit="return confirm('Bạn chắc chắn muốn xóa đánh giá này?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
                                             </td>
 
                                         </tr>
@@ -348,7 +356,7 @@
                                                         <!-- Sản phẩm -->
                                                         <div class="mb-3">
                                                             <strong>Sản phẩm:</strong>
-                                                            {{ $review->product->name }}
+                                                            {{ $review->product ? $review->product->name : 'Sản phẩm đã bị xóa (ID: ' . $review->product_id . ')' }}
                                                             <br>
                                                             <small>
                                                                 Phân loại hàng:
@@ -456,7 +464,7 @@
                                                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                                                     @foreach ($review->media as $media)
                                                                         <a href="{{ $media->url }}" target="_blank">
-                                                                            <img src="{{ Storage::url($media->url) }}"
+                                                                            <img src="{{ $media->url }}"
                                                                                 alt="Ảnh đánh giá"
                                                                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd;">
                                                                         </a>

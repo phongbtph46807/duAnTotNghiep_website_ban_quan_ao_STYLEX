@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Voucher\VoucherRequest;
 use App\Models\Voucher;
-use Illuminate\Http\Request;
 
 class VoucherController extends Controller
 {
@@ -37,9 +37,9 @@ class VoucherController extends Controller
         return view('admin.vouchers.create');
     }
 
-    public function store(Request $request)
+    public function store(VoucherRequest $request)
     {
-        $data = $this->validateData($request);
+        $data = $request->validated();
         Voucher::create($data);
         return redirect()->route('admin.vouchers.index')->with('success', 'Tạo voucher thành công');
     }
@@ -49,9 +49,9 @@ class VoucherController extends Controller
         return view('admin.vouchers.edit', compact('voucher'));
     }
 
-    public function update(Request $request, Voucher $voucher)
+    public function update(VoucherRequest $request, Voucher $voucher)
     {
-        $data = $this->validateData($request, $voucher->id);
+        $data = $request->validated();
         $voucher->update($data);
         return redirect()->route('admin.vouchers.index')->with('success', 'Cập nhật voucher thành công');
     }
@@ -60,29 +60,6 @@ class VoucherController extends Controller
     {
         $voucher->delete();
         return redirect()->route('admin.vouchers.index')->with('success', 'Đã xóa voucher');
-    }
-
-    private function validateData(Request $request, ?int $ignoreId = null): array
-    {
-        $uniqueRule = 'unique:vouchers,code';
-        if ($ignoreId) {
-            $uniqueRule .= ',' . $ignoreId;
-        }
-
-        return $request->validate([
-            'code' => ['required', 'string', 'max:50', $uniqueRule],
-            'description' => ['nullable', 'string', 'max:255'],
-            'type' => ['required', 'in:percent,fixed'],
-            'value' => ['required', 'numeric', 'min:0'],
-            'max_discount_amount' => ['nullable', 'numeric', 'min:0'],
-            'min_order_amount' => ['nullable', 'numeric', 'min:0'],
-            'usage_limit' => ['nullable', 'integer', 'min:1'],
-            'starts_at' => ['nullable', 'date'],
-            'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
-            'is_active' => ['sometimes', 'boolean'],
-        ]) + [
-            'is_active' => $request->boolean('is_active'),
-        ];
     }
 }
 

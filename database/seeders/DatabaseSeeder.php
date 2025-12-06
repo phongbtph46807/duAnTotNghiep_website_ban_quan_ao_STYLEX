@@ -28,7 +28,8 @@ class DatabaseSeeder extends Seeder
             PostSeeder::class,
             TagSeeder::class,
             ReviewSeeder::class,
-
+            VoucherSeeder::class,
+            PermissionSeeder::class,
         ]);
     }
 }

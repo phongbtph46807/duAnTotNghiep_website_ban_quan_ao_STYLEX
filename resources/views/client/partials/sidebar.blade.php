@@ -11,9 +11,15 @@
 							Trợ giúp & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
+						@auth
+							<a href="{{ route('client.profile.index') }}" class="flex-c-m trans-04 p-lr-25">
+								Tài Khoản
+							</a>
+						@else
+							<a href="{{ route('loginView') }}" class="flex-c-m trans-04 p-lr-25">
 							Tài Khoản
 						</a>
+						@endauth
 
 					</div>
 				</div>
@@ -79,27 +85,96 @@
 						</a>
 						
 						@auth
+							@php 
+								$authUser = Auth::user();
+								$loyaltyService = app(\App\Services\LoyaltyService::class);
+								$currentTier = $loyaltyService->getCurrentTier($authUser);
+								$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
+								$totalSpent = $authUser->getTotalSpent();
+								
+								// Tính toán màu sắc cho badge
+								$tierBgColor = '#b9f2ff';
+								$tierTextColor = '#fff';
+								if ($currentTier) {
+									if ($currentTier->name === 'Bronze') {
+										$tierBgColor = '#cd7f32';
+									} elseif ($currentTier->name === 'Silver') {
+										$tierBgColor = '#c0c0c0';
+									} elseif ($currentTier->name === 'Gold') {
+										$tierBgColor = '#ffd700';
+										$tierTextColor = '#000';
+									} elseif ($currentTier->name === 'Platinum') {
+										$tierBgColor = '#e5e4e2';
+										$tierTextColor = '#000';
+									}
+								}
+								
+								// Tính toán progress width
+								$progressWidth = 0;
+								if ($nextTierProgress) {
+									$progressWidth = min(100, $nextTierProgress['progress']);
+								}
+								
+								// Tính toán các style strings
+								$badgeStyle = "background: {$tierBgColor}; color: {$tierTextColor}; font-size: 9px; padding: 2px 5px; border-radius: 3px; line-height: 1.2; flex-shrink: 0;";
+								$badgeStyleLarge = "background: {$tierBgColor}; color: {$tierTextColor}; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600;";
+								$progressStyle = "background: #6777ef; height: 100%; width: {$progressWidth}%; transition: width 0.3s;";
+							@endphp
 							<!-- User đã đăng nhập -->
 							<div class="dropdown">
-								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown">
+								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown" style="display: flex; align-items: center; gap: 6px;">
 									<i class="zmdi zmdi-account"></i>
-									<span class="ml-2">{{ Auth::user()->name }}</span>
+									<span class="ml-2" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $authUser->name ?? 'Tài khoản' }}</span>
+									@if($currentTier)
+										<span class="badge" {!! 'style="' . $badgeStyle . '"' !!}>
+											{{ $currentTier->name }}
+										</span>
+									@endif
 								</a>
-								<div class="dropdown-menu dropdown-menu-end">
-									<div class="dropdown-header">
+								<div class="dropdown-menu dropdown-menu-end" style="min-width: 280px;">
+									<div class="dropdown-header" style="padding: 12px 16px;">
 										<div class="user-info">
-											<div class="user-name">{{ Auth::user()->name }}</div>
-											<div class="user-email">{{ Auth::user()->email }}</div>
+											@if($currentTier)
+												<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+													<div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+														<span style="font-size: 11px; color: #666; font-weight: 500;">Hạng:</span>
+														<span class="badge" {!! 'style="' . $badgeStyleLarge . '"' !!}>
+															{{ $currentTier->name }}
+														</span>
+														@if($currentTier->discount_rate > 0)
+															<span style="font-size: 11px; color: #28a745; font-weight: 600;">-{{ number_format($currentTier->discount_rate, 0) }}%</span>
+														@endif
+														<span style="font-size: 11px; color: #888;">•</span>
+														<span style="font-size: 11px; color: #888;">
+															Đã chi: <strong style="color: #333;">{{ number_format($totalSpent, 0, ',', '.') }} ₫</strong>
+														</span>
+													</div>
+													@if($nextTierProgress)
+														<div style="margin-top: 8px;">
+															<div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+																Lên <strong>{{ $nextTierProgress['next_tier']->name }}</strong> còn: <strong style="color: #6777ef;">{{ number_format($nextTierProgress['remaining'], 0, ',', '.') }} ₫</strong>
+															</div>
+															<div style="background: #f0f0f0; border-radius: 4px; height: 6px; overflow: hidden;">
+																<div {!! 'style="' . $progressStyle . '"' !!}></div>
+															</div>
+														</div>
+													@endif
+												</div>
+											@endif
 										</div>
 									</div>
 									<div class="dropdown-divider"></div>
-									<a class="dropdown-item" href="#">
+									<a class="dropdown-item" href="{{ route('client.profile.index') }}">
 										<i class="zmdi zmdi-account-circle me-2"></i>
 										Hồ sơ cá nhân
 									</a>
 									<a class="dropdown-item" href="{{ route('client.order.list') }}">
 										<i class="zmdi zmdi-shopping-cart me-2"></i>
 										Đơn hàng của tôi
+									</a>
+									<a class="dropdown-item" href="{{ route('client.order.track') }}">
+										<i class="zmdi zmdi-search me-2"></i>
+										Tra cứu đơn hàng
 									</a>
 									<a class="dropdown-item" href="#">
 										<i class="zmdi zmdi-favorite me-2"></i>
