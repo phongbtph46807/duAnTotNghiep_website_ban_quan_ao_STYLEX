@@ -28,6 +28,9 @@
 	<link rel="stylesheet" type="text/css" href="<?php echo e(asset('client/css/util.css')); ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo e(asset('client/css/main.css')); ?>">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="<?php echo e(asset('client/css/chat.css')); ?>">
+	
 	<!-- Custom CSS for User Dropdown -->
 	<style>
 		.dropdown {

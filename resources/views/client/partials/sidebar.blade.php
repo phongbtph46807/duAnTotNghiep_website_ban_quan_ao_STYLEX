@@ -122,7 +122,7 @@
 							@endphp
 							<!-- User đã đăng nhập -->
 							<div class="dropdown">
-								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown" style="display: flex; align-items: center; gap: 6px;">
+								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" onclick="console.log('CLICKED DROPDOWN')" data-bs-toggle="dropdown" style="display: flex; align-items: center; gap: 6px;">
 									<i class="zmdi zmdi-account"></i>
 									<span class="ml-2" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $authUser->name ?? 'Tài khoản' }}</span>
 									@if($currentTier)

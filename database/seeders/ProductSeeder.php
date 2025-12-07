@@ -80,7 +80,7 @@ class ProductSeeder extends Seeder
                 $textureId = $textures[$v % count($textures)];
                 
                 $sku = strtoupper(Str::random(12));
-                $variantPrice = rand(0, 1) ? $priceSale + rand(-20000, 20000) : null; // 50% có giá riêng
+                $variantPrice = rand(150000, 600000) ? $priceSale + rand(-20000, 20000) : null; // 50% có giá riêng
                 $quantity = rand(10, 100);
                 
                 $variantId = DB::table('product_variants')->insertGetId([

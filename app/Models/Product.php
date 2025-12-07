@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -70,16 +71,11 @@ class Product extends Model
         return $this->hasOne(ProductImage::class)->where('is_primary', true);
     }
 
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
-    }
-
     // Accessor để lấy URL ảnh thumbnail
     public function getThumbnailUrlAttribute()
     {
         if ($this->thumbnail && file_exists(storage_path('app/public/' . $this->thumbnail))) {
-            return \Storage::url($this->thumbnail);
+            return Storage::url($this->thumbnail);
         }
         return asset('client/images/banner-01.jpg'); // Ảnh mặc định
     }
@@ -99,7 +95,7 @@ class Product extends Model
             // Nếu là path trong storage, kiểm tra file có tồn tại không
             $fullPath = storage_path('app/public/' . $path);
             if (file_exists($fullPath)) {
-                return \Storage::url($path);
+                return Storage::url($path);
             }
             
             return null;
