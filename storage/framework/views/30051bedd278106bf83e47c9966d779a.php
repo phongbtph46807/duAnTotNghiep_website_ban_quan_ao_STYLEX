@@ -4,6 +4,20 @@
 
 <?php $__env->startSection('content'); ?>
 <style>
+	/* Font Inter cho toàn bộ trang cart - Hỗ trợ tiếng Việt */
+	body, 
+	body *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+	.table-shopping-cart,
+	.table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+	.wrap-table-shopping-cart,
+	.wrap-table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+	.cart-dropdown-title, .cart-dropdown-name, .cart-dropdown-info,
+	.stext-109, .stext-101, .stext-102, .stext-103, .stext-104, .stext-105, .stext-106, .stext-107, .stext-108, .stext-110, .stext-111,
+	.mtext-101, .mtext-102, .mtext-103, .mtext-104, .mtext-105, .mtext-106, .mtext-107, .mtext-108, .mtext-109, .mtext-110,
+	.ltext-101, .ltext-102, .ltext-103, .ltext-104, .ltext-105, .ltext-106, .ltext-107, .ltext-108, .ltext-109, .ltext-110 {
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+	}
+	
 	/* Cart Dropdown Styles */
 	.cart-dropdown-header {
 		display: flex;

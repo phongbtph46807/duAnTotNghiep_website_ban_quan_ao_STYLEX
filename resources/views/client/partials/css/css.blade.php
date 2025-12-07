@@ -231,200 +231,47 @@
 			background-color: #e9ecef;
 		}
 	</style>
+	
+	<!-- Font hỗ trợ tiếng Việt - Chỉ áp dụng cho text, không ảnh hưởng icon -->
 	<style>
-		body {
-            background-color: #f8f9fa;
-        }
-
-        .rating-bar {
-            height: 8px;
-            border-radius: 4px;
-            background-color: #edeef0;
-            overflow: hidden;
-        }
-
-        .rating-bar-fill {
-            height: 100%;
-            background-color: #d70018;
-            border-radius: 4px 0 0 4px;
-        }
-
-        /* Tag nhỏ trong đánh giá */
-        .tag {
-            font-size: 13px;
-            padding: 3px 10px;
-            background-color: #f5f6f7;
-            border-radius: 8px;
-            margin-right: 0.4rem;
-            margin-bottom: 0.4rem;
-            display: inline-block;
-            color: #565656;
-        }
-
-        /* Nút màu đỏ */
-        .btn-red {
-            background-color: #d70018;
-            color: white;
-            border: none;
-            padding: 0.375rem 0.9rem;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 4px;
-        }
-
-        .btn-red:hover {
-            background-color: #b30012;
-            color: white;
-        }
-
-        /* Avatar tròn */
-        .avatar-circle {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            color: white;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .avatar-t {
-            background-color: #864cff;
-        }
-
-        .avatar-d {
-            background-color: #3c72ff;
-        }
-
-        .avatar-p {
-            background-color: #a03f64;
-        }
-
-        .avatar-n {
-            background-color: #42617b;
-        }
-
-        .avatar-h {
-            background-color: #d14343;
-        }
-
-        /* Các nút lọc */
-        .filter-btn {
-            font-size: 13px;
-            margin-right: 0.4rem;
-            margin-bottom: 0.5rem;
-            padding: 0.25rem 0.9rem;
-            border-radius: 20px;
-            border: 1px solid #ddd;
-            background: #fff;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .filter-btn:hover,
-        .filter-btn.active {
-            background-color: #d70018;
-            color: white;
-            border-color: #d70018;
-        }
-
-        /* Icon ngôi sao SVG nhỏ */
-        .star-icon {
-            width: 18px;
-            height: 18px;
-            margin-left: 4px;
-            flex-shrink: 0;
-            fill: #FFDD55;
-            /* Vàng sáng */
-            stroke: #F5A623;
-            /* Viền vàng đậm */
-            stroke-width: 1;
-        }
-
-        .stars-inline {
-            display: inline-flex;
-            align-items: center;
-            gap: 1px;
-            user-select: none;
-        }
-
-        .review-header {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .review-subtitle {
-            font-size: 0.8rem;
-            color: #888;
-        }
-
-        .review-time {
-            font-size: 0.75rem;
-            color: #999;
-            margin-top: 0.3rem;
-            user-select: none;
-        }
-
-        .review-time i {
-            margin-right: 5px;
-        }
-
-        .container-custom {
-            max-width: 1080px;
-        }
-
-        /* Scroll x nếu có nhiều nút lọc */
-        .filter-container {
-            overflow-x: auto;
-            white-space: nowrap;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-        }
-
-        .star-input {
-            direction: rtl;
-            font-size: 24px;
-            unicode-bidi: bidi-override;
-            display: inline-flex;
-            justify-content: flex-start;
-        }
-
-        .star-input input {
-            display: none;
-        }
-
-        .star-input label {
-            color: #ddd;
-            cursor: pointer;
-            padding: 0 4px;
-            transition: color 0.2s ease-in-out;
-        }
-
-        .star-input label:hover,
-        .star-input label:hover~label,
-        .star-input input:checked~label {
-            color: #ffcc00;
-        }
-
-        .tag-checkbox {
-            margin-right: 0.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-label {
-            font-weight: 600;
-        }
-
-        .modal-header-title {
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
+		/* Áp dụng font Inter cho body và tất cả phần tử - Hỗ trợ tiếng Việt tốt */
+		body,
+		body *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i) {
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+		}
+		
+		/* Áp dụng cho các phần tử cụ thể trong cart */
+		.table-shopping-cart,
+		.table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+		.cart-dropdown-title, .cart-dropdown-name, .cart-dropdown-info,
+		.wrap-table-shopping-cart,
+		.wrap-table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i) {
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+		}
+		
+		/* Đảm bảo icon fonts giữ nguyên font gốc - QUAN TRỌNG: Phải đặt sau body */
+		.fa, .fa:before, i.fa,
+		.zmdi, .zmdi:before, i.zmdi,
+		.lnr, [class*="lnr"]:before,
+		[class*="icon-"]:before,
+		.material-icons,
+		[class*="linearicons"]:before {
+			font-family: inherit !important;
+		}
+		
+		/* Font Awesome */
+		.fa, .fa:before, i.fa {
+			font-family: "FontAwesome" !important;
+		}
+		
+		/* Material Design Iconic Font */
+		.zmdi, .zmdi:before, i.zmdi {
+			font-family: "Material-Design-Iconic-Font" !important;
+		}
+		
+		/* Linearicons */
+		.lnr, [class*="lnr"]:before {
+			font-family: "Linearicons-Free" !important;
+		}
 	</style>
 <!--===============================================================================================-->

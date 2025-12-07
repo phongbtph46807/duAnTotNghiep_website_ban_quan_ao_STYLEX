@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-    //     Schema::create('product_images', function (Blueprint $table) {
-    //     $table->id();
-    //     $table->foreignId('product_id')
-    //           ->constrained('products')
-    //           ->onDelete('cascade'); 
-    //     $table->string('image_path')->nullable(); 
-    //     $table->string('image_url')->nullable();  
-    //     $table->string('alt_text')->nullable();   
-    //     $table->integer('sort_order')->default(0); 
-    //     $table->boolean('is_primary')->default(false); 
-    //     $table->timestamps();
-    // });
+        Schema::create('product_images', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')
+                  ->constrained('products')
+                  ->onDelete('cascade'); 
+            $table->foreignId('variant_id')->nullable()->constrained('product_variants')->onDelete('cascade');
+            $table->string('image_path')->nullable(); 
+            $table->string('image_url')->nullable();  
+            $table->string('alt_text')->nullable();   
+            $table->integer('sort_order')->default(0); 
+            $table->boolean('is_primary')->default(false);
+            $table->boolean('is_main')->default(false);
+            $table->timestamps();
+        });
     }
 
     /**

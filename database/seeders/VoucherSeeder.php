@@ -18,9 +18,10 @@ class VoucherSeeder extends Seeder
         $data = [
             [
                 'code'              => 'GIAM10',
-                'description'       => 'Giảm 10% cho mọi đơn hàng từ 200.000đ',
+                'description'       => 'Giảm 10% cho mọi đơn hàng từ 200.000đ (tối đa 100.000đ)',
                 'type'              => 'percent',
                 'value'             => 10,          // 10%
+                'max_discount_amount' => 100000,    // Giảm tối đa 100k
                 'min_order_amount'  => 200000,      // 200k
                 'usage_limit'       => null,        // không giới hạn lượt
                 'used_count'        => 0,
@@ -33,6 +34,7 @@ class VoucherSeeder extends Seeder
                 'description'       => 'Giảm 50.000đ cho đơn từ 500.000đ',
                 'type'              => 'fixed',
                 'value'             => 50000,
+                'max_discount_amount' => null,      // Voucher fixed không cần max_discount
                 'min_order_amount'  => 500000,
                 'usage_limit'       => 100,
                 'used_count'        => 0,
@@ -45,6 +47,7 @@ class VoucherSeeder extends Seeder
                 'description'       => 'Giảm 30.000đ phí ship cho đơn từ 300.000đ',
                 'type'              => 'fixed',
                 'value'             => 30000,
+                'max_discount_amount' => null,      // Voucher fixed không cần max_discount
                 'min_order_amount'  => 300000,
                 'usage_limit'       => null,
                 'used_count'        => 0,

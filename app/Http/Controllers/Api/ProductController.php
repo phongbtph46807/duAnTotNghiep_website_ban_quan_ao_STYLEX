@@ -8,11 +8,14 @@ use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductController extends Controller
 {
     public function index(ProductFilterRequest $request)
     {
+        try {
         $q = Product::query()
             ->with([
                 'brand',
@@ -109,8 +112,12 @@ class ProductController extends Controller
             }
         }
 
-        // pagination
+            // pagination - tăng per_page lên số lớn để hiển thị nhiều sản phẩm
         $perPage = (int) $request->input('per_page', 15);
+            // Giới hạn tối đa 10000 sản phẩm mỗi trang để tránh quá tải
+            if ($perPage > 10000) {
+                $perPage = 10000;
+            }
         $page = (int) $request->input('page', 1);
 
         // caching (simple example): cache by query string for 30s
@@ -129,6 +136,20 @@ class ProductController extends Controller
                     'total' => $result->total(),
                 ]
             ]);
+        } catch (\Exception $e) {
+            Log::error('Product API Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'data' => [],
+                'meta' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 15,
+                    'total' => 0,
+                ]
+            ], 500);
+        }
     }
 
     public function show(Product $product)

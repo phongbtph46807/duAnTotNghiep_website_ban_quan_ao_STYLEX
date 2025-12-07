@@ -99,26 +99,34 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permissionName): bool
     {
-        // Map role integer sang role name
+        // Kiểm tra permissions trực tiếp từ user (nếu có)
+        if ($this->permissions()->where('name', $permissionName)->exists()) {
+            return true;
+        }
+
+        // Kiểm tra permissions từ roles (many-to-many)
+        $userRoles = $this->roles;
+        foreach ($userRoles as $role) {
+            if ($role->permissions()->where('name', $permissionName)->exists()) {
+                return true;
+            }
+        }
+
+        // Backward compatibility: Kiểm tra trường role cũ
         $roleName = match($this->role) {
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_STAFF => 'Staff',
             default => null
         };
 
-        if (!$roleName) {
-            return false;
+        if ($roleName) {
+            $role = Role::where('name', $roleName)->first();
+            if ($role && $role->permissions()->where('name', $permissionName)->exists()) {
+                return true;
+            }
         }
 
-        // Lấy role từ database
-        $role = Role::where('name', $roleName)->first();
-        
-        if (!$role) {
-            return false;
-        }
-
-        // Kiểm tra role có permission này không
-        return $role->permissions()->where('name', $permissionName)->exists();
+        return false;
     }
 
     /**
