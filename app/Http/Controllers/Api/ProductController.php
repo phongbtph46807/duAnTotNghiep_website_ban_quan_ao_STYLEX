@@ -114,9 +114,9 @@ class ProductController extends Controller
 
             // pagination - tăng per_page lên số lớn để hiển thị nhiều sản phẩm
         $perPage = (int) $request->input('per_page', 15);
-            // Giới hạn tối đa 1000 sản phẩm mỗi trang để tránh quá tải
-            if ($perPage > 1000) {
-                $perPage = 1000;
+            // Giới hạn tối đa 10000 sản phẩm mỗi trang để tránh quá tải
+            if ($perPage > 10000) {
+                $perPage = 10000;
             }
         $page = (int) $request->input('page', 1);
 

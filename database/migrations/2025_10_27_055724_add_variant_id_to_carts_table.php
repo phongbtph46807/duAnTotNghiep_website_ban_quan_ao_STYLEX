@@ -45,8 +45,8 @@ return new class extends Migration
         Schema::table('carts', function (Blueprint $table) {
             $table->foreign('variant_id')->references('id')->on('product_variants')->onDelete('cascade');
         });
-        
-        // Tạo unique constraint mới với variant_id
+            
+            // Tạo unique constraint mới với variant_id
         Schema::table('carts', function (Blueprint $table) {
             $table->unique(['user_id', 'variant_id'], 'unique_cart_variant');
         });

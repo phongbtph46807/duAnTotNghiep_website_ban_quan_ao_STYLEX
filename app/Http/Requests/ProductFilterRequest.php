@@ -22,7 +22,7 @@ class ProductFilterRequest extends FormRequest
             'in_stock' => 'nullable|in:0,1',
             'sort' => 'nullable|in:relevance,price_asc,price_desc,newest',
             'page' => 'nullable|integer|min:1',
-            'per_page' => 'nullable|integer|min:1|max:1000',
+            'per_page' => 'nullable|integer|min:1|max:10000',
         ];
     }
 
