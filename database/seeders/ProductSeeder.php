@@ -129,48 +129,48 @@ class ProductSeeder extends Seeder
 
                 // Tạo 1-2 images cho variant - sử dụng ảnh placeholder có sẵn (chỉ nếu bảng tồn tại)
                 if (Schema::hasTable('product_images')) {
-                    $imageCount = rand(1, 2);
-                    $productImageIndex = (($productId - 1) % 16) + 1; // Lặp lại từ 1-16
-                    for ($img = 0; $img < $imageCount; $img++) {
-                        $imageNum = (($productImageIndex + $img - 1) % 16) + 1;
-                        $imagePath = 'client/images/product-' . str_pad($imageNum, 2, '0', STR_PAD_LEFT) . '.jpg';
-                        
-                        DB::table('product_images')->insert([
-                            'product_id' => $productId,
-                            'variant_id' => $variantId,
-                            'image_url' => $imagePath,
-                            'image_path' => $imagePath,
-                            'is_primary' => ($v === 0 && $img === 0) ? 1 : 0,
-                            'is_main' => ($v === 0 && $img === 0) ? 1 : 0,
-                            'sort_order' => $img,
-                            'alt_text' => "$name - Variant " . ($v + 1),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                $imageCount = rand(1, 2);
+                $productImageIndex = (($productId - 1) % 16) + 1; // Lặp lại từ 1-16
+                for ($img = 0; $img < $imageCount; $img++) {
+                    $imageNum = (($productImageIndex + $img - 1) % 16) + 1;
+                    $imagePath = 'client/images/product-' . str_pad($imageNum, 2, '0', STR_PAD_LEFT) . '.jpg';
+                    
+                    DB::table('product_images')->insert([
+                        'product_id' => $productId,
+                        'variant_id' => $variantId,
+                        'image_url' => $imagePath,
+                        'image_path' => $imagePath,
+                        'is_primary' => ($v === 0 && $img === 0) ? 1 : 0,
+                        'is_main' => ($v === 0 && $img === 0) ? 1 : 0,
+                        'sort_order' => $img,
+                        'alt_text' => "$name - Variant " . ($v + 1),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
                     }
                 }
             }
 
             // Tạo thêm 1-2 images chung cho product (không gắn variant) - sử dụng ảnh placeholder (chỉ nếu bảng tồn tại)
             if (Schema::hasTable('product_images')) {
-                $productImageCount = rand(1, 2);
-                $productImageIndex = (($productId - 1) % 16) + 1;
-                for ($pimg = 0; $pimg < $productImageCount; $pimg++) {
-                    $imageNum = (($productImageIndex + $pimg) % 16) + 1;
-                    $imagePath = 'client/images/product-' . str_pad($imageNum, 2, '0', STR_PAD_LEFT) . '.jpg';
-                    
-                    DB::table('product_images')->insert([
-                        'product_id' => $productId,
-                        'variant_id' => null,
-                        'image_url' => $imagePath,
-                        'image_path' => $imagePath,
-                        'is_primary' => 0,
-                        'is_main' => 0,
-                        'sort_order' => $pimg + 10,
-                        'alt_text' => $name,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+            $productImageCount = rand(1, 2);
+            $productImageIndex = (($productId - 1) % 16) + 1;
+            for ($pimg = 0; $pimg < $productImageCount; $pimg++) {
+                $imageNum = (($productImageIndex + $pimg) % 16) + 1;
+                $imagePath = 'client/images/product-' . str_pad($imageNum, 2, '0', STR_PAD_LEFT) . '.jpg';
+                
+                DB::table('product_images')->insert([
+                    'product_id' => $productId,
+                    'variant_id' => null,
+                    'image_url' => $imagePath,
+                    'image_path' => $imagePath,
+                    'is_primary' => 0,
+                    'is_main' => 0,
+                    'sort_order' => $pimg + 10,
+                    'alt_text' => $name,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
                 }
             }
             
