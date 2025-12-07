@@ -9,7 +9,7 @@
 	 data-api-url="<?php echo e(url('/api/products/filter')); ?>"
 	 data-index-url="<?php echo e(route('client.products.index')); ?>"
 	 data-initial-category="<?php echo e($selectedCategory ?? ''); ?>"
-	 data-per-page="1000"
+	 data-per-page="9999"
 >
 	<div class="container">
 		<div class="flex-w flex-sb-m p-b-52">

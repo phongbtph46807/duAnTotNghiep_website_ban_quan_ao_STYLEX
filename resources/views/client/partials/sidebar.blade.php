@@ -92,9 +92,9 @@
 								$nextTierProgress = null;
 								$totalSpent = 0;
 								if ($authUser instanceof \App\Models\User) {
-									$currentTier = $loyaltyService->getCurrentTier($authUser);
-									$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
-									$totalSpent = $authUser->getTotalSpent();
+								$currentTier = $loyaltyService->getCurrentTier($authUser);
+								$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
+								$totalSpent = $authUser->getTotalSpent();
 								}
 								
 								// Tính toán màu sắc cho badge từ database
