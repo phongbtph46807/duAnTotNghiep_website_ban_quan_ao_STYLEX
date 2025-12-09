@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (!Schema::hasTable('product_images')) {
             Schema::create('product_images', function (Blueprint $table) {
-                $table->id();
+            $table->id();
                 $table->foreignId('product_id')
                       ->constrained('products')
                       ->onDelete('cascade'); 
@@ -24,8 +24,8 @@ return new class extends Migration
                 $table->integer('sort_order')->default(0); 
                 $table->boolean('is_primary')->default(false);
                 $table->boolean('is_main')->default(false);
-                $table->timestamps();
-            });
+            $table->timestamps();
+        });
         }
     }
 

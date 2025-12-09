@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Banner;
+use App\Models\Texture;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -42,7 +43,10 @@ class HomeController extends Controller
             ->limit(12)
             ->get();
 
-        // 4. Trả về view của trang chủ và "gán" (pass) biến vào view
+        // 4. Lấy textures cho filter
+        $textures = Texture::where('status', 1)->get();
+
+        // 5. Trả về view của trang chủ và "gán" (pass) biến vào view
         $quickProduct = null;
         if ($request->filled('quick_view')) {
             $quickProduct = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
@@ -55,6 +59,7 @@ class HomeController extends Controller
             'products' => $products,
             'quickProduct' => $quickProduct,
             'banners' => $banners,
+            'textures' => $textures,
         ]);
     }
 }
