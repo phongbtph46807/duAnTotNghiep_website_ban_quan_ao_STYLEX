@@ -458,9 +458,12 @@
 															@endif
 														@endfor
 													</div>
-													@if($review['variant'])
+													@if($review['variant'] || $review['variant_color'] || $review['variant_size'])
 														<p class="stext-102 cl6 p-b-10">
-															<strong>Phân loại hàng:</strong> {{ $review['variant'] }}
+															<strong>Phân loại hàng:</strong>
+															{{ $review['variant'] }}
+															@if($review['variant_color']) | Màu: {{ $review['variant_color'] }} @endif
+															@if($review['variant_size']) | Size: {{ $review['variant_size'] }} @endif
 														</p>
 													@endif
 													@if (!empty($review['comment']))

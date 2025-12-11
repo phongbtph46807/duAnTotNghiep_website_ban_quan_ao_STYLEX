@@ -17,7 +17,9 @@ class Order extends Model
         'shipping_carrier_id',
         'total',
         'payment_method','payment_status','status',
-        'momo_order_id','momo_trans_id'
+        'momo_order_id','momo_trans_id',
+        'cancel_reason','cancel_images',
+        'return_reason','return_images'
     ];
 
     protected $casts = [
@@ -26,6 +28,8 @@ class Order extends Model
         'discount' => 'integer',
         'tax_amount' => 'integer',
         'total' => 'integer',
+        'cancel_images' => 'array',
+        'return_images' => 'array',
     ];
 
     public function items(): HasMany

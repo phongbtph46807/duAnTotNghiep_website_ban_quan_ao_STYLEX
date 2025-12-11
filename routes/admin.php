@@ -149,6 +149,9 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
         // Orders management
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
+        Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');
+        Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
         
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {

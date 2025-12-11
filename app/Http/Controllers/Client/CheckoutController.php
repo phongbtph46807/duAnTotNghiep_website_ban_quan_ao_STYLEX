@@ -330,9 +330,15 @@ class CheckoutController extends Controller
             
             // Nếu có order, kiểm tra xem sản phẩm nào đã được đánh giá
             if ($order) {
-                $reviewedProductIds = $order->reviews->pluck('product_id')->toArray();
+                $reviewed = $order->reviews->map(fn($r) => [
+                    'p' => $r->product_id,
+                    'v' => $r->product_variant_id,
+                ])->toArray();
                 foreach ($order->items as $item) {
-                    $item->is_reviewed = in_array($item->product_id, $reviewedProductIds);
+                    $item->is_reviewed = collect($reviewed)->contains(function($rev) use ($item) {
+                        return $rev['p'] == $item->product_id &&
+                            (($rev['v'] === null && $item->variant_id === null) || ($rev['v'] == $item->variant_id));
+                    });
                 }
             }
         }
@@ -344,9 +350,12 @@ class CheckoutController extends Controller
         $sessionId = session()->getId();
         $statusTabs = [
             'pending' => 'Chờ xác nhận',
-            'processing' => 'Vận chuyển',
+            'processing' => 'Đang xử lý',
             'shipping' => 'Chờ giao hàng',
+            'delivered' => 'Đã giao',
             'completed' => 'Hoàn thành',
+            'cancel_request' => 'Yêu cầu hủy',
+            'return_request' => 'Yêu cầu trả hàng',
             'cancelled' => 'Đã hủy',
             'returned' => 'Trả hàng/Hoàn tiền',
         ];
@@ -377,9 +386,15 @@ class CheckoutController extends Controller
         // Đánh dấu sản phẩm đã được đánh giá
         foreach ($orders as $order) {
             if (in_array($order->status, ['completed', 'delivered'])) {
-                $reviewedProductIds = $order->reviews->pluck('product_id')->toArray();
+                $reviewed = $order->reviews->map(fn($r) => [
+                    'p' => $r->product_id,
+                    'v' => $r->product_variant_id,
+                ])->toArray();
                 foreach ($order->items as $item) {
-                    $item->is_reviewed = in_array($item->product_id, $reviewedProductIds);
+                    $item->is_reviewed = collect($reviewed)->contains(function($rev) use ($item) {
+                        return $rev['p'] == $item->product_id &&
+                            (($rev['v'] === null && $item->variant_id === null) || ($rev['v'] == $item->variant_id));
+                    });
                 }
             }
         }
@@ -388,6 +403,27 @@ class CheckoutController extends Controller
             'orders' => $orders,
             'activeStatus' => $statusFilter,
             'statusTabs' => $statusTabs,
+        ]);
+    }
+
+    public function pollStatus(Request $request)
+    {
+        $userId = Auth::id();
+        $sessionId = session()->getId();
+
+        $orders = \App\Models\Order::query()
+            ->select('id','code','status','updated_at')
+            ->when($userId, fn($q) => $q->where('user_id', $userId))
+            ->when(!$userId, fn($q) => $q->where('session_id', $sessionId))
+            ->get();
+
+        return response()->json([
+            'data' => $orders->map(fn($o) => [
+                'id' => $o->id,
+                'code' => $o->code,
+                'status' => $o->status,
+                'updated_at' => optional($o->updated_at)->timestamp,
+            ])
         ]);
     }
 
@@ -401,14 +437,66 @@ class CheckoutController extends Controller
             abort(403, 'Bạn không có quyền hủy đơn này.');
         }
 
-        if ($order->status !== 'pending') {
-            return back()->with('error', 'Chỉ có thể hủy các đơn đang ở trạng thái chờ xác nhận.');
+        if (!in_array($order->status, ['pending','processing','shipping'])) {
+            return back()->with('error', 'Chỉ có thể hủy đơn ở trạng thái chờ xác nhận / đang xử lý / đang giao.');
         }
 
-        $order->status = 'cancelled';
+        $data = $request->validate([
+            'cancel_reason' => 'required|string|max:1000',
+            'cancel_images.*' => 'nullable|image|max:2048', // mỗi ảnh tối đa 2MB
+        ]);
+
+        $storedImages = [];
+        if ($request->hasFile('cancel_images')) {
+            foreach ($request->file('cancel_images') as $file) {
+                if ($file && $file->isValid()) {
+                    $storedImages[] = $file->store('cancel-reasons', 'public');
+                }
+            }
+        }
+
+        $order->status = 'cancel_request';
+        $order->cancel_reason = $data['cancel_reason'] ?? null;
+        $order->cancel_images = $storedImages ?: null;
         $order->save();
 
-        return back()->with('success', 'Đơn hàng đã được hủy thành công.');
+        return back()->with('success', 'Yêu cầu hủy đã được gửi. Vui lòng đợi admin duyệt.');
+    }
+
+    public function requestReturn(Request $request, Order $order)
+    {
+        $userId = Auth::id();
+        $sessionId = session()->getId();
+
+        if (($order->user_id && $order->user_id !== $userId) ||
+            (!$order->user_id && $order->session_id !== $sessionId)) {
+            abort(403, 'Bạn không có quyền thao tác đơn này.');
+        }
+
+        if (!in_array($order->status, ['completed','delivered'])) {
+            return back()->with('error', 'Chỉ có thể yêu cầu trả hàng khi đơn đã hoàn thành/giao xong.');
+        }
+
+        $data = $request->validate([
+            'return_reason' => 'required|string|max:1000',
+            'return_images.*' => 'nullable|image|max:2048',
+        ]);
+
+        $storedImages = [];
+        if ($request->hasFile('return_images')) {
+            foreach ($request->file('return_images') as $file) {
+                if ($file && $file->isValid()) {
+                    $storedImages[] = $file->store('return-reasons', 'public');
+                }
+            }
+        }
+
+        $order->status = 'return_request';
+        $order->return_reason = $data['return_reason'] ?? null;
+        $order->return_images = $storedImages ?: null;
+        $order->save();
+
+        return back()->with('success', 'Yêu cầu trả hàng đã được gửi. Vui lòng đợi admin duyệt.');
     }
 
     public function storeReview(Request $request)
@@ -418,6 +506,7 @@ class CheckoutController extends Controller
             'order_item_id' => 'required|exists:order_items,id',
             'rating' => 'required|integer|min:1|max:5',
             'content' => 'nullable|string|max:1000',
+            'variant_id' => 'nullable|integer',
         ]);
 
         $userId = Auth::id();
@@ -442,7 +531,8 @@ class CheckoutController extends Controller
         // Lấy order item
         $orderItem = $order->items()->findOrFail($request->order_item_id);
         $productId = $orderItem->product_id;
-        $variantId = $orderItem->variant_id;
+        // Ưu tiên variant gửi lên (đảm bảo đúng biến thể được chọn)
+        $variantId = $request->input('variant_id') ?: $orderItem->variant_id;
 
         // Kiểm tra variant_id có tồn tại trong product_variants không
         $validVariantId = null;
@@ -469,6 +559,10 @@ class CheckoutController extends Controller
             return back()->with('error', 'Bạn đã đánh giá sản phẩm này rồi.');
         }
 
+        // Lấy thông tin biến thể để lưu hiển thị
+        $variantColor = $orderItem->variant?->color?->name;
+        $variantSize = $orderItem->variant?->size?->name;
+
         // Tạo review
         \App\Models\Review::create([
             'user_id' => $userId,
@@ -479,6 +573,9 @@ class CheckoutController extends Controller
             'content' => $request->input('content', ''),
             'tags' => [],
             'status' => 'public',
+            'variant_color' => $variantColor,
+            'variant_size' => $variantSize,
+            'media' => [],
         ]);
 
         return back()->with('success', 'Cảm ơn bạn đã đánh giá sản phẩm!');
