@@ -19,6 +19,8 @@ use Illuminate\Support\Str;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\LoyaltyService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 class CheckoutController extends Controller
 {
@@ -87,7 +89,9 @@ class CheckoutController extends Controller
         $subtotal = 0.0;
         foreach ($items as $it) {
             $product = $it->product;
-            if (!$product) { continue; }
+            if (!$product) {
+                continue;
+            }
             $variant = $it->variant;
             $price = $this->resolveItemPrice($product, $variant);
             $line = $price * (int) $it->quantity;
@@ -181,140 +185,16 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function place(Request $request)
+
+    public function thankyou($id)
     {
-        $request->validate([
-            'buyer_full_name' => 'required|string|max:255',
-            'buyer_phone' => 'required|string|max:30',
-            'buyer_email' => 'nullable|email',
-            'full_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:30',
-            'email' => 'nullable|email',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:120',
-            'payment_method' => 'required|in:cod,online',
-        ]);
-
-        $owner = $this->getOwnerKeys();
-        $items = $this->baseCartQuery()->with(['product','variant'])->get();
-        if ($items->isEmpty()) {
-            return redirect()->route('client.cart.index')->with('error', 'Giỏ hàng trống.');
-        }
-
-        // Tính subtotal
-        $subtotal = 0.0;
-        foreach ($items as $it) {
-            $subtotal += $this->resolveItemPrice($it->product, $it->variant) * (int) $it->quantity;
-        }
-
-        // Calculate discount using VoucherService (trước thuế & phí ship)
-        $voucherResult = $this->voucherService->recalculateDiscount($subtotal);
-        $voucherDiscount = $voucherResult['discount'];
-        $totalAfterVoucher = $voucherResult['total'];
-        $appliedVoucher = $this->voucherService->getAppliedVoucher();
-
-        // Tính loyalty discount nếu user đã đăng nhập
-        $loyaltyDiscount = 0;
-        if (Auth::check() && $owner['user_id']) {
-            $user = Auth::user();
-            $loyaltyDiscount = $this->loyaltyService->calculateDiscount($user, $totalAfterVoucher);
-        }
-
-        // Tổng giảm giá = voucher discount + loyalty discount
-        $totalDiscount = $voucherDiscount + $loyaltyDiscount;
-
-        // Lấy lại lựa chọn đơn vị vận chuyển từ session
-        $shippingCarrierId = session('cart.shipping_carrier_id');
-        $shippingCarrier = $shippingCarrierId
-            ? ShippingCarrier::where('active', true)->find($shippingCarrierId)
-            : null;
-
-        $shippingFee = $shippingCarrier ? (float) ($shippingCarrier->fee ?? 0) : 0.0;
-
-        // Lấy thuế mặc định
-        $taxRate = TaxRate::orderByDesc('rate')->first();
-        $taxAmount = 0.0;
-        if ($taxRate && $subtotal > 0) {
-            $taxAmount = (float) round($subtotal * (float) $taxRate->rate);
-        }
-
-        // Tổng cuối cùng
-        $grandTotal = max(0, $subtotal - $totalDiscount + $taxAmount + $shippingFee);
-
-        // Nếu thanh toán online, chuyển sang VNPAY
-        if ($request->payment_method === 'online') {
-            return $this->processVnPayPayment($request, $owner, $subtotal, $totalDiscount, $taxAmount, $shippingFee, $grandTotal, $taxRate, $shippingCarrier);
-        }
-
-        // Tạo Order + OrderItems (transaction) cho COD
-        $order = DB::transaction(function() use ($request, $owner, $items, $subtotal, $totalDiscount, $taxRate, $taxAmount, $shippingCarrier, $shippingFee, $grandTotal, $appliedVoucher) {
-            $order = Order::create([
-                'user_id' => $owner['user_id'],
-                'session_id' => $owner['session_id'],
-                'code' => 'OD'.strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
-                'buyer_name' => $request->buyer_full_name,
-                'buyer_phone' => $request->buyer_phone,
-                'buyer_email' => $request->buyer_email,
-                'full_name' => $request->full_name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'city' => $request->city,
-                'address' => $request->address,
-                'note' => $request->note,
-                'subtotal' => (int) $subtotal,
-                'shipping_fee' => (int) $shippingFee,
-                'discount' => (int) $totalDiscount,
-                'tax_rate_id' => $taxRate?->id,
-                'tax_amount' => (int) $taxAmount,
-                'shipping_carrier_id' => $shippingCarrier?->id,
-                'total' => (int) $grandTotal,
-                'payment_method' => $request->payment_method,
-                'payment_status' => $request->payment_method === 'online' ? 'paid' : 'unpaid',
-                'status' => 'pending',
-            ]);
-
-            foreach ($items as $it) {
-                $price = (int) $this->resolveItemPrice($it->product, $it->variant);
-                $qty = (int) $it->quantity;
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $it->product->id,
-                    'variant_id' => $it->variant_id,
-                    'quantity' => $qty,
-                    'price' => $price,
-                    'line_total' => $price * $qty,
-                ]);
-            }
-
-            // Cập nhật tổng chi tiêu cho loyalty nếu user đã đăng nhập
-            if ($owner['user_id']) {
-                $user = \App\Models\User::find($owner['user_id']);
-                if ($user) {
-                    $this->loyaltyService->updateUserSpending($user, $grandTotal);
-                }
-            }
-
-            // Clear cart and voucher after order created
-            Cart::clearOwner($owner['user_id'], $owner['session_id']);
-            $this->voucherService->removeFromSession();
-            return $order;
-        });
-
-        // TODO: Uncomment when SendOrderInvoiceMail job is created
-        // if (!empty($order->email)) {
-        //     SendOrderInvoiceMail::dispatch($order->id, $order->email);
-        // }
-
-        return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
-    }
-
-    public function thankyou($id) {
-        $order = Order::with('items.product','items.variant.size','items.variant.color','items.variant.texture')->findOrFail($id);
+        $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
         return view('client.checkout.thankyou', compact('order'));
     }
-    public function track(Request $request) {
+    public function track(Request $request)
+    {
         $order = null;
-        if($request->has('code') && $request->code){
+        if ($request->has('code') && $request->code) {
             $order = Order::with([
                 'items.product',
                 'items.product.productVariants.size',
@@ -327,7 +207,7 @@ class CheckoutController extends Controller
             ])
                 ->where('code', $request->code)->orWhere('id', $request->code)
                 ->orWhere('phone', $request->code)->latest()->first();
-            
+
             // Nếu có order, kiểm tra xem sản phẩm nào đã được đánh giá
             if ($order) {
                 $reviewedProductIds = $order->reviews->pluck('product_id')->toArray();
@@ -339,7 +219,8 @@ class CheckoutController extends Controller
         return view('client.orders.track', compact('order'));
     }
 
-    public function orderList(Request $request) {
+    public function orderList(Request $request)
+    {
         $userId = Auth::id();
         $sessionId = session()->getId();
         $statusTabs = [
@@ -356,9 +237,13 @@ class CheckoutController extends Controller
         }
 
         $orders = \App\Models\Order::query()
-            ->when($userId, function($q) use ($userId){ $q->where('user_id', $userId); })
-            ->when(!$userId, function($q) use ($sessionId){ $q->where('session_id', $sessionId); })
-            ->when($statusFilter, function($q) use ($statusFilter){
+            ->when($userId, function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->when(!$userId, function ($q) use ($sessionId) {
+                $q->where('session_id', $sessionId);
+            })
+            ->when($statusFilter, function ($q) use ($statusFilter) {
                 $q->where('status', $statusFilter);
             })
             ->orderByDesc('created_at')
@@ -373,7 +258,7 @@ class CheckoutController extends Controller
                 'reviews' // Load reviews để kiểm tra đã đánh giá chưa
             ])
             ->get();
-        
+
         // Đánh dấu sản phẩm đã được đánh giá
         foreach ($orders as $order) {
             if (in_array($order->status, ['completed', 'delivered'])) {
@@ -397,7 +282,8 @@ class CheckoutController extends Controller
         $sessionId = session()->getId();
 
         if (($order->user_id && $order->user_id !== $userId) ||
-            (!$order->user_id && $order->session_id !== $sessionId)) {
+            (!$order->user_id && $order->session_id !== $sessionId)
+        ) {
             abort(403, 'Bạn không có quyền hủy đơn này.');
         }
 
@@ -425,7 +311,7 @@ class CheckoutController extends Controller
 
         // Kiểm tra quyền sở hữu đơn hàng
         $order = Order::where('id', $request->order_id)
-            ->where(function($q) use ($userId, $sessionId) {
+            ->where(function ($q) use ($userId, $sessionId) {
                 if ($userId) {
                     $q->where('user_id', $userId);
                 } else {
@@ -455,7 +341,7 @@ class CheckoutController extends Controller
 
         // Kiểm tra đã đánh giá chưa
         $existingReview = \App\Models\Review::where('order_id', $order->id)
-            ->where(function($q) use ($productId, $validVariantId) {
+            ->where(function ($q) use ($productId, $validVariantId) {
                 $q->where('product_id', $productId);
                 if ($validVariantId) {
                     $q->where('product_variant_id', $validVariantId);
@@ -484,145 +370,418 @@ class CheckoutController extends Controller
         return back()->with('success', 'Cảm ơn bạn đã đánh giá sản phẩm!');
     }
 
-    public function vnpayReturn(Request $request)
+    public function place(Request $request)
     {
-        $hashSecret = env('VNPAY_HASH_SECRET');
-        $params = [];
-        foreach ($request->all() as $key => $value) {
-            if (str_starts_with($key, 'vnp_')) {
-                $params[$key] = $value;
-            }
-        }
+        $request->validate([
+            'full_name'      => 'required|string|max:255',
+            'phone'          => 'required|string|max:30',
+            'email'          => 'nullable|email',
+            'address'        => 'required|string|max:500',
+            'city'           => 'required|string|max:120',
+            'payment_method' => 'required|in:cod,online',
+        ]);
 
-        $secureHash = $params['vnp_SecureHash'] ?? null;
-        unset($params['vnp_SecureHash'], $params['vnp_SecureHashType']);
-        ksort($params);
-        $hashData = urldecode(http_build_query($params));
-        $calculatedHash = $hashSecret ? hash_hmac('sha512', $hashData, $hashSecret) : null;
-
-        if (!$secureHash || $calculatedHash !== $secureHash) {
-            return redirect()->route('client.cart.index')
-                ->with('error', 'Chữ ký thanh toán không hợp lệ.');
-        }
-
-        if (($params['vnp_ResponseCode'] ?? null) !== '00') {
-            return redirect()->route('client.cart.index')
-                ->with('error', 'Thanh toán online không thành công hoặc đã bị hủy.');
-        }
-
-        $txnRef = $params['vnp_TxnRef'] ?? null;
-        $payload = $txnRef ? Cache::pull($this->vnpCacheKey($txnRef)) : null;
-        if (!$payload) {
-            return redirect()->route('client.cart.index')
-                ->with('error', 'Không tìm thấy thông tin thanh toán. Vui lòng đặt lại.');
-        }
-
-        $owner = $payload['owner'] ?? $this->getOwnerKeys();
-        $items = $this->cartQueryForOwner($owner)->with(['product','variant'])->get();
+        $owner = $this->getOwnerKeys();
+        $items = $this->baseCartQuery()->with(['product', 'variant'])->get();
         if ($items->isEmpty()) {
-            return redirect()->route('client.cart.index')
-                ->with('error', 'Giỏ hàng trống. Không thể tạo đơn hàng.');
+            return redirect()->route('client.cart.index')->with('error', 'Giỏ hàng trống.');
         }
 
+        // 1. SUBTOTAL
         $subtotal = 0.0;
         foreach ($items as $it) {
             $subtotal += $this->resolveItemPrice($it->product, $it->variant) * (int) $it->quantity;
         }
-        $voucherResult = $this->voucherService->recalculateDiscount($subtotal);
-        $voucherDiscount = $voucherResult['discount'];
-        $totalAfterVoucher = $voucherResult['total'];
-        $appliedVoucher = $this->voucherService->getAppliedVoucher();
 
-        // Tính loyalty discount nếu user đã đăng nhập
+        // 2. VOUCHER
+        $voucherResult     = $this->voucherService->recalculateDiscount($subtotal);
+        $voucherDiscount   = $voucherResult['discount'];
+        $totalAfterVoucher = $voucherResult['total'];
+        $appliedVoucher    = $this->voucherService->getAppliedVoucher();
+
+        // 3. LOYALTY
         $loyaltyDiscount = 0;
-        if ($owner['user_id']) {
-            $user = \App\Models\User::find($owner['user_id']);
-            if ($user) {
-                $loyaltyDiscount = $this->loyaltyService->calculateDiscount($user, $totalAfterVoucher);
-            }
+        if (Auth::check() && $owner['user_id']) {
+            $user            = Auth::user();
+            $loyaltyDiscount = $this->loyaltyService->calculateDiscount($user, $totalAfterVoucher);
         }
 
-        // Tổng giảm giá = voucher discount + loyalty discount
         $totalDiscount = $voucherDiscount + $loyaltyDiscount;
 
-        // Lấy lại thông tin từ payload
-        $taxRate = $payload['taxRate'] ?? null;
-        $shippingCarrier = $payload['shippingCarrier'] ?? null;
-        $taxAmount = $payload['taxAmount'] ?? 0.0;
-        $shippingFee = $payload['shippingFee'] ?? 0.0;
-        $grandTotal = max(0, $subtotal - $totalDiscount + $taxAmount + $shippingFee);
+        // 4. SHIP
+        $shippingCarrierId = session('cart.shipping_carrier_id');
+        $shippingCarrier   = $shippingCarrierId
+            ? ShippingCarrier::where('active', true)->find($shippingCarrierId)
+            : null;
+        $shippingFee = $shippingCarrier ? (float) ($shippingCarrier->fee ?? 0) : 0.0;
 
-        if ((int)($params['vnp_Amount'] ?? 0) !== (int) ($grandTotal * 100)) {
-            return redirect()->route('client.cart.index')
-                ->with('error', 'Số tiền thanh toán không khớp.');
+        // 5. TAX
+        $taxRate   = TaxRate::orderByDesc('rate')->first();
+        $taxAmount = 0.0;
+        if ($taxRate && $subtotal > 0) {
+            $taxAmount = (float) round($subtotal * (float) $taxRate->rate);
         }
 
-        $order = $this->createOrderFromCart(
+        // 6. GRAND TOTAL
+        $grandTotal = max(0, $subtotal - $totalDiscount + $taxAmount + $shippingFee);
+        $total      = $grandTotal;
+
+        // Data gửi sang VNPAY & callback dùng lại
+        $dataRequest = array_merge($request->all(), [
+            'subtotal'            => $subtotal,
+            'discount'            => $totalDiscount,
+            'shipping_fee'        => $shippingFee,
+            'tax_amount'          => $taxAmount,
+            'tax_rate_id'         => $taxRate?->id,
+            'shipping_carrier_id' => $shippingCarrier?->id,
+            'total'               => $total,
+        ]);
+
+        // ONLINE → VNPAY
+        if ($request->payment_method === 'online') {
+            return $this->processVnPayPayment($dataRequest);
+        }
+
+        // COD → tạo order luôn
+        $order = DB::transaction(function () use (
+            $request,
             $owner,
             $items,
-            new Request($payload['request'] ?? []),
-            compact('subtotal','totalDiscount','taxAmount','shippingFee','grandTotal'),
+            $subtotal,
+            $totalDiscount,
             $taxRate,
+            $taxAmount,
             $shippingCarrier,
-            'online',
-            'paid'
-        );
+            $shippingFee,
+            $grandTotal
+        ) {
+            $order = Order::create([
+                'user_id'             => $owner['user_id'],
+                'session_id'          => $owner['session_id'],
+                'code'                => 'OD' . strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
+                'full_name'           => $request->full_name,
+                'phone'               => $request->phone,
+                'email'               => $request->email,
+                'city'                => $request->city,
+                'address'             => $request->address,
+                'note'                => $request->note,
+                'subtotal'            => (int) $subtotal,
+                'shipping_fee'        => (int) $shippingFee,
+                'discount'            => (int) $totalDiscount,
+                'tax_rate_id'         => $taxRate?->id,
+                'tax_amount'          => (int) $taxAmount,
+                'shipping_carrier_id' => $shippingCarrier?->id,
+                'total'               => (int) $grandTotal,
+                'payment_method'      => $request->payment_method,
+                'payment_status'      => 'unpaid',
+                'status'              => 'pending',
+            ]);
 
-        // TODO: Uncomment when SendOrderInvoiceMail job is created
-        // if (!empty($order->email)) {
-        //     SendOrderInvoiceMail::dispatch($order->id, $order->email);
-        // }
+            foreach ($items as $it) {
+                $price = (int) $this->resolveItemPrice($it->product, $it->variant);
+                $qty   = (int) $it->quantity;
+
+                OrderItem::create([
+                    'order_id'   => $order->id,
+                    'product_id' => $it->product->id,
+                    'variant_id' => $it->variant_id,
+                    'quantity'   => $qty,
+                    'price'      => $price,
+                    'line_total' => $price * $qty,
+                ]);
+            }
+
+            if ($owner['user_id']) {
+                $user = \App\Models\User::find($owner['user_id']);
+                if ($user) {
+                    $this->loyaltyService->updateUserSpending($user, $grandTotal);
+                }
+            }
+
+            Cart::clearOwner($owner['user_id'], $owner['session_id']);
+            $this->voucherService->removeFromSession();
+
+            return $order;
+        });
 
         return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
     }
 
-    private function processVnPayPayment(Request $request, array $owner, float $subtotal, float $discount, float $taxAmount, float $shippingFee, float $grandTotal, ?TaxRate $taxRate, ?ShippingCarrier $shippingCarrier)
+    public function vnpayReturn(Request $request)
     {
-        $vnpUrl = env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
-        $tmnCode = env('VNPAY_TMN_CODE');
-        $hashSecret = env('VNPAY_HASH_SECRET');
-        $returnUrl = route('client.checkout.vnpayReturn');
-        $txnRef = Str::uuid()->toString();
+        Log::info("=== VNPAY CALLBACK START ===", [
+            'full_url' => $request->fullUrl(),
+        ]);
 
-        if (!$tmnCode || !$hashSecret) {
+        $vnp_HashSecret = "TRGJ5Z3UY1YOO1QY35RKSU063180BJT4";
+
+        // Lấy toàn bộ tham số vnp_* từ QUERY
+        $inputData = [];
+        foreach ($request->query() as $key => $value) {
+            if (substr($key, 0, 4) === "vnp_") {
+                $inputData[$key] = $value;
+            }
+        }
+        Log::info("VNPAY RAW INPUT:", $inputData);
+
+        // Lấy secure hash VNPAY gửi về
+        $vnp_SecureHash = $inputData['vnp_SecureHash'] ?? null;
+        unset($inputData['vnp_SecureHash'], $inputData['vnp_SecureHashType']);
+
+        // Build hashData giống hệt bên gửi đi
+        $hashData  = $this->buildVnpHashData($inputData);
+        $checkHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+
+        Log::info("Hash Check:", [
+            'generated_hash'  => $checkHash,
+            'vnp_secure_hash' => $vnp_SecureHash,
+            'hash_match'      => hash_equals(strtolower((string)$checkHash), strtolower((string)$vnp_SecureHash)),
+            'hashData'        => $hashData,
+        ]);
+
+        if (!hash_equals(strtolower((string)$checkHash), strtolower((string)$vnp_SecureHash))) {
+            Log::error("❌ Sai chữ ký – Redirect về giỏ hàng");
             return redirect()->route('client.cart.index')
-                ->with('error', 'Thiếu cấu hình VNPAY. Vui lòng liên hệ quản trị viên.');
+                ->with('error', 'Chữ ký không hợp lệ. Thanh toán không thành công.');
         }
 
+        $responseCode = $inputData['vnp_ResponseCode'] ?? null;
+        $txnRef       = $inputData['vnp_TxnRef'] ?? null;
+
+        Log::info("Transaction Status:", [
+            'vnp_ResponseCode' => $responseCode,
+            'vnp_TxnRef'       => $txnRef,
+        ]);
+
+        if ($responseCode !== '00') {
+            Log::warning("❌ Thanh toán bị hủy hoặc thất bại. Không tạo order.");
+            return redirect()->route('client.cart.index')
+                ->with('error', 'Thanh toán không thành công hoặc đã bị hủy.');
+        }
+
+        // ==== LẤY DATA TỪ REDIS ====
+        $raw = Redis::get("order:$txnRef");
+        Log::info("Redis Check:", [
+            "key" => "order:$txnRef",
+            "raw" => $raw,
+        ]);
+
+        if (!$raw) {
+            Log::error("❌ Redis không tìm thấy dữ liệu order. Hết hạn hoặc sai key.");
+            return redirect()->route('client.cart.index')
+                ->with('error', 'Không tìm thấy thông tin đơn hàng tạm. Vui lòng đặt lại.');
+        }
+
+        $cache   = json_decode($raw, true);
+        $reqData = $cache['data'] ?? [];
+        Log::info("Cached Request Data:", $reqData);
+
+        // Lấy lại cart để tạo OrderItem
+        $owner = $this->getOwnerKeys();
+        $items = $this->baseCartQuery()->with(['product', 'variant'])->get();
+
+        Log::info("Cart Items:", [
+            "count" => $items->count(),
+            "items" => $items->toArray(),
+        ]);
+
+        if ($items->isEmpty()) {
+            Log::error("❌ Giỏ hàng trống – Không thể tạo order");
+            return redirect()->route('client.cart.index')
+                ->with('error', 'Giỏ hàng trống hoặc đã thay đổi.');
+        }
+
+        // Tổng / thuế / ship / discount lấy từ dữ liệu đã lưu
+        $subtotal          = (float) ($reqData['subtotal'] ?? 0);
+        $discount          = (float) ($reqData['discount'] ?? 0);
+        $shippingFee       = (float) ($reqData['shipping_fee'] ?? 0);
+        $taxAmount         = (float) ($reqData['tax_amount'] ?? 0);
+        $taxRateId         = $reqData['tax_rate_id'] ?? null;
+        $shippingCarrierId = $reqData['shipping_carrier_id'] ?? null;
+        $total             = (float) ($reqData['total'] ?? 0);
+
+        // So sánh số tiền
+        Log::info("Total Verification:", [
+            'vnp_Amount'  => $inputData['vnp_Amount'] ?? null,
+            'saved_total' => $total,
+            'match'       => (int)($inputData['vnp_Amount'] ?? 0) === (int)($total * 100),
+        ]);
+
+        if ((int)($inputData['vnp_Amount'] ?? 0) !== (int)($total * 100)) {
+            Log::error("❌ Số tiền không khớp. Không tạo order.");
+            return redirect()->route('client.cart.index')
+                ->with('error', 'Số tiền thanh toán không khớp.');
+        }
+
+        // ==== TẠO ORDER ====
+        try {
+            $order = DB::transaction(function () use (
+                $reqData,
+                $owner,
+                $items,
+                $subtotal,
+                $discount,
+                $shippingFee,
+                $taxAmount,
+                $taxRateId,
+                $shippingCarrierId,
+                $total
+            ) {
+                Log::info("=== TẠO ORDER BẮT ĐẦU ===");
+
+                $order = Order::create([
+                    'user_id'             => $owner['user_id'],
+                    'session_id'          => $owner['session_id'],
+                    'code'                => 'OD' . strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
+                    'full_name'           => $reqData['full_name'] ?? '',
+                    'phone'               => $reqData['phone'] ?? '',
+                    'email'               => $reqData['email'] ?? '',
+                    'city'                => $reqData['city'] ?? '',
+                    'address'             => $reqData['address'] ?? '',
+                    'note'                => $reqData['note'] ?? null,
+                    'subtotal'            => (int) $subtotal,
+                    'shipping_fee'        => (int) $shippingFee,
+                    'discount'            => (int) $discount,
+                    'tax_rate_id'         => $taxRateId,
+                    'tax_amount'          => (int) $taxAmount,
+                    'shipping_carrier_id' => $shippingCarrierId,
+                    'total'               => (int) $total,
+                    'payment_method'      => 'online',
+                    'payment_status'      => 'paid',
+                    'status'              => 'pending',
+                ]);
+
+                Log::info("Order Created:", $order->toArray());
+
+                foreach ($items as $it) {
+                    $price = (int) $this->resolveItemPrice($it->product, $it->variant);
+                    $qty   = (int) $it->quantity;
+
+                    OrderItem::create([
+                        'order_id'   => $order->id,
+                        'product_id' => $it->product->id,
+                        'variant_id' => $it->variant_id,
+                        'quantity'   => $qty,
+                        'price'      => $price,
+                        'line_total' => $price * $qty,
+                    ]);
+                }
+
+                // Loyalty
+                if ($owner['user_id']) {
+                    $user = \App\Models\User::find($owner['user_id']);
+                    if ($user) {
+                        $this->loyaltyService->updateUserSpending($user, $total);
+                    }
+                }
+
+                // Clear cart + voucher + session ship
+                Cart::clearOwner($owner['user_id'], $owner['session_id']);
+                $this->voucherService->removeFromSession();
+                session()->forget('cart.shipping_carrier_id');
+
+                Log::info("Cart & voucher cleared");
+
+                return $order;
+            });
+
+            Log::info("=== ORDER HOÀN THÀNH ===");
+
+            // Xóa key redis
+            Redis::del("order:$txnRef");
+
+            return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
+        } catch (\Throwable $e) {
+            Log::error("❌ EXCEPTION KHI TẠO ORDER", [
+                'msg'  => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
+
+            return redirect()->route('client.cart.index')
+                ->with('error', 'Có lỗi khi tạo đơn hàng.');
+        }
+    }
+
+
+    private function processVnPayPayment(array $dataRequest)
+    {
+        if (empty($dataRequest['total']) || $dataRequest['total'] <= 0) {
+            return back()->with('warning', 'Vui lòng kiểm tra lại giá sản phẩm !!!');
+        }
+
+        // Cấu hình sandbox
+        $vnp_Url        = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        $vnp_Returnurl  = route('client.checkout.vnpayReturn');
+        $vnp_TmnCode    = 'CW3MWMKN'; // đúng mã trong email VNPAY
+        $vnp_HashSecret = "TRGJ5Z3UY1YOO1QY35RKSU063180BJT4"; // đúng chuỗi bí mật trong email VNPAY
+
+        $vnp_TxnRef    = (string) Str::uuid();
+        $vnp_Amount    = (int) $dataRequest['total'] * 100;
+        $vnp_IpAddr    = request()->ip();
+        $vnp_OrderInfo = "Thanh toan don hang";
+        $vnp_OrderType = "other";
+        $vnp_Locale    = 'vn';
+
         $inputData = [
-            'vnp_Version' => '2.1.0',
-            'vnp_TmnCode' => $tmnCode,
-            'vnp_Amount' => (int) ($grandTotal * 100),
-            'vnp_Command' => 'pay',
-            'vnp_CreateDate' => now()->format('YmdHis'),
-            'vnp_CurrCode' => 'VND',
-            'vnp_IpAddr' => $request->ip(),
-            'vnp_Locale' => 'vn',
-            'vnp_OrderInfo' => 'Thanh toan don hang STYLEX',
-            'vnp_OrderType' => 'billpayment',
-            'vnp_ReturnUrl' => $returnUrl,
-            'vnp_TxnRef' => $txnRef,
+            "vnp_Version"   => "2.1.0",
+            "vnp_TmnCode"   => $vnp_TmnCode,
+            "vnp_Amount"    => $vnp_Amount,
+            "vnp_Command"   => "pay",
+            "vnp_CreateDate" => date('YmdHis'),
+            "vnp_CurrCode"  => "VND",
+            "vnp_IpAddr"    => $vnp_IpAddr,
+            "vnp_Locale"    => $vnp_Locale,
+            "vnp_OrderInfo" => $vnp_OrderInfo,
+            "vnp_OrderType" => $vnp_OrderType,
+            "vnp_ReturnUrl" => $vnp_Returnurl,
+            "vnp_TxnRef"    => $vnp_TxnRef,
         ];
 
-        ksort($inputData);
-        $query = http_build_query($inputData);
-        $secureHash = hash_hmac('sha512', urldecode($query), $hashSecret);
-        $query .= '&vnp_SecureHash=' . $secureHash;
+        // Chuỗi hashData đúng chuẩn
+        $hashData      = $this->buildVnpHashData($inputData);
+        $vnpSecureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
 
-        Cache::put(
-            $this->vnpCacheKey($txnRef),
-            [
-                'request' => $request->only(['buyer_full_name','buyer_phone','buyer_email','full_name','phone','email','address','city','note']),
-                'owner' => $owner,
-                'pricing' => compact('subtotal','discount','taxAmount','shippingFee','grandTotal'),
-                'taxRate' => $taxRate,
-                'shippingCarrier' => $shippingCarrier,
-            ],
-            now()->addMinutes(15)
-        );
+        // Build URL query (có thể dùng http_build_query, không ảnh hưởng hash)
+        $queryString = http_build_query($inputData, '', '&');
+        $vnp_Url     = $vnp_Url . "?" . $queryString . '&vnp_SecureHash=' . $vnpSecureHash;
 
-        return redirect($vnpUrl . '?' . $query);
+        // Lưu dữ liệu tạm để callback dùng
+        Redis::setex("order:$vnp_TxnRef", 900, json_encode([
+            'order_id' => $vnp_TxnRef,
+            'data'     => $dataRequest,
+        ]));
+
+        Log::info('VNPAY URL', [
+            'url'        => $vnp_Url,
+            'hashData'   => $hashData,
+            'secureHash' => $vnpSecureHash,
+        ]);
+
+        return redirect($vnp_Url);
     }
+
+    /**
+     * Build VNPAY hash data string with consistent encoding.
+     */
+    private function buildVnpHashData(array $inputData): string
+    {
+        ksort($inputData);
+
+        $hashData = '';
+        $i = 0;
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashData .= urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+        }
+
+        return $hashData;
+    }
+
 
     private function vnpCacheKey(string $ref): string
     {
@@ -643,7 +802,7 @@ class CheckoutController extends Controller
             $order = Order::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
-                'code' => 'OD'.strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
+                'code' => 'OD' . strtoupper(substr(sha1(uniqid('', true)), 0, 10)),
                 'buyer_name' => $request->buyer_full_name ?? $request->full_name,
                 'buyer_phone' => $request->buyer_phone ?? $request->phone,
                 'buyer_email' => $request->buyer_email ?? $request->email,
@@ -754,5 +913,4 @@ class CheckoutController extends Controller
     //     return $pdf->download('invoice_' . ($order->code ?? $order->id) . '.pdf');
     // }
 }
-
 
