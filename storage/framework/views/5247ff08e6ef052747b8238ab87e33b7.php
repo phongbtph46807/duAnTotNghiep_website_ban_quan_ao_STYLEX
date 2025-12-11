@@ -71,7 +71,7 @@
                     
                     <div class="col-md-6">
                         <label class="form-label required">Danh mục <span class="text-danger">*</span></label>
-                        <select class="form-select" name="category_id" required>
+                        <select class="form-select" name="category_id">
                             <option value="">Chọn danh mục</option>
                             <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cate): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <option value="<?php echo e($cate->id); ?>" <?php echo e(old('category_id') == $cate->id ? 'selected' : ''); ?>>

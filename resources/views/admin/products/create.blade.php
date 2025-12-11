@@ -72,7 +72,7 @@
                     {{-- Hàng 2 --}}
                     <div class="col-md-6">
                         <label class="form-label required">Danh mục <span class="text-danger">*</span></label>
-                        <select class="form-select" name="category_id" required>
+                        <select class="form-select" name="category_id">
                             <option value="">Chọn danh mục</option>
                             @foreach ($categories as $cate)
                                 <option value="{{ $cate->id }}" {{ old('category_id') == $cate->id ? 'selected' : '' }}>

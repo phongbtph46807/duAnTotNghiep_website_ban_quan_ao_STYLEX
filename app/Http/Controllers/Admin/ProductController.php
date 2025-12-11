@@ -123,35 +123,6 @@ class ProductController extends Controller
             Log::error($th->getMessage());
             return back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
         }
-
-        // try {
-        //     DB::beginTransaction();
-
-        //     $data = $request->except('thumbnail');
-
-        //     if ($request->hasFile('thumbnail')) {
-        //         $urlThumbnail = $this->uploadToLocal($request->file('thumbnail'), self::FOLDER);
-        //         $data['thumbnail'] = $urlThumbnail;
-        //     }
-
-        //     $data['slug'] = Str::slug($data['name']);
-        //     // dd($data);
-        //     $product = Product::query()->create($data);
-
-        //     DB::commit();
-
-        //     return redirect()->route('admin.products.index')->with('success', 'Thêm mới thành công');
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-
-        //     if (isset($urlThumbnail) && filter_var($urlThumbnail, FILTER_VALIDATE_URL)) {
-        //         $this->deleteFromLocal($urlThumbnail, self::FOLDER);
-        //     }
-
-        //     $this->logError($e);
-
-        //     return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
-        // }
     }
     public function toggleFeature(Request $request, Product $product)
     {
@@ -296,6 +267,7 @@ class ProductController extends Controller
     {
         try {
             $product = Product::withTrashed()->findOrFail($id);
+            $product->variants()->delete();
             $product->forceDelete();
             return redirect()->route('admin.products.trash')->with('success', 'Xóa cứng sản phẩm thành công');
         } catch (\Exception $e) {

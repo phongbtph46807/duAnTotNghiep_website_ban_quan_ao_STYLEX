@@ -1,4 +1,3 @@
-
 <?php $__env->startSection('title', 'Danh sách đánh giá'); ?>
 <?php $__env->startPush('page-css'); ?>
     <link href="<?php echo e(asset('assets/css/custom.css')); ?>" rel="stylesheet" type="text/css" />
@@ -38,11 +37,11 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lí đánh giá</h4>
+                <h4 class="mb-sm-0">Quản lý đánh giá</h4>
 
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lí đánh giá</a></li>
+                        <li class="breadcrumb-item active"><a href="javascript: void(0);">Quản lý đánh giá</a></li>
                         <li class="breadcrumb-item">Danh sách đánh giá</li>
                     </ol>
                 </div>
@@ -116,13 +115,6 @@
                         <div class="row g-3">
                             
                             <div class="col-md-3">
-                                <label class="form-label fw-semibold">Người đánh giá</label>
-                                <input type="text" name="us" value="<?php echo e(request('us')); ?>" class="form-control"
-                                    placeholder="Nhập tên người dùng">
-                            </div>
-
-                            
-                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Sản phẩm</label>
                                 <select name="product" class="form-select">
                                     <option value="">-- Tất cả --</option>
@@ -175,6 +167,14 @@
                     </form>
                 </div>
                 <div class="card-body">
+                    <?php if(session('success')): ?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <?php echo e(session('success')); ?>
+
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="listjs-table" id="customerList">
 
                         <div class="table-responsive table-card mt-3 mb-1">
@@ -214,7 +214,7 @@
 
                                             
                                             <td>
-                                                <?php echo e($review->product->name ?? '---'); ?> <br>
+                                                <?php echo e($review->product ? $review->product->name : 'Sản phẩm đã bị xóa (ID: ' . $review->product_id . ')'); ?> <br>
                                                 <?php echo e($review->productVariant->attribute_summary ?? '---'); ?>
 
                                             </td>
@@ -322,11 +322,19 @@
                                                             <i class="las la-eye"></i>
                                                         </button>
                                                     </div>
-
-
-
-
-
+                                                    <div class="delete">
+                                                        <form action="<?php echo e(route('admin.reviews.destroy', $review->id)); ?>" 
+                                                              method="POST" 
+                                                              style="display:inline;"
+                                                              onsubmit="return confirm('Bạn chắc chắn muốn xóa đánh giá này?');">
+                                                            <?php echo csrf_field(); ?>
+                                                            <?php echo method_field('DELETE'); ?>
+                                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
                                             </td>
 
                                         </tr>
@@ -355,7 +363,7 @@
                                                         <!-- Sản phẩm -->
                                                         <div class="mb-3">
                                                             <strong>Sản phẩm:</strong>
-                                                            <?php echo e($review->product->name); ?>
+                                                            <?php echo e($review->product ? $review->product->name : 'Sản phẩm đã bị xóa (ID: ' . $review->product_id . ')'); ?>
 
                                                             <br>
                                                             <small>
@@ -466,7 +474,7 @@
                                                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                                                     <?php $__currentLoopData = $review->media; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $media): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                                         <a href="<?php echo e($media->url); ?>" target="_blank">
-                                                                            <img src="<?php echo e(Storage::url($media->url)); ?>"
+                                                                            <img src="<?php echo e($media->url); ?>"
                                                                                 alt="Ảnh đánh giá"
                                                                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd;">
                                                                         </a>
@@ -585,4 +593,5 @@
         });
     </script>
 <?php $__env->stopPush(); ?>
+
 <?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/reviews/index.blade.php ENDPATH**/ ?>
