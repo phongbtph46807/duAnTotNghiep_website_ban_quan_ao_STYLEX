@@ -20,7 +20,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\LoyaltyService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
+
 
 class CheckoutController extends Controller
 {
@@ -657,7 +657,7 @@ class CheckoutController extends Controller
         }
 
         // ==== LẤY DATA TỪ REDIS ====
-        $raw = Redis::get("order:$txnRef");
+        $raw = Cache::get("order:$txnRef");
         Log::info("Redis Check:", [
             "key" => "order:$txnRef",
             "raw" => $raw,
@@ -785,7 +785,7 @@ class CheckoutController extends Controller
             Log::info("=== ORDER HOÀN THÀNH ===");
 
             // Xóa key redis
-            Redis::del("order:$txnRef");
+            Cache::forget("order:$txnRef");
 
             return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
         } catch (\Throwable $e) {
@@ -844,10 +844,10 @@ class CheckoutController extends Controller
         $vnp_Url     = $vnp_Url . "?" . $queryString . '&vnp_SecureHash=' . $vnpSecureHash;
 
         // Lưu dữ liệu tạm để callback dùng
-        Redis::setex("order:$vnp_TxnRef", 900, json_encode([
+        Cache::put("order:$vnp_TxnRef", json_encode([
             'order_id' => $vnp_TxnRef,
             'data'     => $dataRequest,
-        ]));
+        ]), now()->addSeconds(900));
 
         Log::info('VNPAY URL', [
             'url'        => $vnp_Url,
