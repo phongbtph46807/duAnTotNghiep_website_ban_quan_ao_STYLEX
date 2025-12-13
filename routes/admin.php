@@ -19,15 +19,16 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\ProductImageController;
+use App\Http\Controllers\Admin\ReviewController;
 
 // Admin và Staff routes - cả hai đều có thể truy cập
-Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         //Categories route
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
-        Route::post('/admin-category-create',[CategoryController::class, 'store'])->name('category.store');
+        Route::post('/admin-category-create', [CategoryController::class, 'store'])->name('category.store');
         Route::get('/category/{id}/edit', [CategoryController::class, 'edit'])->name('category.edit');
         Route::put('/category/{id}', [CategoryController::class, 'update'])->name('category.update');
         Route::delete('/category/{id}', [CategoryController::class, 'destroy'])->name('category.destroy');
@@ -93,11 +94,19 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
             Route::patch('/{id}/restore', [PostController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [PostController::class, 'forceDelete'])->name('force-delete');
         });
+        // Reviews routes
+        Route::prefix('reviews')->as('reviews.')->group(function () {
+            Route::get('/', [ReviewController::class, 'index'])->name('index');
+            Route::get('/{review}', [ReviewController::class, 'show'])->name('show');
+            Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])
+                ->name('toggleStatus');
+            Route::delete('/{id}', [ReviewController::class, 'destroy'])->name('destroy');
+        });
     });
 });
 
 // Users management - CHUNG cho cả ADMIN và STAFF
-Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function() {
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
@@ -108,7 +117,7 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1,2']], function()
 });
 
 // Routes chỉ dành cho Admin (role=1) - Bổ sung thêm chức năng
-Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         // Role Management - CHỈ ADMIN
         Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
@@ -140,8 +149,9 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         // Orders management
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-       
-
+        Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
+        Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');
+        Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
         
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
@@ -157,5 +167,3 @@ Route::group(['middleware' => ['onlyAuthenticated','checkRole:1']], function() {
         });
     });
 });
-
-

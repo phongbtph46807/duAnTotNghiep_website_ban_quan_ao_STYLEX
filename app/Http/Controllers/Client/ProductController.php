@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Texture;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -14,30 +15,33 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        // Lấy danh mục từ database
+        // Lấy danh mục cha và danh mục con từ database
         $categories = Category::whereNull('parent_id')
             ->where('status', 1)
+            ->with(['children' => function($query) {
+                $query->where('status', 1);
+            }])
             ->get();
         
-        // Query sản phẩm
-        $query = Product::with(['category', 'primaryImage'])
-            ->where('is_active', 1);
-        
-        // Filter theo danh mục
-        if ($request->has('category') && $request->category) {
-            $query->where('category_id', $request->category);
+        // Lấy danh sách chất liệu đang hoạt động để lọc
+        $textures = Texture::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get();
+
+        // Quick view (server-rendered)
+        $quickProduct = null;
+        if ($request->filled('quick_view')) {
+            $quickProduct = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
+                ->where('is_active', 1)
+                ->find($request->quick_view);
         }
-        
-        // Sắp xếp mặc định
-        $query->orderBy('created_at', 'desc');
-        
-        // Phân trang
-        $products = $query->paginate(12);
-        
-        return view('client.product.index', [
-            'products' => $products,
-            'categories' => $categories,
+
+        return view('client.products.index', [
+            'categories'       => $categories,
             'selectedCategory' => $request->category,
+            'quickProduct'     => $quickProduct,
+            'textures'         => $textures,
         ]);
     }
     
@@ -46,7 +50,16 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with(['category', 'productImages', 'productVariants.color', 'productVariants.size', 'productVariants.texture'])
+        $product = Product::with([
+            'category',
+            'productImages',
+            'productVariants.color',
+            'productVariants.size',
+            'productVariants.texture',
+            'reviews.user',
+            'reviews.media',
+            'reviews.experiences',
+        ])
             ->where('is_active', 1)
             ->findOrFail($id);
         
@@ -58,9 +71,53 @@ class ProductController extends Controller
             ->limit(8)
             ->get();
         
-        return view('client.product.detail', [
+        // === Lấy tất cả review của sản phẩm (chỉ public) ===
+        $reviews = $product->reviews()
+            ->where('status', 'public')
+            ->with(['user', 'productVariant', 'media', 'experiences'])
+            ->get()
+            ->sortByDesc('created_at');
+        
+        // Tính trung bình rating
+        $avgRating = round($reviews->avg('rating') ?? 0, 1);
+        
+        // === Lấy một vài đánh giá gần nhất ===
+        $latestReviews = $reviews->take(5)->map(function ($review) {
+            // Hỗ trợ cả quan hệ media (ReviewMedia) và cột json media mới
+            $mediaUrls = [];
+            if (is_array($review->media)) {
+                $mediaUrls = $review->media;
+            } elseif ($review->relationLoaded('media') && $review->media instanceof \Illuminate\Support\Collection) {
+                $mediaUrls = $review->media->pluck('url')->toArray();
+            }
+
+            // Lấy thông tin biến thể (ưu tiên dữ liệu lưu trong review, fallback sang quan hệ variant)
+            $variantName = $review->productVariant?->attribute_summary;
+            $variantColor = $review->variant_color ?? $review->productVariant?->color?->name;
+            $variantSize = $review->variant_size ?? $review->productVariant?->size?->name;
+
+            return [
+                'id' => $review->id,
+                'user' => [
+                    'name' => $review->user->name ?? 'Ẩn danh',
+                    'avatar' => $review->user->avatar ?? null,
+                ],
+                'rating' => (int)$review->rating,
+                'comment' => $review->content,
+                'variant' => $variantName,
+                'variant_color' => $variantColor,
+                'variant_size' => $variantSize,
+                'tags'  => $review->tags ?? [],
+                'media' => $mediaUrls,
+                'created_at' => $review->created_at->diffForHumans(),
+            ];
+        });
+
+        return view('client.products.detail', [
             'product' => $product,
             'relatedProducts' => $relatedProducts,
+            'latestReviews' => $latestReviews,
+            'avgRating' => $avgRating,
         ]);
     }
 }

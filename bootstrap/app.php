@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__)) // @phpstan-ignore-lin
             'onlyAuthenticated' => App\Http\Middleware\OnlyAuthenticated::class,
             'onlyAdmin' => App\Http\Middleware\OnlyAdmin::class,
             'checkRole' => App\Http\Middleware\CheckRole::class,
+            'checkPermission' => App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void { // @phpstan-ignore-line

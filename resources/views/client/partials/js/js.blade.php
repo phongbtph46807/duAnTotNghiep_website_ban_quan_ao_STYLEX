@@ -74,7 +74,7 @@
 
 	// Global Add-to-cart AJAX (opt-in only). Intercepts form posting to /cart/add when data-ajax="1"
     // Stylish toast (top-right, dark theme)
-    function showToast(message) {
+    function showToast(message, type) {
         // Create container once
         var $container = $('#toast-container-stylex');
         if (!$container.length) {
@@ -85,9 +85,23 @@
             $('body').append($container);
         }
 
+        type = type || 'success';
+
+        var baseBg = 'linear-gradient(135deg, #111, #1c1c1c)';
+        var borderColor = 'rgba(255,255,255,0.08)';
+        var iconChar = '✓';
+        var titleText = 'Thành công';
+        if (type === 'error') {
+            // Đỏ nhạt nhưng đậm hơn một chút cho dễ nhìn
+            baseBg = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+            borderColor = '#fca5a5';
+            iconChar = '!';
+            titleText = 'Lỗi';
+        }
+
         var $toast = $('<div class="toast-stylex"></div>').css({
-            background:'linear-gradient(135deg, #111, #1c1c1c)', color:'#fff',
-            border:'1px solid rgba(255,255,255,0.08)', borderRadius:'10px',
+            background: baseBg, color:'#fff',
+            border:'1px solid ' + borderColor, borderRadius:'10px',
             boxShadow:'0 10px 25px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
             padding:'12px 14px 10px 12px', minWidth:'260px', maxWidth:'360px',
             display:'flex', alignItems:'flex-start', gap:'10px',
@@ -99,12 +113,12 @@
             background:'#2a2a2a', display:'flex', alignItems:'center', justifyContent:'center',
             boxShadow:'0 6px 12px rgba(0,0,0,0.35)'
         });
-        var $icon = $('<span>✓</span>').css({ fontWeight:700, color:'#fff' });
+        var $icon = $('<span></span>').text(iconChar).css({ fontWeight:700, color: type === 'error' ? '#b91c1c' : '#fff' });
         $iconWrap.append($icon);
 
         var $content = $('<div></div>').css({ flex:1 });
-        var $title = $('<div></div>').text('Thành công').css({ fontSize:'13px', opacity:.9, marginBottom:'2px' });
-        var $msg = $('<div></div>').text(message).css({ fontSize:'14px', fontWeight:600 });
+        var $title = $('<div></div>').text(titleText).css({ fontSize:'13px', opacity:.9, marginBottom:'2px', color: type === 'error' ? '#b91c1c' : '#fff' });
+        var $msg = $('<div></div>').text(message).css({ fontSize:'14px', fontWeight:600, color: type === 'error' ? '#7f1d1d' : '#fff' });
         var $bar = $('<div></div>').css({
             position:'relative', height:'3px', borderRadius:'10px',
             background:'rgba(255,255,255,0.08)', marginTop:'8px', overflow:'hidden'
@@ -147,54 +161,32 @@
     $(document).on('submit', 'form[data-ajax="1"][action$="/cart/add"]', function(e){
 		e.preventDefault();
 		var $form = $(this);
-        // Require variant selection if product actually has variants (based on nearest data-variants)
-        var variantId = ($form.find('input[name="variant_id"]').val() || '').trim();
-        var $container = $form.closest('[data-variants]');
-        var requiresVariant = false;
-        var variantsArr = [];
-        if ($container.length) {
-            try { variantsArr = JSON.parse($container.attr('data-variants') || '[]'); requiresVariant = Array.isArray(variantsArr) && variantsArr.length > 0; } catch(e){ requiresVariant = false; }
-        }
-        // Last-chance resolve variant on submit using current selections
-        var sizeName = ($('#size-select').val() || '').trim();
-        var colorName = ($('#color-select').val() || '').trim();
-        var textureName = ($('#texture-select').val() || '').trim();
-        // If requires variant and any dimension select exists, force user to make a choice on all existing selects
-        if (requiresVariant && (!sizeName && $('#size-select').length || !colorName && $('#color-select').length || !textureName && $('#texture-select').length)) {
-            swal('Thông báo', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).', 'error');
-            return false;
-        }
-        if (requiresVariant && !variantId) {
-            var found = null;
-            for (var i=0;i<variantsArr.length;i++){
-                var v = variantsArr[i];
-                var vSize = v.size && v.size.name ? String(v.size.name).trim() : '';
-                var vColor = v.color && v.color.name ? String(v.color.name).trim() : '';
-                var vTexture = v.texture && v.texture.name ? String(v.texture.name).trim() : '';
-                var okS = sizeName ? sizeName === vSize : true;
-                var okC = colorName ? colorName === vColor : true;
-                var okT = textureName ? textureName === vTexture : true;
-                if (okS && okC && okT) { found = v; break; }
-            }
-            if (found && found.id){
-                variantId = String(found.id);
-                $form.find('input[name="variant_id"]').val(variantId);
-            }
-        }
-        if (requiresVariant && !variantId) {
-            swal('Thông báo', 'Vui lòng chọn đầy đủ biến thể (kích thước, màu sắc, chất liệu).', 'error');
-            return false;
-        }
+        
+        // Đơn giản: chỉ cần lấy variant_id từ form (đã được set sẵn từ detail page)
+        // Không cần tìm variant phức tạp nữa vì đã có variant mặc định và cập nhật khi user chọn
 		var payload = $form.serialize() + '&ajax=1';
 		$.ajax({
 			url: $form.attr('action'),
 			type: 'POST',
-			headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+			headers: { 
+				'Accept': 'application/json', 
+				'X-Requested-With': 'XMLHttpRequest',
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
 			data: payload
         }).done(function(res){
-            if (!res || !res.success) { swal('Thông báo', (res && res.message) ? res.message : 'Không thể thêm vào giỏ', 'error'); return; }
+            if (!res || !res.success) { 
+                // Hiển thị thông báo lỗi nếu có
+                var errorMsg = (res && res.message) ? res.message : 'Có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.';
+                showToast(errorMsg, 'error');
+                console.error('Add to cart error:', res);
+                return; 
+            }
+            
 			var count = res.cart_count || 0;
 			$('.icon-header-noti.js-show-cart').attr('data-notify', count);
+			// Hiển thị thông báo thành công
+			showToast('Đã thêm vào giỏ hàng', 'success');
 			// Reload cart mini to update items and total
 			// Always reload cart via AJAX to ensure it's updated
 			$.ajax({
@@ -214,10 +206,10 @@
 									var price = item.price || 0;
 									var quantity = item.quantity || 1;
 									
-									// Get variant info
+									// Get variant info (use grouped data if available)
 									var variant = item.variant || {};
-									var sizeName = variant.size ? (variant.size.name || '') : '';
-									var colorName = variant.color ? (variant.color.name || '') : '';
+									var sizeName = item.size || (variant.size ? (variant.size.name || '') : '');
+									var colorName = item.color || (variant.color ? (variant.color.name || '') : '');
 									var variantInfo = '';
 									if (sizeName || colorName) {
 										var parts = [];
@@ -283,11 +275,28 @@
 						console.error('Error loading cart:', error);
 					}
 				});
-            showToast('Đã thêm vào giỏ hàng');
         }).fail(function(xhr){
-            var msg = 'Không thể thêm vào giỏ';
-            if (xhr && xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
-            swal('Thông báo', msg, 'error');
+            // Xử lý lỗi và hiển thị thông báo
+            var errorMsg = 'Có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.';
+            
+            if (xhr.status === 419) {
+                errorMsg = 'Phiên đăng nhập đã hết hạn. Vui lòng làm mới trang và thử lại.';
+            } else if (xhr.status === 422) {
+                var response = xhr.responseJSON;
+                if (response && response.message) {
+                    errorMsg = response.message;
+                } else if (response && response.errors) {
+                    var firstError = Object.values(response.errors)[0];
+                    if (Array.isArray(firstError) && firstError.length > 0) {
+                        errorMsg = firstError[0];
+                    }
+                }
+            } else if (xhr.status === 500) {
+                errorMsg = 'Lỗi server. Vui lòng thử lại sau.';
+            }
+            
+            showToast(errorMsg, 'error');
+            console.error('Add to cart AJAX error:', xhr.status, xhr.responseText);
 		});
 		return false;
 	});
@@ -436,3 +445,228 @@
 			}
 		});
 	</script>
+<!--===============================================================================================-->
+	<!-- Chat Box JavaScript -->
+	<script>
+		$(document).ready(function() {
+			// Display current date
+			function updateChatDate() {
+				const now = new Date();
+				const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+				const dayName = days[now.getDay()];
+				const day = String(now.getDate()).padStart(2, '0');
+				const month = String(now.getMonth() + 1).padStart(2, '0');
+				const year = now.getFullYear();
+				const dateStr = dayName + ', ' + day + '/' + month + '/' + year;
+				$('#chatCurrentDate').html('<i class="zmdi zmdi-calendar" style="font-size: 9px; margin-right: 4px; opacity: 0.7;"></i>' + dateStr);
+			}
+			updateChatDate();
+			
+			// Ensure chat icon is visible
+			$('#chatIconWrapper').attr('style', 'bottom: 100px; right: 30px; z-index: 10001 !important; display: block !important; visibility: visible !important; position: fixed !important;');
+			
+			$('#chatIconButton').show().css({
+				'display': 'flex',
+				'visibility': 'visible'
+			});
+
+			const chatIconButton = $('#chatIconButton');
+			const chatBoxContainer = $('#chatBoxContainer');
+			const chatCloseBtn = $('#chatCloseBtn');
+			const chatInput = $('#chatInput');
+			const chatSendBtn = $('#chatSendBtn');
+			const chatMessages = $('#chatMessages');
+
+			// Debug: Check if elements exist
+			if (chatIconButton.length === 0) {
+				console.error('Chat icon button not found!');
+			}
+			if (chatBoxContainer.length === 0) {
+				console.error('Chat box container not found!');
+			}
+
+			// Toggle chat box
+			chatIconButton.on('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				
+				if (chatBoxContainer.hasClass('show')) {
+					// Close chat box
+					chatBoxContainer.removeClass('show');
+					chatBoxContainer.hide();
+				} else {
+					// Simple positioning: box above icon, same right
+					const iconBottom = 100; // Icon bottom position
+					const iconRight = 30; // Icon right position
+					const iconHeight = 60; // Icon height
+					const gap = 10; // Gap between icon and box
+					
+					// Position box above icon
+					const boxBottom = iconBottom + iconHeight + gap;
+					
+					// Open chat box
+					chatBoxContainer.addClass('show');
+					chatBoxContainer.css({
+						'display': 'flex',
+						'visibility': 'visible',
+						'opacity': '1',
+						'bottom': boxBottom + 'px',
+						'right': iconRight + 'px',
+						'position': 'fixed'
+					}).show();
+					chatInput.focus();
+					scrollToBottom();
+				}
+			});
+
+			// Close chat box
+			chatCloseBtn.on('click', function(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				chatBoxContainer.removeClass('show');
+				chatBoxContainer.hide();
+			});
+
+			// Hide chat icon when minicart is opened
+			function toggleChatIconVisibility() {
+				const panelCart = $('.js-panel-cart');
+				const chatIconWrapper = $('#chatIconWrapper');
+				
+				if (panelCart.hasClass('show-header-cart')) {
+					// Hide chat icon when minicart is open
+					chatIconWrapper.attr('style', 'bottom: 100px; right: 30px; z-index: 10001 !important; display: none !important; visibility: hidden !important; opacity: 0 !important; position: fixed !important;');
+				} else {
+					// Show chat icon when minicart is closed
+					chatIconWrapper.attr('style', 'bottom: 100px; right: 30px; z-index: 10001 !important; display: block !important; visibility: visible !important; opacity: 1 !important; position: fixed !important;');
+				}
+			}
+
+			// Watch for minicart open/close
+			$(document).on('click', '.js-show-cart', function() {
+				setTimeout(toggleChatIconVisibility, 10);
+			});
+
+			$(document).on('click', '.js-hide-cart', function() {
+				setTimeout(toggleChatIconVisibility, 10);
+			});
+
+			// Also watch for class changes on panel-cart (in case it's toggled elsewhere)
+			const panelCartObserver = new MutationObserver(function(mutations) {
+				toggleChatIconVisibility();
+			});
+
+			const panelCartElement = document.querySelector('.js-panel-cart');
+			if (panelCartElement) {
+				panelCartObserver.observe(panelCartElement, {
+					attributes: true,
+					attributeFilter: ['class']
+				});
+			}
+
+			// Initial check
+			toggleChatIconVisibility();
+
+			// Send message function
+			function sendMessage() {
+				const message = chatInput.val().trim();
+				if (message === '') return;
+
+				// Remove welcome message if exists
+				chatMessages.find('.chat-welcome').remove();
+
+				// Add user message
+				addMessage(message, 'user');
+				chatInput.val('');
+				scrollToBottom();
+
+				// Simulate admin response (chỉ là giao diện, không có backend)
+				setTimeout(function() {
+					showTypingIndicator();
+					setTimeout(function() {
+						removeTypingIndicator();
+						addMessage('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.', 'admin');
+						scrollToBottom();
+					}, 1500);
+				}, 500);
+			}
+
+			// Send button click
+			chatSendBtn.on('click', function() {
+				sendMessage();
+			});
+
+			// Enter key to send
+			chatInput.on('keypress', function(e) {
+				if (e.which === 13) {
+					e.preventDefault();
+					sendMessage();
+				}
+			});
+
+			// Add message to chat
+			function addMessage(text, type) {
+				const now = new Date();
+				const time = now.getHours().toString().padStart(2, '0') + ':' + 
+							now.getMinutes().toString().padStart(2, '0');
+				
+				const messageClass = type === 'user' ? 'user' : 'admin';
+				const avatarIcon = type === 'user' ? 'zmdi-account' : 'zmdi-account-circle';
+				
+				const messageHtml = `
+					<div class="chat-message ${messageClass}">
+						<div class="chat-message-avatar">
+							<i class="zmdi ${avatarIcon}"></i>
+						</div>
+						<div class="chat-message-content">
+							<div class="chat-message-bubble">${text}</div>
+							<div class="chat-message-time">${time}</div>
+						</div>
+					</div>
+				`;
+				
+				chatMessages.append(messageHtml);
+			}
+
+			// Show typing indicator
+			function showTypingIndicator() {
+				const typingHtml = `
+					<div class="chat-message admin" id="typingIndicator">
+						<div class="chat-message-avatar">
+							<i class="zmdi zmdi-account-circle"></i>
+						</div>
+						<div class="chat-message-content">
+							<div class="chat-typing-indicator">
+								<div class="chat-typing-dot"></div>
+								<div class="chat-typing-dot"></div>
+								<div class="chat-typing-dot"></div>
+							</div>
+						</div>
+					</div>
+				`;
+				chatMessages.append(typingHtml);
+				scrollToBottom();
+			}
+
+			// Remove typing indicator
+			function removeTypingIndicator() {
+				$('#typingIndicator').remove();
+			}
+
+			// Scroll to bottom
+			function scrollToBottom() {
+				chatMessages.scrollTop(chatMessages[0].scrollHeight);
+			}
+
+
+			// Close chat when clicking outside (optional)
+			$(document).on('click', function(e) {
+				if (!$(e.target).closest('#chatBoxContainer, #chatIconWrapper').length) {
+					if (chatBoxContainer.hasClass('show')) {
+						// Uncomment below if you want to close when clicking outside
+						// chatBoxContainer.removeClass('show');
+					}
+				}
+			});
+		});
+	</script>
+<!--===============================================================================================-->

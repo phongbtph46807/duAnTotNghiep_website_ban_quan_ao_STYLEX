@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
@@ -15,18 +16,63 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         
         // Convert string roles to integers for comparison
         $requiredRoles = array_map('intval', $roles);
         
-        // Check if user has any of the required roles
-        if (!in_array($user->role, $requiredRoles)) {
+        // Map role integers to role names
+        $roleNameMap = [
+            1 => 'Admin',
+            2 => 'Staff',
+        ];
+        
+        $hasAccess = false;
+        
+        // Check old role field (backward compatibility)
+        if (in_array($user->role, $requiredRoles)) {
+            $hasAccess = true;
+        }
+        
+        // Check new roles relationship (many-to-many)
+        if (!$hasAccess) {
+            $requiredRoleNames = [];
+            foreach ($requiredRoles as $roleInt) {
+                if (isset($roleNameMap[$roleInt])) {
+                    $requiredRoleNames[] = $roleNameMap[$roleInt];
+                }
+            }
+            
+            if (!empty($requiredRoleNames)) {
+                $userRoles = $user->roles()->pluck('name')->toArray();
+                foreach ($requiredRoleNames as $requiredName) {
+                    if (in_array($requiredName, $userRoles)) {
+                        $hasAccess = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!$hasAccess) {
             abort(403, 'Bạn không có quyền truy cập trang này.');
+        }
+
+        // Kiểm tra permission nếu route có tên (dựa trên route name)
+        $route = $request->route();
+        if ($route && $route->getName()) {
+            $routeName = $route->getName();
+
+            // Nếu là Admin (role = 1 hoặc có role name 'Admin'), bỏ qua kiểm tra permission chi tiết
+            $isAdmin = ($user->role == 1) || $user->roles()->where('name', 'Admin')->exists();
+            if (!$isAdmin && !$user->hasPermission($routeName)) {
+                abort(403, 'Bạn không có quyền thực hiện hành động này.');
+            }
         }
 
         return $next($request);

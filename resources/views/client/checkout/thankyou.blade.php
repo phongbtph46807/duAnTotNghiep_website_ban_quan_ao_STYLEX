@@ -1,4 +1,4 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 @section('title', 'Hoàn tất đặt hàng - ' . env('APP_NAME'))
 @section('content')
 <div class="container p-t-60 p-b-60">
@@ -19,3 +19,4 @@
   </div>
 </div>
 @endsection
+
