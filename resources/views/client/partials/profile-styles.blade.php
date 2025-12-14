@@ -232,6 +232,35 @@
         border-bottom: 2px solid #f0f0f0;
     }
 
+    .tier-nav-btn {
+        background: rgba(0,0,0,0.25);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        color: #fff;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .25s ease;
+    }
+
+    .tier-nav-btn:hover {
+        background: rgba(0,0,0,0.45);
+        transform: scale(1.1);
+    }
+
+    .tier-name {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.45);
+    }
+
+    .tier-benefit {
+        text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+
+
+
     /* Responsive */
     @media (max-width: 768px) {
         .profile-card-body {

@@ -7,16 +7,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Services\LoyaltyService;
+use App\Models\LoyaltyTier;
 
 class ProfileController extends Controller
 {
     /**
      * Hiển thị trang hồ sơ cá nhân
      */
-    public function index()
+    public function index(LoyaltyService $loyaltyService)
     {
+        $allTiers = LoyaltyTier::orderBy('min_spend_required')->get();
         $user = auth()->user();
-        return view('client.profile.index', compact('user'));
+
+        // Khởi tạo & lấy loyalty
+        $userLoyalty = $loyaltyService->initializeUserLoyalty($user);
+        $currentTier = $loyaltyService->getCurrentTier($user);
+        $nextTierData = $loyaltyService->getNextTierProgress($user);
+
+        return view('client.profile.index', compact(
+            'user',
+            'userLoyalty',
+            'currentTier',
+            'nextTierData',
+            'allTiers'
+        ));
     }
 
     /**

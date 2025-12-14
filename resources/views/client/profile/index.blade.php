@@ -125,6 +125,95 @@
                             </div>
                         </div>
 
+                        {{-- Loyalty Tier Card --}}
+                        @if($currentTier)
+                        <div class="card profile-card mb-4"
+                            id="tierCard"
+                            data-current-tier="{{ $currentTier->id }}">
+
+                            <div class="card-body text-center"
+                                id="tierContent"
+                                style="
+                                    background: {{ $currentTier->color }};
+                                    color: {{ $currentTier->text_color }};
+                                    border-radius: 16px;
+                                    padding: 24px;
+                                ">
+
+                                {{-- Navigation --}}
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <button type="button"
+                                            class="tier-nav-btn"
+                                            onclick="prevTier()">
+                                        <i class="ri-arrow-left-s-line"></i>
+                                    </button>
+
+                                    <h4 id="tierName"
+                                        class="tier-name fw-bold mb-0">
+                                        Hạng {{ $currentTier->name }}
+                                        <span class="badge bg-dark ms-2">Đang sở hữu</span>
+                                    </h4>
+
+                                    <button type="button"
+                                            class="tier-nav-btn"
+                                            onclick="nextTier()">
+                                        <i class="ri-arrow-right-s-line"></i>
+                                    </button>
+                                </div>
+
+                                {{-- Discount --}}
+                                <div class="tier-benefit fw-semibold mb-2"
+                                    style="font-size: 16px;">
+                                    🎁 Giảm <strong>{{ $currentTier->discount_rate }}%</strong>
+                                    cho mọi đơn hàng
+                                </div>
+
+                                {{-- Condition --}}
+                                <div class="small fw-semibold mb-3"
+                                    id="tierCondition">
+                                    Tổng chi tiêu từ
+                                    {{ number_format($currentTier->min_spend_required) }} đ
+                                </div>
+
+                                {{-- Progress Bar --}}
+                                @php
+                                    $progress = $nextTierData['progress'] ?? 100;
+                                @endphp
+
+                                <div class="progress mb-3"
+                                    style="height: 10px; border-radius: 20px; background: rgba(255,255,255,0.3);">
+                                    <div id="tierProgress"
+                                        class="progress-bar"
+                                        role="progressbar"
+                                        style="
+                                            width: {{ $progress }}%;
+                                            background: rgba(0,0,0,0.35);
+                                            border-radius: 20px;
+                                        ">
+                                    </div>
+                                </div>
+
+                                {{-- Progress Text --}}
+                                <div class="small fw-bold"
+                                    id="tierNote"
+                                    style="text-shadow: 0 1px 2px rgba(0,0,0,0.35);">
+                                    @if($nextTierData)
+                                        Còn
+                                        <strong>{{ number_format($nextTierData['remaining']) }} đ</strong>
+                                        để lên hạng
+                                        <strong>{{ $nextTierData['next_tier']->name }}</strong>
+                                    @else
+                                        🎉 Bạn đang ở hạng cao nhất
+                                    @endif
+                                </div>
+
+                            </div>
+                        </div>
+                        @endif
+
+
+
+
                         <!-- Personal Information Section -->
                         <div class="form-section">
                             <h5 class="form-section-title">
@@ -256,5 +345,78 @@ function previewAvatar(input) {
     }
 }
 </script>
+<script>
+    const tiers = @json($allTiers);
+    const totalSpent = {{ $user->loyalty->total_spent ?? 0 }};
+    const ownedTierId = {{ $currentTier->id }};
+    let currentIndex = tiers.findIndex(t => t.id === ownedTierId);
+
+    function renderTier(index) {
+        const tier = tiers[index];
+        const nextTier = tiers[index + 1] ?? null;
+
+        const card = document.getElementById('tierContent');
+        card.style.background = tier.color;
+        card.style.color = tier.text_color;
+
+        document.getElementById('tierName').innerHTML =
+            `Hạng ${tier.name}` +
+            (tier.id === {{ $currentTier->id }}
+                ? `<span class="badge bg-dark ms-2">Đang sở hữu</span>`
+                : ``);
+
+        document.querySelector('.tier-benefit').innerHTML =
+            `🎁 Giảm <strong>${tier.discount_rate}%</strong> cho mọi đơn hàng`;
+
+        document.getElementById('tierCondition').innerText =
+            `Tổng chi tiêu từ ${Number(tier.min_spend_required).toLocaleString()} đ`;
+
+        let progress = 100;
+        let note = '🎉 Hạng cao nhất';
+
+        if (nextTier) {
+            const needed = nextTier.min_spend_required - totalSpent;
+            progress = Math.min(
+                100,
+                Math.max(
+                    0,
+                    ((totalSpent - tier.min_spend_required) /
+                    (nextTier.min_spend_required - tier.min_spend_required)) * 100
+                )
+            );
+
+            note = needed > 0
+                ? `Còn <strong>${needed.toLocaleString()} đ</strong> để lên hạng <strong>${nextTier.name}</strong>`
+                : `🎉 Đã đủ điều kiện lên hạng`;
+        }
+
+        document.getElementById('tierProgress').style.width = progress + '%';
+        document.getElementById('tierNote').innerHTML = note;
+    }
+
+    function prevTier() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderTier(currentIndex);
+        }
+    }
+
+    function nextTier() {
+        if (currentIndex < tiers.length - 1) {
+            currentIndex++;
+            renderTier(currentIndex);
+        }
+    }
+</script>
+
+<script>
+    const card = document.querySelector('.loyalty-card');
+    const bg = card.style.backgroundColor;
+    if (bg === '#e5e4e2' || bg === '#ffd700' || bg === '#b9f2ff') {
+        card.classList.add('light');
+    }
+</script>
+
+
 @endsection
 
