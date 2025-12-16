@@ -157,4 +157,16 @@ class ProductController extends Controller
         $product->load(['brand','category','images','variants.color','variants.size','variants.texture']);
         return new ProductResource($product);
     }
+
+    public function getVariantStock($variantId)
+    {
+        $stock = \App\Models\WarehouseStock::where('variant_id', $variantId)
+            ->sum('available');
+
+        return response()->json([
+            'variant_id' => $variantId,
+            'total_stock' => $stock,
+            'in_stock' => $stock > 0,
+        ]);
+    }
 }
