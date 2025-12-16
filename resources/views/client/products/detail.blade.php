@@ -222,19 +222,6 @@
 								</div>
 								@endif
 
-								<div class="flex-w flex-r-m p-b-10">
-									<div class="size-203 flex-c-m respon6">
-										Tồn Kho
-									</div>
-									<div class="size-204 respon6-next">
-										<div class="stext-102 cl6" style="padding: 8px 0;">
-											<span id="stock-display" style="font-weight: 600; color: #333;">
-												Chọn đủ các thuộc tính để xem tồn kho
-											</span>
-										</div>
-									</div>
-								</div>
-
 							@endif
 
 							@php
@@ -279,6 +266,9 @@
 										Thêm vào giỏ
 									</button>
                                 </form>
+									<div class="m-l-15">
+										<span id="stock-info" style="font-weight: 600; color: #333;"></span>
+									</div>
 							</div>	
 						</div>
 
@@ -791,10 +781,27 @@ $(document).ready(function() {
                     $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
                 }
             }
+            
+            // Hiển thị tồn kho
+            $.ajax({
+                url: '/api/v1/variants/' + variant.id + '/stock',
+                type: 'GET',
+                success: function(response) {
+                    if (response.in_stock) {
+                        $('#stock-info').html('Còn hàng (' + response.total_stock + ' sản phẩm)').css('color', '#28a745');
+                    } else {
+                        $('#stock-info').html('Hết hàng').css('color', '#dc3545');
+                    }
+                },
+                error: function() {
+                    $('#stock-info').html('').css('color', '#999');
+                }
+            });
         } else {
             // Nếu không tìm thấy variant, reset variant_id và texture_name
             $('input[name="variant_id"]').val('');
             $('input[name="texture_name"]').val('');
+            $('#stock-info').html('');
             
             // DEBUG: Log variant not found
             console.log('Variant NOT found for Size:', size, 'Color:', color);
@@ -906,34 +913,3 @@ $(document).ready(function() {
 </script>
 @endpush
 
-
-<script>
-// Thêm function updateStockDisplay vào cuối script
-$(document).ready(function() {
-    // Function để cập nhật hiển thị tồn kho
-    window.updateStockDisplay = function(variant) {
-        const $stockDisplay = $('#stock-display');
-        if (!$stockDisplay.length) return;
-        
-        if (!variant) {
-            $stockDisplay.html('Chọn đủ các thuộc tính để xem tồn kho').css('color', '#999');
-            return;
-        }
-        
-        $.ajax({
-            url: '/api/v1/variants/' + variant.id + '/stock',
-            type: 'GET',
-            success: function(response) {
-                if (response.in_stock) {
-                    $stockDisplay.html('Còn hàng (' + response.total_stock + ' sản phẩm)').css('color', '#28a745');
-                } else {
-                    $stockDisplay.html('Hết hàng').css('color', '#dc3545');
-                }
-            },
-            error: function() {
-                $stockDisplay.html('Không thể lấy thông tin tồn kho').css('color', '#999');
-            }
-        });
-    };
-});
-</script>

@@ -272,6 +272,9 @@
 										Thêm vào giỏ
 									</button>
                                 </form>
+									<div class="m-l-15">
+										<span id="stock-info" style="font-weight: 600; color: #333;"></span>
+									</div>
 							</div>	
 						</div>
 
@@ -798,10 +801,27 @@ $(document).ready(function() {
                     $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
                 }
             }
+            
+            // Hiển thị tồn kho
+            $.ajax({
+                url: '/api/v1/variants/' + variant.id + '/stock',
+                type: 'GET',
+                success: function(response) {
+                    if (response.in_stock) {
+                        $('#stock-info').html('Còn hàng (' + response.total_stock + ' sản phẩm)').css('color', '#28a745');
+                    } else {
+                        $('#stock-info').html('Hết hàng').css('color', '#dc3545');
+                    }
+                },
+                error: function() {
+                    $('#stock-info').html('').css('color', '#999');
+                }
+            });
         } else {
             // Nếu không tìm thấy variant, reset variant_id và texture_name
             $('input[name="variant_id"]').val('');
             $('input[name="texture_name"]').val('');
+            $('#stock-info').html('');
             
             // DEBUG: Log variant not found
             console.log('Variant NOT found for Size:', size, 'Color:', color);
