@@ -52,9 +52,12 @@
         ] + $statusTabs;
         $statusLabels = [
             'pending' => 'Chờ xác nhận',
-            'processing' => 'Vận chuyển',
+            'processing' => 'Đang xử lý',
             'shipping' => 'Chờ giao hàng',
+            'delivered' => 'Đã giao',
             'completed' => 'Hoàn thành',
+            'cancel_request' => 'Yêu cầu hủy',
+            'return_request' => 'Yêu cầu trả hàng',
             'cancelled' => 'Đã hủy',
             'returned' => 'Trả hàng/Hoàn tiền',
         ];
@@ -82,7 +85,7 @@
     @endif
 
     @foreach($orders as $order)
-        <div class="order-card">
+        <div class="order-card" data-order-id="{{ $order->id }}" data-order-status="{{ $order->status }}">
             <div class="order-card__header">
                 <div>
                     <div class="order-card__status">{{ $statusLabels[$order->status] ?? ucfirst($order->status) }}</div>
@@ -156,6 +159,7 @@
                                             data-order-id="{{ $order->id }}"
                                             data-item-id="{{ $item->id }}"
                                             data-product-id="{{ $item->product_id }}"
+                                            data-variant-id="{{ $item->variant_id }}"
                                             data-product-name="{{ $productName }}"
                                             style="background:#6777ef;color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;">
                                         ★ Đánh giá
@@ -176,12 +180,22 @@
                 <div class="order-actions">
                     <a class="btn-outline" href="{{ route('client.order.track', ['code' => $order->code]) }}">Xem chi tiết</a>
                     @if($order->status === 'pending')
-                        <form method="POST" action="{{ route('client.order.cancel', $order) }}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
-                            @csrf
-                            <button type="submit" class="btn-outline" style="border-color:#ff4d4f;color:#ff4d4f;">Hủy đơn</button>
-                        </form>
+                        <button type="button"
+                                class="btn-outline btn-cancel-order"
+                                data-order-id="{{ $order->id }}"
+                                data-order-code="{{ $order->code }}"
+                                style="border-color:#ff4d4f;color:#ff4d4f;">
+                            Hủy đơn
+                        </button>
                     @endif
                     @if(in_array($order->status, ['completed','delivered']))
+                        <button type="button"
+                                class="btn-outline btn-return-order"
+                                data-order-id="{{ $order->id }}"
+                                data-order-code="{{ $order->code }}"
+                                style="border-color:#f59e0b;color:#f59e0b;">
+                            Yêu cầu trả hàng
+                        </button>
                         <a class="btn-primary-x" href="{{ route('client.products.index') }}">Mua lại</a>
                     @endif
                 </div>
@@ -189,6 +203,194 @@
         </div>
     @endforeach
 </div>
+
+{{-- Modal hủy đơn --}}
+<div id="cancelModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;padding:15px;">
+    <div style="background:#fff;border-radius:12px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.15);">
+        <button type="button" id="closeCancelModal" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
+        <h5 style="margin-bottom:16px;font-weight:700;">Hủy đơn hàng</h5>
+        <p id="cancelOrderCode" style="margin-top:-6px;color:#666;font-size:13px;"></p>
+
+        <form id="cancelForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600;display:block;margin-bottom:6px;">Lý do hủy *</label>
+                <textarea name="cancel_reason" class="co-textarea" rows="3" placeholder="Ví dụ: Thay đổi địa chỉ, đặt nhầm sản phẩm..." required></textarea>
+            </div>
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600;display:block;margin-bottom:6px;">Ảnh minh họa (tùy chọn, tối đa 3 ảnh)</label>
+                <input type="file" id="cancelImagesInput" name="cancel_images[]" accept="image/*" multiple style="width:100%;">
+                <small style="color:#777;">Tối đa 3 ảnh, mỗi ảnh 2MB.</small>
+                <div id="cancelPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+                <button type="button" id="cancelModalCloseBtn" style="padding:8px 14px;background:#f0f0f0;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Đóng</button>
+                <button type="submit" style="padding:8px 14px;background:#ff4d4f;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Xác nhận hủy</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal trả hàng --}}
+<div id="returnModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;padding:15px;">
+    <div style="background:#fff;border-radius:12px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.15);">
+        <button type="button" id="closeReturnModal" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
+        <h5 style="margin-bottom:16px;font-weight:700;">Yêu cầu trả hàng</h5>
+        <p id="returnOrderCode" style="margin-top:-6px;color:#666;font-size:13px;"></p>
+
+        <form id="returnForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600;display:block;margin-bottom:6px;">Lý do trả hàng *</label>
+                <textarea name="return_reason" class="co-textarea" rows="3" placeholder="Ví dụ: Sản phẩm lỗi, thiếu phụ kiện, giao nhầm..." required></textarea>
+            </div>
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:600;display:block;margin-bottom:6px;">Ảnh minh họa (tùy chọn, tối đa 3 ảnh)</label>
+                <input type="file" id="returnImagesInput" name="return_images[]" accept="image/*" multiple style="width:100%;">
+                <small style="color:#777;">Tối đa 3 ảnh, mỗi ảnh 2MB.</small>
+                <div id="returnPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+                <button type="button" id="returnModalCloseBtn" style="padding:8px 14px;background:#f0f0f0;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Đóng</button>
+                <button type="submit" style="padding:8px 14px;background:#f59e0b;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Gửi yêu cầu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+(function(){
+    const cancelModal = document.getElementById('cancelModal');
+    if (!cancelModal) return;
+
+    const form = document.getElementById('cancelForm');
+    const codeEl = document.getElementById('cancelOrderCode');
+
+    function openModal(orderId, orderCode) {
+        if (form) {
+            form.action = "{{ url('/order') }}/" + orderId + "/cancel";
+        }
+        if (codeEl) {
+            codeEl.textContent = orderCode ? ('Mã đơn: ' + orderCode) : '';
+        }
+        cancelModal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        cancelModal.style.display = 'none';
+    }
+
+    document.querySelectorAll('.btn-cancel-order').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const orderId = btn.dataset.orderId;
+            const orderCode = btn.dataset.orderCode;
+            openModal(orderId, orderCode);
+        });
+    });
+
+    document.getElementById('closeCancelModal')?.addEventListener('click', closeModal);
+    document.getElementById('cancelModalCloseBtn')?.addEventListener('click', closeModal);
+    cancelModal.addEventListener('click', (e) => {
+        if (e.target === cancelModal) closeModal();
+    });
+})();
+
+// Return modal
+(function(){
+    const modal = document.getElementById('returnModal');
+    if (!modal) return;
+    const form = document.getElementById('returnForm');
+    const codeEl = document.getElementById('returnOrderCode');
+
+    function openModal(orderId, orderCode) {
+        if (form) form.action = "{{ url('/order') }}/" + orderId + "/return";
+        if (codeEl) codeEl.textContent = orderCode ? ('Mã đơn: ' + orderCode) : '';
+        modal.style.display = 'flex';
+    }
+    function closeModal() { modal.style.display = 'none'; }
+
+    document.querySelectorAll('.btn-return-order').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            openModal(btn.dataset.orderId, btn.dataset.orderCode);
+        });
+    });
+    document.getElementById('closeReturnModal')?.addEventListener('click', closeModal);
+    document.getElementById('returnModalCloseBtn')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+})();
+
+// Preview & limit images (max 3) for cancel/return
+(function(){
+    function bindPreview(inputId, previewId, maxFiles = 3) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        if (!input || !preview) return;
+
+        input.addEventListener('change', () => {
+            const files = Array.from(input.files || []);
+            if (files.length > maxFiles) {
+                alert(`Chỉ được chọn tối đa ${maxFiles} ảnh.`);
+                input.value = '';
+                preview.innerHTML = '';
+                return;
+            }
+            preview.innerHTML = '';
+            files.forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '80px';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '8px';
+                    img.style.border = '1px solid #eee';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+
+    bindPreview('cancelImagesInput', 'cancelPreview');
+    bindPreview('returnImagesInput', 'returnPreview');
+})();
+
+// Auto-poll trạng thái đơn hàng, nếu thay đổi thì reload
+(function(){
+    const pollUrl = "{{ route('client.order.poll') }}";
+    const cardEls = Array.from(document.querySelectorAll('.order-card[data-order-id]'));
+    if (!pollUrl || cardEls.length === 0) return;
+
+    const currentStatuses = {};
+    cardEls.forEach(el => {
+        currentStatuses[el.dataset.orderId] = el.dataset.orderStatus;
+    });
+
+    function poll() {
+        fetch(pollUrl, { credentials: 'same-origin' })
+            .then(res => res.json())
+            .then(json => {
+                if (!json || !json.data) return;
+                for (const item of json.data) {
+                    const old = currentStatuses[item.id];
+                    if (old && old !== item.status) {
+                        window.location.reload();
+                        return;
+                    }
+                }
+            })
+            .catch(() => {});
+    }
+
+    setInterval(poll, 10000); // 10s
+})();
+</script>
+@endpush
 
 {{-- Modal đánh giá sản phẩm --}}
 <div id="reviewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
@@ -200,6 +402,7 @@
             @csrf
             <input type="hidden" name="order_id" id="reviewOrderId">
             <input type="hidden" name="order_item_id" id="reviewItemId">
+            <input type="hidden" name="variant_id" id="reviewVariantId">
             <input type="hidden" name="rating" id="reviewRating">
             
             <div style="margin-bottom:16px;">
@@ -278,6 +481,8 @@
                 console.log('Review button clicked', this.dataset);
                 currentOrderId = this.dataset.orderId;
                 currentItemId = this.dataset.itemId;
+                const variantId = this.dataset.variantId || '';
+                document.getElementById('reviewVariantId').value = variantId;
                 const productNameEl = document.getElementById('reviewProductName');
                 if (productNameEl) {
                     productNameEl.textContent = this.dataset.productName || 'Sản phẩm';

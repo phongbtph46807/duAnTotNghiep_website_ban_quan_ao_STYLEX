@@ -15,9 +15,13 @@ class Review extends Model
         'order_id',
         'tags',
         'status',
+        'media',
+        'variant_color',
+        'variant_size',
     ];
     protected $casts = [
         'tags' => 'array',
+        'media' => 'array',
     ];
     public function user()
     {

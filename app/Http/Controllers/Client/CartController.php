@@ -30,7 +30,10 @@ class CartController extends Controller
         if ($userId) {
             return ['user_id' => $userId, 'session_id' => null];
         }
-        return ['user_id' => null, 'session_id' => session()->getId()];
+        // Laravel tự động start session qua middleware StartSession
+        // Chỉ cần lấy session ID, không cần can thiệp thêm
+        $sessionId = session()->getId();
+        return ['user_id' => null, 'session_id' => $sessionId];
     }
 
 

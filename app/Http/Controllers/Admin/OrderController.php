@@ -69,33 +69,94 @@ class OrderController extends Controller
             $perPage = 10;
         }
 
-        // Hai nhóm trạng thái
-        $activeStatuses   = ['pending', 'processing', 'shipping'];
-        $archivedStatuses = ['completed', 'delivered', 'cancelled', 'returned'];
-
-        // Mỗi bảng có paginator riêng và page parameter riêng
-        $activeOrders = (clone $baseQuery)
-            ->whereIn('status', $activeStatuses)
+        // Yêu cầu hủy / trả
+        $requestOrders = (clone $baseQuery)
+            ->whereIn('status', ['cancel_request','return_request'])
             ->orderByDesc('created_at')
-            ->paginate($perPage, ['*'], 'active_page')
-            ->appends($request->except('active_page'));
+            ->paginate($perPage, ['*'], 'request_page')
+            ->appends($request->except('request_page'));
 
-        $archivedOrders = (clone $baseQuery)
-            ->whereIn('status', $archivedStatuses)
+        // Nhóm giao vận (chờ xác nhận / đang xử lý / đang giao)
+        $shippingStatuses = ['pending','processing','shipping'];
+        $shippingOrders = (clone $baseQuery)
+            ->whereIn('status', $shippingStatuses)
             ->orderByDesc('created_at')
-            ->paginate($perPage, ['*'], 'archived_page')
-            ->appends($request->except('archived_page'));
+            ->paginate($perPage, ['*'], 'shipping_page')
+            ->appends($request->except('shipping_page'));
 
-        return view('admin.orders.index', compact('activeOrders', 'archivedOrders', 'orderStats'));
+        // Nhóm đã hoàn thành / đã giao
+        $completedStatuses = ['completed','delivered'];
+        $completedOrders = (clone $baseQuery)
+            ->whereIn('status', $completedStatuses)
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'completed_page')
+            ->appends($request->except('completed_page'));
+
+        // Nhóm đã hủy
+        $cancelOrders = (clone $baseQuery)
+            ->where('status', 'cancelled')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'cancel_page')
+            ->appends($request->except('cancel_page'));
+
+        // Nhóm trả hàng / hoàn tiền
+        $returnOrders = (clone $baseQuery)
+            ->where('status', 'returned')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'return_page')
+            ->appends($request->except('return_page'));
+
+        return view('admin.orders.index', compact(
+            'shippingOrders', 'completedOrders', 'cancelOrders', 'returnOrders',
+            'orderStats', 'requestOrders'
+        ));
     }
 
     // ✅ API đổi trạng thái AJAX
     public function updateStatus(Request $request, $id)
     {
         $order = Order::findOrFail($id);
-        $order->status = $request->input('status');
+        $newStatus = $request->input('status');
+
+        $order->status = $newStatus;
+
+        // Tự động cập nhật trạng thái thanh toán:
+        // - Khi đơn hoàn thành/đã giao -> chuyển sang paid nếu đang unpaid
+        // - Khi đơn trả hàng -> nếu đã thanh toán thì chuyển refunded
+        if (in_array($newStatus, ['completed', 'delivered']) && $order->payment_status === 'unpaid') {
+            $order->payment_status = 'paid';
+        }
+        if ($newStatus === 'returned' && $order->payment_status === 'paid') {
+            $order->payment_status = 'refunded';
+        }
+
         $order->save();
 
         return response()->json(['message' => 'Cập nhật trạng thái đơn hàng thành công!']);
+    }
+
+    public function approveCancel(Request $request, Order $order)
+    {
+        $order->status = 'cancelled';
+        $order->save();
+        return back()->with('success', 'Đã duyệt yêu cầu hủy đơn.');
+    }
+
+    public function approveReturn(Request $request, Order $order)
+    {
+        $order->status = 'returned';
+        $order->payment_status = $order->payment_status === 'paid' ? 'refunded' : $order->payment_status;
+        $order->save();
+        return back()->with('success', 'Đã duyệt yêu cầu trả hàng/hoàn tiền.');
+    }
+
+    public function updatePaymentStatus(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'payment_status' => 'required|in:unpaid,paid,refunded',
+        ]);
+        $order->payment_status = $data['payment_status'];
+        $order->save();
+        return back()->with('success', 'Cập nhật trạng thái thanh toán thành công.');
     }
 }

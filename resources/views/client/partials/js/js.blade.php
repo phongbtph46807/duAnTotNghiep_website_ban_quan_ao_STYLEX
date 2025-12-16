@@ -170,16 +170,25 @@
 		$.ajax({
 			url: $form.attr('action'),
 			type: 'POST',
-			headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+			headers: { 
+				'Accept': 'application/json', 
+				'X-Requested-With': 'XMLHttpRequest',
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			},
 			data: payload
         }).done(function(res){
             if (!res || !res.success) { 
-                // Không hiển thị thông báo lỗi
+                // Hiển thị thông báo lỗi nếu có
+                var errorMsg = (res && res.message) ? res.message : 'Có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.';
+                showToast(errorMsg, 'error');
+                console.error('Add to cart error:', res);
                 return; 
             }
             
 			var count = res.cart_count || 0;
 			$('.icon-header-noti.js-show-cart').attr('data-notify', count);
+			// Hiển thị thông báo thành công
+			showToast('Đã thêm vào giỏ hàng', 'success');
 			// Reload cart mini to update items and total
 			// Always reload cart via AJAX to ensure it's updated
 			$.ajax({
@@ -268,9 +277,28 @@
 						console.error('Error loading cart:', error);
 					}
 				});
-            showToast('Đã thêm vào giỏ hàng');
         }).fail(function(xhr){
-            // Không hiển thị thông báo lỗi
+            // Xử lý lỗi và hiển thị thông báo
+            var errorMsg = 'Có lỗi xảy ra khi thêm vào giỏ hàng. Vui lòng thử lại.';
+            
+            if (xhr.status === 419) {
+                errorMsg = 'Phiên đăng nhập đã hết hạn. Vui lòng làm mới trang và thử lại.';
+            } else if (xhr.status === 422) {
+                var response = xhr.responseJSON;
+                if (response && response.message) {
+                    errorMsg = response.message;
+                } else if (response && response.errors) {
+                    var firstError = Object.values(response.errors)[0];
+                    if (Array.isArray(firstError) && firstError.length > 0) {
+                        errorMsg = firstError[0];
+                    }
+                }
+            } else if (xhr.status === 500) {
+                errorMsg = 'Lỗi server. Vui lòng thử lại sau.';
+            }
+            
+            showToast(errorMsg, 'error');
+            console.error('Add to cart AJAX error:', xhr.status, xhr.responseText);
 		});
 		return false;
 	});

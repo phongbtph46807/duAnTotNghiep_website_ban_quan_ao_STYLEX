@@ -104,6 +104,19 @@ class ProductController extends Controller
         
         // === Lấy một vài đánh giá gần nhất ===
         $latestReviews = $reviews->take(5)->map(function ($review) {
+            // Hỗ trợ cả quan hệ media (ReviewMedia) và cột json media mới
+            $mediaUrls = [];
+            if (is_array($review->media)) {
+                $mediaUrls = $review->media;
+            } elseif ($review->relationLoaded('media') && $review->media instanceof \Illuminate\Support\Collection) {
+                $mediaUrls = $review->media->pluck('url')->toArray();
+            }
+
+            // Lấy thông tin biến thể (ưu tiên dữ liệu lưu trong review, fallback sang quan hệ variant)
+            $variantName = $review->productVariant?->attribute_summary;
+            $variantColor = $review->variant_color ?? $review->productVariant?->color?->name;
+            $variantSize = $review->variant_size ?? $review->productVariant?->size?->name;
+
             return [
                 'id' => $review->id,
                 'user' => [
@@ -112,9 +125,11 @@ class ProductController extends Controller
                 ],
                 'rating' => (int)$review->rating,
                 'comment' => $review->content,
-                'variant' => $review->productVariant?->attribute_summary,
+                'variant' => $variantName,
+                'variant_color' => $variantColor,
+                'variant_size' => $variantSize,
                 'tags'  => $review->tags ?? [],
-                'media' => $review->media->pluck('url')->toArray(),
+                'media' => $mediaUrls,
                 'created_at' => $review->created_at->diffForHumans(),
             ];
         });

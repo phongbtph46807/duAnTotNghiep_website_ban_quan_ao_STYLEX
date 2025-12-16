@@ -54,6 +54,8 @@ Route::get('/order/history', [CheckoutController::class, 'orderList'])->name('cl
 // Route::get('/order/invoice/{code}', [CheckoutController::class, 'invoice'])->name('client.order.invoice');
 Route::post('/order/{order}/cancel', [CheckoutController::class, 'cancel'])->name('client.order.cancel');
 Route::post('/order/review', [CheckoutController::class, 'storeReview'])->name('client.order.review');
+Route::post('/order/{order}/return', [CheckoutController::class, 'requestReturn'])->name('client.order.return');
+Route::get('/order/status/poll', [CheckoutController::class, 'pollStatus'])->name('client.order.poll');
 
 // Email verification - public route (no auth required)
 Route::get('/verify/{token}', [VerificationController::class, 'verify'])->name('verify');

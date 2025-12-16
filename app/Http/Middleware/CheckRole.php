@@ -67,7 +67,10 @@ class CheckRole
         $route = $request->route();
         if ($route && $route->getName()) {
             $routeName = $route->getName();
-            if (!$user->hasPermission($routeName)) {
+
+            // Nếu là Admin (role = 1 hoặc có role name 'Admin'), bỏ qua kiểm tra permission chi tiết
+            $isAdmin = ($user->role == 1) || $user->roles()->where('name', 'Admin')->exists();
+            if (!$isAdmin && !$user->hasPermission($routeName)) {
                 abort(403, 'Bạn không có quyền thực hiện hành động này.');
             }
         }
