@@ -222,6 +222,19 @@
 								</div>
 								@endif
 
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">
+										Tồn Kho
+									</div>
+									<div class="size-204 respon6-next">
+										<div class="stext-102 cl6" style="padding: 8px 0;">
+											<span id="stock-display" style="font-weight: 600; color: #333;">
+												Chọn đủ các thuộc tính để xem tồn kho
+											</span>
+										</div>
+									</div>
+								</div>
+
 							@endif
 
 							@php
@@ -893,3 +906,34 @@ $(document).ready(function() {
 </script>
 @endpush
 
+
+<script>
+// Thêm function updateStockDisplay vào cuối script
+$(document).ready(function() {
+    // Function để cập nhật hiển thị tồn kho
+    window.updateStockDisplay = function(variant) {
+        const $stockDisplay = $('#stock-display');
+        if (!$stockDisplay.length) return;
+        
+        if (!variant) {
+            $stockDisplay.html('Chọn đủ các thuộc tính để xem tồn kho').css('color', '#999');
+            return;
+        }
+        
+        $.ajax({
+            url: '/api/v1/variants/' + variant.id + '/stock',
+            type: 'GET',
+            success: function(response) {
+                if (response.in_stock) {
+                    $stockDisplay.html('Còn hàng (' + response.total_stock + ' sản phẩm)').css('color', '#28a745');
+                } else {
+                    $stockDisplay.html('Hết hàng').css('color', '#dc3545');
+                }
+            },
+            error: function() {
+                $stockDisplay.html('Không thể lấy thông tin tồn kho').css('color', '#999');
+            }
+        });
+    };
+});
+</script>
