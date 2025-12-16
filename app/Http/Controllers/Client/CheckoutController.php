@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\LoyaltyService;
+use App\Services\StockService;
 
 class CheckoutController extends Controller
 {
@@ -201,6 +202,19 @@ class CheckoutController extends Controller
             return redirect()->route('client.cart.index')->with('error', 'Giỏ hàng trống.');
         }
 
+        // Kiểm tra tồn kho trước khi tạo đơn hàng
+        $itemsToCheck = $items->map(function($item) {
+            return [
+                'variant_id' => $item->variant_id,
+                'quantity' => $item->quantity,
+            ];
+        })->toArray();
+
+        $insufficientItems = StockService::checkStockAvailable($itemsToCheck);
+        if (!empty($insufficientItems)) {
+            return redirect()->route('client.cart.index')->with('error', 'Một số sản phẩm không đủ tồn kho. Vui lòng cập nhật giỏ hàng.');
+        }
+
         // Tính subtotal
         $subtotal = 0.0;
         foreach ($items as $it) {
@@ -243,7 +257,7 @@ class CheckoutController extends Controller
 
         // Nếu thanh toán online, chuyển sang VNPAY
         if ($request->payment_method === 'online') {
-            return $this->processVnPayPayment($request, $owner, $subtotal, $totalDiscount, $taxAmount, $shippingFee, $grandTotal, $taxRate, $shippingCarrier);
+            return $this->processVnPayPayment($request, $owner, $subtotal, $totalDiscount, $taxAmount, $shippingFee, $grandTotal, $taxRate, $shippingCarrier, $itemsToCheck);
         }
 
         // Tạo Order + OrderItems (transaction) cho COD
@@ -524,6 +538,15 @@ class CheckoutController extends Controller
                 ->with('error', 'Giỏ hàng trống. Không thể tạo đơn hàng.');
         }
 
+        $itemsToCheck = $payload['items_to_check'] ?? [];
+        if (!empty($itemsToCheck)) {
+            $insufficientItems = StockService::checkStockAvailable($itemsToCheck);
+            if (!empty($insufficientItems)) {
+                return redirect()->route('client.cart.index')
+                    ->with('error', 'Một số sản phẩm không đủ tồn kho. Vui lòng cập nhật giỏ hàng.');
+            }
+        }
+
         $subtotal = 0.0;
         foreach ($items as $it) {
             $subtotal += $this->resolveItemPrice($it->product, $it->variant) * (int) $it->quantity;
@@ -576,7 +599,7 @@ class CheckoutController extends Controller
         return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
     }
 
-    private function processVnPayPayment(Request $request, array $owner, float $subtotal, float $discount, float $taxAmount, float $shippingFee, float $grandTotal, ?TaxRate $taxRate, ?ShippingCarrier $shippingCarrier)
+    private function processVnPayPayment(Request $request, array $owner, float $subtotal, float $discount, float $taxAmount, float $shippingFee, float $grandTotal, ?TaxRate $taxRate, ?ShippingCarrier $shippingCarrier, array $itemsToCheck = [])
     {
         $vnpUrl = env('VNPAY_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
         $tmnCode = env('VNPAY_TMN_CODE');
@@ -617,6 +640,7 @@ class CheckoutController extends Controller
                 'pricing' => compact('subtotal','discount','taxAmount','shippingFee','grandTotal'),
                 'taxRate' => $taxRate,
                 'shippingCarrier' => $shippingCarrier,
+                'items_to_check' => $itemsToCheck,
             ],
             now()->addMinutes(15)
         );

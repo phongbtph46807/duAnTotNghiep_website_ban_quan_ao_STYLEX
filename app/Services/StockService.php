@@ -69,4 +69,23 @@ class StockService
             ->where('warehouse_id', $warehouseId)
             ->sum('available') ?? 0);
     }
+
+    public static function checkStockAvailable(array $items): array
+    {
+        $insufficientItems = [];
+        
+        foreach ($items as $item) {
+            $availableStock = self::getVariantAvailableStock($item['variant_id']);
+            
+            if ($availableStock < $item['quantity']) {
+                $insufficientItems[] = [
+                    'variant_id' => $item['variant_id'],
+                    'requested' => $item['quantity'],
+                    'available' => $availableStock,
+                ];
+            }
+        }
+        
+        return $insufficientItems;
+    }
 }
