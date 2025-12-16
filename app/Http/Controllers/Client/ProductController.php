@@ -56,12 +56,17 @@ class ProductController extends Controller
             'productVariants.color',
             'productVariants.size',
             'productVariants.texture',
+            'productVariants.warehouseStocks',
             'reviews.user',
             'reviews.media',
             'reviews.experiences',
         ])
             ->where('is_active', 1)
             ->findOrFail($id);
+        
+        $product->productVariants->each(function ($variant) {
+            $variant->total_stock = $variant->warehouseStocks->sum('available');
+        });
         
         // Lấy sản phẩm liên quan (cùng danh mục)
         $relatedProducts = Product::with(['category', 'primaryImage'])
