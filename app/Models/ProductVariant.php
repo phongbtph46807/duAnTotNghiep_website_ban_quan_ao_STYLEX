@@ -43,4 +43,9 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Texture::class);
     }
+
+    public function warehouseStocks()
+    {
+        return $this->hasMany(WarehouseStock::class, 'variant_id');
+    }
 }
