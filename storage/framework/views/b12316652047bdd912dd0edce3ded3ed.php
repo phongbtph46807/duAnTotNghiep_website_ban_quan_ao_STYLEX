@@ -127,4 +127,8 @@
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 
+<<<<<<<< HEAD:storage/framework/views/b12316652047bdd912dd0edce3ded3ed.php
 </html><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/auth/layout.blade.php ENDPATH**/ ?>
+========
+</html><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/auth/layout.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/f27161c51fa06a7b150240445d3de534.php

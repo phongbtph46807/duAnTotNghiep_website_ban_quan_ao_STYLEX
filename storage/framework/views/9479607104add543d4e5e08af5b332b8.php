@@ -1,5 +1,6 @@
 # <?php echo e($exception->class()); ?> - <?php echo $exception->title(); ?>
 
+
 <?php echo $exception->message(); ?>
 
 
@@ -56,4 +57,8 @@ No route parameter data available.
 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
 No database queries detected.
 <?php endif; ?>
+<<<<<<<< HEAD:storage/framework/views/9479607104add543d4e5e08af5b332b8.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/markdown.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/markdown.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/90554ced6be55cd9811e2eefef0fe8ad.php

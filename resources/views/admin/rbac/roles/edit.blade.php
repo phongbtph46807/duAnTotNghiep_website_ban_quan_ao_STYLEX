@@ -25,7 +25,9 @@
               <div class="col-md-3 mb-2">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" name="permission_ids[]" value="{{ $perm->id }}" id="perm_{{ $perm->id }}" {{ in_array($perm->id, $assigned) ? 'checked' : '' }}>
-                  <label class="form-check-label" for="perm_{{ $perm->id }}">{{ $perm->name }}</label>
+                  <label class="form-check-label" for="perm_{{ $perm->id }}" title="{{ $perm->name }}">
+                    {{ $perm->description ?? $perm->name }}
+                  </label>
                 </div>
               </div>
             @endforeach

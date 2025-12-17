@@ -47,18 +47,19 @@
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarDashboards">
-                        <i class="lab la-buffer"></i> <span data-key="t-dashboards">Quản lí danh mục</span>
+                        <i class="ri-folder-2-line"></i> <span data-key="t-dashboards">Quản lí danh mục</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarDashboards">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{route('admin.categories.index')}}" class="nav-link" data-key="t-analytics">
-                                    Danh sách danh mục
+                                <a href="{{ route('admin.categories.index') }}" class="nav-link" data-key="t-analytics">
+                                    <i class="ri-list-check me-1"></i> Danh sách danh mục
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link" data-key="t-analytics" onclick="openAddCategoryModal()">
-                                    Thêm mới danh mục
+                                <a href="#" class="nav-link" data-key="t-analytics"
+                                    onclick="openAddCategoryModal()">
+                                    <i class="ri-add-circle-line me-1"></i> Thêm mới danh mục
                                 </a>
                             </li>
                         </ul>
@@ -445,27 +446,6 @@
                     </div>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarLanding" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarLanding">
-                        <i class="ri-rocket-line"></i> <span data-key="t-landing">Quản lí trang tĩnh</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarLanding">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="landing.html" class="nav-link" data-key="t-one-page"> One Page </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="nft-landing.html" class="nav-link" data-key="t-nft-landing"> NFT Landing
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="job-landing.html" class="nav-link" data-key="t-job">Job</a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-
                 {{-- END HIDE BLOCK --}}
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Khách hàng và đơn
                         hàng</span>
@@ -574,64 +554,32 @@
                     </div>
                 </li>
 
+                @if (auth()->user()->role == 1)
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarForms" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarForms">
-                        <i class="ri-file-list-3-line"></i> <span data-key="t-forms">Quản lí đánh giá</span>
+                    <a class="nav-link menu-link" href="#sidebarReviews" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarReviews">
+                        <i class="ri-star-line"></i> <span>Quản lý đánh giá</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarForms">
+                    <div class="collapse menu-dropdown" id="sidebarReviews">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="forms-elements.html" class="nav-link" data-key="t-basic-elements">Basic
-                                    Elements</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-select.html" class="nav-link" data-key="t-form-select"> Form Select
+                                <a href="{{ route('admin.reviews.index') }}" class="nav-link">
+                                    <i class="ri-list-check me-1"></i> Danh sách đánh giá
                                 </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-checkboxs-radios.html" class="nav-link"
-                                    data-key="t-checkboxs-radios">Checkboxs & Radios</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-pickers.html" class="nav-link" data-key="t-pickers"> Pickers </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-masks.html" class="nav-link" data-key="t-input-masks">Input Masks</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-advanced.html" class="nav-link" data-key="t-advanced">Advanced</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-range-sliders.html" class="nav-link" data-key="t-range-slider"> Range
-                                    Slider </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-validation.html" class="nav-link"
-                                    data-key="t-validation">Validation</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-wizard.html" class="nav-link" data-key="t-wizard">Wizard</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-editors.html" class="nav-link" data-key="t-editors">Editors</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-file-uploads.html" class="nav-link" data-key="t-file-uploads">File
-                                    Uploads</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-layouts.html" class="nav-link" data-key="t-form-layouts">Form
-                                    Layouts</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="forms-select2.html" class="nav-link" data-key="t-select2">Select2</a>
                             </li>
                         </ul>
                     </div>
                 </li>
+<<<<<<< HEAD
                     </div>
                 </li>
+=======
+                @endif
+        </ul>
+    </div>
+    <!-- Sidebar -->
+</div>
+>>>>>>> origin
 
 
 

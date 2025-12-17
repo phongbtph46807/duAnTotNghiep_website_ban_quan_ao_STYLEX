@@ -17,10 +17,21 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
-            CategorySeeder::class,
-            ProductSeeder::class,
-            ProductImageSeeder::class,
-            TextureSeeder::class,
+            CategorySeeder::class, // Cần cho ProductSeeder
+            ColorSeeder::class, // Cần cho ProductSeeder
+            SizeSeeder::class, // Cần cho ProductSeeder
+            TextureSeeder::class, // Cần cho ProductSeeder
+            ProductSeeder::class, // Cần categories, colors, sizes, textures
+            ProductImageSeeder::class, // Cần products
+            LoyaltyTierSeeder::class,
+            ShippingCarrierSeeder::class,
+            TaxRateSeeder::class,
+            BannerSeeder::class,
+            PostSeeder::class,
+            TagSeeder::class,
+            VoucherSeeder::class,
+            RoleSeeder::class, // Phải chạy trước PermissionSeeder
+            PermissionSeeder::class,
         ]);
     }
 }

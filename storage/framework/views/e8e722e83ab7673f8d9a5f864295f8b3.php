@@ -78,4 +78,8 @@
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 
+<<<<<<<< HEAD:storage/framework/views/e8e722e83ab7673f8d9a5f864295f8b3.php
 </html><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/layouts/app.blade.php ENDPATH**/ ?>
+========
+</html><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/layouts/app.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/ddd221a441f2596f44e1b038a8e9d60b.php

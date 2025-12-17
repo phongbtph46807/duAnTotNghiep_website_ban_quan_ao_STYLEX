@@ -8,12 +8,17 @@
 
 			<ul>
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-sort-filter" data-sort="relevance">
+>>>>>>> origin
 						Mặc Định
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
 						Phổ Biến
 					</a>
@@ -27,18 +32,29 @@
 
 				<li class="p-b-6">
 					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="newest">
+>>>>>>> origin
 						Mới Nhất
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="price_asc">
+>>>>>>> origin
 						Giá: Thấp Đến Cao
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-sort-filter" data-sort="price_desc">
+>>>>>>> origin
 						Giá: Cao Đến Thấp
 					</a>
 				</li>
@@ -52,37 +68,61 @@
 
 			<ul>
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-price-filter" data-min="" data-max="">
+>>>>>>> origin
 						Tất Cả
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="0" data-max="500000">
+>>>>>>> origin
 						0đ - 500.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="500000" data-max="1000000">
+>>>>>>> origin
 						500.000đ - 1.000.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="1000000" data-max="1500000">
+>>>>>>> origin
 						1.000.000đ - 1.500.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="1500000" data-max="2000000">
+>>>>>>> origin
 						1.500.000đ - 2.000.000đ
 					</a>
 				</li>
 
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<a href="#" class="filter-link stext-106 trans-04">
+=======
+					<a href="#" class="filter-link stext-106 trans-04 js-price-filter" data-min="2000000" data-max="">
+>>>>>>> origin
 						2.000.000đ+
 					</a>
 				</li>
@@ -91,11 +131,16 @@
 
 		<div class="filter-col3 p-r-15 p-b-27">
 			<div class="mtext-102 cl2 p-b-15">
+<<<<<<< HEAD
 				Màu Sắc
+=======
+				Chất liệu
+>>>>>>> origin
 			</div>
 
 			<ul>
 				<li class="p-b-6">
+<<<<<<< HEAD
 					<span class="fs-15 lh-12 m-r-6" style="color: #222;">
 						<i class="zmdi zmdi-circle"></i>
 					</span>
@@ -184,5 +229,26 @@
 				</a>
 			</div>
 		</div>
+=======
+					<a href="#" class="filter-link stext-106 trans-04 filter-link-active js-texture-filter" data-texture-id="">
+						Tất cả
+					</a>
+				</li>
+
+				<?php if(isset($textures)): ?>
+					<?php $__currentLoopData = $textures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $texture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+				<li class="p-b-6">
+							<a href="#"
+							   class="filter-link stext-106 trans-04 js-texture-filter"
+							   data-texture-id="<?php echo e($texture->id); ?>">
+								<?php echo e($texture->name); ?>
+
+					</a>
+				</li>
+					<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+				<?php endif; ?>
+			</ul>
+		</div>
+>>>>>>> origin
 	</div>
 </div><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/filter-product.blade.php ENDPATH**/ ?>

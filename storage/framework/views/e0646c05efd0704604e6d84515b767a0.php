@@ -9,4 +9,8 @@
         </clipPath>
     </defs>
 </svg>
+<<<<<<<< HEAD:storage/framework/views/e0646c05efd0704604e6d84515b767a0.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/icons/folder-open.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/icons/folder-open.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/5383f30e55db6c1f741915b95756cc21.php

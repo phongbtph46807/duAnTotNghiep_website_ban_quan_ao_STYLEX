@@ -1,7 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Admin;
-
+namespace App\Http\Requests\Admin\ShippingCarrier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +23,7 @@ class ShippingCarrierRequest extends FormRequest
                 'required','max:20',
                 Rule::unique('shipping_carriers','code')->ignore($id)
             ],
+            'fee' => ['required','numeric','min:0'],
             'active' => ['nullable','boolean'],
         ];
     }

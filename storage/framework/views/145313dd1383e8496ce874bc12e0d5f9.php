@@ -143,4 +143,8 @@
 </div>
 
 <link rel="stylesheet" href="<?php echo e(asset('assets/css/style-x-logo.css')); ?>">
+<<<<<<<< HEAD:storage/framework/views/145313dd1383e8496ce874bc12e0d5f9.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/partials/navbar.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/partials/navbar.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/06d24ee5d2070b7b2e335f3df9885f5d.php

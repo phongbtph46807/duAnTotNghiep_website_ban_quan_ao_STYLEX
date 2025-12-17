@@ -31,6 +31,26 @@ unset($__defined_vars, $__key, $__value); ?>
 <div class="flex flex-col pt-8 sm:pt-16 overflow-x-auto">
     <div class="flex flex-col gap-5 mb-8">
         <h1 class="text-3xl font-semibold text-neutral-950 dark:text-white"><?php echo e($exception->class()); ?></h1>
+        <?php if (isset($component)) { $__componentOriginalfe2bc8d0a6d110d41fdc8740012cee8d = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalfe2bc8d0a6d110d41fdc8740012cee8d = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'laravel-exceptions-renderer::components.file-with-line','data' => ['frame' => $exception->frames()->first(),'class' => '-mt-3 text-xs']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('laravel-exceptions-renderer::file-with-line'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['frame' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($exception->frames()->first()),'class' => '-mt-3 text-xs']); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalfe2bc8d0a6d110d41fdc8740012cee8d)): ?>
+<?php $attributes = $__attributesOriginalfe2bc8d0a6d110d41fdc8740012cee8d; ?>
+<?php unset($__attributesOriginalfe2bc8d0a6d110d41fdc8740012cee8d); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalfe2bc8d0a6d110d41fdc8740012cee8d)): ?>
+<?php $component = $__componentOriginalfe2bc8d0a6d110d41fdc8740012cee8d; ?>
+<?php unset($__componentOriginalfe2bc8d0a6d110d41fdc8740012cee8d); ?>
+<?php endif; ?>
         <p class="text-xl font-light text-neutral-800 dark:text-neutral-300">
             <?php echo e($exception->message()); ?>
 
@@ -134,4 +154,8 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginalb581a7e3a55d371fae986833ecafa668); ?>
 <?php endif; ?>
 </div>
+<<<<<<<< HEAD:storage/framework/views/c7dd9d16db041674d145d534921f6fe4.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/header.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/header.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/c6311735223067b8b1591789cb25ca2c.php

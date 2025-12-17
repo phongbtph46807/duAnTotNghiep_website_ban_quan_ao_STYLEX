@@ -56,6 +56,19 @@
                             @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Phí vận chuyển (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number"
+                                   name="fee"
+                                   class="form-control @error('fee') is-invalid @enderror"
+                                   value="{{ old('fee', $shipping_carrier->fee ?? 0) }}"
+                                   min="0"
+                                   step="1000"
+                                   placeholder="VD: 25000">
+                            @error('fee') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <small class="text-muted">Phí ship cố định cho mỗi đơn hàng sử dụng hãng này.</small>
+                        </div>
+
                         <div class="col-md-3 d-flex align-items-end">
                             <div class="form-check mt-2">
                                 <input type="checkbox" class="form-check-input" id="active" name="active" value="1" {{ old('active', $shipping_carrier->active) ? 'checked' : '' }}>

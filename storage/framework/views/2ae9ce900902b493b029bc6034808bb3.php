@@ -288,4 +288,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<<<<<<<< HEAD:storage/framework/views/2ae9ce900902b493b029bc6034808bb3.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/partials/css.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/partials/css.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/936a38fc05aa650fcdc1b08cbe3ee9de.php

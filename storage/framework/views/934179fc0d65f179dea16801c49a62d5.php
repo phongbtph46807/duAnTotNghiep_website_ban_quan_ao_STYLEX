@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+=======
+<<<<<<<< HEAD:storage/framework/views/aa59f9ac0c06a9037c0ea498024b04d1.php
+
+========
+﻿
+>>>>>>>> origin:storage/framework/views/934179fc0d65f179dea16801c49a62d5.php
+>>>>>>> origin
 <?php $__env->startSection('title', 'Hoàn tất đặt hàng - ' . env('APP_NAME')); ?>
 <?php $__env->startSection('content'); ?>
 <div class="container p-t-60 p-b-60">
@@ -19,4 +27,13 @@
 </div>
 <?php $__env->stopSection(); ?>
 
+<<<<<<< HEAD
 <?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/checkout/thankyou.blade.php ENDPATH**/ ?>
+=======
+<<<<<<<< HEAD:storage/framework/views/aa59f9ac0c06a9037c0ea498024b04d1.php
+<?php echo $__env->make('client.layout.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/checkout/thankyou.blade.php ENDPATH**/ ?>
+========
+
+<?php echo $__env->make('client.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/checkout/thankyou.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/934179fc0d65f179dea16801c49a62d5.php
+>>>>>>> origin

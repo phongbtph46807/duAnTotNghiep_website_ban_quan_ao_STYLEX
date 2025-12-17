@@ -36,7 +36,7 @@
 							</div>
 							<div class="header-cart-item-txt p-t-8" style="flex:1;">
 								<div class="d-flex justify-content-between align-items-start">
-									<a href="#" class="header-cart-item-name m-b-5 hov-cl1 trans-04"><?php echo e($it['product']->name ?? 'Sản phẩm'); ?></a>
+									<a href="<?php echo e(isset($it['product']->id) ? route('client.products.show', $it['product']->id) : '#'); ?>" class="header-cart-item-name m-b-5 hov-cl1 trans-04"><?php echo e($it['product']->name ?? 'Sản phẩm'); ?></a>
 								</div>
 								<?php
 									$v = $it['variant'] ?? null;
@@ -85,4 +85,8 @@
 	</div>
 
 	
+<<<<<<<< HEAD:storage/framework/views/4181ae122c98b6d427478ab3df1eff3d.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/partials/cart.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/cart.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/a317917f794978c6192a782dda903117.php

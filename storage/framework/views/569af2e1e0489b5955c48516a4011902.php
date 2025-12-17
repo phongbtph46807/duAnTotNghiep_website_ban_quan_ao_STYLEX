@@ -7,15 +7,34 @@
 						Danh Mục
 					</h4>
 
+<<<<<<< HEAD
 					<ul>
 						<?php if(isset($categories) && $categories->count() > 0): ?>
 							<?php $__currentLoopData = $categories->take(4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+=======
+					<?php
+						// Lấy danh mục hiển thị ở footer: ưu tiên $categories nếu controller đã truyền
+						$footerCategories = null;
+						if (isset($categories) && $categories instanceof \Illuminate\Support\Collection && $categories->count() > 0) {
+							$footerCategories = $categories->take(4);
+						} else {
+							$footerCategories = \App\Models\Category::query()
+								->where('status', 1)
+								->orderBy('id')
+								->take(4)
+								->get();
+						}
+					?>
+					<ul>
+						<?php $__empty_1 = true; $__currentLoopData = $footerCategories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+>>>>>>> origin
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index', ['category' => $category->id])); ?>" class="stext-107 cl7 hov-cl1 trans-04">
 									<?php echo e($category->name); ?>
 
 								</a>
 							</li>
+<<<<<<< HEAD
 							<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 						<?php else: ?>
 							<li class="p-b-10">
@@ -39,6 +58,27 @@
 							<li class="p-b-10">
 								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
 									Watches
+=======
+						<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+							<li class="p-b-10">
+								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
+									Nữ
+								</a>
+							</li>
+							<li class="p-b-10">
+								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
+									Nam
+								</a>
+							</li>
+							<li class="p-b-10">
+								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
+									Giày dép
+								</a>
+							</li>
+							<li class="p-b-10">
+								<a href="<?php echo e(route('client.products.index')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
+									Phụ kiện
+>>>>>>> origin
 								</a>
 							</li>
 						<?php endif; ?>
@@ -47,31 +87,52 @@
 
 				<div class="col-sm-6 col-lg-3 p-b-50">
 					<h4 class="stext-301 cl0 p-b-30">
+<<<<<<< HEAD
 						Help
+=======
+						Hỗ trợ
+>>>>>>> origin
 					</h4>
 
 					<ul>
 						<li class="p-b-10">
+<<<<<<< HEAD
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
 								Track Order
+=======
+							<a href="<?php echo e(route('client.order.track')); ?>" class="stext-107 cl7 hov-cl1 trans-04">
+								Theo dõi đơn hàng
+>>>>>>> origin
 							</a>
 						</li>
 
 						<li class="p-b-10">
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+<<<<<<< HEAD
 								Returns 
+=======
+								Đổi trả hàng
+>>>>>>> origin
 							</a>
 						</li>
 
 						<li class="p-b-10">
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+<<<<<<< HEAD
 								Shipping
+=======
+								Vận chuyển
+>>>>>>> origin
 							</a>
 						</li>
 
 						<li class="p-b-10">
 							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+<<<<<<< HEAD
 								FAQs
+=======
+								Câu hỏi thường gặp
+>>>>>>> origin
 							</a>
 						</li>
 					</ul>
@@ -79,11 +140,19 @@
 
 				<div class="col-sm-6 col-lg-3 p-b-50">
 					<h4 class="stext-301 cl0 p-b-30">
+<<<<<<< HEAD
 						GET IN TOUCH
 					</h4>
 
 					<p class="stext-107 cl7 size-201">
 						Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
+=======
+						Liên hệ
+					</h4>
+
+					<p class="stext-107 cl7 size-201">
+						Có câu hỏi? Hãy đến cửa hàng của chúng tôi hoặc liên hệ với chúng tôi qua số điện thoại để được hỗ trợ tốt nhất.
+>>>>>>> origin
 					</p>
 
 					<div class="p-t-27">
@@ -103,7 +172,11 @@
 
 				<div class="col-sm-6 col-lg-3 p-b-50">
 					<h4 class="stext-301 cl0 p-b-30">
+<<<<<<< HEAD
 						Newsletter
+=======
+						Đăng ký nhận tin
+>>>>>>> origin
 					</h4>
 
 					<form>
@@ -114,7 +187,11 @@
 
 						<div class="p-t-18">
 							<button class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
+<<<<<<< HEAD
 								Subscribe
+=======
+								Đăng ký
+>>>>>>> origin
 							</button>
 						</div>
 					</form>
@@ -145,7 +222,11 @@
 				</div>
 
 				<p class="stext-107 cl6 txt-center">
+<<<<<<< HEAD
 					Copyright &copy;2025
+=======
+					Bản quyền &copy; 2025 STYLEX. Tất cả các quyền được bảo lưu.
+>>>>>>> origin
 			</div>
 		</div>
 	</footer>
@@ -154,4 +235,12 @@
 		<span class="symbol-btn-back-to-top">
 			<i class="zmdi zmdi-chevron-up"></i>
 		</span>
+<<<<<<< HEAD
 	</div><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/footer.blade.php ENDPATH**/ ?>
+=======
+<<<<<<<< HEAD:storage/framework/views/d10624dffaea097a291d46164da3d180.php
+	</div><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/partials/footer.blade.php ENDPATH**/ ?>
+========
+	</div><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/footer.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/569af2e1e0489b5955c48516a4011902.php
+>>>>>>> origin

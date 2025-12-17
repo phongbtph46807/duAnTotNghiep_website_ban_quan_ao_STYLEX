@@ -85,6 +85,7 @@
                     <tr>
                         <th>STT</th>
                         <th>Tên hãng</th>
+                        <th>Phí ship</th>
                         <th>Trạng thái</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
@@ -95,6 +96,7 @@
                     <tr>
                         <td>{{ ++$stt }}</td>
                         <td>{{ $item->name }}</td>
+                        <td>{{ number_format($item->fee ?? 0, 0, ',', '.') }} ₫</td>
                         <td>
                             @if($item->active)
                                 <span class="badge bg-success">Hoạt động</span>

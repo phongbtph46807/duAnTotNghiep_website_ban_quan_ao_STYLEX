@@ -164,4 +164,8 @@ unset($__defined_vars, $__key, $__value); ?>
         </button>
     </div>
 </div>
+<<<<<<<< HEAD:storage/framework/views/8a42506fd18adc67c5e38cff67fbbe7b.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/request-url.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/request-url.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/1ca36c82e2fec919777c0e104f382c24.php

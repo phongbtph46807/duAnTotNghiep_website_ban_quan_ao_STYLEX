@@ -45,4 +45,8 @@ unset($__defined_vars, $__key, $__value); ?>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
     </div>
 </div>
+<<<<<<<< HEAD:storage/framework/views/2598a3d94419d394e56dc0f6277428ab.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/request-header.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/request-header.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/ad976ec5eb8bc4b1d056c76e5ad405ca.php

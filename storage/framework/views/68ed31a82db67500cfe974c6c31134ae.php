@@ -95,4 +95,8 @@ unset($__defined_vars, $__key, $__value); ?>
     ></div>
     <div x-show="!highlightedCode"><?php echo $fallback; ?></div>
 </div>
+<<<<<<<< HEAD:storage/framework/views/68ed31a82db67500cfe974c6c31134ae.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/syntax-highlight.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/syntax-highlight.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/813bca76ff91dd20e659bff01fba5fc0.php

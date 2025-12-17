@@ -32,4 +32,8 @@ unset($__defined_vars, $__key, $__value); ?>
     <span class="text-neutral-400 dark:text-neutral-600">// </span><?php echo e($message); ?>
 
 </div>
+<<<<<<<< HEAD:storage/framework/views/5e56af0b334061116ca377676be4c556.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/empty-state.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/empty-state.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/6490b349072ff50eba1bc261b391be0b.php

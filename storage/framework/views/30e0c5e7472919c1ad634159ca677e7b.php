@@ -54,4 +54,8 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginal12cb286571f553eebcbe98210b217f94); ?>
 <?php endif; ?>
 </div>
+<<<<<<<< HEAD:storage/framework/views/30e0c5e7472919c1ad634159ca677e7b.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/frame-code.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/frame-code.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/60378058592628ec2ae9325757da36ed.php

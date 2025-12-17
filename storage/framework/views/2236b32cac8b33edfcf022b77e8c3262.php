@@ -47,18 +47,37 @@
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarDashboards">
+<<<<<<< HEAD
                         <i class="lab la-buffer"></i> <span data-key="t-dashboards">Quản lí danh mục</span>
+=======
+                        <i class="ri-folder-2-line"></i> <span data-key="t-dashboards">Quản lí danh mục</span>
+>>>>>>> origin
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarDashboards">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
                                 <a href="<?php echo e(route('admin.categories.index')); ?>" class="nav-link" data-key="t-analytics">
+<<<<<<< HEAD
                                     Danh sách danh mục
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="#" class="nav-link" data-key="t-analytics" onclick="openAddCategoryModal()">
                                     Thêm mới danh mục
+=======
+                                    <i class="ri-list-check me-1"></i> Danh sách danh mục
+                                </a>
+                            </li>
+                            <li class="nav-item">
+<<<<<<<< HEAD:storage/framework/views/55445d4168403624576653f95b293923.php
+                                <a href="#" class="nav-link" data-key="t-analytics" onclick="openAddCategoryModal()">
+                                    Thêm mới danh mục
+========
+                                <a href="#" class="nav-link" data-key="t-analytics"
+                                    onclick="openAddCategoryModal()">
+                                    <i class="ri-add-circle-line me-1"></i> Thêm mới danh mục
+>>>>>>>> origin:storage/framework/views/2236b32cac8b33edfcf022b77e8c3262.php
+>>>>>>> origin
                                 </a>
                             </li>
                         </ul>
@@ -445,6 +464,7 @@
                     </div>
                 </li>
 
+<<<<<<< HEAD
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarLanding" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarLanding">
@@ -466,6 +486,8 @@
                     </div>
                 </li>
 
+=======
+>>>>>>> origin
                 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Khách hàng và đơn
                         hàng</span>
@@ -574,6 +596,7 @@
                     </div>
                 </li>
 
+<<<<<<< HEAD
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarForms" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarForms">
@@ -632,6 +655,34 @@
                 </li>
                     </div>
                 </li>
+=======
+                <?php if(auth()->user()->role == 1): ?>
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarReviews" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarReviews">
+                        <i class="ri-star-line"></i> <span>Quản lý đánh giá</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarReviews">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="<?php echo e(route('admin.reviews.index')); ?>" class="nav-link">
+                                    <i class="ri-list-check me-1"></i> Danh sách đánh giá
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+<<<<<<<< HEAD:storage/framework/views/55445d4168403624576653f95b293923.php
+                    </div>
+                </li>
+========
+                <?php endif; ?>
+        </ul>
+    </div>
+    <!-- Sidebar -->
+</div>
+>>>>>>>> origin:storage/framework/views/2236b32cac8b33edfcf022b77e8c3262.php
+>>>>>>> origin
 
 
 
@@ -649,4 +700,12 @@
 
 <link rel="stylesheet" href="<?php echo e(asset('assets/css/style-x-logo.css')); ?>">
 <script src="<?php echo e(asset('assets/js/sidebar-menu.js')); ?>"></script>
+<<<<<<< HEAD
 <?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/partials/sidebar.blade.php ENDPATH**/ ?>
+=======
+<<<<<<<< HEAD:storage/framework/views/55445d4168403624576653f95b293923.php
+<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/partials/sidebar.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/partials/sidebar.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/2236b32cac8b33edfcf022b77e8c3262.php
+>>>>>>> origin

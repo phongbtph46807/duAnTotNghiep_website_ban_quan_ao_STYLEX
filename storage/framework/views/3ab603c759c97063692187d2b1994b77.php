@@ -74,4 +74,8 @@ $classes = implode(' ', [$baseClasses, $typeClasses, $variantClasses]);
     <?php echo e($slot); ?>
 
 </div>
+<<<<<<<< HEAD:storage/framework/views/3ab603c759c97063692187d2b1994b77.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/badge.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/badge.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/3a86e7fe95c03205be0ce40ec6592be7.php

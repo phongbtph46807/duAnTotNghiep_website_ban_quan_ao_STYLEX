@@ -3,4 +3,8 @@
     <path d="M0.75 4.75V2.75C0.75 1.922 1.422 1.25 2.25 1.25H3.958C4.54 1.25 5.069 1.587 5.316 2.114L5.614 2.75" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M2.75 2.75H9.25C10.355 2.75 11.25 3.645 11.25 4.75V8.25C11.25 9.355 10.355 10.25 9.25 10.25H2.75C1.645 10.25 0.75 9.355 0.75 8.25V4.75C0.75 3.645 1.645 2.75 2.75 2.75Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
+<<<<<<<< HEAD:storage/framework/views/2c12e590f32b108ce1051bd5f9951d78.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/icons/folder.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/icons/folder.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/ef6e26f7cb14402a4ac85639292513b3.php

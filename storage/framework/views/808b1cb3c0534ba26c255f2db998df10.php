@@ -77,4 +77,8 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php unset($__componentOriginalfe2bc8d0a6d110d41fdc8740012cee8d); ?>
 <?php endif; ?>
 </div>
+<<<<<<<< HEAD:storage/framework/views/808b1cb3c0534ba26c255f2db998df10.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/vendor-frame.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/vendor-frame.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/2f4ec649af75c749f50ccdfe9066db3b.php

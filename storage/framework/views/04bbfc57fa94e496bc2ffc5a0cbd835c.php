@@ -25,4 +25,8 @@
 
 </body>
 </html>
+<<<<<<<< HEAD:storage/framework/views/04bbfc57fa94e496bc2ffc5a0cbd835c.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/layout.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/layout.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/a5966b3dfcd48b37a5269388ad3ade35.php

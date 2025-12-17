@@ -1,8 +1,171 @@
-@extends('client.layout.layout')
+﻿@extends('client.layouts.app')
 
 @section('title', 'Giỏ Hàng - ' . env('APP_NAME'))
 
 @section('content')
+<style>
+	/* Font Inter cho toàn bộ trang cart - Hỗ trợ tiếng Việt */
+	body, 
+	body *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+	.table-shopping-cart,
+	.table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+	.wrap-table-shopping-cart,
+	.wrap-table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+	.cart-dropdown-title, .cart-dropdown-name, .cart-dropdown-info,
+	.stext-109, .stext-101, .stext-102, .stext-103, .stext-104, .stext-105, .stext-106, .stext-107, .stext-108, .stext-110, .stext-111,
+	.mtext-101, .mtext-102, .mtext-103, .mtext-104, .mtext-105, .mtext-106, .mtext-107, .mtext-108, .mtext-109, .mtext-110,
+	.ltext-101, .ltext-102, .ltext-103, .ltext-104, .ltext-105, .ltext-106, .ltext-107, .ltext-108, .ltext-109, .ltext-110 {
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+	}
+	
+	/* Cart Dropdown Styles */
+	.cart-dropdown-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 10px;
+	}
+	
+	.cart-dropdown-title {
+		margin: 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: #333;
+	}
+	
+	.cart-dropdown-wrapper {
+		position: relative;
+	}
+	
+	.cart-dropdown-btn {
+		background: #6777ef;
+		border: none;
+		padding: 4px 8px;
+		border-radius: 4px;
+		color: white;
+		cursor: pointer;
+		font-size: 12px;
+		transition: all 0.2s;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	
+	.cart-dropdown-btn:hover {
+		background: #5568d3;
+	}
+	
+	.cart-dropdown-btn:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px rgba(103, 119, 239, 0.25);
+	}
+	
+	.cart-dropdown-btn i {
+		font-size: 10px;
+		transition: transform 0.2s;
+	}
+	
+	.cart-dropdown-btn.active i {
+		transform: rotate(180deg);
+	}
+	
+	.cart-dropdown-menu {
+		display: none;
+		position: absolute;
+		right: 0;
+		top: 100%;
+		margin-top: 6px;
+		min-width: 320px;
+		max-width: 360px;
+		max-height: 240px;
+		overflow-y: auto;
+		background: white;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+		z-index: 1000;
+		padding: 8px;
+	}
+	
+	.cart-dropdown-menu.show {
+		display: block;
+	}
+	
+	.cart-dropdown-item {
+		padding: 8px 10px;
+		border-bottom: 1px solid #f3f3f3;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		cursor: pointer;
+		transition: background 0.2s;
+		border-radius: 6px;
+	}
+	
+	.cart-dropdown-item:hover {
+		background-color: #f8f9fa;
+	}
+	
+	.cart-dropdown-item:last-child {
+		border-bottom: none;
+	}
+	
+	.cart-dropdown-img {
+		width: 44px;
+		height: 44px;
+		object-fit: cover;
+		border-radius: 6px;
+		flex-shrink: 0;
+	}
+	
+	.cart-dropdown-content {
+		flex: 1;
+		min-width: 0;
+	}
+	
+	.cart-dropdown-name {
+		color: #333;
+		text-decoration: none;
+		font-weight: 600;
+		font-size: 13px;
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		line-height: 1.35;
+	}
+	
+	.cart-dropdown-name:hover {
+		color: #6777ef;
+	}
+	
+	.cart-dropdown-info {
+		color: #666;
+		display: block;
+		margin-top: 2px;
+		font-size: 11px;
+	}
+	
+	/* Scrollbar styling */
+	.cart-dropdown-menu::-webkit-scrollbar {
+		width: 6px;
+	}
+	
+	.cart-dropdown-menu::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 3px;
+	}
+	
+	.cart-dropdown-menu::-webkit-scrollbar-thumb {
+		background: #ccc;
+		border-radius: 3px;
+	}
+	
+	.cart-dropdown-menu::-webkit-scrollbar-thumb:hover {
+		background: #aaa;
+	}
+</style>
 
 <!-- breadcrumb -->
 <div class="container">
@@ -19,6 +182,14 @@
 </div>
 
 <!-- Shoping Cart -->
+@if(session('error'))
+<div class="container m-t-20">
+	<div style="background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; padding:10px 14px; border-radius:6px; margin-bottom:10px; font-size:14px;">
+		{{ session('error') }}
+	</div>
+</div>
+@endif
+
 <form class="bg0 p-t-75 p-b-85">
 	<div class="container">
 		<div class="row">
@@ -127,6 +298,40 @@
 						Cart Totals
 					</h4>
 
+					<!-- Voucher Section -->
+					<div class="flex-w flex-t bor12 p-b-13 p-t-13">
+						<div class="size-208 w-full">
+							<span class="stext-110 cl2 d-block mb-2">
+								Mã giảm giá:
+							</span>
+							<div class="flex-w" style="gap: 8px;">
+								<input type="text" 
+									   id="voucherCode" 
+									   class="stext-111 cl2 plh3 size-111 bor11 p-lr-20" 
+									   placeholder="Nhập mã voucher"
+									   style="flex: 1; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 4px;">
+								<button type="button" 
+										id="applyVoucherBtn" 
+										class="flex-c-m stext-101 cl0 size-112 bg1 bor11 hov-btn3 p-lr-15 trans-04"
+										style="white-space: nowrap; border-radius: 4px;">
+									Áp dụng
+								</button>
+							</div>
+							<div id="voucherMessage" class="mt-2" style="font-size: 12px;"></div>
+							<div id="voucherInfo" class="mt-2" style="display: none;">
+								<span class="stext-110 cl2" style="color: #28a745; font-weight: 600;">
+									Mã: <span id="appliedVoucherCode"></span>
+								</span>
+								<button type="button" 
+										id="removeVoucherBtn" 
+										class="stext-110 cl2 ml-2" 
+										style="color: #dc3545; background: none; border: none; cursor: pointer; text-decoration: underline;">
+									(Xóa)
+								</button>
+							</div>
+						</div>
+					</div>
+
 					<div class="flex-w flex-t bor12 p-b-13">
 						<div class="size-208">
 							<span class="stext-110 cl2">
@@ -135,7 +340,35 @@
 						</div>
 
 						<div class="size-209">
-							<span class="mtext-110 cl2">
+							<span class="mtext-110 cl2" id="subtotalAmount">
+								{{ number_format($total, 0, ',', '.') }} VNĐ
+							</span>
+						</div>
+					</div>
+
+					<div class="flex-w flex-t bor12 p-b-13" id="discountRow" style="display: none;">
+						<div class="size-208">
+							<span class="stext-110 cl2" style="color: #28a745;">
+								Giảm giá:
+							</span>
+						</div>
+
+						<div class="size-209">
+							<span class="mtext-110 cl2" id="discountAmount" style="color: #28a745;">
+								0 VNĐ
+							</span>
+						</div>
+					</div>
+
+					<div class="flex-w flex-t bor12 p-t-13 p-b-13">
+						<div class="size-208">
+							<span class="stext-110 cl2" style="font-weight: 600; font-size: 16px;">
+								Thành tiền:
+							</span>
+						</div>
+
+						<div class="size-209">
+							<span class="mtext-110 cl2" id="totalAmount" style="font-weight: 700; font-size: 18px; color: #333;">
 								{{ number_format($total, 0, ',', '.') }} VNĐ
 							</span>
 						</div>
@@ -195,4 +428,5 @@
 	});
 </script>
 @endpush
+
 

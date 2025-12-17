@@ -5,6 +5,12 @@
     <script src="<?php echo e(asset('assets/libs/feather-icons/feather.min.js')); ?>"></script>
     <script src="<?php echo e(asset('assets/js/pages/plugins/lord-icon-2.1.0.js')); ?>"></script>
     <script src="<?php echo e(asset('assets/js/plugins.js')); ?>"></script>
+<<<<<<<< HEAD:storage/framework/views/bbb7b0c6eab24856f19dde6de156d1ec.php
+========
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+>>>>>>>> origin:storage/framework/views/c1d9d8f16a34d7229ecf64d7fab57178.php
     <!-- apexcharts -->
     <script src="<?php echo e(asset('assets/libs/apexcharts/apexcharts.min.js')); ?>"></script>
 
@@ -160,4 +166,8 @@
             handleAction('.btn-forcedelete', actionConfigs.forceDelete);
         });
     </script>
+<<<<<<<< HEAD:storage/framework/views/bbb7b0c6eab24856f19dde6de156d1ec.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/partials/js.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/partials/js.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/c1d9d8f16a34d7229ecf64d7fab57178.php

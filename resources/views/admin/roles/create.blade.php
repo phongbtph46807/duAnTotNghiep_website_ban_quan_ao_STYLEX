@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Tạo tài khoản Admin/Staff')
+@section('title', 'Tạo tài khoản có quyền')
 
 @section('content')
 <div class="container-fluid">
@@ -8,11 +8,11 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Tạo tài khoản Admin/Staff</h4>
+                <h4 class="mb-sm-0">Tạo tài khoản có quyền</h4>
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
                         <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.roles.index') }}">Quản lý Admin & Staff</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.roles.index') }}">Quản lý tài khoản có quyền</a></li>
                         <li class="breadcrumb-item active">Tạo mới</li>
                     </ol>
                 </div>
@@ -77,25 +77,34 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Vai trò <span class="text-danger">*</span></label>
-                                    <div class="d-flex gap-4">
+                                    @if($roles && $roles->count() > 0)
+                                        <div class="d-flex flex-wrap gap-3">
+                                            @foreach($roles as $role)
                                         <div class="form-check">
-                                            <input class="form-check-input @error('role') is-invalid @enderror" 
-                                                   type="radio" name="role" id="role_admin" value="1" 
-                                                   {{ old('role', '1') == '1' ? 'checked' : '' }}>
-                                            <label class="form-check-label text-danger" for="role_admin">
-                                                <i class="ri-admin-line me-1"></i>Admin
+                                                    <input class="form-check-input @error('role_ids') is-invalid @enderror" 
+                                                           type="checkbox" 
+                                                           name="role_ids[]" 
+                                                           id="role_{{ $role->id }}" 
+                                                           value="{{ $role->id }}"
+                                                           {{ in_array($role->id, old('role_ids', [])) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="role_{{ $role->id }}">
+                                                        <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
+                                                        @if($role->description)
+                                                            <small class="text-muted d-block">{{ $role->description }}</small>
+                                                        @endif
                                             </label>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input @error('role') is-invalid @enderror" 
-                                                   type="radio" name="role" id="role_staff" value="2" 
-                                                   {{ old('role') == '2' ? 'checked' : '' }}>
-                                            <label class="form-check-label text-warning" for="role_staff">
-                                                <i class="ri-team-line me-1"></i>Staff
-                                            </label>
+                                        <div class="form-text">Có thể chọn nhiều vai trò cho tài khoản này</div>
+                                    @else
+                                        <div class="alert alert-warning mb-0">
+                                            <i class="ri-alert-line me-2"></i>
+                                            Chưa có vai trò nào trong hệ thống. 
+                                            <a href="{{ route('admin.rbac.roles.create') }}" class="alert-link">Tạo vai trò mới</a>
                                         </div>
-                                    </div>
-                                    @error('role')
+                                    @endif
+                                    @error('role_ids')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -139,6 +148,59 @@
                             </div>
                         </div>
 
+                        <!-- Phần chọn quyền -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="ri-shield-keyhole-line me-1"></i>Phân quyền <span class="text-muted">(Tùy chọn)</span>
+                                    </label>
+                                    <div class="alert alert-info mb-3">
+                                        <i class="ri-information-line me-2"></i>
+                                        <small>Chọn các quyền cụ thể cho tài khoản này. Nếu không chọn, tài khoản sẽ chỉ có quyền mặc định theo vai trò.</small>
+                                    </div>
+                                    @if($permissions && $permissions->count() > 0)
+                                        <div class="row">
+                                            @foreach($permissions as $permission)
+                                                <div class="col-md-4 col-lg-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" 
+                                                               type="checkbox" 
+                                                               name="permissions[]" 
+                                                               id="permission_{{ $permission->id }}" 
+                                                               value="{{ $permission->id }}"
+                                                               {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="permission_{{ $permission->id }}">
+                                                            {{ $permission->name }}
+                                                            @if($permission->description)
+                                                                <small class="text-muted d-block">{{ $permission->description }}</small>
+                                                            @endif
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllPermissions">
+                                                <i class="ri-checkbox-multiple-line me-1"></i>Chọn tất cả
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllPermissions">
+                                                <i class="ri-checkbox-blank-line me-1"></i>Bỏ chọn tất cả
+                                            </button>
+                                        </div>
+                                    @else
+                                        <div class="alert alert-warning mb-0">
+                                            <i class="ri-alert-line me-2"></i>
+                                            Chưa có quyền nào trong hệ thống. Vui lòng tạo quyền trước.
+                                        </div>
+                                    @endif
+                                    @error('permissions')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex gap-2">
@@ -156,5 +218,111 @@
             </div>
         </div>
     </div>
+
+    <!-- Danh sách các tài khoản hiện có -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="ri-user-list-line me-2"></i>Danh sách tài khoản có quyền hiện có
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if($existingUsers->count() > 0)
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-nowrap align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 5%;">#</th>
+                                        <th style="width: 25%;">Họ và tên</th>
+                                        <th style="width: 25%;">Email</th>
+                                        <th style="width: 15%;">Vai trò</th>
+                                        <th style="width: 15%;">Trạng thái</th>
+                                        <th style="width: 15%;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($existingUsers as $index => $user)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>
+                                                <strong>{{ $user->name }}</strong>
+                                            </td>
+                                            <td>{{ $user->email }}</td>
+                                            <td>
+                                                @if($user->role == 1)
+                                                    <span class="badge bg-danger">
+                                                        <i class="ri-admin-line me-1"></i>Admin
+                                                    </span>
+                                                @elseif($user->role == 2)
+                                                    <span class="badge bg-warning">
+                                                        <i class="ri-team-line me-1"></i>Staff
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($user->status == 'active')
+                                                    <span class="badge bg-success">
+                                                        <i class="ri-checkbox-circle-line me-1"></i>Hoạt động
+                                                    </span>
+                                                @elseif($user->status == 'inactive')
+                                                    <span class="badge bg-warning">
+                                                        <i class="ri-pause-circle-line me-1"></i>Tạm dừng
+                                                    </span>
+                                                @elseif($user->status == 'blocked')
+                                                    <span class="badge bg-danger">
+                                                        <i class="ri-lock-line me-1"></i>Bị khóa
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('admin.roles.edit', $user->id) }}" 
+                                                   class="btn btn-sm btn-primary" 
+                                                   title="Chỉnh sửa">
+                                                    <i class="ri-edit-line"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-info mb-0">
+                            <i class="ri-information-line me-2"></i>Chưa có tài khoản có quyền nào trong hệ thống.
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chọn tất cả permissions
+    const selectAllBtn = document.getElementById('selectAllPermissions');
+    const deselectAllBtn = document.getElementById('deselectAllPermissions');
+    
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            document.querySelectorAll('input[name="permissions[]"]').forEach(function(checkbox) {
+                checkbox.checked = true;
+            });
+        });
+    }
+    
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function() {
+            document.querySelectorAll('input[name="permissions[]"]').forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+        });
+    }
+});
+</script>
+@endpush
+
 @endsection

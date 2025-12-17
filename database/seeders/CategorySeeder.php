@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
@@ -12,8 +13,11 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        // Clear table first
+        // Xóa dữ liệu cũ trước khi seed
+        // Sử dụng DB::table để tránh lỗi foreign key constraints
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Category::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // Danh mục cha chính
         $aoNam = Category::create(['name' => 'Áo Nam', 'parent_id' => null, 'status' => 1]);

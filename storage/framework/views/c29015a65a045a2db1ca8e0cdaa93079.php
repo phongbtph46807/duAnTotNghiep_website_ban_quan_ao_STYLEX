@@ -27,6 +27,8 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="<?php echo e(asset('client/css/util.css')); ?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo e(asset('client/css/main.css')); ?>">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="<?php echo e(asset('client/css/chat.css')); ?>">
 	
 	<!-- Custom CSS for User Dropdown -->
 	<style>
@@ -228,4 +230,51 @@
 			background-color: #e9ecef;
 		}
 	</style>
+<<<<<<<< HEAD:storage/framework/views/c29015a65a045a2db1ca8e0cdaa93079.php
 <!--===============================================================================================--><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/partials/css/css.blade.php ENDPATH**/ ?>
+========
+	
+	<!-- Font hỗ trợ tiếng Việt - Chỉ áp dụng cho text, không ảnh hưởng icon -->
+	<style>
+		/* Áp dụng font Inter cho body và tất cả phần tử - Hỗ trợ tiếng Việt tốt */
+		body,
+		body *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i) {
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+		}
+		
+		/* Áp dụng cho các phần tử cụ thể trong cart */
+		.table-shopping-cart,
+		.table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i),
+		.cart-dropdown-title, .cart-dropdown-name, .cart-dropdown-info,
+		.wrap-table-shopping-cart,
+		.wrap-table-shopping-cart *:not(.fa):not(.zmdi):not([class*="icon"]):not([class*="lnr"]):not(i) {
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+		}
+		
+		/* Đảm bảo icon fonts giữ nguyên font gốc - QUAN TRỌNG: Phải đặt sau body */
+		.fa, .fa:before, i.fa,
+		.zmdi, .zmdi:before, i.zmdi,
+		.lnr, [class*="lnr"]:before,
+		[class*="icon-"]:before,
+		.material-icons,
+		[class*="linearicons"]:before {
+			font-family: inherit !important;
+		}
+		
+		/* Font Awesome */
+		.fa, .fa:before, i.fa {
+			font-family: "FontAwesome" !important;
+		}
+		
+		/* Material Design Iconic Font */
+		.zmdi, .zmdi:before, i.zmdi {
+			font-family: "Material-Design-Iconic-Font" !important;
+		}
+		
+		/* Linearicons */
+		.lnr, [class*="lnr"]:before {
+			font-family: "Linearicons-Free" !important;
+		}
+	</style>
+<!--===============================================================================================--><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/css/css.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/8f2981da7886bc035c345267209fc532.php

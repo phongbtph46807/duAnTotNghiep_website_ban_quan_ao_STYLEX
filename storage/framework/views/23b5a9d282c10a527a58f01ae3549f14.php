@@ -8,4 +8,8 @@
     </clipPath>
   </defs>
 </svg>
+<<<<<<<< HEAD:storage/framework/views/23b5a9d282c10a527a58f01ae3549f14.php
 <?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\vendor\laravel\framework\src\Illuminate\Foundation\Providers/../resources/exceptions/renderer/components/icons/copy.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/icons/copy.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/7842fc14e7b7d02f42e8e5e6c3fc6814.php

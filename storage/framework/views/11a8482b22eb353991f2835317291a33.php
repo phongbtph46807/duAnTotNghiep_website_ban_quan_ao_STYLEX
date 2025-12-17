@@ -11,9 +11,21 @@
 							Trợ giúp & FAQs
 						</a>
 
+<<<<<<< HEAD
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							Tài Khoản
 						</a>
+=======
+						<?php if(auth()->guard()->check()): ?>
+							<a href="<?php echo e(route('client.profile.index')); ?>" class="flex-c-m trans-04 p-lr-25">
+								Tài Khoản
+							</a>
+						<?php else: ?>
+							<a href="<?php echo e(route('loginView')); ?>" class="flex-c-m trans-04 p-lr-25">
+							Tài Khoản
+						</a>
+						<?php endif; ?>
+>>>>>>> origin
 
 					</div>
 				</div>
@@ -79,6 +91,7 @@
 						</a>
 						
 						<?php if(auth()->guard()->check()): ?>
+<<<<<<< HEAD
 							<!-- User đã đăng nhập -->
 							<div class="dropdown">
 								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown">
@@ -94,6 +107,88 @@
 									</div>
 									<div class="dropdown-divider"></div>
 									<a class="dropdown-item" href="#">
+=======
+							<?php 
+								$authUser = Auth::user();
+								$loyaltyService = app(\App\Services\LoyaltyService::class);
+								$currentTier = null;
+								$nextTierProgress = null;
+								$totalSpent = 0;
+								if ($authUser instanceof \App\Models\User) {
+								$currentTier = $loyaltyService->getCurrentTier($authUser);
+								$nextTierProgress = $loyaltyService->getNextTierProgress($authUser);
+								$totalSpent = $authUser->getTotalSpent();
+								}
+								
+								// Tính toán màu sắc cho badge từ database
+								$tierBgColor = '#8B4513'; // Màu mặc định: nâu đồng (Đồng)
+								$tierTextColor = '#fff';
+								if ($currentTier) {
+									// Refresh tier từ database để đảm bảo có đầy đủ thông tin
+									$currentTier->refresh();
+									$tierBgColor = $currentTier->color ?? '#8B4513';
+									$tierTextColor = $currentTier->text_color ?? '#fff';
+								}
+								
+								// Tính toán progress width
+								$progressWidth = 0;
+								if ($nextTierProgress) {
+									$progressWidth = min(100, $nextTierProgress['progress']);
+								}
+								
+								// Tính toán các style strings
+								$badgeStyle = "background: {$tierBgColor}; color: {$tierTextColor}; font-size: 9px; padding: 2px 5px; border-radius: 3px; line-height: 1.2; flex-shrink: 0;";
+								$badgeStyleLarge = "background: {$tierBgColor}; color: {$tierTextColor}; font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 600;";
+								$progressStyle = "background: #6777ef; height: 100%; width: {$progressWidth}%; transition: width 0.3s;";
+							?>
+							<!-- User đã đăng nhập -->
+							<div class="dropdown">
+								<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 dropdown-toggle" data-bs-toggle="dropdown" style="display: flex; align-items: center; gap: 6px;">
+									<i class="zmdi zmdi-account"></i>
+									<span class="ml-2" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?php echo e($authUser->name ?? 'Tài khoản'); ?></span>
+									<?php if($currentTier): ?>
+										<span class="badge" style="<?php echo e($badgeStyle); ?>">
+											<?php echo e($currentTier->name); ?>
+
+										</span>
+									<?php endif; ?>
+								</a>
+								<div class="dropdown-menu dropdown-menu-end" style="min-width: 280px;">
+									<div class="dropdown-header" style="padding: 12px 16px;">
+										<div class="user-info">
+											<?php if($currentTier): ?>
+												<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+													<div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+														<span style="font-size: 11px; color: #666; font-weight: 500;">Hạng:</span>
+														<span class="badge" style="<?php echo e($badgeStyleLarge); ?>">
+															<?php echo e($currentTier->name); ?>
+
+														</span>
+														<?php if($currentTier->discount_rate > 0): ?>
+															<span style="font-size: 11px; color: #28a745; font-weight: 600;">-<?php echo e(number_format($currentTier->discount_rate, 0)); ?>%</span>
+														<?php endif; ?>
+														<span style="font-size: 11px; color: #888;">•</span>
+														<span style="font-size: 11px; color: #888;">
+															Đã chi: <strong style="color: #333;"><?php echo e(number_format($totalSpent, 0, ',', '.')); ?> ₫</strong>
+														</span>
+													</div>
+													<?php if($nextTierProgress): ?>
+														<div style="margin-top: 8px;">
+															<div style="font-size: 11px; color: #666; margin-bottom: 4px;">
+																Lên <strong><?php echo e($nextTierProgress['next_tier']->name); ?></strong> còn: <strong style="color: #6777ef;"><?php echo e(number_format($nextTierProgress['remaining'], 0, ',', '.')); ?> ₫</strong>
+															</div>
+															<div style="background: #f0f0f0; border-radius: 4px; height: 6px; overflow: hidden;">
+																<div style="<?php echo e($progressStyle); ?>"></div>
+															</div>
+														</div>
+													<?php endif; ?>
+												</div>
+											<?php endif; ?>
+										</div>
+									</div>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="<?php echo e(route('client.profile.index')); ?>">
+>>>>>>> origin
 										<i class="zmdi zmdi-account-circle me-2"></i>
 										Hồ sơ cá nhân
 									</a>
@@ -101,6 +196,17 @@
 										<i class="zmdi zmdi-shopping-cart me-2"></i>
 										Đơn hàng của tôi
 									</a>
+<<<<<<< HEAD
+=======
+									<a class="dropdown-item" href="<?php echo e(route('client.order.track')); ?>">
+										<i class="zmdi zmdi-search me-2"></i>
+										Tra cứu đơn hàng
+									</a>
+									<a class="dropdown-item" href="<?php echo e(route('client.profile.card')); ?>">
+										<i class="zmdi zmdi-card me-2"></i>
+										Ví của tôi
+									</a>
+>>>>>>> origin
 									<a class="dropdown-item" href="#">
 										<i class="zmdi zmdi-favorite me-2"></i>
 										Yêu thích
@@ -144,4 +250,12 @@
 					<input class="plh3" type="text" name="search" placeholder="Search...">
 				</form>
 			</div>
+<<<<<<< HEAD
 		</div><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/sidebar.blade.php ENDPATH**/ ?>
+=======
+<<<<<<<< HEAD:storage/framework/views/d1557a9c715b1ef12de02fe904474dc3.php
+		</div><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/partials/sidebar.blade.php ENDPATH**/ ?>
+========
+		</div><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/sidebar.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/11a8482b22eb353991f2835317291a33.php
+>>>>>>> origin

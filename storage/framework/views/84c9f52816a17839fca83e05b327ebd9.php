@@ -33,9 +33,22 @@
 			<i class="zmdi zmdi-favorite-outline"></i>
 		</a>
 											
+<<<<<<< HEAD
 					<a href="login.html" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
 						<i class="zmdi zmdi-account"></i>
 					</a>
+=======
+		<?php if(auth()->guard()->check()): ?>
+			<?php $authUser = Auth::user(); ?>
+			<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-account-menu">
+				<i class="zmdi zmdi-account"></i>
+			</a>
+		<?php else: ?>
+			<a href="<?php echo e(route('loginView')); ?>" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11">
+						<i class="zmdi zmdi-account"></i>
+					</a>
+		<?php endif; ?>
+>>>>>>> origin
 			
 			</div>
 
@@ -80,6 +93,7 @@
 
 			<ul class="main-menu-m">
 				<li>
+<<<<<<< HEAD
 					<a href="index.html">Home</a>
 					<ul class="sub-menu-m">
 						<li><a href="index.html">Homepage 1</a></li>
@@ -113,3 +127,54 @@
 			</ul>
 		</div>
 <?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/mobile.blade.php ENDPATH**/ ?>
+=======
+					<a href="<?php echo e(route('home')); ?>">Trang Chủ</a>
+				</li>
+
+				<li>
+					<a href="<?php echo e(route('client.products.index')); ?>">Sản Phẩm</a>
+				</li>
+
+				<li>
+					<a href="<?php echo e(route('blog.index')); ?>">Blog</a>
+				</li>
+
+				<li>
+					<a href="contact.html">Liên Hệ</a>
+				</li>
+
+				<?php if(auth()->guard()->check()): ?>
+					<li>
+						<a href="#" class="js-toggle-account-menu">Tài Khoản</a>
+						<ul class="sub-menu-m account-menu-mobile">
+				<li>
+								<div style="padding: 10px 15px; border-bottom: 1px solid #eee;">
+									<div style="font-weight: 600;"><?php echo e(Auth::user()->name ?? ''); ?></div>
+									<div style="font-size: 12px; color: #666;"><?php echo e(Auth::user()->email ?? ''); ?></div>
+								</div>
+				</li>
+							<li><a href="<?php echo e(route('client.order.list')); ?>"><i class="zmdi zmdi-shopping-cart" style="margin-right: 8px;"></i>Đơn hàng của tôi</a></li>
+							<li><a href="<?php echo e(route('client.order.track')); ?>"><i class="zmdi zmdi-search" style="margin-right: 8px;"></i>Tra cứu đơn hàng</a></li>
+							<li><a href="#"><i class="zmdi zmdi-favorite" style="margin-right: 8px;"></i>Yêu thích</a></li>
+							<li>
+								<form method="POST" action="<?php echo e(route('logout')); ?>" style="margin: 0;">
+									<?php echo csrf_field(); ?>
+									<button type="submit" style="background: none; border: none; color: inherit; width: 100%; text-align: left; padding: 10px 15px; cursor: pointer;">
+										<i class="zmdi zmdi-power" style="margin-right: 8px;"></i>Đăng xuất
+									</button>
+								</form>
+							</li>
+						</ul>
+						<span class="arrow-main-menu-m">
+							<i class="fa fa-angle-right" aria-hidden="true"></i>
+						</span>
+				</li>
+				<?php endif; ?>
+			</ul>
+		</div>
+<<<<<<<< HEAD:storage/framework/views/86d88d9f4d853dea498f605c3885e70f.php
+<?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/client/partials/mobile.blade.php ENDPATH**/ ?>
+========
+<?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/client/partials/mobile.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/84c9f52816a17839fca83e05b327ebd9.php
+>>>>>>> origin

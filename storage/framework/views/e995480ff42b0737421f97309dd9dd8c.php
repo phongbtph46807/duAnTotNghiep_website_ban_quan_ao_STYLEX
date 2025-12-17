@@ -129,4 +129,8 @@ unset($__errorArgs, $__bag); ?>
     });
 </script>
 <?php $__env->stopPush(); ?>
+<<<<<<<< HEAD:storage/framework/views/e995480ff42b0737421f97309dd9dd8c.php
 <?php echo $__env->make('auth.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/auth/login.blade.php ENDPATH**/ ?>
+========
+<?php echo $__env->make('auth.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/auth/login.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/fe5df9b25b3522b15ab9073854c912fd.php

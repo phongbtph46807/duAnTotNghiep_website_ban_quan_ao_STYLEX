@@ -908,7 +908,7 @@
                                                 </td>
                                                 <td>Syntyce Solutions</td>
                                                 <td>
-                                                    <span class="badge bg-danger-subtle text-danger">Unpaid</span>
+                                                    <span class="badge bg-danger-subtle text-danger">Chưa thanh toán</span>
                                                 </td>
                                                 <td>
                                                     <h5 class="fs-14 fw-medium mb-0">4.3<span
@@ -935,7 +935,7 @@
                                                 </td>
                                                 <td>iTest Factory</td>
                                                 <td>
-                                                    <span class="badge bg-success-subtle text-success">Paid</span>
+                                                    <span class="badge bg-success-subtle text-success">Đã thanh toán</span>
                                                 </td>
                                                 <td>
                                                     <h5 class="fs-14 fw-medium mb-0">4.7<span
@@ -1432,4 +1432,8 @@
     </div>
 <?php $__env->stopSection(); ?>
 
+<<<<<<<< HEAD:storage/framework/views/15318fa6d7b8ebd199f1acf87b1063c6.php
 <?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH E:\LARAGON\laragon\www\DATN\duAnTotNghiep_website_ban_quan_ao_STYLEX\resources\views/admin/dashboard.blade.php ENDPATH**/ ?>
+========
+<?php echo $__env->make('admin.layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /Applications/XAMPP/xamppfiles/htdocs/duAnTotNghiep_website_ban_quan_ao_STYLEX/resources/views/admin/dashboard.blade.php ENDPATH**/ ?>
+>>>>>>>> origin:storage/framework/views/27cf54eef9a643490fcd3c908ac0d67e.php
