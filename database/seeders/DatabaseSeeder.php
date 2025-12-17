@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             VoucherSeeder::class,
             RoleSeeder::class, // Phải chạy trước PermissionSeeder
             PermissionSeeder::class,
+            WarehouseTransactionSeeder::class, // Dữ liệu mẫu nhập xuất chuyển
         ]);
     }
 }
