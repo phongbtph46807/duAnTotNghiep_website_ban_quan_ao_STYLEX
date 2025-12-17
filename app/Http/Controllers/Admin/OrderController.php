@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -71,13 +74,12 @@ class OrderController extends Controller
 
         // Yêu cầu hủy / trả
         $requestOrders = (clone $baseQuery)
-            ->whereIn('status', ['cancel_request','return_request'])
+            ->whereIn('status', ['cancel_request', 'return_request'])
             ->orderByDesc('created_at')
             ->paginate($perPage, ['*'], 'request_page')
             ->appends($request->except('request_page'));
-
-        // Nhóm giao vận (chờ xác nhận / đang xử lý / đang giao)
-        $shippingStatuses = ['pending','processing','shipping'];
+// Nhóm giao vận (chờ xác nhận / đang xử lý / đang giao)
+        $shippingStatuses = ['pending', 'processing', 'shipping'];
         $shippingOrders = (clone $baseQuery)
             ->whereIn('status', $shippingStatuses)
             ->orderByDesc('created_at')
@@ -85,7 +87,7 @@ class OrderController extends Controller
             ->appends($request->except('shipping_page'));
 
         // Nhóm đã hoàn thành / đã giao
-        $completedStatuses = ['completed','delivered'];
+        $completedStatuses = ['completed', 'delivered'];
         $completedOrders = (clone $baseQuery)
             ->whereIn('status', $completedStatuses)
             ->orderByDesc('created_at')
@@ -107,8 +109,12 @@ class OrderController extends Controller
             ->appends($request->except('return_page'));
 
         return view('admin.orders.index', compact(
-            'shippingOrders', 'completedOrders', 'cancelOrders', 'returnOrders',
-            'orderStats', 'requestOrders'
+            'shippingOrders',
+            'completedOrders',
+            'cancelOrders',
+            'returnOrders',
+            'orderStats',
+            'requestOrders'
         ));
     }
 
@@ -137,17 +143,98 @@ class OrderController extends Controller
 
     public function approveCancel(Request $request, Order $order)
     {
-        $order->status = 'cancelled';
-        $order->save();
+
+
+        DB::transaction(function () use ($order) {
+
+            $order = Order::query()->whereKey($order->id)->lockForUpdate()->first();
+
+            if ($order->status === 'cancelled') {
+                return;
+            }
+
+            if ($order->payment_status === 'paid') {
+
+                $user = User::query()->whereKey($order->user_id)->lockForUpdate()->firstOrFail();
+
+                $amount = (int) $order->total;
+                $before = (int) $user->wallet_balance;
+$after  = $before + $amount;
+
+                $history = $user->wallet_history ?? [];
+                $history[] = [
+                    'type'            => 'refund',          // refund | withdraw
+                    'amount'          => $amount,
+                    'balance_before'  => $before,
+                    'balance_after'   => $after,
+                    'order_id'        => $order->id,
+                    'order_code'        => $order->code,
+                    'note'            => 'Hoàn tiền do duyệt hủy đơn',
+                    'created_at'      => now()->toDateTimeString(),
+                    'created_by'      => Auth::id(),        // ai duyệt
+                    'created_by_name'      => Auth::user()->name,        // ai duyệt
+                ];
+
+                $user->wallet_balance = $after;
+                $user->wallet_history = $history;
+                $user->save();
+            }
+
+            $order->status = 'cancelled';
+            // Optional: lưu trạng thái refund cho dễ kiểm soát
+            $order->payment_status = 'refunded';
+
+            $order->save();
+        });
+
         return back()->with('success', 'Đã duyệt yêu cầu hủy đơn.');
     }
 
     public function approveReturn(Request $request, Order $order)
     {
-        $order->status = 'returned';
-        $order->payment_status = $order->payment_status === 'paid' ? 'refunded' : $order->payment_status;
-        $order->save();
-        return back()->with('success', 'Đã duyệt yêu cầu trả hàng/hoàn tiền.');
+
+        DB::transaction(function () use ($order) {
+
+            $order = Order::query()->whereKey($order->id)->lockForUpdate()->first();
+
+            if ($order->status === 'returned') {
+                return;
+            }
+
+            if ($order->payment_status === 'paid') {
+
+                $user = User::query()->whereKey($order->user_id)->lockForUpdate()->firstOrFail();
+
+                $amount = (int) $order->total;
+                $before = (int) $user->wallet_balance;
+                $after  = $before + $amount;
+
+                $history = $user->wallet_history ?? [];
+                $history[] = [
+                    'type'            => 'refund',          // refund | withdraw
+                    'amount'          => $amount,
+                    'balance_before'  => $before,
+                    'balance_after'   => $after,
+                    'order_id'        => $order->id,
+                    'order_code'        => $order->code,
+                    'note'            => 'Hoàn tiền do duyệt hủy đơn',
+                    'created_at'      => now()->toDateTimeString(),
+                    'created_by'      => Auth::id(),        // ai duyệt
+                    'created_by_name'      => Auth::user()->name,        // ai duyệt
+                ];
+
+                $user->wallet_balance = $after;
+                $user->wallet_history = $history;
+                $user->save();
+            }
+
+            $order->status = 'returned';
+            // Optional: lưu trạng thái refund cho dễ kiểm soát
+            $order->payment_status = 'refunded';
+
+            $order->save();
+        });
+return back()->with('success', 'Đã duyệt yêu cầu trả hàng/hoàn tiền.');
     }
 
     public function updatePaymentStatus(Request $request, Order $order)
