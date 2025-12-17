@@ -80,7 +80,8 @@ Route::group(['middleware' => ['onlyAuthenticated']], function(){
     Route::prefix('profile')->as('client.profile.')->group(function(){
         Route::get('/', [ProfileController::class, 'index'])->name('index');
         Route::put('/', [ProfileController::class, 'update'])->name('update');
-        
+        Route::get('/card', [ProfileController::class, 'card'])->name('card');
+        Route::post('/card', [ProfileController::class, 'withdraw'])->name('withdraw');
         // Address routes
         Route::prefix('addresses')->as('addresses.')->group(function(){
             Route::get('/', [AddressController::class, 'index'])->name('index');

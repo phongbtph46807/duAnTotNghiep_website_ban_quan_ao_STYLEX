@@ -38,6 +38,12 @@
             <div class="co-card">
             <div class="co-card__body">
             <h4 class="co-title">Thông tin thanh toán</h4>
+            <?php if(!auth()->check()): ?>
+                <div class="co-hint" style="margin-bottom:14px; background:#fff3cd; border-color:#ffc107; color:#856404;">
+                    <i class="zmdi zmdi-info-outline" style="margin-right:6px;"></i>
+                    Bạn đang mua hàng với tư cách khách. <a href="<?php echo e(route('loginView')); ?>" style="color:#6777ef; text-decoration:underline;">Đăng nhập</a> để tích điểm và theo dõi đơn hàng dễ dàng hơn.
+                </div>
+            <?php endif; ?>
             <?php if($errors->any()): ?>
                 <div class="co-hint" style="margin-bottom:14px;">Vui lòng kiểm tra lại các trường bắt buộc.</div>
             <?php endif; ?>

@@ -176,6 +176,10 @@
 										<i class="zmdi zmdi-search me-2"></i>
 										Tra cứu đơn hàng
 									</a>
+									<a class="dropdown-item" href="<?php echo e(route('client.profile.card')); ?>">
+										<i class="zmdi zmdi-card me-2"></i>
+										Ví của tôi
+									</a>
 									<a class="dropdown-item" href="#">
 										<i class="zmdi zmdi-favorite me-2"></i>
 										Yêu thích

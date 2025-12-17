@@ -472,10 +472,13 @@
 															<?php endif; ?>
 														<?php endfor; ?>
 													</div>
-													<?php if($review['variant']): ?>
+													<?php if($review['variant'] || $review['variant_color'] || $review['variant_size']): ?>
 														<p class="stext-102 cl6 p-b-10">
-															<strong>Phân loại hàng:</strong> <?php echo e($review['variant']); ?>
+															<strong>Phân loại hàng:</strong>
+															<?php echo e($review['variant']); ?>
 
+															<?php if($review['variant_color']): ?> | Màu: <?php echo e($review['variant_color']); ?> <?php endif; ?>
+															<?php if($review['variant_size']): ?> | Size: <?php echo e($review['variant_size']); ?> <?php endif; ?>
 														</p>
 													<?php endif; ?>
 													<?php if(!empty($review['comment'])): ?>
