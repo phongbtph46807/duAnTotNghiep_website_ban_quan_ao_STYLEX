@@ -37,9 +37,11 @@ class User extends Authenticatable
         'role',
         'verification_token',
         'token_expires_at',
-        'is_verified', 
+        'is_verified',
         'salary',
         'hire_date',
+        'wallet_balance',
+        'wallet_history',
     ];
 
     /**
@@ -62,11 +64,12 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'wallet_history' => 'array'
         ];
     }
     public function getRoleNameAttribute()
     {
-        return match($this->role) {
+        return match ($this->role) {
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_STAFF => 'Staff',
             self::ROLE_USER => 'User',
@@ -113,13 +116,12 @@ class User extends Authenticatable
         }
 
         // Backward compatibility: Kiểm tra trường role cũ
-        $roleName = match($this->role) {
+        $roleName = match ($this->role) {
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_STAFF => 'Staff',
             default => null
         };
-
-        if ($roleName) {
+if ($roleName) {
             $role = Role::where('name', $roleName)->first();
             if ($role && $role->permissions()->where('name', $permissionName)->exists()) {
                 return true;
@@ -134,7 +136,7 @@ class User extends Authenticatable
      */
     public function getPermissions()
     {
-        $roleName = match($this->role) {
+        $roleName = match ($this->role) {
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_STAFF => 'Staff',
             default => null
@@ -145,7 +147,7 @@ class User extends Authenticatable
         }
 
         $role = Role::where('name', $roleName)->first();
-        
+
         if (!$role) {
             return collect([]);
         }
