@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\StockOutController;
 use App\Http\Controllers\Admin\StockOutInvoiceController;
 use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\Admin\SalaryController;
 
 // Admin và Staff routes - cả hai đều có thể truy cập
 Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function () {
@@ -64,15 +65,11 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
             Route::patch('/{id}/restore', [ProductController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [ProductController::class, 'forceDelete'])->name('force-delete');
 
-            // Nén/resize ảnh
-            Route::post('/{product}/images', [ProductImageController::class, 'storeProduct'])
-                ->name('images.store');
+            Route::post('/{product}/images', [ProductImageController::class, 'storeProduct'])->name('images.store');
         });
-        // Nén/resize ảnh cho variant-image
-        Route::post('/variants/{variant}/images', [ProductImageController::class, 'storeVariant'])
-            ->name('variants.images.store');
+        Route::post('/variants/{variant}/images', [ProductImageController::class, 'storeVariant'])->name('variants.images.store');
 
-        // Profile routes - Admin và Staff đều có thể chỉnh sửa thông tin cá nhân
+        // Profile routes
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
         Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
@@ -105,12 +102,12 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
             Route::patch('/{id}/restore', [PostController::class, 'restore'])->name('restore');
             Route::delete('/{id}/force-delete', [PostController::class, 'forceDelete'])->name('force-delete');
         });
+
         // Reviews routes
         Route::prefix('reviews')->as('reviews.')->group(function () {
             Route::get('/', [ReviewController::class, 'index'])->name('index');
             Route::get('/{review}', [ReviewController::class, 'show'])->name('show');
-            Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])
-                ->name('toggleStatus');
+            Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])->name('toggleStatus');
             Route::delete('/{id}', [ReviewController::class, 'destroy'])->name('destroy');
         });
     });
@@ -127,10 +124,95 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
     });
 });
 
-// Routes chỉ dành cho Admin (role=1) - Bổ sung thêm chức năng
+// Shared inventory routes cho Admin và Warehouse Manager
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,3']], function () {
+    Route::prefix('admin')->as('admin.')->group(function () {
+        Route::prefix('inventory')->as('inventory.')->group(function () {
+            Route::get('/', [InventoryController::class, 'index'])->name('index');
+            Route::get('dashboard', [InventoryController::class, 'dashboard'])->name('dashboard');
+            Route::get('logs', [InventoryController::class, 'showLogs'])->name('logs');
+            Route::get('current-stock', [InventoryController::class, 'currentStock'])->name('current-stock');
+            Route::get('reports', [InventoryController::class, 'reports'])->name('reports');
+            Route::get('settings', [InventoryController::class, 'settings'])->name('settings');
+            Route::post('settings', [InventoryController::class, 'updateSettings'])->name('settings.update');
+
+            Route::prefix('stock-in')->as('stock-in.')->group(function () {
+                Route::get('/', [StockInController::class, 'index'])->name('index');
+                Route::get('create', [StockInController::class, 'create'])->name('create');
+                Route::post('/', [StockInController::class, 'store'])->name('store');
+                Route::get('{id}/qc', [StockInController::class, 'qc'])->name('qc');
+                Route::post('{id}/confirm-qc', [StockInController::class, 'confirmQC'])->name('confirm-qc');
+                Route::post('{id}/confirm', [StockInController::class, 'confirm'])->name('confirm');
+                Route::post('{id}/reject', [StockInController::class, 'reject'])->name('reject');
+            });
+
+            Route::prefix('stock-out')->as('stock-out.')->group(function () {
+                Route::get('/', [StockOutController::class, 'index'])->name('index');
+                Route::get('create', [StockOutController::class, 'create'])->name('create');
+                Route::post('/', [StockOutController::class, 'store'])->name('store');
+                Route::get('{id}/qc', [StockOutController::class, 'qc'])->name('qc');
+                Route::post('{id}/confirm-qc', [StockOutController::class, 'confirmQC'])->name('confirm-qc');
+                Route::post('{id}/confirm', [StockOutController::class, 'confirm'])->name('confirm');
+                Route::post('{id}/reject', [StockOutController::class, 'reject'])->name('reject');
+            });
+
+            Route::prefix('transfer')->as('transfer.')->group(function () {
+                Route::get('/', [TransferController::class, 'index'])->name('index');
+                Route::get('create', [TransferController::class, 'create'])->name('create');
+                Route::post('/', [TransferController::class, 'store'])->name('store');
+                Route::post('{id}/confirm-out', [TransferController::class, 'confirmOut'])->name('confirm-out');
+                Route::post('{id}/confirm-in', [TransferController::class, 'confirmIn'])->name('confirm-in');
+            });
+
+            Route::prefix('count')->as('count.')->group(function () {
+                Route::get('/', [CountController::class, 'index'])->name('index');
+                Route::get('create', [CountController::class, 'create'])->name('create');
+                Route::post('/', [CountController::class, 'store'])->name('store');
+                Route::get('{id}/count', [CountController::class, 'count'])->name('count');
+                Route::post('{id}/confirm-count', [CountController::class, 'confirmCount'])->name('confirm-count');
+                Route::post('{id}/confirm-adjustment', [CountController::class, 'confirmAdjustment'])->name('confirm-adjustment');
+            });
+
+            Route::prefix('defect')->as('defect.')->group(function () {
+                Route::get('/', [DefectAssessmentController::class, 'index'])->name('index');
+                Route::get('create', [DefectAssessmentController::class, 'create'])->name('create');
+                Route::post('/', [DefectAssessmentController::class, 'store'])->name('store');
+                Route::get('{id}/assess', [DefectAssessmentController::class, 'assess'])->name('assess');
+                Route::post('{id}/confirm-assess', [DefectAssessmentController::class, 'confirmAssess'])->name('confirm-assess');
+                Route::post('{id}/approve', [DefectAssessmentController::class, 'approve'])->name('approve');
+                Route::post('{id}/complete', [DefectAssessmentController::class, 'complete'])->name('complete');
+                Route::post('{id}/reject', [DefectAssessmentController::class, 'reject'])->name('reject');
+            });
+
+            Route::prefix('stock-out-invoice')->as('stock-out-invoice.')->group(function () {
+                Route::get('/', [StockOutInvoiceController::class, 'index'])->name('index');
+                Route::get('{id}', [StockOutInvoiceController::class, 'show'])->name('show')->where('id', '[0-9]+');
+                Route::post('{id}/complete', [StockOutInvoiceController::class, 'complete'])->name('complete')->where('id', '[0-9]+');
+            });
+
+            Route::prefix('warehouses')->as('warehouses.')->group(function () {
+                Route::get('/', [WarehouseController::class, 'index'])->name('index');
+                Route::get('create', [WarehouseController::class, 'create'])->name('create');
+                Route::post('/', [WarehouseController::class, 'store'])->name('store');
+                Route::get('{warehouse}', [WarehouseController::class, 'show'])->name('show');
+                Route::get('{warehouse}/edit', [WarehouseController::class, 'edit'])->name('edit');
+                Route::put('{warehouse}', [WarehouseController::class, 'update'])->name('update');
+                Route::delete('{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
+            });
+        });
+
+        Route::prefix('notifications')->as('notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+            Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        });
+    });
+});
+
+// Routes chỉ dành cho Admin (role=1)
 Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
-        // Role Management - CHỈ ADMIN
+        // Role Management
         Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
         Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
         Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
@@ -141,35 +223,29 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
         Route::post('/roles/{user}/update-role', [RoleController::class, 'updateRole'])->name('roles.update-role');
         Route::post('/roles/bulk-update', [RoleController::class, 'bulkUpdateRoles'])->name('roles.bulk-update');
 
-        // Loyalty Tiers - CHỈ ADMIN
-        Route::resource('loyalty-tiers', LoyaltyTierController::class)
-            ->parameters(['loyalty-tiers' => 'loyaltyTier']);
+        // Loyalty Tiers
+        Route::resource('loyalty-tiers', LoyaltyTierController::class)->parameters(['loyalty-tiers' => 'loyaltyTier']);
 
-        // Tax & Shipping routes - CHỈ ADMIN
+        // Tax & Shipping
         Route::resource('tax_rates', TaxRateController::class);
         Route::resource('shipping_carriers', ShippingCarrierController::class);
-        // Voucher routes - CHỈ ADMIN
+
+        // Vouchers
         Route::resource('vouchers', VoucherController::class);
 
-        // RBAC Entities (roles & permissions) - CHỈ ADMIN, entity management only
+        // RBAC
         Route::prefix('rbac')->as('rbac.')->group(function () {
             Route::resource('roles', RoleEntityController::class)->except(['show']);
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
 
-        // Orders management
-        // Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-        // Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        // Orders
         Route::prefix('orders')->as('orders.')->group(function () {
             Route::get('/', [OrderController::class, 'index'])->name('index');
             Route::get('{order}', [OrderController::class, 'show'])->name('show');
-
-            // Luồng mới: Confirm, Ship, Cancel
             Route::post('{order}/confirm', [OrderController::class, 'confirm'])->name('confirm');
             Route::post('{order}/ship', [OrderController::class, 'ship'])->name('ship');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
-
-            // Giữ lại route cũ để tương thích
             Route::post('{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
             Route::post('{itemId}/return', [OrderController::class, 'returnItem'])->name('returnItem');
 
@@ -183,7 +259,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             });
         });
 
-        //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
+        // Users
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/trash', [UserController::class, 'trash'])->name('trash');
             Route::get('/create', [UserController::class, 'create'])->name('create');
@@ -196,191 +272,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('force-delete');
         });
 
-        Route::prefix('notifications')->as('notifications.')->group(function () {
-            Route::get('/', [NotificationController::class, 'index'])->name('index');
-            Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
-            Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-        });
-
-        Route::prefix('inventory')->as('inventory.')->group(function () {
-            Route::get('/', [InventoryController::class, 'index'])->name('index');
-            Route::get('dashboard', [InventoryController::class, 'dashboard'])->name('dashboard');
-            Route::get('logs', [InventoryController::class, 'showLogs'])->name('logs');
-            Route::get('current-stock', [InventoryController::class, 'currentStock'])->name('current-stock');
-            Route::get('reports', [InventoryController::class, 'reports'])->name('reports');
-            Route::get('settings', [InventoryController::class, 'settings'])->name('settings');
-            Route::post('settings', [InventoryController::class, 'updateSettings'])->name('settings.update');
-
-            Route::prefix('stock-in')->as('stock-in.')->group(function () {
-                Route::get('/', [StockInController::class, 'index'])->name('index');
-                Route::get('create', [StockInController::class, 'create'])->name('create');
-                Route::post('/', [StockInController::class, 'store'])->name('store');
-                Route::get('{id}/qc', [StockInController::class, 'qc'])->name('qc');
-                Route::post('{id}/confirm-qc', [StockInController::class, 'confirmQC'])->name('confirm-qc');
-                Route::post('{id}/confirm', [StockInController::class, 'confirm'])->name('confirm');
-                Route::post('{id}/reject', [StockInController::class, 'reject'])->name('reject');
-            });
-
-            Route::prefix('stock-out')->as('stock-out.')->group(function () {
-                Route::get('/', [StockOutController::class, 'index'])->name('index');
-                Route::get('create', [StockOutController::class, 'create'])->name('create');
-                Route::post('/', [StockOutController::class, 'store'])->name('store');
-                Route::get('{id}/qc', [StockOutController::class, 'qc'])->name('qc');
-                Route::post('{id}/confirm-qc', [StockOutController::class, 'confirmQC'])->name('confirm-qc');
-                Route::post('{id}/confirm', [StockOutController::class, 'confirm'])->name('confirm');
-                Route::post('{id}/reject', [StockOutController::class, 'reject'])->name('reject');
-            });
-
-            Route::prefix('transfer')->as('transfer.')->group(function () {
-                Route::get('/', [TransferController::class, 'index'])->name('index');
-                Route::get('create', [TransferController::class, 'create'])->name('create');
-                Route::post('/', [TransferController::class, 'store'])->name('store');
-                Route::post('{id}/confirm-out', [TransferController::class, 'confirmOut'])->name('confirm-out');
-                Route::post('{id}/confirm-in', [TransferController::class, 'confirmIn'])->name('confirm-in');
-            });
-
-            Route::prefix('count')->as('count.')->group(function () {
-                Route::get('/', [CountController::class, 'index'])->name('index');
-                Route::get('create', [CountController::class, 'create'])->name('create');
-                Route::post('/', [CountController::class, 'store'])->name('store');
-                Route::get('{id}/count', [CountController::class, 'count'])->name('count');
-                Route::post('{id}/confirm-count', [CountController::class, 'confirmCount'])->name('confirm-count');
-                Route::post('{id}/confirm-adjustment', [CountController::class, 'confirmAdjustment'])->name('confirm-adjustment');
-            });
-
-            Route::prefix('defect')->as('defect.')->group(function () {
-                Route::get('/', [DefectAssessmentController::class, 'index'])->name('index');
-                Route::get('create', [DefectAssessmentController::class, 'create'])->name('create');
-                Route::post('/', [DefectAssessmentController::class, 'store'])->name('store');
-                Route::get('{id}/assess', [DefectAssessmentController::class, 'assess'])->name('assess');
-                Route::post('{id}/confirm-assess', [DefectAssessmentController::class, 'confirmAssess'])->name('confirm-assess');
-                Route::post('{id}/approve', [DefectAssessmentController::class, 'approve'])->name('approve');
-                Route::post('{id}/complete', [DefectAssessmentController::class, 'complete'])->name('complete');
-                Route::post('{id}/reject', [DefectAssessmentController::class, 'reject'])->name('reject');
-            });
-
-
-
-
-            Route::prefix('stock-out-invoice')->as('stock-out-invoice.')->group(function () {
-                Route::get('/', [StockOutInvoiceController::class, 'index'])->name('index');
-                Route::get('{id}', [StockOutInvoiceController::class, 'show'])->name('show')->where('id', '[0-9]+');
-                Route::post('{id}/complete', [StockOutInvoiceController::class, 'complete'])->name('complete')->where('id', '[0-9]+');
-            });
-
-            Route::prefix('warehouses')->as('warehouses.')->group(function () {
-                Route::get('/', [WarehouseController::class, 'index'])->name('index');
-                Route::get('create', [WarehouseController::class, 'create'])->name('create');
-                Route::post('/', [WarehouseController::class, 'store'])->name('store');
-                Route::get('{warehouse}', [WarehouseController::class, 'show'])->name('show');
-                Route::get('{warehouse}/edit', [WarehouseController::class, 'edit'])->name('edit');
-                Route::put('{warehouse}', [WarehouseController::class, 'update'])->name('update');
-                Route::delete('{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
-            });
-
-            Route::get('reports', [InventoryController::class, 'reports'])->name('reports');
-            Route::get('current-stock', [InventoryController::class, 'currentStock'])->name('current-stock');
-            Route::get('settings', [InventoryController::class, 'settings'])->name('settings');
-            Route::post('settings', [InventoryController::class, 'updateSettings'])->name('settings.update');
-        });
-
-        Route::prefix('notifications')->as('notifications.')->group(function () {
-            Route::get('/', [NotificationController::class, 'index'])->name('index');
-            Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
-            Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-        });
-    });
-});
-
-// Debug routes for testing
-Route::get('/admin/debug-permissions', [\App\Http\Controllers\Admin\TestPermissionController::class, 'debug'])->middleware('onlyAuthenticated');
-Route::get('/admin/test-all-transactions', [\App\Http\Controllers\Admin\TestInventoryController::class, 'testAllTransactions'])->middleware('onlyAuthenticated');
-
-// Routes riêng cho Warehouse Manager - chỉ inventory
-Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:3']], function () {
-    Route::prefix('admin')->as('admin.')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-        Route::prefix('inventory')->as('inventory.')->group(function () {
-            Route::get('/', [InventoryController::class, 'index'])->name('index');
-            Route::get('dashboard', [InventoryController::class, 'dashboard'])->name('dashboard');
-            Route::get('logs', [InventoryController::class, 'showLogs'])->name('logs');
-            Route::get('current-stock', [InventoryController::class, 'currentStock'])->name('current-stock');
-            Route::get('reports', [InventoryController::class, 'reports'])->name('reports');
-            Route::get('settings', [InventoryController::class, 'settings'])->name('settings');
-            Route::post('settings', [InventoryController::class, 'updateSettings'])->name('settings.update');
-
-            Route::prefix('stock-in')->as('stock-in.')->group(function () {
-                Route::get('/', [StockInController::class, 'index'])->name('index');
-                Route::get('create', [StockInController::class, 'create'])->name('create');
-                Route::post('/', [StockInController::class, 'store'])->name('store');
-                Route::get('{id}/qc', [StockInController::class, 'qc'])->name('qc');
-                Route::post('{id}/confirm-qc', [StockInController::class, 'confirmQC'])->name('confirm-qc');
-                Route::post('{id}/confirm', [StockInController::class, 'confirm'])->name('confirm');
-                Route::post('{id}/reject', [StockInController::class, 'reject'])->name('reject');
-            });
-
-            Route::prefix('stock-out')->as('stock-out.')->group(function () {
-                Route::get('/', [StockOutController::class, 'index'])->name('index');
-                Route::get('create', [StockOutController::class, 'create'])->name('create');
-                Route::post('/', [StockOutController::class, 'store'])->name('store');
-                Route::get('{id}/qc', [StockOutController::class, 'qc'])->name('qc');
-                Route::post('{id}/confirm-qc', [StockOutController::class, 'confirmQC'])->name('confirm-qc');
-                Route::post('{id}/confirm', [StockOutController::class, 'confirm'])->name('confirm');
-                Route::post('{id}/reject', [StockOutController::class, 'reject'])->name('reject');
-            });
-
-            Route::prefix('transfer')->as('transfer.')->group(function () {
-                Route::get('/', [TransferController::class, 'index'])->name('index');
-                Route::get('create', [TransferController::class, 'create'])->name('create');
-                Route::post('/', [TransferController::class, 'store'])->name('store');
-                Route::post('{id}/confirm-out', [TransferController::class, 'confirmOut'])->name('confirm-out');
-                Route::post('{id}/confirm-in', [TransferController::class, 'confirmIn'])->name('confirm-in');
-            });
-
-            Route::prefix('count')->as('count.')->group(function () {
-                Route::get('/', [CountController::class, 'index'])->name('index');
-                Route::get('create', [CountController::class, 'create'])->name('create');
-                Route::post('/', [CountController::class, 'store'])->name('store');
-                Route::get('{id}/count', [CountController::class, 'count'])->name('count');
-                Route::post('{id}/confirm-count', [CountController::class, 'confirmCount'])->name('confirm-count');
-                Route::post('{id}/confirm-adjustment', [CountController::class, 'confirmAdjustment'])->name('confirm-adjustment');
-            });
-
-            Route::prefix('defect')->as('defect.')->group(function () {
-                Route::get('/', [DefectAssessmentController::class, 'index'])->name('index');
-                Route::get('create', [DefectAssessmentController::class, 'create'])->name('create');
-                Route::post('/', [DefectAssessmentController::class, 'store'])->name('store');
-                Route::get('{id}/assess', [DefectAssessmentController::class, 'assess'])->name('assess');
-                Route::post('{id}/confirm-assess', [DefectAssessmentController::class, 'confirmAssess'])->name('confirm-assess');
-                Route::post('{id}/approve', [DefectAssessmentController::class, 'approve'])->name('approve');
-                Route::post('{id}/complete', [DefectAssessmentController::class, 'complete'])->name('complete');
-                Route::post('{id}/reject', [DefectAssessmentController::class, 'reject'])->name('reject');
-            });
-
-
-
-            Route::prefix('stock-out-invoice')->as('stock-out-invoice.')->group(function () {
-                Route::get('/', [StockOutInvoiceController::class, 'index'])->name('index');
-                Route::get('{id}', [StockOutInvoiceController::class, 'show'])->name('show')->where('id', '[0-9]+');
-                Route::post('{id}/complete', [StockOutInvoiceController::class, 'complete'])->name('complete')->where('id', '[0-9]+');
-            });
-
-            Route::prefix('warehouses')->as('warehouses.')->group(function () {
-                Route::get('/', [WarehouseController::class, 'index'])->name('index');
-                Route::get('create', [WarehouseController::class, 'create'])->name('create');
-                Route::post('/', [WarehouseController::class, 'store'])->name('store');
-                Route::get('{warehouse}', [WarehouseController::class, 'show'])->name('show');
-                Route::get('{warehouse}/edit', [WarehouseController::class, 'edit'])->name('edit');
-                Route::put('{warehouse}', [WarehouseController::class, 'update'])->name('update');
-                Route::delete('{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
-            });
-        });
-
-        Route::prefix('notifications')->as('notifications.')->group(function () {
-            Route::get('/', [NotificationController::class, 'index'])->name('index');
-            Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-read');
-            Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-        });
+        // Salary - CHỈ ADMIN
+        Route::resource('salaries', SalaryController::class);
     });
 });
