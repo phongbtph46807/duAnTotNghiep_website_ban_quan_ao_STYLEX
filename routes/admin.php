@@ -273,6 +273,30 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
         });
 
         // Salary - CHỈ ADMIN
-        Route::resource('salaries', SalaryController::class);
+        Route::prefix('salaries')->as('salaries.')->group(function () {
+            Route::get('/', [SalaryController::class, 'index'])->name('index');
+            Route::get('create', [SalaryController::class, 'create'])->name('create');
+            Route::post('/', [SalaryController::class, 'store'])->name('store');
+            Route::get('{salary}/edit', [SalaryController::class, 'edit'])->name('edit');
+            Route::put('{salary}', [SalaryController::class, 'update'])->name('update');
+            Route::delete('{salary}', [SalaryController::class, 'destroy'])->name('destroy');
+            Route::get('generate-by-role', [SalaryController::class, 'generateByRole'])->name('generate-by-role');
+            Route::post('generate-by-role', [SalaryController::class, 'storeGenerateByRole'])->name('store-generate-by-role');
+            Route::get('history', [SalaryController::class, 'history'])->name('history');
+        });
+        
+        // Salary approve/reject routes - separate to avoid conflicts
+        Route::post('salaries/{id}/approve', [SalaryController::class, 'approve'])->name('salaries.approve');
+        Route::post('salaries/{id}/reject', [SalaryController::class, 'reject'])->name('salaries.reject');
+
+        // Role Salaries - CHỈ ADMIN
+        Route::prefix('role-salaries')->as('role-salaries.')->group(function () {
+            Route::get('/', [SalaryController::class, 'roleSalariesIndex'])->name('index');
+            Route::get('create', [SalaryController::class, 'roleSalariesCreate'])->name('create');
+            Route::post('/', [SalaryController::class, 'roleSalariesStore'])->name('store');
+            Route::get('{id}/edit', [SalaryController::class, 'roleSalariesEdit'])->name('edit');
+            Route::put('{id}', [SalaryController::class, 'roleSalariesUpdate'])->name('update');
+            Route::delete('{id}', [SalaryController::class, 'roleSalariesDestroy'])->name('destroy');
+        });
     });
 });

@@ -42,6 +42,7 @@ class DefectAssessmentController extends Controller
 
             $stock = WarehouseStock::where('warehouse_id', $data['warehouse_id'])
                 ->where('variant_id', $data['variant_id'])
+                ->lockForUpdate()
                 ->first();
 
             if (!$stock || $stock->available < $data['quantity']) {
@@ -51,10 +52,15 @@ class DefectAssessmentController extends Controller
 
             $availableBefore = $stock->available;
             $damagedBefore = $stock->damaged;
+            
             $stock->update([
                 'available' => $stock->available - $data['quantity'],
                 'damaged' => $stock->damaged + $data['quantity'],
             ]);
+
+            $data['created_by'] = auth()->id();
+            $data['status'] = 'PENDING';
+            $defectAssessment = DefectAssessment::create($data);
 
             InventoryLog::create([
                 'warehouse_id' => $data['warehouse_id'],
@@ -64,16 +70,11 @@ class DefectAssessmentController extends Controller
                 'quantity_change' => -$data['quantity'],
                 'quantity_after' => $stock->available,
                 'reference_type' => 'defect_assessment',
-                'reference_id' => null,
+                'reference_id' => $defectAssessment->id,
                 'user_id' => Auth::id(),
                 'notes' => "Báo cáo hàng hỏng: {$data['description']}",
             ]);
-
-            $data['created_by'] = auth()->id();
-            $data['status'] = 'PENDING';
-            $defectAssessment = DefectAssessment::create($data);
             
-            // Gửi thông báo phát hiện hàng hỏng
             app(NotificationService::class)->notifyDefectFound($defectAssessment, $data['quantity']);
 
             DB::commit();
@@ -165,73 +166,23 @@ class DefectAssessmentController extends Controller
 
             $stock = WarehouseStock::where('warehouse_id', $defect->warehouse_id)
                 ->where('variant_id', $defect->variant_id)
+                ->lockForUpdate()
                 ->first();
 
-            if ($stock && $stock->damaged >= $defect->quantity) {
-                $damagedBefore = $stock->damaged;
-                $stock->decrement('damaged', $defect->quantity);
-                
-                InventoryLog::create([
-                    'warehouse_id' => $defect->warehouse_id,
-                    'variant_id' => $defect->variant_id,
-                    'action' => 'ADJUSTMENT',
-                    'quantity_before' => $damagedBefore,
-                    'quantity_change' => -$defect->quantity,
-                    'quantity_after' => $stock->damaged,
-                    'reference_type' => 'defect_assessment',
-                    'reference_id' => $defect->id,
-                    'user_id' => Auth::id(),
-                    'notes' => "Thanh ly hang hong: {$defect->classification}",
-                ]);
-            } else {
+            if (!$stock || $stock->damaged < $defect->quantity) {
                 DB::rollBack();
                 return redirect()->back()->with('error', 'Số lượng hỏng trong kho không đủ!');
             }
 
             $stockInRequest = null;
+            
+            // Xử lý theo từng classification
             if ($defect->classification === 'SCRAP') {
-                // SCRAP: Tạo hóa đơn thanh lý ngay
-                $this->createClearanceInvoice($defect, $data);
+                $this->handleScrapClassification($defect, $stock, $data);
             } elseif ($defect->classification === 'B-GRADE') {
-                // B-GRADE: Chuyển từ damaged sang clearance (vẫn là tồn kho)
-                if ($stock && $stock->damaged >= $defect->quantity) {
-                    $stock->update([
-                        'damaged' => $stock->damaged - $defect->quantity,
-                        'clearance' => ($stock->clearance ?? 0) + $defect->quantity,
-                    ]);
-                    
-                    InventoryLog::create([
-                        'warehouse_id' => $defect->warehouse_id,
-                        'variant_id' => $defect->variant_id,
-                        'action' => 'ADJUSTMENT',
-                        'quantity_before' => $stock->on_hand,
-                        'quantity_change' => 0, // Không thay đổi tổng on_hand
-                        'quantity_after' => $stock->on_hand,
-                        'reference_type' => 'defect_assessment',
-                        'reference_id' => $defect->id,
-                        'user_id' => Auth::id(),
-                        'notes' => "Chuyển hàng B-GRADE từ damaged sang clearance",
-                    ]);
-                } else {
-                    DB::rollBack();
-                    return redirect()->back()->with('error', 'Số lượng hỏng trong kho không đủ!');
-                }
-            } else {
-                // REWORK: Tạo phiếu nhập mới sau sửa chữa
-                $totalCost = ($data['repair_cost'] ?? 0) + ($data['material_cost'] ?? 0) + ($data['other_cost'] ?? 0);
-                $costPrice = $totalCost > 0 ? round($totalCost / $defect->quantity) : 0;
-
-                $stockInRequest = StockInRequest::create([
-                    'warehouse_id' => $defect->warehouse_id,
-                    'variant_id' => $defect->variant_id,
-                    'quantity' => $defect->quantity,
-                    'batch_number' => 'REWORK-' . date('YmdHis'),
-                    'cost_price' => $costPrice,
-                    'received_date' => now()->toDateString(),
-                    'status' => 'PENDING',
-                    'created_by' => auth()->id(),
-                    'notes' => "Sửa chữa từ lô hỏng - Phân loại: {$defect->classification}",
-                ]);
+                $this->handleBGradeClassification($defect, $stock);
+            } elseif ($defect->classification === 'REWORK') {
+                $stockInRequest = $this->handleReworkClassification($defect, $stock, $data);
             }
 
             $defect->update([
@@ -252,6 +203,112 @@ class DefectAssessmentController extends Controller
             DB::rollBack();
             return redirect()->back()->withInput()->with('error', 'Lỗi: ' . $e->getMessage());
         }
+    }
+
+    private function handleScrapClassification(DefectAssessment $defect, WarehouseStock $stock, array $data): void
+    {
+        $damagedBefore = $stock->damaged;
+        
+        // Giảm damaged, không tăng gì khác (hàng bị thanh lý hoàn toàn)
+        $stock->decrement('damaged', $defect->quantity);
+        
+        $this->createInventoryLog(
+            $defect->warehouse_id,
+            $defect->variant_id,
+            'OUT',
+            $damagedBefore,
+            -$defect->quantity,
+            $stock->damaged,
+            'defect_assessment',
+            $defect->id,
+            "Thanh lý hàng hỏng - SCRAP"
+        );
+        
+        $this->createClearanceInvoice($defect, $data);
+    }
+
+    private function handleBGradeClassification(DefectAssessment $defect, WarehouseStock $stock): void
+    {
+        $damagedBefore = $stock->damaged;
+        $clearanceBefore = $stock->clearance ?? 0;
+        
+        // Chuyển từ damaged sang clearance
+        $stock->update([
+            'damaged' => $stock->damaged - $defect->quantity,
+            'clearance' => ($stock->clearance ?? 0) + $defect->quantity,
+        ]);
+        
+        $this->createInventoryLog(
+            $defect->warehouse_id,
+            $defect->variant_id,
+            'TRANSFER',
+            $damagedBefore,
+            0, // Không thay đổi tổng on_hand
+            $stock->damaged,
+            'defect_assessment',
+            $defect->id,
+            "Chuyển hàng B-GRADE từ damaged sang clearance"
+        );
+    }
+
+    private function handleReworkClassification(DefectAssessment $defect, WarehouseStock $stock, array $data): StockInRequest
+    {
+        $damagedBefore = $stock->damaged;
+        
+        // Giảm damaged (hàng sẽ được sửa chữa và nhập lại)
+        $stock->decrement('damaged', $defect->quantity);
+        
+        $this->createInventoryLog(
+            $defect->warehouse_id,
+            $defect->variant_id,
+            'OUT',
+            $damagedBefore,
+            -$defect->quantity,
+            $stock->damaged,
+            'defect_assessment',
+            $defect->id,
+            "Xuất hàng để sửa chữa - REWORK"
+        );
+        
+        $totalCost = ($data['repair_cost'] ?? 0) + ($data['material_cost'] ?? 0) + ($data['other_cost'] ?? 0);
+        $costPrice = $totalCost > 0 ? round($totalCost / $defect->quantity) : 0;
+
+        return StockInRequest::create([
+            'warehouse_id' => $defect->warehouse_id,
+            'variant_id' => $defect->variant_id,
+            'quantity' => $defect->quantity,
+            'batch_number' => 'REWORK-' . date('YmdHis'),
+            'cost_price' => $costPrice,
+            'received_date' => now()->toDateString(),
+            'status' => 'PENDING',
+            'created_by' => auth()->id(),
+            'notes' => "Sửa chữa từ lô hỏng - Phân loại: {$defect->classification}",
+        ]);
+    }
+
+    private function createInventoryLog(
+        int $warehouseId,
+        int $variantId,
+        string $action,
+        int $quantityBefore,
+        int $quantityChange,
+        int $quantityAfter,
+        string $referenceType,
+        int $referenceId,
+        string $notes
+    ): void {
+        InventoryLog::create([
+            'warehouse_id' => $warehouseId,
+            'variant_id' => $variantId,
+            'action' => $action,
+            'quantity_before' => $quantityBefore,
+            'quantity_change' => $quantityChange,
+            'quantity_after' => $quantityAfter,
+            'reference_type' => $referenceType,
+            'reference_id' => $referenceId,
+            'user_id' => Auth::id(),
+            'notes' => $notes,
+        ]);
     }
 
     public function reject($id)
@@ -300,7 +357,7 @@ class DefectAssessmentController extends Controller
             'created_by' => auth()->id(),
             'completed_by' => auth()->id(),
             'completed_at' => now(),
-            'notes' => "Thanh ly hang hong - Phan loai: {$defect->classification}",
+            'notes' => "Thanh lý hàng hỏng - Phân loại: {$defect->classification}",
         ]);
 
         StockOutInvoiceItem::create([
