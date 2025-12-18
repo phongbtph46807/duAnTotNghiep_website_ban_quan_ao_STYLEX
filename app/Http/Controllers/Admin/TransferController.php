@@ -21,7 +21,7 @@ class TransferController extends Controller
 
     public function index()
     {
-        $movements = TransferRequest::with(['fromWarehouse', 'toWarehouse', 'variant.product', 'createdBy', 'outConfirmedBy', 'inConfirmedBy'])
+        $movements = TransferRequest::with(['fromWarehouse', 'toWarehouse', 'variant.product'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 

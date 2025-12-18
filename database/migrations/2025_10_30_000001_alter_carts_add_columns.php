@@ -34,12 +34,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('carts', function (Blueprint $table) {
-            // Drop indexes
-            try { $table->dropIndex(['user_id']); } catch (\Throwable $e) {}
-            try { $table->dropIndex(['product_id']); } catch (\Throwable $e) {}
-            try { $table->dropIndex(['variant_id']); } catch (\Throwable $e) {}
-
-            // Drop columns
+            // Drop columns only if they exist
             if (Schema::hasColumn('carts', 'quantity')) { $table->dropColumn('quantity'); }
             if (Schema::hasColumn('carts', 'variant_id')) { $table->dropColumn('variant_id'); }
             if (Schema::hasColumn('carts', 'product_id')) { $table->dropColumn('product_id'); }

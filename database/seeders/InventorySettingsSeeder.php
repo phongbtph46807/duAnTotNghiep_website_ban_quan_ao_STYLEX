@@ -4,11 +4,16 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Schema;
 
 class InventorySettingsSeeder extends Seeder
 {
     public function run()
     {
+        if (!Schema::hasTable('settings')) {
+            return;
+        }
+
         $settings = [
             'low_stock_threshold' => 10,
             'notify_low_stock' => 1,
