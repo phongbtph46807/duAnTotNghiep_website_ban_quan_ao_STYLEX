@@ -42,6 +42,26 @@ class AddressController extends Controller
             'address' => 'required|string',
             'is_default' => 'nullable|boolean',
             'address_type' => 'required|in:home,office,other',
+        ], [
+            'full_name.required' => 'Vui lòng nhập họ và tên người nhận',
+            'full_name.string' => 'Họ và tên phải là chữ',
+            'full_name.max' => 'Họ và tên không được vượt quá 255 ký tự',
+            'phone.required' => 'Vui lòng nhập số điện thoại',
+            'phone.string' => 'Số điện thoại không hợp lệ',
+            'phone.max' => 'Số điện thoại không được vượt quá 20 ký tự',
+            'email.email' => 'Email không hợp lệ',
+            'email.max' => 'Email không được vượt quá 255 ký tự',
+            'city.required' => 'Vui lòng chọn tỉnh/thành phố',
+            'city.string' => 'Tỉnh/thành phố phải là chữ',
+            'city.max' => 'Tỉnh/thành phố không được vượt quá 255 ký tự',
+            'district.string' => 'Phường/xã phải là chữ',
+            'district.max' => 'Phường/xã không được vượt quá 255 ký tự',
+            'ward.string' => 'Địa chỉ cấp 3 phải là chữ',
+            'ward.max' => 'Địa chỉ cấp 3 không được vượt quá 255 ký tự',
+            'address.required' => 'Vui lòng nhập địa chỉ chi tiết',
+            'address.string' => 'Địa chỉ phải là chữ',
+            'address_type.required' => 'Vui lòng chọn loại địa chỉ',
+            'address_type.in' => 'Loại địa chỉ không hợp lệ',
         ]);
 
         try {
@@ -106,6 +126,26 @@ class AddressController extends Controller
             'address' => 'required|string',
             'is_default' => 'nullable|boolean',
             'address_type' => 'required|in:home,office,other',
+        ], [
+            'full_name.required' => 'Vui lòng nhập họ và tên người nhận',
+            'full_name.string' => 'Họ và tên phải là chữ',
+            'full_name.max' => 'Họ và tên không được vượt quá 255 ký tự',
+            'phone.required' => 'Vui lòng nhập số điện thoại',
+            'phone.string' => 'Số điện thoại không hợp lệ',
+            'phone.max' => 'Số điện thoại không được vượt quá 20 ký tự',
+            'email.email' => 'Email không hợp lệ',
+            'email.max' => 'Email không được vượt quá 255 ký tự',
+            'city.required' => 'Vui lòng chọn tỉnh/thành phố',
+            'city.string' => 'Tỉnh/thành phố phải là chữ',
+            'city.max' => 'Tỉnh/thành phố không được vượt quá 255 ký tự',
+            'district.string' => 'Phường/xã phải là chữ',
+            'district.max' => 'Phường/xã không được vượt quá 255 ký tự',
+            'ward.string' => 'Địa chỉ cấp 3 phải là chữ',
+            'ward.max' => 'Địa chỉ cấp 3 không được vượt quá 255 ký tự',
+            'address.required' => 'Vui lòng nhập địa chỉ chi tiết',
+            'address.string' => 'Địa chỉ phải là chữ',
+            'address_type.required' => 'Vui lòng chọn loại địa chỉ',
+            'address_type.in' => 'Loại địa chỉ không hợp lệ',
         ]);
 
         try {
