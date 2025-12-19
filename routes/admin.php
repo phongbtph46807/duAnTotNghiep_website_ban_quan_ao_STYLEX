@@ -240,16 +240,6 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             Route::resource('roles', RoleEntityController::class)->except(['show']);
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
-<<<<<<< HEAD
-        
-        // Orders management
-        Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-        Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
-        Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');
-        Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
-        
-        //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
-=======
 
         // Orders
         Route::prefix('orders')->as('orders.')->group(function () {
@@ -272,7 +262,14 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
         });
 
         // Users
->>>>>>> origin/back-up
+        
+        // Orders management
+        Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
+        Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');
+        Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
+        
+        //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/trash', [UserController::class, 'trash'])->name('trash');
             Route::get('/create', [UserController::class, 'create'])->name('create');
