@@ -149,38 +149,34 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4 mb-4">
-                                <label for="city" class="form-label" style="font-weight: 600; color: #333; margin-bottom: 8px;">
+                            <div class="col-md-6 mb-4">
+                                <label for="province" class="form-label" style="font-weight: 600; color: #333; margin-bottom: 8px;">
                                     Tỉnh/Thành phố <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control @error('city') is-invalid @enderror" 
-                                       id="city" name="city" value="{{ old('city', $address->city) }}" 
-                                       required style="border-radius: 8px; padding: 10px 15px; border: 1px solid #ddd;">
+                                <select class="form-select @error('city') is-invalid @enderror" 
+                                        id="province" name="city"
+                                        style="border-radius: 8px; padding: 10px 15px; border: 1px solid #ddd;"
+                                        data-old-value="{{ old('city', $address->city) }}">
+                                    <option value="">Đang tải dữ liệu...</option>
+                                </select>
+                                <small id="province-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                                 @error('city')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-4 mb-4">
-                                <label for="district" class="form-label" style="font-weight: 600; color: #333; margin-bottom: 8px;">
-                                    Quận/Huyện
+                            <div class="col-md-6 mb-4">
+                                <label for="commune" class="form-label" style="font-weight: 600; color: #333; margin-bottom: 8px;">
+                                    Phường/Xã <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" class="form-control @error('district') is-invalid @enderror" 
-                                       id="district" name="district" value="{{ old('district', $address->district) }}"
-                                       style="border-radius: 8px; padding: 10px 15px; border: 1px solid #ddd;">
+                                <select class="form-select @error('district') is-invalid @enderror" 
+                                        id="commune" name="district" disabled
+                                        style="border-radius: 8px; padding: 10px 15px; border: 1px solid #ddd;"
+                                        data-old-value="{{ old('district', $address->district) }}">
+                                    <option value="">Chọn phường/xã</option>
+                                </select>
+                                <small id="commune-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                                 @error('district')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-4 mb-4">
-                                <label for="ward" class="form-label" style="font-weight: 600; color: #333; margin-bottom: 8px;">
-                                    Phường/Xã
-                                </label>
-                                <input type="text" class="form-control @error('ward') is-invalid @enderror" 
-                                       id="ward" name="ward" value="{{ old('ward', $address->ward) }}"
-                                       style="border-radius: 8px; padding: 10px 15px; border: 1px solid #ddd;">
-                                @error('ward')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -201,11 +197,11 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-12 mb-4">
+                            <div class="col-md-12 mb-4 d-flex justify-content-end">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="is_default" name="is_default" value="1"
                                            {{ old('is_default', $address->is_default) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_default" style="font-weight: 500;">
+                                    <label class="form-check-label" for="is_default" style="font-weight: 500; margin-left: 5px;">
                                         Đặt làm địa chỉ mặc định
                                     </label>
                                 </div>
@@ -227,4 +223,149 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const provinceSelect = document.getElementById('province');
+    const communeSelect = document.getElementById('commune');
+    const addressInput = document.getElementById('address');
+
+    if (!provinceSelect) return;
+
+    let selectedProvinceName = '';
+    let selectedCommuneName = '';
+
+    function normalizeData(response) {
+        if (response.data && Array.isArray(response.data)) {
+            return response.data;
+        } else if (Array.isArray(response)) {
+            return response;
+        }
+        return [];
+    }
+
+    function updateAddressField() {
+        if (selectedProvinceName && selectedCommuneName && addressInput) {
+            addressInput.value = `${selectedCommuneName}, ${selectedProvinceName}`;
+        }
+    }
+
+    async function loadProvinces() {
+        try {
+            provinceSelect.innerHTML = '<option value="">Đang tải tỉnh/thành phố...</option>';
+            const response = await fetch('/api/provinces');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const json = await response.json();
+            if (json.error) throw new Error(json.error);
+            
+            const provinces = normalizeData(json);
+            if (!provinces || provinces.length === 0) throw new Error('Không có dữ liệu tỉnh/thành phố');
+
+            provinceSelect.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố --</option>';
+            provinces.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.code || province.id;
+                option.textContent = province.name;
+                option.dataset.name = province.name;
+                provinceSelect.appendChild(option);
+            });
+
+            const oldValue = provinceSelect.dataset.oldValue;
+            if (oldValue) {
+                const matching = Array.from(provinceSelect.options).find(opt => 
+                    opt.dataset.name === oldValue
+                );
+                if (matching) {
+                    provinceSelect.value = matching.value;
+                    provinceSelect.dispatchEvent(new Event('change'));
+                }
+            }
+
+            document.getElementById('province-status').textContent = `✓ ${provinces.length} tỉnh/thành phố`;
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+            provinceSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+            document.getElementById('province-status').textContent = '❌ ' + error.message;
+        }
+    }
+
+    async function loadCommunes(provinceID) {
+        try {
+            communeSelect.innerHTML = '<option value="">Đang tải phường/xã...</option>';
+            communeSelect.disabled = true;
+            
+            const response = await fetch(`/api/communes?provinceID=${provinceID}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const json = await response.json();
+            if (json.error) throw new Error(json.error);
+            
+            const communes = normalizeData(json);
+            if (!communes || communes.length === 0) throw new Error('Không có dữ liệu phường/xã');
+
+            communeSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+            communes.forEach(commune => {
+                const option = document.createElement('option');
+                option.value = commune.code || commune.id;
+                option.textContent = commune.name;
+                option.dataset.name = commune.name;
+                communeSelect.appendChild(option);
+            });
+            
+            communeSelect.disabled = false;
+            document.getElementById('commune-status').textContent = `✓ ${communes.length} phường/xã`;
+
+            const oldValue = communeSelect.dataset.oldValue;
+            if (oldValue) {
+                const matching = Array.from(communeSelect.options).find(opt => 
+                    opt.dataset.name === oldValue
+                );
+                if (matching) {
+                    communeSelect.value = matching.value;
+                    communeSelect.dispatchEvent(new Event('change'));
+                }
+            }
+        } catch (error) {
+            console.error('Error loading communes:', error);
+            communeSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+            document.getElementById('commune-status').textContent = '❌ ' + error.message;
+        }
+    }
+
+    provinceSelect.addEventListener('change', function() {
+        if (!this.value) {
+            communeSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+            communeSelect.disabled = true;
+            selectedProvinceName = '';
+            selectedCommuneName = '';
+            if (addressInput) addressInput.value = '';
+            document.getElementById('commune-status').textContent = '';
+            return;
+        }
+
+        selectedProvinceName = this.options[this.selectedIndex].dataset.name;
+        selectedCommuneName = '';
+        
+        communeSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+        communeSelect.disabled = true;
+        if (addressInput) addressInput.value = '';
+        loadCommunes(this.value);
+    });
+
+    communeSelect.addEventListener('change', function() {
+        if (!this.value) {
+            selectedCommuneName = '';
+            if (addressInput) addressInput.value = '';
+            return;
+        }
+        selectedCommuneName = this.options[this.selectedIndex].dataset.name;
+        updateAddressField();
+    });
+
+    loadProvinces();
+});
+</script>
+@endpush
 

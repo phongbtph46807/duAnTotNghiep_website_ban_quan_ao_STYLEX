@@ -70,7 +70,8 @@ class UserController extends Controller
     public function create()
     {
         try {
-            return view('admin.users.create');
+            $roles = \App\Models\Role::orderBy('name')->get();
+            return view('admin.users.create', compact('roles'));
         } catch (\Throwable $th) {
             //throw $th;
         }
@@ -87,12 +88,32 @@ class UserController extends Controller
                 $data['avatar'] = $urlAvatar;
             }
 
-            // Luôn tạo User (role=0, is_admin=0)
+            // Mặc định tạo User (role=0, is_admin=0) — nếu admin chọn role_ids thì map sang integer
             $data['role'] = 0;
             $data['is_admin'] = 0;
+            if ($request->filled('role_ids') && is_array($request->role_ids) && count($request->role_ids) > 0) {
+                $firstRole = \App\Models\Role::find($request->role_ids[0]);
+                if ($firstRole) {
+                    $roleInteger = User::ROLE_USER;
+                    $name = strtolower($firstRole->name);
+                    if ($name === 'admin') $roleInteger = User::ROLE_ADMIN;
+                    if ($name === 'staff') $roleInteger = User::ROLE_STAFF;
+                    $data['role'] = $roleInteger;
+                    $data['is_admin'] = $roleInteger == User::ROLE_ADMIN ? 1 : 0;
+                }
+            }
             $data['email_verified_at'] = now();
             
             $user = User::query()->create($data);
+
+            // Nếu có role_ids, sync vào pivot role_user (RBAC)
+            if ($request->filled('role_ids') && is_array($request->role_ids)) {
+                try {
+                    $user->roles()->sync($request->role_ids);
+                } catch (\Exception $e) {
+                    // ignore sync errors
+                }
+            }
 
             DB::commit();
 

@@ -102,6 +102,8 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
                 ->name('toggleStatus');
             Route::delete('/{id}', [ReviewController::class, 'destroy'])->name('destroy');
         });
+        // Orders list: allow both Admin and Staff to view orders
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     });
 });
 
@@ -147,7 +149,6 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
         });
         
         // Orders management
-        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
         Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
         Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');

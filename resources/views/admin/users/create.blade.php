@@ -106,16 +106,39 @@
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Vai trò</label>
-                            <div class="form-control-plaintext">
-                                <span class="badge bg-info">User</span>
-                                <small class="text-muted ms-2">Tất cả tài khoản được tạo đều là User</small>
-                                <br>
-                                <small class="text-warning">
-                                    <i class="ri-information-line me-1"></i>
-                                    Để tạo Admin/Staff, vui lòng sử dụng trang 
-                                    <a href="{{ route('admin.roles.index') }}" class="text-primary fw-bold">Phân quyền người dùng</a>
-                                </small>
-                            </div>
+                            @if(isset($roles) && $roles->count() > 0)
+                                <div class="form-control mb-2">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        @foreach($roles as $role)
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="role_ids[]" id="role_{{ $role->id }}" 
+                                                       value="{{ $role->id }}" {{ in_array($role->id, old('role_ids', [])) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="role_{{ $role->id }}">
+                                                    {{ $role->name }}
+                                                    @if($role->description)
+                                                        <small class="text-muted d-block">{{ $role->description }}</small>
+                                                    @endif
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="form-text">Chọn vai trò (có thể chọn nhiều). Hệ thống sẽ lấy vai trò đầu tiên để map sang vai trò hệ thống (Admin/Staff/User).</div>
+                                </div>
+                            @else
+                                <div class="form-control-plaintext">
+                                    <span class="badge bg-info">User</span>
+                                    <small class="text-muted ms-2">Tất cả tài khoản được tạo đều là User</small>
+                                    <br>
+                                    <small class="text-warning">
+                                        <i class="ri-information-line me-1"></i>
+                                        Chưa có vai trò RBAC trong hệ thống. Vui lòng tạo vai trò trong mục <a href="{{ route('admin.rbac.roles.index') }}">Phân quyền</a>.
+                                    </small>
+                                </div>
+                            @endif
+                            @error('role_ids')
+                                <div class="text-danger mt-2">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">Thêm mới</button>

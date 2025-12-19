@@ -362,9 +362,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                 },
                 body: JSON.stringify({
-                    order_id: orderId,
-                    order_item_id: itemId,
-                    rating: rating,
+                    _token: document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    order_id: parseInt(orderId),
+                    order_item_id: parseInt(itemId),
+                    rating: parseInt(rating),
                     content: content
                 })
             })
