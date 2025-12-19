@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class, // Cần categories, colors, sizes, textures
             ProductImageSeeder::class, // Cần products
             LoyaltyTierSeeder::class,
+            WarehouseSeeder::class,
             ShippingCarrierSeeder::class,
             TaxRateSeeder::class,
             BannerSeeder::class,
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
             VoucherSeeder::class,
             RoleSeeder::class, // Phải chạy trước PermissionSeeder
             PermissionSeeder::class,
+            WarehouseTransactionSeeder::class, // Dữ liệu mẫu nhập xuất chuyển
         ]);
     }
 }
