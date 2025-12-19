@@ -121,134 +121,139 @@
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarInventory" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarInventory">
-                        <i class="ri-store-3-line"></i>
-                        <span data-key="t-inventory">Quản lý kho hàng</span>
-
+                        <i class="ri-store-3-line"></i> <span>Quản lý kho hàng (WMS)</span>
                     </a>
                     <div class="collapse menu-dropdown" id="sidebarInventory">
                         <ul class="nav nav-sm flex-column">
-                            {{-- Tổng quan --}}
-                            <li class="nav-item">
-                                <a href="#}" class="nav-link">
-                                    <i class="ri-dashboard-line me-1"></i> Tổng quan kho
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ route('admin.inventory.dashboard') }}"
+                                    class="nav-link"><i class="ri-dashboard-line me-1"></i> Tổng quan kho</a></li>
 
-                            {{-- Tồn kho --}}
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="ri-stack-line me-1"></i> Tồn kho hiện tại
+                                <a class="nav-link" href="#inventoryOperations" data-bs-toggle="collapse"
+                                    role="button" aria-expanded="false" aria-controls="inventoryOperations">
+                                    <i class="ri-exchange-box-line me-1"></i> <span>Giao dịch kho</span>
                                 </a>
-                            </li>
-
-                            {{-- Nhập/Xuất kho dropdown con --}}
-                            <li class="nav-item">
-                                <a href="#sidebarInOut" class="nav-link" data-bs-toggle="collapse" role="button"
-                                    aria-expanded="false" aria-controls="sidebarInOut">
-                                    <i class="ri-exchange-line me-1"></i> Nhập / Xuất kho
-                                </a>
-                                <div class="collapse menu-dropdown" id="sidebarInOut">
+                                <div class="collapse" id="inventoryOperations">
                                     <ul class="nav nav-sm flex-column ms-3">
-                                        <li class="nav-item">
-                                            <a href="#" class="nav-link">
-                                                <i class="ri-download-2-line me-1"></i> Nhập kho
-                                            </a>
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.stock-in.index') }}"
+                                                class="nav-link"><i class="ri-download-2-line me-1"></i> Nhập kho</a>
                                         </li>
-                                        <li class="nav-item">
-                                            <a href="#" class="nav-link">
-                                                <i class="ri-upload-2-line me-1"></i> Xuất kho
-                                            </a>
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.stock-out.index') }}"
+                                                class="nav-link"><i class="ri-upload-2-line me-1"></i> Xuất kho</a>
                                         </li>
-                                        <li class="nav-item">
-                                            <a href="#" class="nav-link">
-                                                <i class="ri-arrow-left-right-line me-1"></i> Chuyển kho
-                                            </a>
-                                        </li>
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.transfer.index') }}"
+                                                class="nav-link"><i class="ri-arrow-left-right-line me-1"></i> Chuyển
+                                                kho</a></li>
                                     </ul>
                                 </div>
                             </li>
 
-                            {{-- Kiểm kê --}}
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="ri-file-list-3-line me-1"></i> Kiểm kê kho
+                                <a class="nav-link" href="#inventoryControl" data-bs-toggle="collapse"
+                                    role="button" aria-expanded="false" aria-controls="inventoryControl">
+                                    <i class="ri-checkbox-multiple-line me-1"></i> <span>Kiểm soát kho</span>
                                 </a>
+                                <div class="collapse" id="inventoryControl">
+                                    <ul class="nav nav-sm flex-column ms-3">
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.count.index') }}"
+                                                class="nav-link"><i class="ri-file-list-3-line me-1"></i> Kiểm kê</a>
+                                        </li>
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.defect.index') }}"
+                                                class="nav-link"><i class="ri-error-warning-line me-1"></i> Hàng
+                                                hỏng</a></li>
+                                        <li class="nav-item"><a
+                                                href="{{ route('admin.inventory.stock-out-invoice.index') }}"
+                                                class="nav-link"><i class="ri-file-text-line me-1"></i> Hóa đơn thanh
+                                                lý</a></li>
+                                    </ul>
+                                </div>
                             </li>
 
-                            {{-- Lịch sử giao dịch --}}
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="ri-history-line me-1"></i> Lịch sử giao dịch
+                                <a class="nav-link" href="#inventoryReports" data-bs-toggle="collapse"
+                                    role="button" aria-expanded="false" aria-controls="inventoryReports">
+                                    <i class="ri-bar-chart-line me-1"></i> <span>Báo cáo & Thống kê</span>
                                 </a>
+                                <div class="collapse" id="inventoryReports">
+                                    <ul class="nav nav-sm flex-column ms-3">
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.current-stock') }}"
+                                                class="nav-link"><i class="ri-database-line me-1"></i> Tồn kho hiện
+                                                tại</a></li>
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.reports') }}"
+                                                class="nav-link"><i class="ri-file-chart-line me-1"></i> Báo cáo tồn
+                                                kho</a></li>
+                                        <li class="nav-item"><a href="{{ route('admin.inventory.logs') }}"
+                                                class="nav-link"><i class="ri-history-line me-1"></i> Lịch sử giao
+                                                dịch</a></li>
+                                    </ul>
+                                </div>
                             </li>
 
-                            {{-- Quản lý kho --}}
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="ri-home-4-line me-1"></i> Danh sách kho
-                                </a>
-                            </li>
+                            <li class="nav-item"><a href="{{ route('admin.inventory.warehouses.index') }}"
+                                    class="nav-link"><i class="ri-home-4-line me-1"></i> Quản lý Kho hàng</a></li>
+                            <li class="nav-item"><a href="{{ route('admin.inventory.settings') }}"
+                                    class="nav-link"><i class="ri-settings-3-line me-1"></i> Cài đặt kho</a></li>
 
-                            {{-- Báo cáo --}}
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="ri-bar-chart-box-line me-1"></i> Báo cáo kho
-                                </a>
-                            </li>
-
-                            {{-- Cài đặt --}}
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">
-                                    <i class="ri-settings-3-line me-1"></i> Cài đặt kho
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <!-- end Dashboard Menu -->
-
-                    <!-- Thuế & Vận chuyển - CHỈ ADMIN -->
-                    @if (auth()->user()->role == 1)
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarTaxShip" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarTaxShip">
-                        <i class="ri-truck-line"></i> <span>Thuế & Vận chuyển</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarTaxShip">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.tax_rates.index') }}" class="nav-link">
-                                    <i class="ri-bill-line me-1"></i> Thuế (Tax Rates)
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.shipping_carriers.index') }}" class="nav-link">
-                                    <i class="ri-truck-line me-1"></i> Đơn vị vận chuyển
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-                <!-- Voucher Management -->
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarVouchers" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarVouchers">
-                        <i class="ri-ticket-line"></i> <span>Quản lý voucher</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarVouchers">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.vouchers.index') }}" class="nav-link">
-                                    <i class="ri-list-check me-1"></i> Danh sách voucher
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.vouchers.create') }}" class="nav-link">
-                                    <i class="ri-add-circle-line me-1"></i> Tạo voucher
+                                <a href="{{ route('admin.notifications.index') }}" class="nav-link">
+                                    <i class="ri-notification-badge-line me-1"></i> Thông báo
+                                    @php
+                                        $unreadCount = \App\Models\Notification::where('user_id', auth()->id())
+                                            ->whereNull('read_at')
+                                            ->count();
+                                    @endphp
+                                    @if ($unreadCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $unreadCount }}</span>
+                                    @endif
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </li>
+
+                <!-- Thuế & Vận chuyển - CHỈ ADMIN -->
+                @if (auth()->user()->role == 1)
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarTaxShip" data-bs-toggle="collapse"
+                            role="button" aria-expanded="false" aria-controls="sidebarTaxShip">
+                            <i class="ri-truck-line"></i> <span>Thuế & Vận chuyển</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarTaxShip">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.tax_rates.index') }}" class="nav-link">
+                                        <i class="ri-bill-line me-1"></i> Thuế (Tax Rates)
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.shipping_carriers.index') }}" class="nav-link">
+                                        <i class="ri-truck-line me-1"></i> Đơn vị vận chuyển
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <!-- Voucher Management -->
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarVouchers" data-bs-toggle="collapse"
+                            role="button" aria-expanded="false" aria-controls="sidebarVouchers">
+                            <i class="ri-ticket-line"></i> <span>Quản lý voucher</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarVouchers">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.vouchers.index') }}" class="nav-link">
+                                        <i class="ri-list-check me-1"></i> Danh sách voucher
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.vouchers.create') }}" class="nav-link">
+                                        <i class="ri-add-circle-line me-1"></i> Tạo voucher
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                 @endif
 
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Giao diện/Truyền
@@ -269,16 +274,16 @@
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.banners.create') }}" class="nav-link"
-                                    data-key="t-analytics"> 
+                                    data-key="t-analytics">
                                     <i class="ri-add-circle-line me-1"></i>
                                     Thêm mới banner
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.banners.trash') }}" class="nav-link"
-                                    data-key="t-analytics"> 
-                                     <i class="ri-delete-bin-line me-1"></i>
-                                     Danh sách banner đã xóa
+                                    data-key="t-analytics">
+                                    <i class="ri-delete-bin-line me-1"></i>
+                                    Danh sách banner đã xóa
                                 </a>
                             </li>
                         </ul>
@@ -428,28 +433,45 @@
                 </li>
 
                 @if (auth()->user()->role == 1)
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarReviews" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarReviews">
-                        <i class="ri-star-line"></i> <span>Quản lý đánh giá</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarReviews">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.reviews.index') }}" class="nav-link">
-                                    <i class="ri-list-check me-1"></i> Danh sách đánh giá
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarReviews" data-bs-toggle="collapse"
+                            role="button" aria-expanded="false" aria-controls="sidebarReviews">
+                            <i class="ri-star-line"></i> <span>Quản lý đánh giá</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarReviews">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.reviews.index') }}" class="nav-link">
+                                        <i class="ri-list-check me-1"></i> Danh sách đánh giá
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                 @endif
-        </ul>
+                @if (auth()->user()->role == 1)
+                    <li class="menu-title"><i class="ri-more-fill"></i> <span>Quản lý hệ thống</span></li>
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarSalaries" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarSalaries">
+                            <i class="ri-money-dollar-circle-line"></i> <span>Quản lý trả lương</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarSalaries">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item"><a href="{{ route('admin.salaries.index') }}" class="nav-link"><i class="ri-list-check me-1"></i> Danh sách lương</a></li>
+                                <li class="nav-item"><a href="{{ route('admin.salaries.create') }}" class="nav-link"><i class="ri-add-circle-line me-1"></i> Thêm lương thủ công</a></li>
+                                <li class="nav-item"><a href="{{ route('admin.salaries.generate-by-role') }}" class="nav-link"><i class="ri-automatic-line me-1"></i> Tạo lương tự động</a></li>
+                                <li class="nav-item"><a href="{{ route('admin.salaries.index') }}" class="nav-link"><i class="ri-settings-3-line me-1"></i> Cài đặt lương role</a></li>
+                                <li class="nav-item"><a href="{{ route('admin.salaries.history') }}" class="nav-link"><i class="ri-history-line me-1"></i> Lịch sử lương</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                @endif
+            </ul>
+        </div>
+        <!-- Sidebar -->
     </div>
-    <!-- Sidebar -->
-</div>
 
-<div class="sidebar-background"> </div>
+    <div class="sidebar-background"> </div>
 </div>
 
 

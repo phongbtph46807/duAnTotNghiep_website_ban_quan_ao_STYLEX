@@ -28,6 +28,10 @@ class RoleSeeder extends Seeder
                 'name' => 'Staff',
                 'description' => 'Nhân viên quản lý sản phẩm và đơn hàng'
             ],
+            [
+                'name' => 'Warehouse Manager',
+                'description' => 'Quản lý kho hàng và tồn kho'
+            ]
         ];
 
         foreach ($roles as $role) {
