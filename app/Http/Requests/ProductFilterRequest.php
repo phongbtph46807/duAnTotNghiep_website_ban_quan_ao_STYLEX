@@ -12,6 +12,8 @@ class ProductFilterRequest extends FormRequest
     {
         return [
             'keyword' => 'nullable|string|max:255',
+            'search' => 'nullable|string|max:255',  // Hỗ trợ thêm parameter 'search'
+            'q' => 'nullable|string|max:255',        // Hỗ trợ thêm parameter 'q'
             'category_id' => 'nullable|integer|exists:categories,id',
             'brand_id' => 'nullable|integer|exists:brands,id',
             'color_id' => 'nullable|integer|exists:colors,id',

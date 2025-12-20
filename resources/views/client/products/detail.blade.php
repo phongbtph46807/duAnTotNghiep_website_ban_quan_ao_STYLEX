@@ -207,21 +207,6 @@
 								</div>
 								@endif
 
-								@if($textures->count() > 0)
-								<div class="flex-w flex-r-m p-b-10">
-									<div class="size-203 flex-c-m respon6">
-										Chất Liệu
-									</div>
-
-									<div class="size-204 respon6-next">
-										<div class="stext-102 cl6" style="padding: 8px 0;">
-											<span id="texture-display">{{ $textures->implode(', ') }}</span>
-											<input type="hidden" name="texture" id="texture-select" value="{{ $defaultTexture }}">
-										</div>
-									</div>
-								</div>
-								@endif
-
 							@endif
 
 							@php

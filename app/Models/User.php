@@ -108,8 +108,19 @@ class User extends Authenticatable
         }
 
         // Kiểm tra permissions từ roles (many-to-many)
-        $userRoles = $this->roles;
+        // Load roles với permissions để tránh N+1 query
+        $userRoles = $this->roles()->with('permissions')->get();
         foreach ($userRoles as $role) {
+            // Kiểm tra trong collection đã load
+            $hasPermission = $role->permissions->contains(function ($permission) use ($permissionName) {
+                return $permission->name === $permissionName;
+            });
+            
+            if ($hasPermission) {
+                return true;
+            }
+            
+            // Fallback: Kiểm tra bằng query nếu không tìm thấy trong collection
             if ($role->permissions()->where('name', $permissionName)->exists()) {
                 return true;
             }
@@ -121,10 +132,22 @@ class User extends Authenticatable
             self::ROLE_STAFF => 'Staff',
             default => null
         };
-if ($roleName) {
-            $role = Role::where('name', $roleName)->first();
-            if ($role && $role->permissions()->where('name', $permissionName)->exists()) {
-                return true;
+        if ($roleName) {
+            $role = Role::where('name', $roleName)->with('permissions')->first();
+            if ($role) {
+                // Kiểm tra trong collection đã load
+                $hasPermission = $role->permissions->contains(function ($permission) use ($permissionName) {
+                    return $permission->name === $permissionName;
+                });
+                
+                if ($hasPermission) {
+                    return true;
+                }
+                
+                // Fallback: Kiểm tra bằng query
+                if ($role->permissions()->where('name', $permissionName)->exists()) {
+                    return true;
+                }
             }
         }
 

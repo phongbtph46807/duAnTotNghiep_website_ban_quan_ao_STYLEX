@@ -44,6 +44,24 @@
             </div>
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Sản Phẩm</span></li>
+                                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarOrders" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarOrders">
+                        <i class="ri-shopping-bag-3-line"></i>
+                        <span data-key="t-orders">Quản lý đơn hàng</span>
+                    </a>
+
+                    <div class="collapse menu-dropdown" id="sidebarOrders">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.orders.index') }}" class="nav-link"
+                                    data-key="t-orders-list">
+                                    Danh sách đơn hàng
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarDashboards">
@@ -413,24 +431,7 @@
                     </li>
                 @endif
 
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarOrders" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarOrders">
-                        <i class="ri-shopping-bag-3-line"></i>
-                        <span data-key="t-orders">Quản lý đơn hàng</span>
-                    </a>
 
-                    <div class="collapse menu-dropdown" id="sidebarOrders">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.orders.index') }}" class="nav-link"
-                                    data-key="t-orders-list">
-                                    Danh sách đơn hàng
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
 
                 @if (auth()->user()->role == 1)
                     <li class="nav-item">

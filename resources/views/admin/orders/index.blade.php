@@ -322,8 +322,6 @@
                                     <th>Mã đơn</th>
                                     <th>Khách</th>
                                     <th>Trạng thái</th>
-                                    <th>Lý do</th>
-                                    <th>Ảnh</th>
                                     <th>Ngày tạo</th>
                                     <th>Thao tác</th>
                                 </tr>
@@ -340,32 +338,30 @@
                                             <span class="badge bg-warning-subtle text-warning">Yêu cầu trả</span>
                                         @endif
                                     </td>
-                                    <td style="max-width:260px;white-space:pre-wrap;">{{ $ord->cancel_reason ?? $ord->return_reason }}</td>
-                                    <td>
-                                        @php $images = $ord->cancel_images ?? $ord->return_images ?? []; @endphp
-                                        @if(!empty($images))
-                                            <div class="d-flex flex-wrap gap-1">
-                                            @foreach($images as $img)
-                                                <a href="{{ \Storage::url($img) }}" target="_blank" class="badge bg-light text-primary">Xem</a>
-                                            @endforeach
-                                            </div>
-                                        @else
-                                            <span class="text-muted">Không có</span>
-                                        @endif
-                                    </td>
                                     <td>{{ $ord->created_at?->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        @if($ord->status === 'cancel_request')
-                                            <form method="POST" action="{{ route('admin.orders.approveCancel', $ord) }}">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-danger">Duyệt hủy</button>
-                                            </form>
-                                        @else
-                                            <form method="POST" action="{{ route('admin.orders.approveReturn', $ord) }}">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-warning">Duyệt trả</button>
-                                            </form>
-                                        @endif
+                                        <div class="d-flex gap-2">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-info view-request-detail" 
+                                                    data-order-code="{{ $ord->code }}"
+                                                    data-reason="{{ $ord->cancel_reason ?? $ord->return_reason ?? 'Không có lý do' }}"
+                                                    data-images='@json($ord->cancel_images ?? $ord->return_images ?? [])'
+                                                    data-status="{{ $ord->status }}"
+                                                    title="Xem chi tiết">
+                                                <i class="ri-eye-line"></i> Xem
+                                            </button>
+                                            @if($ord->status === 'cancel_request')
+                                                <form method="POST" action="{{ route('admin.orders.approveCancel', $ord) }}" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-danger">Duyệt hủy</button>
+                                                </form>
+                                            @else
+                                                <form method="POST" action="{{ route('admin.orders.approveReturn', $ord) }}" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-warning">Duyệt trả</button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -564,6 +560,7 @@
                                 <th>Trạng thái</th>
                                 <th>Ngày tạo</th>
                                 <th>Cập nhật</th>
+                                <th>Người cập nhật</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
@@ -583,12 +580,15 @@
                                         'email' => $order->email,
                                         'phone' => $order->phone,
                                         'address' => $order->address,
+                                        'city' => $order->city,
                                         'total' => number_format($order->total, 0, ',', '.'),
                                         'status' => $order->status,
                                         'payment_status' => $order->payment_status,
                                         'payment_method' => strtoupper($order->payment_method ?? 'COD'),
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
+                                        'updated_by_name' => $order->updatedByUser->name ?? null,
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -669,6 +669,25 @@
                                         <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                         <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                         <td>
+                                            @if($order->updatedByUser)
+                                                <div>
+                                                    <span class="badge bg-primary-subtle text-primary">
+                                                        {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                    </span>
+                                                    @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            @foreach($order->updatedByUser->roles as $role)
+                                                                <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            @endforeach
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
                                             <div class="btn-group btn-group-sm">
                                             <button type="button" class="btn btn-soft-primary view-order-detail"
                                                     data-order='@json($detailPayload)'>
@@ -683,7 +702,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-muted">Không có đơn hàng đang xử lý / giao hàng trên trang này.</td>
+                                        <td colspan="11" class="text-muted">Không có đơn hàng đang xử lý / giao hàng trên trang này.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -717,6 +736,7 @@
                                     <th>Trạng thái</th>
                                     <th>Ngày tạo</th>
                                     <th>Cập nhật</th>
+                                    <th>Người cập nhật</th>
                                     <th>Hành động</th>
                                 </tr>
                             </thead>
@@ -818,6 +838,25 @@
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                     <td>
+                                        @if($order->updatedByUser)
+                                            <div>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                </span>
+                                                @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        @foreach($order->updatedByUser->roles as $role)
+                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <div class="btn-group btn-group-sm">
                                             <button type="button" class="btn btn-soft-primary view-order-detail"
                                                 data-order='@json($detailPayload)'>
@@ -863,6 +902,7 @@
                                     <th>Trạng thái</th>
                                     <th>Ngày tạo</th>
                                     <th>Cập nhật</th>
+                                    <th>Người cập nhật</th>
                                     <th>Hành động</th>
                                 </tr>
                             </thead>
@@ -882,12 +922,15 @@
                                         'email' => $order->email,
                                         'phone' => $order->phone,
                                         'address' => $order->address,
+                                        'city' => $order->city,
                                         'total' => number_format($order->total, 0, ',', '.'),
                                         'status' => $order->status,
                                         'payment_status' => $order->payment_status,
                                         'payment_method' => strtoupper($order->payment_method ?? 'COD'),
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
+                                        'updated_by_name' => $order->updatedByUser->name ?? null,
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -968,6 +1011,25 @@
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                     <td>
+                                        @if($order->updatedByUser)
+                                            <div>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                </span>
+                                                @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        @foreach($order->updatedByUser->roles as $role)
+                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <div class="btn-group btn-group-sm">
                                             <button type="button" class="btn btn-soft-primary view-order-detail"
                                                     data-order='@json($detailPayload)'>
@@ -982,7 +1044,7 @@
                                 </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-muted">Không có đơn trả hàng / hoàn tiền trên trang này.</td>
+                                        <td colspan="11" class="text-muted">Không có đơn trả hàng / hoàn tiền trên trang này.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -1017,6 +1079,7 @@
                                     <th>Trạng thái</th>
                                     <th>Ngày tạo</th>
                                     <th>Cập nhật</th>
+                                    <th>Người cập nhật</th>
                                     <th>Hành động</th>
                                 </tr>
                             </thead>
@@ -1036,12 +1099,15 @@
                                         'email' => $order->email,
                                         'phone' => $order->phone,
                                         'address' => $order->address,
+                                        'city' => $order->city,
                                         'total' => number_format($order->total, 0, ',', '.'),
                                         'status' => $order->status,
                                         'payment_status' => $order->payment_status,
                                         'payment_method' => strtoupper($order->payment_method ?? 'COD'),
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
+                                        'updated_by_name' => $order->updatedByUser->name ?? null,
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -1122,6 +1188,25 @@
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                     <td>
+                                        @if($order->updatedByUser)
+                                            <div>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                </span>
+                                                @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        @foreach($order->updatedByUser->roles as $role)
+                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         <div class="btn-group btn-group-sm">
                                             <button type="button" class="btn btn-soft-primary view-order-detail"
                                                     data-order='@json($detailPayload)'>
@@ -1136,7 +1221,7 @@
                                 </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-muted">Không có đơn đã hoàn thành / đã giao trên trang này.</td>
+                                        <td colspan="11" class="text-muted">Không có đơn đã hoàn thành / đã giao trên trang này.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -1152,6 +1237,39 @@
                             {{ $completedOrders->onEachSide(1)->appends(request()->except('completed_page', 'page'))->links('pagination::bootstrap-5') }}
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal xem chi tiết yêu cầu hủy/trả hàng --}}
+    <div class="modal fade" id="requestDetailModal" tabindex="-1" aria-labelledby="requestDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="requestDetailModalLabel">Chi tiết yêu cầu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small">Mã đơn hàng:</label>
+                        <div id="requestOrderCode" class="fw-bold"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small">Trạng thái:</label>
+                        <div id="requestStatus"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small">Lý do:</label>
+                        <div id="requestReason" class="p-3 bg-light rounded" style="white-space: pre-wrap; min-height: 80px;"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small">Ảnh minh họa:</label>
+                        <div id="requestImages" class="d-flex flex-wrap gap-3 mt-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
@@ -1183,13 +1301,22 @@
                                     <div class="text-muted" id="detailPhone">-</div>
                                 </div>
                                 <div class="mb-3">
-                                    <div class="order-detail-label">Địa chỉ giao hàng</div>
+                                    <div class="order-detail-label">Địa chỉ người nhận</div>
                                     <div class="text-body" id="detailAddress">-</div>
+                                    <div class="text-muted small" id="detailCity">-</div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="order-detail-label">Thanh toán</div>
                                     <div class="order-detail-value" id="detailPaymentStatus">-</div>
                                     <div class="text-muted" id="detailPaymentMethod">-</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="order-detail-label">Người cập nhật</div>
+                                    <div class="text-body" id="detailUpdatedBy">
+                                        <span class="badge bg-primary-subtle text-primary" id="detailUpdatedByName">-</span>
+                                        <div id="detailUpdatedByRoles" class="mt-1"></div>
+                                    </div>
+                                    <div class="text-muted small" id="detailUpdatedAt">-</div>
                                 </div>
                                 <div>
                                     <div class="order-detail-label">Ghi chú</div>
@@ -1295,17 +1422,38 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({ status })
             })
-                .then(res => res.json())
+                .then(res => {
+                    // Kiểm tra status code
+                    if (!res.ok) {
+                        // Nếu là lỗi 403 hoặc 500, đọc response để lấy thông báo
+                        return res.json().then(err => {
+                            throw new Error(err.message || 'Lỗi khi cập nhật trạng thái đơn hàng!');
+                        }).catch(() => {
+                            throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+                        });
+                    }
+                    return res.json();
+                })
                 .then(data => {
-                    toastr.success(data.message);
+                    if (data.message) {
+                        toastr.success(data.message);
+                    } else {
+                        toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+                    }
+                    // Reload trang để cập nhật dữ liệu
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                     return data;
                 })
                 .catch(err => {
-                    toastr.error('Lỗi khi cập nhật trạng thái đơn hàng!');
-                    console.error(err);
+                    const errorMessage = err.message || 'Lỗi khi cập nhật trạng thái đơn hàng!';
+                    toastr.error(errorMessage);
+                    console.error('Error updating order status:', err);
                     throw err;
                 });
         }
@@ -1471,10 +1619,53 @@
                 document.getElementById('detailCustomer').textContent = data.full_name;
                 document.getElementById('detailEmail').textContent = data.email || '—';
                 document.getElementById('detailPhone').textContent = data.phone || '—';
-                document.getElementById('detailAddress').textContent = data.address || 'Không cung cấp';
+                // Hiển thị địa chỉ người nhận
+                const addressParts = [];
+                if (data.address) {
+                    addressParts.push(data.address);
+                }
+                if (data.city) {
+                    addressParts.push(data.city);
+                }
+                document.getElementById('detailAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Không cung cấp';
+                
+                // Hiển thị thông tin liên hệ
+                if (data.phone) {
+                    document.getElementById('detailPhone').textContent = 'ĐT: ' + data.phone;
+                } else {
+                    document.getElementById('detailPhone').textContent = '—';
+                }
                 document.getElementById('detailPaymentStatus').textContent =
                     paymentStatusLabels[data.payment_status] || (data.payment_status || '—');
                 document.getElementById('detailPaymentMethod').textContent = 'Phương thức: ' + data.payment_method;
+                
+                // Hiển thị người cập nhật
+                const updatedByNameEl = document.getElementById('detailUpdatedByName');
+                const updatedByRolesEl = document.getElementById('detailUpdatedByRoles');
+                const updatedAtEl = document.getElementById('detailUpdatedAt');
+                if (data.updated_by_name) {
+                    updatedByNameEl.textContent = data.updated_by_name;
+                    updatedByNameEl.className = 'badge bg-primary-subtle text-primary';
+                    
+                    // Hiển thị roles
+                    if (data.updated_by_roles && data.updated_by_roles.length > 0) {
+                        updatedByRolesEl.innerHTML = '<small class="text-muted">' + 
+                            data.updated_by_roles.map(role => 
+                                '<span class="badge bg-secondary-subtle text-secondary me-1">' + role + '</span>'
+                            ).join('') + 
+                            '</small>';
+                    } else {
+                        updatedByRolesEl.innerHTML = '';
+                    }
+                    
+                    updatedAtEl.textContent = 'Cập nhật lúc: ' + (data.updated_at || '—');
+                } else {
+                    updatedByNameEl.textContent = 'Chưa có';
+                    updatedByRolesEl.innerHTML = '';
+                    updatedByNameEl.className = 'badge bg-secondary-subtle text-secondary';
+                    updatedAtEl.textContent = '—';
+                }
+                
                 document.getElementById('detailNotes').textContent = data.notes || 'Không có ghi chú';
                 document.getElementById('detailCreatedAt').textContent = 'Tạo lúc ' + data.created_at;
                 document.getElementById('detailSubtotal').textContent = data.subtotal ? data.subtotal + ' ₫' : '0 ₫';
@@ -1519,5 +1710,76 @@
                 $('#filterForm').slideToggle(200);
             });
         }
+
+        // Xử lý xem chi tiết yêu cầu hủy/trả hàng
+        const requestDetailModalEl = document.getElementById('requestDetailModal');
+        const requestDetailModal = requestDetailModalEl ? new bootstrap.Modal(requestDetailModalEl) : null;
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.view-request-detail');
+            if (!btn) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const orderCode = btn.dataset.orderCode || '';
+            const reason = btn.dataset.reason || 'Không có lý do';
+            const status = btn.dataset.status || '';
+            let images = [];
+            
+            try {
+                images = JSON.parse(btn.dataset.images || '[]');
+            } catch (e) {
+                console.error('Error parsing images:', e);
+            }
+
+            // Cập nhật nội dung modal
+            document.getElementById('requestOrderCode').textContent = orderCode;
+            
+            // Hiển thị trạng thái
+            const statusEl = document.getElementById('requestStatus');
+            if (status === 'cancel_request') {
+                statusEl.innerHTML = '<span class="badge bg-danger-subtle text-danger">Yêu cầu hủy</span>';
+            } else if (status === 'return_request') {
+                statusEl.innerHTML = '<span class="badge bg-warning-subtle text-warning">Yêu cầu trả hàng</span>';
+            } else {
+                statusEl.textContent = status;
+            }
+
+            // Hiển thị lý do
+            document.getElementById('requestReason').textContent = reason;
+
+            // Hiển thị ảnh
+            const imagesContainer = document.getElementById('requestImages');
+            imagesContainer.innerHTML = '';
+            
+            if (images && images.length > 0) {
+                const baseUrl = '{{ url("/storage") }}';
+                images.forEach((img, index) => {
+                    const imageUrl = baseUrl + '/' + img;
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'text-center';
+                    imgDiv.innerHTML = `
+                        <a href="${imageUrl}" target="_blank" class="text-decoration-none">
+                            <img src="${imageUrl}" 
+                                 alt="Ảnh ${index + 1}" 
+                                 class="img-thumbnail" 
+                                 style="max-width: 200px; max-height: 200px; object-fit: cover; cursor: pointer;"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27200%27 height=%27200%27%3E%3Crect width=%27200%27 height=%27200%27 fill=%27%23f0f0f0%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 text-anchor=%27middle%27 dy=%27.3em%27 font-size=%2714%27 fill=%27%23999%27%3EKhông thể tải ảnh%3C/text%3E%3C/svg%3E';">
+                        </a>
+                        <div class="small text-muted mt-1">Ảnh ${index + 1}</div>
+                    `;
+                    imagesContainer.appendChild(imgDiv);
+                });
+            } else {
+                imagesContainer.innerHTML = '<span class="text-muted">Không có ảnh</span>';
+            }
+
+            // Hiển thị modal
+            if (requestDetailModal) {
+                requestDetailModal.show();
+            }
+        });
+
     </script>
 @endpush
