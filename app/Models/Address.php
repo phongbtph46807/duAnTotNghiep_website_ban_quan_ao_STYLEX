@@ -35,15 +35,14 @@ class Address extends Model
     }
 
     /**
-     * Lấy địa chỉ đầy đủ
+     * Lấy địa chỉ đầy đủ (2-level: Tỉnh - Xã)
      */
     public function getFullAddressAttribute()
     {
         $parts = array_filter([
-            $this->address,
-            $this->ward,
-            $this->district,
-            $this->city
+            $this->address,      // Địa chỉ chi tiết
+            $this->district,     // Phường/Xã
+            $this->city          // Tỉnh/Thành phố
         ]);
         return implode(', ', $parts);
     }

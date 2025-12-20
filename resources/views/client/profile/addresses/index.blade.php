@@ -120,7 +120,7 @@
                                             </div>
                                             <div class="address-actions">
                                                 @if(!$address->is_default)
-                                                    <button type="button" class="btn-action btn-set-default" data-address-id="{{ $address->id }}" onclick="setDefault(this.dataset.addressId)">
+                                                    <button type="button" style="" class="btn-action btn-set-default" data-address-id="{{ $address->id }}" onclick="setDefault(this.dataset.addressId)">
                                                         <i class="ri-checkbox-circle-line me-1"></i> Đặt mặc định
                                                     </button>
                                                 @endif

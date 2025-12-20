@@ -55,12 +55,12 @@
                 <div class="co-grid">
                     <div class="co-col-6">
                         <label class="co-label">Họ và tên *</label>
-                        <input name="buyer_full_name" class="co-input" value="{{ old('buyer_full_name', optional(auth()->user())->name) }}" required>
+                        <input name="buyer_full_name" class="co-input" value="{{ old('buyer_full_name', optional(auth()->user())->name) }}" >
                         @error('buyer_full_name')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Số điện thoại *</label>
-                        <input name="buyer_phone" class="co-input" value="{{ old('buyer_phone', optional(auth()->user())->phone) }}" required>
+                        <input name="buyer_phone" class="co-input" value="{{ old('buyer_phone', optional(auth()->user())->phone) }}">
                         @error('buyer_phone')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
@@ -81,12 +81,12 @@
                 <div class="co-grid">
                     <div class="co-col-6">
                         <label class="co-label">Họ và tên người nhận *</label>
-                        <input name="full_name" class="co-input" value="{{ old('full_name', optional(auth()->user())->name) }}" required>
+                        <input name="full_name" class="co-input" value="{{ old('full_name', optional(auth()->user())->name) }}" >
                         @error('full_name')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Số điện thoại người nhận *</label>
-                        <input name="phone" class="co-input" value="{{ old('phone') }}" required>
+                        <input name="phone" class="co-input" value="{{ old('phone') }}" >
                         @error('phone')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-6">
@@ -96,29 +96,23 @@
                     </div>
                     <div class="co-col-6">
                         <label class="co-label">Tỉnh/Thành phố *</label>
-                        <select id="province" class="co-select" data-json-url="{{ asset('client/js/provinces-data.json') }}" required>
+                        <select id="province" class="co-select">
                             <option value="">Đang tải dữ liệu...</option>
                         </select>
                         <input type="hidden" name="city" value="{{ old('city') }}">
                         <small id="province-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                     </div>
                     <div class="co-col-6">
-                        <label class="co-label">Quận/Huyện *</label>
-                        <select id="district" class="co-select" required disabled>
-                            <option value="">Chọn quận/huyện</option>
-                        </select>
-                        <small id="district-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
-                    </div>
-                    <div class="co-col-6">
                         <label class="co-label">Phường/Xã *</label>
-                        <select id="ward" class="co-select" required disabled>
+                        <select id="commune" class="co-select" required disabled>
                             <option value="">Chọn phường/xã</option>
                         </select>
-                        <small id="ward-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
+                        <input type="hidden" name="district" value="{{ old('district') }}">
+                        <small id="commune-status" style="color:#666; font-size:12px; margin-top:4px; display:block;"></small>
                     </div>
                     <div class="co-col-12">
                         <label class="co-label">Địa chỉ nhận hàng *</label>
-                        <input name="address" class="co-input" value="{{ old('address') }}" required>
+                        <input name="address" class="co-input" value="{{ old('address') }}" placeholder="Ví dụ: 123 Nguyễn Trãi, Số nhà, Tòa nhà, Chi tiết đường phố..." required>
                         @error('address')<div class="co-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="co-col-12">
@@ -155,7 +149,7 @@
                                 <img src="https://sandbox.vnpayment.vn/apis/assets/images/logo-icon/logo-primary.svg"
                                      alt="VNPAY"
                                      style="height:20px"
-                                     onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
+                                     onerror="this.onerror=null;this.src='https://vinadesign.vn/uploads/thumbnails/800/2023/05/vnpay-logo-vinadesign-25-12-59-16.jpg';">
                             </div>
                             <div>
                                 <div class="pay-option__title">Thanh toán Online (VNPAY)</div>
@@ -165,12 +159,12 @@
                     </div>
 
                     <div id="online-hint" class="co-hint" style="display:none; margin-top:10px;">Bạn sẽ được chuyển tới cổng thanh toán an toàn để hoàn tất.</div>
-                    <div id="payment-logos" class="p-t-10" style="display:none;">
-                        <img src="https://sandbox.vnpayment.vn/apis/assets/images/logo-icon/logo-primary.svg" alt="VNPAY" style="height:30px; margin-right:12px;" onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
+                    <!-- <div id="payment-logos" class="p-t-10" style="display:none;">
+                        <img src="https://vinadesign.vn/uploads/thumbnails/800/2023/05/vnpay-logo-vinadesign-25-12-59-16.jpg" alt="VNPAY" style="height:30px; margin-right:12px;" onerror="this.onerror=null;this.src='https://vnpay.vn/assets/front/images/logo.svg';">
                         <img src="https://static.mservice.io/img/logo-momo.png" alt="MoMo" style="height:28px; margin-right:10px; background:#fff; border-radius:4px; padding:2px;" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png';">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="height:22px; margin-right:8px; opacity:.9;" onerror="this.style.display='none';">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" style="height:22px; opacity:.9;" onerror="this.style.display='none';">
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="p-t-20">
@@ -300,7 +294,7 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('client/js/provinces-handler.js') }}"></script>
+<script src="{{ asset('client/js/provinces-api.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     var radios = document.querySelectorAll('input[name="payment_method"]');

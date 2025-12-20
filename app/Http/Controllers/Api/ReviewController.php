@@ -27,6 +27,14 @@ class ReviewController extends Controller
         $userId = Auth::id();
         $sessionId = session()->getId();
 
+        // Kiểm tra user đã login hoặc có session để đánh giá
+        if (!$userId && !$sessionId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập hoặc có session để đánh giá.'
+            ], 401);
+        }
+
         // Kiểm tra quyền sở hữu đơn hàng
         $order = Order::where('id', $request->order_id)
             ->where(function($q) use ($userId, $sessionId) {
@@ -51,13 +59,18 @@ class ReviewController extends Controller
         $productId = $orderItem->getAttribute('product_id');
         $variantId = $orderItem->getAttribute('variant_id');
 
-        // Kiểm tra đã đánh giá chưa (kiểm tra theo order_item_id hoặc product_id + variant_id)
-        $existingReview = Review::where('order_id', $order->id)
-            ->where(function($q) use ($productId, $variantId) {
-                $q->where('product_id', $productId)
-                  ->where('product_variant_id', $variantId);
-            })
-            ->first();
+        // Kiểm tra đã đánh giá chưa (kiểm tra theo product_id + variant_id + order_id)
+        $existingReviewQuery = Review::where('order_id', $order->id)
+            ->where('product_id', $productId);
+        
+        // Xử lý null variant_id đúng cách (vì NULL = NULL = FALSE trong SQL)
+        if ($variantId === null) {
+            $existingReviewQuery = $existingReviewQuery->whereNull('product_variant_id');
+        } else {
+            $existingReviewQuery = $existingReviewQuery->where('product_variant_id', $variantId);
+        }
+        
+        $existingReview = $existingReviewQuery->first();
 
         if ($existingReview) {
             return response()->json([
@@ -75,7 +88,7 @@ class ReviewController extends Controller
             'rating' => $request->rating,
             'content' => $request->content,
             'tags' => $request->tags ?? [],
-            'status' => 'public', // Tự động hiển thị (theo database enum: public/hidden)
+            'status' => 'public', // Match với getProductReviews() - chỉ hiển thị public
         ]);
 
         return response()->json([
@@ -91,7 +104,7 @@ class ReviewController extends Controller
     public function getProductReviews($productId)
     {
         $reviews = Review::where('product_id', $productId)
-            ->where('status', 'approved') // Chỉ hiển thị review đã duyệt
+            ->where('status', 'public') // Chỉ hiển thị review công khai
             ->with(['user:id,name', 'productVariant', 'media'])
             ->latest()
             ->paginate(10);
