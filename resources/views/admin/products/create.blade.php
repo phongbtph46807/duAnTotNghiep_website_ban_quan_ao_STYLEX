@@ -191,7 +191,7 @@
                                 <th>Màu</th>
                                 <th>Size</th>
                                 <th>Chất liệu</th>
-                                {{-- <th>SKU <span class="text-danger">*</span></th> --}}
+                                
                                 <th>Giá (VND)</th>
                                 <th>Số lượng</th>
                                 <th>Ảnh</th>

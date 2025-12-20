@@ -161,9 +161,7 @@ class OrderController extends Controller
         // Lưu người cập nhật trạng thái
         $order->updated_by = Auth::id();
 
-        // Tự động cập nhật trạng thái thanh toán:
-        // - Khi đơn hoàn thành/đã giao -> chuyển sang paid nếu đang unpaid
-        // - Khi đơn trả hàng -> nếu đã thanh toán thì chuyển refunded
+        // Tự động cập nhật trạng thái thanh toán dựa trên trạng thái đơn hàng
         if (in_array($newStatus, ['completed', 'delivered']) && $order->payment_status === 'unpaid') {
             $order->payment_status = 'paid';
         }
@@ -194,11 +192,11 @@ class OrderController extends Controller
 
                 $amount = (int) $order->total;
                 $before = (int) $user->wallet_balance;
-$after  = $before + $amount;
+                $after  = $before + $amount;
 
                 $history = $user->wallet_history ?? [];
                 $history[] = [
-                    'type'            => 'refund',          // refund | withdraw
+                    'type'            => 'refund',        
                     'amount'          => $amount,
                     'balance_before'  => $before,
                     'balance_after'   => $after,
@@ -206,8 +204,8 @@ $after  = $before + $amount;
                     'order_code'        => $order->code,
                     'note'            => 'Hoàn tiền do duyệt hủy đơn',
                     'created_at'      => now()->toDateTimeString(),
-                    'created_by'      => Auth::id(),        // ai duyệt
-                    'created_by_name'      => Auth::user()->name,        // ai duyệt
+                    'created_by'      => Auth::id(),        
+                    'created_by_name'      => Auth::user()->name,       
                 ];
 
                 $user->wallet_balance = $after;
@@ -216,7 +214,7 @@ $after  = $before + $amount;
             }
 
             $order->status = 'cancelled';
-            // Optional: lưu trạng thái refund cho dễ kiểm soát
+            
             $order->payment_status = 'refunded';
             // Lưu người cập nhật
             $order->updated_by = Auth::id();
