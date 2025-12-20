@@ -235,10 +235,8 @@ class CheckoutController extends Controller
             'shipping' => 'Chờ giao hàng',
             'delivered' => 'Đã giao',
             'completed' => 'Hoàn thành',
-            'cancel_request' => 'Yêu cầu hủy',
-            'return_request' => 'Yêu cầu trả hàng',
-            'cancelled' => 'Đã hủy',
-            'returned' => 'Trả hàng/Hoàn tiền',
+            'cancelled' => 'Hủy', // Gộp cancel_request và cancelled
+            'returned' => 'Trả hàng', // Gộp return_request và returned
         ];
         $statusFilter = $request->query('status');
         if ($statusFilter && !array_key_exists($statusFilter, $statusTabs)) {
@@ -246,14 +244,44 @@ class CheckoutController extends Controller
         }
 
         $orders = \App\Models\Order::query()
-            ->when($userId, function ($q) use ($userId) {
-                $q->where('user_id', $userId);
+            ->when($userId, function ($q) use ($userId, $sessionId) {
+                // Ưu tiên đơn gắn với user hiện tại
+                $q->where(function ($qq) use ($userId, $sessionId) {
+                    $qq->where('user_id', $userId);
+
+                    // Kèm theo các đơn chưa gắn user nhưng cùng session hiện tại (nếu có)
+                    if ($sessionId) {
+                        $qq->orWhere(function ($qq2) use ($sessionId) {
+                            $qq2->whereNull('user_id')
+                                ->where('session_id', $sessionId);
+                        });
+                    }
+
+                    // Kèm theo các đơn chưa gắn user nhưng trùng email đăng nhập
+                    $email = Auth::user()->email ?? null;
+                    if ($email) {
+                        $qq->orWhere(function ($qq3) use ($email) {
+                            $qq3->whereNull('user_id')
+                                ->where('email', $email);
+                        });
+                    }
+                });
             })
             ->when(!$userId, function ($q) use ($sessionId) {
+                // Khách chưa đăng nhập: lọc theo session hiện tại
                 $q->where('session_id', $sessionId);
             })
             ->when($statusFilter, function ($q) use ($statusFilter) {
-                $q->where('status', $statusFilter);
+                // Gộp các trạng thái liên quan
+                if ($statusFilter === 'cancelled') {
+                    // Hiển thị cả cancel_request và cancelled
+                    $q->whereIn('status', ['cancel_request', 'cancelled']);
+                } elseif ($statusFilter === 'returned') {
+                    // Hiển thị cả return_request và returned
+                    $q->whereIn('status', ['return_request', 'returned']);
+                } else {
+                    $q->where('status', $statusFilter);
+                }
             })
             ->orderByDesc('created_at')
             ->with([

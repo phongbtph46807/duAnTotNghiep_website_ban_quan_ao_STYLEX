@@ -49,12 +49,18 @@
 									$colorName = $it['color'] ?? ($v && $v->color ? ($v->color->name ?? null) : null);
 								@endphp
 								@if($sizeName || $colorName)
-									<div class="stext-110" style="margin: 2px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">
+									<div class="stext-110" style="margin: 4px 0 6px; display:flex; gap:6px; flex-wrap:wrap;">
 										@if($sizeName)
-											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Size: {{ $sizeName }}</span>
+											<span style="display: inline-flex; align-items: center; background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:8px; padding:3px 8px; font-size:12px; font-weight:600;">
+												<span style="font-weight: 700; color: #666; margin-right: 4px;">Size:</span>
+												{{ $sizeName }}
+											</span>
 										@endif
 										@if($colorName)
-											<span style="background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:10px; padding:1px 6px; font-size:11px;">Màu: {{ $colorName }}</span>
+											<span style="display: inline-flex; align-items: center; background:#f6f6f6; color:#333; border:1px solid #ebebeb; border-radius:8px; padding:3px 8px; font-size:12px; font-weight:600;">
+												<span style="font-weight: 700; color: #666; margin-right: 4px;">Màu:</span>
+												{{ $colorName }}
+											</span>
 										@endif
 									</div>
 								@endif

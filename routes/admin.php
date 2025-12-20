@@ -255,7 +255,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             Route::post('{order}/confirm', [OrderController::class, 'confirm'])->name('confirm');
             Route::post('{order}/ship', [OrderController::class, 'ship'])->name('ship');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
-            Route::post('{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+            // Route updateStatus đã được định nghĩa ở trên cho cả Admin và Staff, không cần định nghĩa lại
             Route::post('{itemId}/return', [OrderController::class, 'returnItem'])->name('returnItem');
 
             Route::prefix('fulfillment')->as('fulfillment.')->group(function () {

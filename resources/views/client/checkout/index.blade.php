@@ -188,24 +188,19 @@
                         <img src="{{ $it['product']->default_image_url }}" alt="IMG">
                         <div class="co-info">
                             <div class="co-line__name">{{ $it['product']->name }}</div>
-                            <div class="stext-110 cl6" style="font-size:12px; margin-top:2px; white-space:normal; word-break:break-word; word-wrap:break-word; overflow-wrap:break-word; line-height:1.5;">
+                            <div class="stext-110 cl6" style="font-size:14px; margin-top:4px; white-space:normal; word-break:break-word; word-wrap:break-word; overflow-wrap:break-word; line-height:1.6;">
                                 @php
                                     $variantParts = [];
                                     if ($it['variant'] && $it['variant']->size) {
-                                        $variantParts[] = 'Size: ' . $it['variant']->size->name;
+                                        $variantParts[] = '<span style="font-weight: 700; color: #666;">Size:</span> <span style="font-weight: 600;">' . $it['variant']->size->name . '</span>';
                                     }
                                     if ($it['variant'] && $it['variant']->color) {
-                                        $variantParts[] = 'Màu: ' . $it['variant']->color->name;
+                                        $variantParts[] = '<span style="font-weight: 700; color: #666;">Màu:</span> <span style="font-weight: 600;">' . $it['variant']->color->name . '</span>';
                                     }
-                                    $variantDisplay = !empty($variantParts) ? implode(' - ', $variantParts) : '';
-                                    $textures = $it['textures'] ?? [];
-                                    $materialDisplay = !empty($textures) ? 'Chất liệu: ' . implode(', ', $textures) : '';
+                                    $variantDisplay = !empty($variantParts) ? implode(' &nbsp;&nbsp;|&nbsp;&nbsp; ', $variantParts) : '';
                                 @endphp
                                 @if($variantDisplay)
-                                    <strong style="display:block; width:100%;">{{ $variantDisplay }}</strong>
-                                @endif
-                                @if($materialDisplay)
-                                    <span style="display:block; margin-top:2px;">{{ $materialDisplay }}</span>
+                                    <div style="display:block; width:100%;">{!! $variantDisplay !!}</div>
                                 @endif
                             </div>
                         </div>

@@ -581,6 +581,14 @@ class PermissionSeeder extends Seeder
                 'name' => 'admin.orders.updateStatus',
                 'description' => 'Cập nhật trạng thái đơn hàng'
             ],
+            [
+                'name' => 'admin.orders.approveCancel',
+                'description' => 'Duyệt yêu cầu hủy đơn hàng'
+            ],
+            [
+                'name' => 'admin.orders.approveReturn',
+                'description' => 'Duyệt yêu cầu trả hàng'
+            ],
 
             // kho hàng giao dịch kho và tồn kho
             [
@@ -715,6 +723,12 @@ class PermissionSeeder extends Seeder
                 'admin.users.index',
                 'admin.users.edit',
                 'admin.users.update',
+
+                // Orders (Staff có thể xem và cập nhật trạng thái)
+                'admin.orders.index',
+                'admin.orders.updateStatus',
+                'admin.orders.approveCancel',
+                'admin.orders.approveReturn',
             ];
 
             $staffPermissionIds = Permission::whereIn('name', $staffPermissions)->pluck('id')->toArray();

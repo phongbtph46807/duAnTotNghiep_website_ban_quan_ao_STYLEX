@@ -580,6 +580,7 @@
                                         'email' => $order->email,
                                         'phone' => $order->phone,
                                         'address' => $order->address,
+                                        'city' => $order->city,
                                         'total' => number_format($order->total, 0, ',', '.'),
                                         'status' => $order->status,
                                         'payment_status' => $order->payment_status,
@@ -587,6 +588,7 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -668,9 +670,19 @@
                                         <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                         <td>
                                             @if($order->updatedByUser)
-                                                <span class="badge bg-primary-subtle text-primary">
-                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
-                                                </span>
+                                                <div>
+                                                    <span class="badge bg-primary-subtle text-primary">
+                                                        {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                    </span>
+                                                    @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            @foreach($order->updatedByUser->roles as $role)
+                                                                <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            @endforeach
+                                                        </small>
+                                                    @endif
+                                                </div>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
@@ -827,9 +839,19 @@
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         @if($order->updatedByUser)
-                                            <span class="badge bg-primary-subtle text-primary">
-                                                {{ $order->updatedByUser->name ?? 'N/A' }}
-                                            </span>
+                                            <div>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                </span>
+                                                @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        @foreach($order->updatedByUser->roles as $role)
+                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </div>
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
@@ -900,6 +922,7 @@
                                         'email' => $order->email,
                                         'phone' => $order->phone,
                                         'address' => $order->address,
+                                        'city' => $order->city,
                                         'total' => number_format($order->total, 0, ',', '.'),
                                         'status' => $order->status,
                                         'payment_status' => $order->payment_status,
@@ -907,6 +930,7 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -988,9 +1012,19 @@
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         @if($order->updatedByUser)
-                                            <span class="badge bg-primary-subtle text-primary">
-                                                {{ $order->updatedByUser->name ?? 'N/A' }}
-                                            </span>
+                                            <div>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                </span>
+                                                @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        @foreach($order->updatedByUser->roles as $role)
+                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </div>
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
@@ -1065,6 +1099,7 @@
                                         'email' => $order->email,
                                         'phone' => $order->phone,
                                         'address' => $order->address,
+                                        'city' => $order->city,
                                         'total' => number_format($order->total, 0, ',', '.'),
                                         'status' => $order->status,
                                         'payment_status' => $order->payment_status,
@@ -1072,6 +1107,7 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -1153,9 +1189,19 @@
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         @if($order->updatedByUser)
-                                            <span class="badge bg-primary-subtle text-primary">
-                                                {{ $order->updatedByUser->name ?? 'N/A' }}
-                                            </span>
+                                            <div>
+                                                <span class="badge bg-primary-subtle text-primary">
+                                                    {{ $order->updatedByUser->name ?? 'N/A' }}
+                                                </span>
+                                                @if($order->updatedByUser->roles && $order->updatedByUser->roles->isNotEmpty())
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        @foreach($order->updatedByUser->roles as $role)
+                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                        @endforeach
+                                                    </small>
+                                                @endif
+                                            </div>
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
@@ -1255,8 +1301,9 @@
                                     <div class="text-muted" id="detailPhone">-</div>
                                 </div>
                                 <div class="mb-3">
-                                    <div class="order-detail-label">Địa chỉ giao hàng</div>
+                                    <div class="order-detail-label">Địa chỉ người nhận</div>
                                     <div class="text-body" id="detailAddress">-</div>
+                                    <div class="text-muted small" id="detailCity">-</div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="order-detail-label">Thanh toán</div>
@@ -1267,6 +1314,7 @@
                                     <div class="order-detail-label">Người cập nhật</div>
                                     <div class="text-body" id="detailUpdatedBy">
                                         <span class="badge bg-primary-subtle text-primary" id="detailUpdatedByName">-</span>
+                                        <div id="detailUpdatedByRoles" class="mt-1"></div>
                                     </div>
                                     <div class="text-muted small" id="detailUpdatedAt">-</div>
                                 </div>
@@ -1374,17 +1422,38 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify({ status })
             })
-                .then(res => res.json())
+                .then(res => {
+                    // Kiểm tra status code
+                    if (!res.ok) {
+                        // Nếu là lỗi 403 hoặc 500, đọc response để lấy thông báo
+                        return res.json().then(err => {
+                            throw new Error(err.message || 'Lỗi khi cập nhật trạng thái đơn hàng!');
+                        }).catch(() => {
+                            throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
+                        });
+                    }
+                    return res.json();
+                })
                 .then(data => {
-                    toastr.success(data.message);
+                    if (data.message) {
+                        toastr.success(data.message);
+                    } else {
+                        toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+                    }
+                    // Reload trang để cập nhật dữ liệu
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                     return data;
                 })
                 .catch(err => {
-                    toastr.error('Lỗi khi cập nhật trạng thái đơn hàng!');
-                    console.error(err);
+                    const errorMessage = err.message || 'Lỗi khi cập nhật trạng thái đơn hàng!';
+                    toastr.error(errorMessage);
+                    console.error('Error updating order status:', err);
                     throw err;
                 });
         }
@@ -1550,20 +1619,49 @@
                 document.getElementById('detailCustomer').textContent = data.full_name;
                 document.getElementById('detailEmail').textContent = data.email || '—';
                 document.getElementById('detailPhone').textContent = data.phone || '—';
-                document.getElementById('detailAddress').textContent = data.address || 'Không cung cấp';
+                // Hiển thị địa chỉ người nhận
+                const addressParts = [];
+                if (data.address) {
+                    addressParts.push(data.address);
+                }
+                if (data.city) {
+                    addressParts.push(data.city);
+                }
+                document.getElementById('detailAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Không cung cấp';
+                
+                // Hiển thị thông tin liên hệ
+                if (data.phone) {
+                    document.getElementById('detailPhone').textContent = 'ĐT: ' + data.phone;
+                } else {
+                    document.getElementById('detailPhone').textContent = '—';
+                }
                 document.getElementById('detailPaymentStatus').textContent =
                     paymentStatusLabels[data.payment_status] || (data.payment_status || '—');
                 document.getElementById('detailPaymentMethod').textContent = 'Phương thức: ' + data.payment_method;
                 
                 // Hiển thị người cập nhật
                 const updatedByNameEl = document.getElementById('detailUpdatedByName');
+                const updatedByRolesEl = document.getElementById('detailUpdatedByRoles');
                 const updatedAtEl = document.getElementById('detailUpdatedAt');
                 if (data.updated_by_name) {
                     updatedByNameEl.textContent = data.updated_by_name;
                     updatedByNameEl.className = 'badge bg-primary-subtle text-primary';
+                    
+                    // Hiển thị roles
+                    if (data.updated_by_roles && data.updated_by_roles.length > 0) {
+                        updatedByRolesEl.innerHTML = '<small class="text-muted">' + 
+                            data.updated_by_roles.map(role => 
+                                '<span class="badge bg-secondary-subtle text-secondary me-1">' + role + '</span>'
+                            ).join('') + 
+                            '</small>';
+                    } else {
+                        updatedByRolesEl.innerHTML = '';
+                    }
+                    
                     updatedAtEl.textContent = 'Cập nhật lúc: ' + (data.updated_at || '—');
                 } else {
                     updatedByNameEl.textContent = 'Chưa có';
+                    updatedByRolesEl.innerHTML = '';
                     updatedByNameEl.className = 'badge bg-secondary-subtle text-secondary';
                     updatedAtEl.textContent = '—';
                 }
