@@ -48,37 +48,24 @@
 				<a href="{{ route('client.products.show', $item['product']->id) }}" class="stext-104 cl4 hov-cl1 trans-04">{{ $item['product']->name }}</a>
 			</td>
 			<td class="column-3">
-				<div style="display: flex; flex-direction: column; gap: 6px;">
+				<div style="display: flex; flex-direction: column; gap: 8px;">
 					<!-- Size và Màu cùng 1 hàng -->
-					<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+					<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
 						@if($sizeName)
-						<span style="display: inline-flex; align-items: center; padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 12px; font-size: 12px; color: #333; font-weight: 500;">
-							<i class="zmdi zmdi-ruler" style="font-size: 14px; margin-right: 4px; color: #666;"></i>
+						<span style="display: inline-flex; align-items: center; padding: 6px 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; color: #333; font-weight: 600;">
+							<span style="font-weight: 700; color: #666; margin-right: 6px;">Size:</span>
 							{{ $sizeName }}
 						</span>
 						@endif
 						@if($colorName)
-						<span style="display: inline-flex; align-items: center; padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 12px; font-size: 12px; color: #333; font-weight: 500;">
-							<i class="zmdi zmdi-palette" style="font-size: 14px; margin-right: 4px; color: #666;"></i>
+						<span style="display: inline-flex; align-items: center; padding: 6px 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; color: #333; font-weight: 600;">
+							<span style="font-weight: 700; color: #666; margin-right: 6px;">Màu:</span>
 							{{ $colorName }}
 						</span>
 						@endif
 					</div>
-					<!-- Chất liệu ở hàng dưới - hiển thị tất cả -->
-					@if(!empty($textures) && is_array($textures) && count($textures) > 0)
-					<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
-						@foreach($textures as $texture)
-							@if(!empty($texture))
-							<span style="display: inline-flex; align-items: center; padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 12px; font-size: 12px; color: #333; font-weight: 500;">
-								<i class="zmdi zmdi-texture" style="font-size: 14px; margin-right: 4px; color: #666;"></i>
-								{{ is_string($texture) ? $texture : ($texture->name ?? '') }}
-							</span>
-							@endif
-						@endforeach
-					</div>
-					@endif
-					@if(!$sizeName && !$colorName && empty($textures))
-					<span class="stext-110" style="color:#999; font-size:13px;">-</span>
+					@if(!$sizeName && !$colorName)
+					<span class="stext-110" style="color:#999; font-size:14px;">-</span>
 					@endif
 				</div>
 			</td>

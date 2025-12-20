@@ -165,6 +165,64 @@
 	.cart-dropdown-menu::-webkit-scrollbar-thumb:hover {
 		background: #aaa;
 	}
+	
+	/* Tăng kích thước chữ cho trang cart */
+	.table-shopping-cart {
+		font-size: 16px !important;
+	}
+	
+	.table-shopping-cart th {
+		font-size: 16px !important;
+		font-weight: 600 !important;
+	}
+	
+	.table-shopping-cart td {
+		font-size: 16px !important;
+	}
+	
+	.table-shopping-cart a {
+		font-size: 16px !important;
+	}
+	
+	.table-shopping-cart small {
+		font-size: 14px !important;
+	}
+	
+	.stext-109, .stext-110, .stext-111 {
+		font-size: 16px !important;
+	}
+	
+	.mtext-109, .mtext-110 {
+		font-size: 18px !important;
+	}
+	
+	.mtext-110 {
+		font-size: 20px !important;
+	}
+	
+	.num-product {
+		font-size: 16px !important;
+	}
+	
+	.cart-dropdown-title {
+		font-size: 18px !important;
+	}
+	
+	.cart-dropdown-name {
+		font-size: 15px !important;
+	}
+	
+	.cart-dropdown-info {
+		font-size: 13px !important;
+	}
+	
+	h4.mtext-109 {
+		font-size: 20px !important;
+	}
+	
+	button.flex-c-m {
+		font-size: 16px !important;
+	}
 </style>
 
 <!-- breadcrumb -->
@@ -273,11 +331,20 @@
 											<a href="{{ route('client.products.show', $item['product']->id) }}">{{ $item['product']->name }}</a>
 											@if($item['size'] || $item['color'])
 												<br>
-												<small class="text-muted">
-													@if($item['size']) Size: {{ $item['size'] }} @endif
-													@if($item['size'] && $item['color']) | @endif
-													@if($item['color']) Màu: {{ $item['color'] }} @endif
-												</small>
+												<div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+													@if($item['size'])
+														<span style="display: inline-flex; align-items: center; padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; color: #333; font-weight: 600;">
+															<span style="font-weight: 700; color: #666; margin-right: 4px;">Size:</span>
+															{{ $item['size'] }}
+														</span>
+													@endif
+													@if($item['color'])
+														<span style="display: inline-flex; align-items: center; padding: 4px 10px; background: #fff; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; color: #333; font-weight: 600;">
+															<span style="font-weight: 700; color: #666; margin-right: 4px;">Màu:</span>
+															{{ $item['color'] }}
+														</span>
+													@endif
+												</div>
 											@endif
 										</td>
 										<td class="column-3">{{ number_format($item['price'], 0, ',', '.') }} VNĐ</td>

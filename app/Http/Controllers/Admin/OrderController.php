@@ -14,7 +14,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // Base query dùng chung cho hai bảng (đơn đang giao & đơn đã hoàn thành/hủy)
-        $baseQuery = Order::with(['items.product']);
+        $baseQuery = Order::with(['items.product', 'updatedByUser']);
 
         // 🔍 Tìm kiếm theo tên, email hoặc mã đơn
         if ($request->filled('search')) {
@@ -72,8 +72,41 @@ class OrderController extends Controller
             $perPage = 10;
         }
 
-        // Yêu cầu hủy / trả
-        $requestOrders = (clone $baseQuery)
+        // Yêu cầu hủy / trả - Query riêng không bị ảnh hưởng bởi filter status
+        $requestQuery = Order::with(['items.product', 'updatedByUser']);
+        
+        // Áp dụng các filter khác (trừ status) để vẫn có thể tìm kiếm
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $requestQuery->where(function ($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+        
+        if ($request->filled('full_name')) {
+            $requestQuery->where('full_name', 'like', '%' . $request->full_name . '%');
+        }
+        
+        if ($request->filled('code')) {
+            $requestQuery->where('code', 'like', '%' . $request->code . '%');
+        }
+        
+        if ($request->filled('payment_status')) {
+            $requestQuery->where('payment_status', $request->payment_status);
+        }
+        
+        if ($request->filled('date_from')) {
+            $requestQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $requestQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+        
+        // Luôn hiển thị các yêu cầu hủy/trả bất kể filter status
+        $requestOrders = $requestQuery
             ->whereIn('status', ['cancel_request', 'return_request'])
             ->orderByDesc('created_at')
             ->paginate($perPage, ['*'], 'request_page')
@@ -125,6 +158,8 @@ class OrderController extends Controller
         $newStatus = $request->input('status');
 
         $order->status = $newStatus;
+        // Lưu người cập nhật trạng thái
+        $order->updated_by = Auth::id();
 
         // Tự động cập nhật trạng thái thanh toán dựa trên trạng thái đơn hàng
         if (in_array($newStatus, ['completed', 'delivered']) && $order->payment_status === 'unpaid') {
@@ -181,6 +216,8 @@ class OrderController extends Controller
             $order->status = 'cancelled';
             
             $order->payment_status = 'refunded';
+            // Lưu người cập nhật
+            $order->updated_by = Auth::id();
 
             $order->save();
         });
@@ -229,6 +266,8 @@ class OrderController extends Controller
             $order->status = 'returned';
             // Optional: lưu trạng thái refund cho dễ kiểm soát
             $order->payment_status = 'refunded';
+            // Lưu người cập nhật
+            $order->updated_by = Auth::id();
 
             $order->save();
         });

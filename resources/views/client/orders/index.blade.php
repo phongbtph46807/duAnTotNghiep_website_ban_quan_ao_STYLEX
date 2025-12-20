@@ -61,7 +61,7 @@
             'cancelled' => 'Đã hủy',
             'returned' => 'Trả hàng/Hoàn tiền',
         ];
-            @endphp
+    @endphp
 
     @if(session('success'))
         <div class="alert alert-success" role="alert">{{ session('success') }}</div>

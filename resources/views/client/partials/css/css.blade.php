@@ -32,6 +32,7 @@
 	
 	<!-- Custom CSS for User Dropdown -->
 	<style>
+
 		.dropdown {
 			position: relative;
 			display: inline-block;
