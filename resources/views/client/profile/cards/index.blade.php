@@ -123,12 +123,11 @@
 
                                                 <td>
                                                     @if (!empty($tx['order_id']))
-                                                        {{-- Nếu bạn có route xem chi tiết đơn thì bật link lên --}}
-                                                        {{-- <a href="{{ route('client.order.show', $tx['order_id']) }}" class="text-decoration-none"> --}}
+                                                        
                                                         <span style="font-weight: 700;">
                                                             {{ $tx['order_code'] ?? '#' . $tx['order_id'] }}
                                                         </span>
-                                                        {{-- </a> --}}
+                                                        
                                                     @else
                                                         <span class="text-muted">-</span>
                                                     @endif
@@ -199,7 +198,7 @@
                                     style="width:100%; border-radius: 10px;">
                                     <option value="">-- Chọn ngân hàng --</option>
 
-                                    {{-- list nhanh (bạn có thể bổ sung thêm) --}}
+                                    
                                     <option value="VCB">Vietcombank (VCB)</option>
                                     <option value="TCB">Techcombank (TCB)</option>
                                     <option value="BIDV">BIDV</option>
@@ -253,11 +252,11 @@
                                     tiền
                                     cần rút</label>
 
-                                {{-- input hiển thị có format --}}
+                                
                                 <input type="text" id="amountDisplay" class="form-control" placeholder="VD: 100,000"
                                     style="border-radius: 10px; font-weight: 800;">
 
-                                {{-- input thật gửi server --}}
+                                
                                 <input type="hidden" name="amount" id="amount" value="{{ old('amount') }}">
 
                                 @error('amount')
@@ -303,7 +302,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // ===== Avatar preview (nếu trang có avatar) =====
+        
         function previewAvatar(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -329,7 +328,7 @@
         }
 
         (function() {
-            // ===== DOM refs =====
+            
             const amountDisplay = document.getElementById('amountDisplay');
             const amountHidden = document.getElementById('amount');
             const balanceEl = document.getElementById('availableBalance');
@@ -339,15 +338,15 @@
             const bankSelectEl = document.getElementById('bankSelect');
             const modalEl = document.getElementById('withdrawModal');
 
-            // Nếu trang này không có form rút tiền thì thôi
+            
             if (!amountDisplay || !amountHidden || !balanceEl || !errBox || !form || !btnSubmit || !bankSelectEl)
                 return;
 
-            // ===== Const =====
+           
             const MAX = parseInt(balanceEl.value || '0', 10);
             const MIN = 100000;
 
-            // ===== Helpers =====
+            
             function onlyDigits(str) {
                 return (str || '').toString().replace(/[^\d]/g, '');
             }
@@ -406,7 +405,7 @@
                 return true;
             }
 
-            // ===== Init Select2 (nếu có) =====
+            
             if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
                 window.jQuery('#bankSelect').select2({
                     dropdownParent: window.jQuery('#withdrawModal'),
@@ -414,18 +413,18 @@
                     width: '100%',
                 });
 
-                // Select2 change event
+               
                 window.jQuery('#bankSelect').on('change', function() {
                     validateAndToggleButton();
                 });
             } else {
-                // fallback nếu không có select2
+               
                 bankSelectEl.addEventListener('change', validateAndToggleButton);
             }
 
-            // ===== Input amount format + validate =====
+            
             amountDisplay.addEventListener('input', function() {
-                const raw = onlyDigits(amountDisplay.value); // "100000"
+                const raw = onlyDigits(amountDisplay.value);
                 const n = parseInt(raw || '0', 10);
 
                 amountHidden.value = n > 0 ? n : '';
@@ -434,26 +433,26 @@
                 validateAndToggleButton();
             });
 
-            // ===== Submit =====
+            
             form.addEventListener('submit', function(e) {
                 if (!validateAndToggleButton()) {
                     e.preventDefault();
                 }
             });
 
-            // ===== When modal shown: validate state =====
+            
             if (modalEl) {
                 modalEl.addEventListener('shown.bs.modal', function() {
                     validateAndToggleButton();
                 });
 
-                // Optional: reset lỗi khi đóng modal
+              
                 modalEl.addEventListener('hidden.bs.modal', function() {
                     setError('');
                 });
             }
 
-            // Validate lần đầu (nếu form đã có old value)
+            
             validateAndToggleButton();
         })();
     </script>
