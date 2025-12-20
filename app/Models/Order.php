@@ -19,7 +19,8 @@ class Order extends Model
         'payment_method','payment_status','status',
         'momo_order_id','momo_trans_id',
         'cancel_reason','cancel_images',
-        'return_reason','return_images'
+        'return_reason','return_images',
+        'updated_by'
     ];
 
     protected $casts = [
@@ -55,5 +56,10 @@ class Order extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function updatedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

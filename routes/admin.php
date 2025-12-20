@@ -112,6 +112,13 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
         });
         // Orders list: allow both Admin and Staff to view orders
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        
+        // Orders management - cho phép Staff cập nhật trạng thái và duyệt hủy/trả hàng
+        Route::prefix('orders')->as('orders.')->group(function () {
+            Route::post('/{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+            Route::post('/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('approveCancel');
+            Route::post('/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('approveReturn');
+        });
     });
 });
 
@@ -241,9 +248,9 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
 
-        // Orders
+        // Orders - các route này chỉ dành cho Admin
         Route::prefix('orders')->as('orders.')->group(function () {
-            Route::get('/', [OrderController::class, 'index'])->name('index');
+            // Route index đã được định nghĩa ở trên cho cả Admin và Staff, không cần định nghĩa lại
             Route::get('{order}', [OrderController::class, 'show'])->name('show');
             Route::post('{order}/confirm', [OrderController::class, 'confirm'])->name('confirm');
             Route::post('{order}/ship', [OrderController::class, 'ship'])->name('ship');
@@ -263,10 +270,9 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
 
         // Users
         
-        // Orders management
-        Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-        Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
-        Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');
+        // Orders management - CHỈ ADMIN
+        // Các route updateStatus, approveCancel, approveReturn đã được định nghĩa cho cả Admin và Staff ở trên
+        // Chỉ còn payment-status là chỉ dành cho Admin
         Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
         
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
