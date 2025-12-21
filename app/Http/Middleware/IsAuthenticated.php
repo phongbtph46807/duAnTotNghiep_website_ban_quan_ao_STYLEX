@@ -29,7 +29,7 @@ class IsAuthenticated
             }
             // Warehouse Manager (role = 3)
             elseif ($user->role == 3) {
-                return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dashboard');
             }
             // Regular user (role = 0)
             else {

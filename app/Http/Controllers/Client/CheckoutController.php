@@ -193,8 +193,8 @@ class CheckoutController extends Controller
     public function thankyou($id)
     {
         try {
-            $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
-            return view('client.checkout.thankyou', compact('order'));
+        $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
+        return view('client.checkout.thankyou', compact('order'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('home')->with('error', 'Không tìm thấy đơn hàng.');
         }

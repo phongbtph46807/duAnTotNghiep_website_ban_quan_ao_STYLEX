@@ -200,6 +200,18 @@
                                             </td>
                                             <td>{{ $user->email }}</td>
                                             <td>
+                                                @php
+                                                    $hasRBACRoles = $user->roles && $user->roles->isNotEmpty();
+                                                @endphp
+                                                @if($hasRBACRoles)
+                                                    @foreach($user->roles as $role)
+                                                        <span class="badge me-1" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                            <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
+                                                        </span>
+                                                    @endforeach
+                                                @endif
+                                                
+                                                {{-- Luôn hiển thị role integer để đảm bảo có dữ liệu --}}
                                                 @if($user->role == 1)
                                                     <span class="badge bg-danger">
                                                         <i class="ri-admin-line me-1"></i>Admin
@@ -207,6 +219,14 @@
                                                 @elseif($user->role == 2)
                                                     <span class="badge bg-warning">
                                                         <i class="ri-team-line me-1"></i>Staff
+                                                    </span>
+                                                @elseif($user->role == 3)
+                                                    <span class="badge bg-info">
+                                                        <i class="ri-store-3-line me-1"></i>Warehouse Manager
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary">
+                                                        <i class="ri-user-line me-1"></i>User
                                                     </span>
                                                 @endif
                                             </td>

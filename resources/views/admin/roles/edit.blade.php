@@ -102,7 +102,7 @@
                                                            {{ $isLastAdmin && strtolower($role->name) === 'admin' ? '' : ($isLastAdmin ? 'disabled' : '') }}>
                                                     <label class="form-check-label {{ $isLastAdmin && strtolower($role->name) !== 'admin' ? 'text-muted' : '' }}" for="role_{{ $role->id }}">
                                                         <span class="badge bg-{{ $role->color ?? 'secondary' }}-subtle text-{{ $role->color ?? 'secondary' }} me-1">
-                                                            <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
+                                                        <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
                                                         </span>
                                                         @if($role->description)
                                                             <small class="text-muted d-block">{{ $role->description }}</small>

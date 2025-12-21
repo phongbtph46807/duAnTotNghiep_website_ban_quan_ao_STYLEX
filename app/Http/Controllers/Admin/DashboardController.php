@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -144,6 +145,13 @@ class DashboardController extends Controller
             ->orderBy('date')
             ->get();
 
+        // Recent orders - đơn hàng mới được đặt (chờ xác nhận)
+        $recentOrders = Order::with(['items.product', 'user'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         return [
             'totalInventoryValue' => $totalInventoryValue ?: 0,
             'stockInCount' => $stockMovements->stock_in_count ?: 0,
@@ -152,7 +160,8 @@ class DashboardController extends Controller
             'qcPassRate' => $qcPassRate,
             'lowStockCount' => $lowStockCount,
             'topProducts' => $topProducts,
-            'stockTrend' => $stockTrend
+            'stockTrend' => $stockTrend,
+            'recentOrders' => $recentOrders
         ];
     }
 }

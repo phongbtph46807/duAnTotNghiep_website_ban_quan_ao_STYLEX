@@ -49,14 +49,6 @@
                         aria-expanded="false" aria-controls="sidebarOrders">
                         <i class="ri-shopping-bag-3-line"></i>
                         <span data-key="t-orders">Quản lý đơn hàng</span>
-                        @php
-                            $pendingRequestsCount = \App\Models\Order::whereIn('status', ['cancel_request', 'return_request'])->count();
-                        @endphp
-                        @if ($pendingRequestsCount > 0)
-                            <span class="badge bg-danger rounded-pill ms-2" id="pendingRequestsBadge">{{ $pendingRequestsCount }}</span>
-                        @else
-                            <span class="badge bg-danger rounded-pill ms-2 d-none" id="pendingRequestsBadge">0</span>
-                        @endif
                     </a>
 
                     <div class="collapse menu-dropdown" id="sidebarOrders">
@@ -64,7 +56,7 @@
                             <li class="nav-item">
                                 <a href="{{ route('admin.orders.index') }}" class="nav-link"
                                     data-key="t-orders-list">
-                                    Danh sách đơn hàng
+                                    <i class="ri-file-list-3-line me-1"></i> Danh sách đơn hàng
                                 </a>
                             </li>
                         </ul>
@@ -335,7 +327,7 @@
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.posts.trash') }}" class="nav-link">
-                                    <i class="ri-add-circle-line me-1"></i> Danh sách bài viết đã xóa
+                                    <i class="ri-delete-bin-line me-1"></i> Danh sách bài viết đã xóa
                                 </a>
                             </li>
                         </ul>
@@ -374,7 +366,7 @@
                                     <li class="nav-item">
                                         <a href="{{ route('admin.users.trash') }}" class="nav-link"
                                             data-key="t-analytics">
-                                            Danh sách người dùng đã xóa
+                                            <i class="ri-delete-bin-line me-1"></i> Danh sách người dùng đã xóa
                                         </a>
                                     </li>
                                 @endif
@@ -425,13 +417,13 @@
                                 <li class="nav-item">
                                     <a href="{{ route('admin.loyalty-tiers.index') }}" class="nav-link"
                                         data-key="t-loyalty-list">
-                                        Danh sách cấp độ
+                                        <i class="ri-list-check me-1"></i> Danh sách cấp độ
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('admin.loyalty-tiers.create') }}" class="nav-link"
                                         data-key="t-loyalty-create">
-                                        Thêm cấp độ mới
+                                        <i class="ri-add-circle-line me-1"></i> Thêm cấp độ mới
                                     </a>
                                 </li>
                             </ul>
@@ -487,51 +479,3 @@
 <link rel="stylesheet" href="{{ asset('assets/css/style-x-logo.css') }}">
 <script src="{{ asset('assets/js/sidebar-menu.js') }}"></script>
 
-{{-- Realtime update cho badge yêu cầu hủy/trả hàng --}}
-@push('scripts')
-<script>
-    // Chỉ chạy khi Laravel Echo đã được load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Đợi Echo load (từ app.js)
-        if (typeof window.Echo !== 'undefined') {
-            // Lắng nghe event cập nhật trạng thái đơn hàng
-            window.Echo.channel('orders')
-                .listen('.order.status.updated', (e) => {
-                    const newStatus = e.status;
-                    
-                    // Chỉ cập nhật khi có yêu cầu hủy/trả hàng mới
-                    if (newStatus === 'return_request' || newStatus === 'cancel_request') {
-                        // Cập nhật badge số lượng yêu cầu đang chờ
-                        updatePendingRequestsBadge();
-                    }
-                });
-        }
-        
-        // Hàm cập nhật badge
-        function updatePendingRequestsBadge() {
-            fetch("{{ route('admin.orders.pendingRequestsCount') }}")
-                .then(res => res.json())
-                .then(data => {
-                    const badge = document.getElementById('pendingRequestsBadge');
-                    if (badge) {
-                        if (data.count > 0) {
-                            badge.textContent = data.count;
-                            badge.classList.remove('d-none');
-                        } else {
-                            badge.textContent = '0';
-                            badge.classList.add('d-none');
-                        }
-                        
-                        // Thêm animation để thu hút sự chú ý
-                        badge.style.transform = 'scale(1.3)';
-                        badge.style.transition = 'transform 0.3s ease';
-                        setTimeout(() => {
-                            badge.style.transform = 'scale(1)';
-                        }, 300);
-                    }
-                })
-                .catch(err => console.error('Error updating pending requests badge:', err));
-        }
-    });
-</script>
-@endpush
