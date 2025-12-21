@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\ShippingCarrierRequest;
+use App\Http\Requests\Admin\ShippingCarrier\ShippingCarrierRequest;
 use App\Models\ShippingCarrier;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;

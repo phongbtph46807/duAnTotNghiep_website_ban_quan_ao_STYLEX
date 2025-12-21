@@ -28,6 +28,8 @@ class StoreUserRequest extends FormRequest
             'repassword' => ['required', 'min:8', 'same:password'],
             'avatar'     => ['nullable', 'image', 'max:2000'],
             'status'     => ['required', 'in:active,inactive,blocked'],
+            'role_ids'   => ['nullable', 'array'],
+            'role_ids.*' => ['nullable', 'exists:roles,id'],
         ];
     }
     public function messages()

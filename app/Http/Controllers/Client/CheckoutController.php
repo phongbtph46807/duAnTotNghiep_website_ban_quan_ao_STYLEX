@@ -471,12 +471,38 @@ class CheckoutController extends Controller
     public function place(Request $request)
     {
         $request->validate([
-            'full_name'      => 'required|string|max:255',
-            'phone'          => 'required|string|max:30',
-            'email'          => 'nullable|email',
-            'address'        => 'required|string|max:500',
-            'city'           => 'required|string|max:120',
-            'payment_method' => 'required|in:cod,online',
+            'buyer_full_name' => 'required|string|max:255',
+            'buyer_phone'     => 'required|string|max:30',
+            'buyer_email'     => 'nullable|email',
+            'full_name'       => 'required|string|max:255',
+            'phone'           => 'required|string|max:30',
+            'email'           => 'nullable|email',
+            'address'         => 'required|string|max:500',
+            'city'            => 'required|string|max:120',
+            'payment_method'  => 'required|in:cod,online',
+        ], [
+            'buyer_full_name.required'    => 'Vui lòng nhập tên người đặt',
+            'buyer_full_name.string'      => 'Tên người đặt phải là chữ',
+            'buyer_full_name.max'         => 'Tên người đặt không được vượt quá 255 ký tự',
+            'buyer_phone.required'        => 'Vui lòng nhập số điện thoại người đặt',
+            'buyer_phone.string'          => 'Số điện thoại không hợp lệ',
+            'buyer_phone.max'             => 'Số điện thoại không được vượt quá 30 ký tự',
+            'buyer_email.email'           => 'Email người đặt không hợp lệ',
+            'full_name.required'          => 'Vui lòng nhập tên người nhận',
+            'full_name.string'            => 'Tên người nhận phải là chữ',
+            'full_name.max'               => 'Tên người nhận không được vượt quá 255 ký tự',
+            'phone.required'              => 'Vui lòng nhập số điện thoại người nhận',
+            'phone.string'                => 'Số điện thoại không hợp lệ',
+            'phone.max'                   => 'Số điện thoại không được vượt quá 30 ký tự',
+            'email.email'                 => 'Email không hợp lệ',
+            'address.required'            => 'Vui lòng nhập địa chỉ nhận hàng',
+            'address.string'              => 'Địa chỉ phải là chữ',
+            'address.max'                 => 'Địa chỉ không được vượt quá 500 ký tự',
+            'city.required'               => 'Vui lòng chọn tỉnh/thành phố',
+            'city.string'                 => 'Tỉnh/Thành phố không hợp lệ',
+            'city.max'                    => 'Tỉnh/Thành phố không được vượt quá 120 ký tự',
+            'payment_method.required'     => 'Vui lòng chọn phương thức thanh toán',
+            'payment_method.in'           => 'Phương thức thanh toán không hợp lệ',
         ]);
 
         $owner = $this->getOwnerKeys();
@@ -699,13 +725,16 @@ class CheckoutController extends Controller
         $total             = (float) ($reqData['total'] ?? 0);
 
         // So sánh số tiền
+        $vnpAmount   = (int) ($inputData['vnp_Amount'] ?? 0);
+        $localAmount = (int) round($total * 100);
+
         Log::info("Total Verification:", [
-            'vnp_Amount'  => $inputData['vnp_Amount'] ?? null,
-            'saved_total' => $total,
-            'match'       => (int)($inputData['vnp_Amount'] ?? 0) === (int)($total * 100),
+            'vnp_Amount'  => $vnpAmount,
+            'local_x100'  => $localAmount,
+            'match'       => $vnpAmount === $localAmount,
         ]);
 
-        if ((int)($inputData['vnp_Amount'] ?? 0) !== (int)($total * 100)) {
+        if ($vnpAmount !== $localAmount) {
             Log::error("❌ Số tiền không khớp. Không tạo order.");
             return redirect()->route('client.cart.index')
                 ->with('error', 'Số tiền thanh toán không khớp.');

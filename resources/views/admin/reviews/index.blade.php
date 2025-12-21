@@ -460,7 +460,7 @@
                                                         <div class="mb-3">
                                                             <strong>Ảnh đính kèm:</strong> <br>
 
-                                                            @if ($review->media->count())
+                                                           @if (!empty($review->media) && count($review->media) > 0)
                                                                 <div class="d-flex flex-wrap gap-2 mt-2">
                                                                     @foreach ($review->media as $media)
                                                                         <a href="{{ $media->url }}" target="_blank">

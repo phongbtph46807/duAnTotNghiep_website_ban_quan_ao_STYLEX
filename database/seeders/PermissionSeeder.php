@@ -581,6 +581,14 @@ class PermissionSeeder extends Seeder
                 'name' => 'admin.orders.updateStatus',
                 'description' => 'Cập nhật trạng thái đơn hàng'
             ],
+
+            // kho hàng giao dịch kho và tồn kho
+            [
+                'name' => 'admin.inventory.index',
+                'description' => 'Xem kho hàng và tồn kho'
+            ],
+            
+
         ];
 
         foreach ($permissions as $permission) {
@@ -594,14 +602,14 @@ class PermissionSeeder extends Seeder
 
         // Cập nhật mô tả và gán TẤT CẢ permissions cho role Admin
         $adminRole = Role::where('name', 'Admin')->first();
-        
+
         if ($adminRole) {
             $adminRole->update(['description' => 'Quản lý toàn bộ website']);
-            
+
             // Gán TẤT CẢ permissions cho Admin
             $allPermissionIds = Permission::pluck('id')->toArray();
             $adminRole->permissions()->sync($allPermissionIds);
-            
+
             $this->command->info("Đã cập nhật mô tả cho role Admin: 'Quản lý toàn bộ website'");
             $this->command->info("Đã gán " . count($allPermissionIds) . " permissions cho role Admin (ID: {$adminRole->id})");
         } else {
@@ -610,20 +618,20 @@ class PermissionSeeder extends Seeder
 
         // Gán quyền cho role Staff
         $staffRole = Role::where('name', 'Staff')->first();
-        
+
         if ($staffRole) {
             // Các quyền mà Staff có thể truy cập (dựa trên routes checkRole:1,2)
             $staffPermissions = [
                 // Dashboard
                 'admin.dashboard',
-                
+
                 // Categories
                 'admin.categories.index',
                 'admin.category.store',
                 'admin.category.edit',
                 'admin.category.update',
                 'admin.category.destroy',
-                
+
                 // Colors
                 'admin.colors.index',
                 'admin.colors.create',
@@ -632,7 +640,7 @@ class PermissionSeeder extends Seeder
                 'admin.colors.edit',
                 'admin.colors.update',
                 'admin.colors.destroy',
-                
+
                 // Sizes
                 'admin.sizes.index',
                 'admin.sizes.create',
@@ -641,7 +649,7 @@ class PermissionSeeder extends Seeder
                 'admin.sizes.edit',
                 'admin.sizes.update',
                 'admin.sizes.destroy',
-                
+
                 // Textures
                 'admin.textures.index',
                 'admin.textures.create',
@@ -650,7 +658,7 @@ class PermissionSeeder extends Seeder
                 'admin.textures.edit',
                 'admin.textures.update',
                 'admin.textures.destroy',
-                
+
                 // Products
                 'admin.products.index',
                 'admin.products.trash',
@@ -666,12 +674,12 @@ class PermissionSeeder extends Seeder
                 'admin.products.force-delete',
                 'admin.products.images.store',
                 'admin.variants.images.store',
-                
+
                 // Profile
                 'admin.profile',
                 'admin.profile.edit',
                 'admin.profile.update',
-                
+
                 // Banners
                 'admin.banners.index',
                 'admin.banners.trash',
@@ -684,7 +692,7 @@ class PermissionSeeder extends Seeder
                 'admin.banners.destroy',
                 'admin.banners.restore',
                 'admin.banners.force-delete',
-                
+
                 // Posts
                 'admin.posts.index',
                 'admin.posts.trash',
@@ -696,22 +704,22 @@ class PermissionSeeder extends Seeder
                 'admin.posts.destroy',
                 'admin.posts.restore',
                 'admin.posts.force-delete',
-                
+
                 // Reviews
                 'admin.reviews.index',
                 'admin.reviews.show',
                 'admin.reviews.toggleStatus',
                 'admin.reviews.destroy',
-                
+
                 // Users (chỉ một số quyền cơ bản)
                 'admin.users.index',
                 'admin.users.edit',
                 'admin.users.update',
             ];
-            
+
             $staffPermissionIds = Permission::whereIn('name', $staffPermissions)->pluck('id')->toArray();
             $staffRole->permissions()->sync($staffPermissionIds);
-            
+
             $this->command->info("Đã gán " . count($staffPermissionIds) . " permissions cho role Staff (ID: {$staffRole->id})");
         } else {
             $this->command->warn('Không tìm thấy role Staff!');
