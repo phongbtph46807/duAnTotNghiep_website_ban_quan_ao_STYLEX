@@ -1639,11 +1639,7 @@
 
                     updateStatus(control.dataset.orderId, targetStatus)
                         .then(() => {
-                            applyStatusUI(control, targetStatus);
-                            if (toggleBtn) {
-                                const dropdownInstance = bootstrap.Dropdown.getInstance(toggleBtn);
-                                dropdownInstance && dropdownInstance.hide();
-                            }
+                            setTimeout(() => window.location.reload(), 800);
                         })
                         .finally(() => {
                             toggleBtn && (toggleBtn.disabled = false);
