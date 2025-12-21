@@ -88,7 +88,9 @@
                                                            value="{{ $role->id }}"
                                                            {{ in_array($role->id, old('role_ids', [])) ? 'checked' : '' }}>
                                                     <label class="form-check-label" for="role_{{ $role->id }}">
-                                                        <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
+                                                        <span class="badge bg-{{ $role->color ?? 'secondary' }}-subtle text-{{ $role->color ?? 'secondary' }} me-1">
+                                                            <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
+                                                        </span>
                                                         @if($role->description)
                                                             <small class="text-muted d-block">{{ $role->description }}</small>
                                                         @endif
@@ -142,59 +144,6 @@
                                         </div>
                                     </div>
                                     @error('status')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Phần chọn quyền -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="ri-shield-keyhole-line me-1"></i>Phân quyền <span class="text-muted">(Tùy chọn)</span>
-                                    </label>
-                                    <div class="alert alert-info mb-3">
-                                        <i class="ri-information-line me-2"></i>
-                                        <small>Chọn các quyền cụ thể cho tài khoản này. Nếu không chọn, tài khoản sẽ chỉ có quyền mặc định theo vai trò.</small>
-                                    </div>
-                                    @if($permissions && $permissions->count() > 0)
-                                        <div class="row">
-                                            @foreach($permissions as $permission)
-                                                <div class="col-md-4 col-lg-3 mb-2">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" 
-                                                               type="checkbox" 
-                                                               name="permissions[]" 
-                                                               id="permission_{{ $permission->id }}" 
-                                                               value="{{ $permission->id }}"
-                                                               {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}>
-                                                        <label class="form-check-label" for="permission_{{ $permission->id }}">
-                                                            {{ $permission->name }}
-                                                            @if($permission->description)
-                                                                <small class="text-muted d-block">{{ $permission->description }}</small>
-                                                            @endif
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                        <div class="mt-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllPermissions">
-                                                <i class="ri-checkbox-multiple-line me-1"></i>Chọn tất cả
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllPermissions">
-                                                <i class="ri-checkbox-blank-line me-1"></i>Bỏ chọn tất cả
-                                            </button>
-                                        </div>
-                                    @else
-                                        <div class="alert alert-warning mb-0">
-                                            <i class="ri-alert-line me-2"></i>
-                                            Chưa có quyền nào trong hệ thống. Vui lòng tạo quyền trước.
-                                        </div>
-                                    @endif
-                                    @error('permissions')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -299,30 +248,5 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Chọn tất cả permissions
-    const selectAllBtn = document.getElementById('selectAllPermissions');
-    const deselectAllBtn = document.getElementById('deselectAllPermissions');
-    
-    if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', function() {
-            document.querySelectorAll('input[name="permissions[]"]').forEach(function(checkbox) {
-                checkbox.checked = true;
-            });
-        });
-    }
-    
-    if (deselectAllBtn) {
-        deselectAllBtn.addEventListener('click', function() {
-            document.querySelectorAll('input[name="permissions[]"]').forEach(function(checkbox) {
-                checkbox.checked = false;
-            });
-        });
-    }
-});
-</script>
-@endpush
 
 @endsection

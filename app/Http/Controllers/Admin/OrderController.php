@@ -8,13 +8,69 @@ use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Events\OrderStatusUpdated;
 
 class OrderController extends Controller
 {
+    /**
+     * API lấy số lượng yêu cầu hủy/trả hàng đang chờ
+     */
+    public function getPendingRequestsCount()
+    {
+        $count = Order::whereIn('status', ['cancel_request', 'return_request'])->count();
+        return response()->json(['count' => $count]);
+    }
+
+    /**
+     * API lấy danh sách thông báo (đơn hàng mới và yêu cầu)
+     */
+    public function getNotifications()
+    {
+        // Đơn hàng mới (pending) trong 24h qua
+        $newOrders = Order::where('status', 'pending')
+            ->where('created_at', '>=', now()->subDay())
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get(['id', 'code', 'full_name', 'total', 'created_at']);
+
+        // Yêu cầu hủy/trả hàng đang chờ
+        $pendingRequests = Order::whereIn('status', ['cancel_request', 'return_request'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get(['id', 'code', 'status', 'full_name', 'created_at']);
+
+        return response()->json([
+            'new_orders' => $newOrders->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'code' => $order->code,
+                    'customer' => $order->full_name,
+                    'total' => number_format($order->total) . ' ₫',
+                    'created_at' => $order->created_at->diffForHumans(),
+                    'url' => route('admin.orders.index', ['code' => $order->code]),
+                ];
+            }),
+            'pending_requests' => $pendingRequests->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'code' => $order->code,
+                    'status' => $order->status,
+                    'status_label' => $order->status === 'cancel_request' ? 'Yêu cầu hủy' : 'Yêu cầu trả hàng',
+                    'customer' => $order->full_name,
+                    'created_at' => $order->created_at->diffForHumans(),
+                    'url' => route('admin.orders.index', ['code' => $order->code]),
+                ];
+            }),
+            'new_orders_count' => $newOrders->count(),
+            'pending_requests_count' => $pendingRequests->count(),
+        ]);
+    }
+
     public function index(Request $request)
     {
         // Base query dùng chung cho hai bảng (đơn đang giao & đơn đã hoàn thành/hủy)
-        $baseQuery = Order::with(['items.product', 'updatedByUser']);
+        $baseQuery = Order::with(['items.product', 'updatedByUser.roles']);
 
         // 🔍 Tìm kiếm theo tên, email hoặc mã đơn
         if ($request->filled('search')) {
@@ -73,7 +129,7 @@ class OrderController extends Controller
         }
 
         // Yêu cầu hủy / trả - Query riêng không bị ảnh hưởng bởi filter status
-        $requestQuery = Order::with(['items.product', 'updatedByUser']);
+        $requestQuery = Order::with(['items.product', 'updatedByUser.roles']);
         
         // Áp dụng các filter khác (trừ status) để vẫn có thể tìm kiếm
         if ($request->filled('search')) {
@@ -154,24 +210,91 @@ class OrderController extends Controller
     // ✅ API đổi trạng thái AJAX
     public function updateStatus(Request $request, $id)
     {
-        $order = Order::findOrFail($id);
-        $newStatus = $request->input('status');
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Hỗ trợ cả JSON và form data
+            // Laravel tự động parse JSON khi có Content-Type: application/json
+            $newStatus = $request->input('status');
+            
+            // Nếu không có trong input, thử đọc từ JSON body trực tiếp
+            if (empty($newStatus)) {
+                $content = $request->getContent();
+                if (!empty($content)) {
+                    $jsonData = json_decode($content, true);
+                    if (json_last_error() === JSON_ERROR_NONE && isset($jsonData['status'])) {
+                        $newStatus = $jsonData['status'];
+                    }
+                }
+            }
 
-        $order->status = $newStatus;
-        // Lưu người cập nhật trạng thái
-        $order->updated_by = Auth::id();
+            // Validate status
+            if (empty($newStatus)) {
+                Log::warning('Order status update failed: empty status', [
+                    'order_id' => $id,
+                    'request_data' => $request->all(),
+                    'request_content' => $request->getContent(),
+                    'content_type' => $request->header('Content-Type')
+                ]);
+                return response()->json([
+                    'message' => 'Trạng thái không được để trống!',
+                    'error' => 'validation_error'
+                ], 400);
+            }
 
-        // Tự động cập nhật trạng thái thanh toán dựa trên trạng thái đơn hàng
-        if (in_array($newStatus, ['completed', 'delivered']) && $order->payment_status === 'unpaid') {
-            $order->payment_status = 'paid';
+            // Validate status values
+            // Lưu ý: 'shipping' và 'shipped' đều được chấp nhận (shipping = đang giao, shipped = đã giao)
+            $validStatuses = ['pending', 'confirmed', 'processing', 'shipping', 'shipped', 'delivered', 'completed', 'cancelled', 'cancel_request', 'return_request', 'returned'];
+            if (!in_array($newStatus, $validStatuses)) {
+                return response()->json([
+                    'message' => 'Trạng thái không hợp lệ!',
+                    'error' => 'validation_error'
+                ], 400);
+            }
+
+            // Kiểm tra: chỉ cho phép chọn "completed" khi status hiện tại là "delivered"
+            if ($newStatus === 'completed' && $order->status !== 'delivered') {
+                return response()->json([
+                    'message' => 'Chỉ có thể chọn "Hoàn thành" sau khi đơn hàng đã ở trạng thái "Đã giao"!',
+                    'error' => 'validation_error'
+                ], 400);
+            }
+
+            $order->status = $newStatus;
+            // Lưu người cập nhật trạng thái
+            $order->updated_by = Auth::id();
+
+            // Tự động cập nhật trạng thái thanh toán:
+            // - Khi đơn hoàn thành/đã giao -> chuyển sang paid nếu đang unpaid
+            // - Khi đơn trả hàng -> nếu đã thanh toán thì chuyển refunded
+            if (in_array($newStatus, ['completed', 'delivered']) && $order->payment_status === 'unpaid') {
+                $order->payment_status = 'paid';
+            }
+            if ($newStatus === 'returned' && $order->payment_status === 'paid') {
+                $order->payment_status = 'refunded';
+            }
+
+            $order->save();
+
+            // Broadcast event để cập nhật realtime
+            broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+
+            return response()->json([
+                'message' => 'Cập nhật trạng thái đơn hàng thành công!',
+                'success' => true
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Không tìm thấy đơn hàng!',
+                'error' => 'not_found'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Error updating order status: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng: ' . $e->getMessage(),
+                'error' => 'server_error'
+            ], 500);
         }
-        if ($newStatus === 'returned' && $order->payment_status === 'paid') {
-            $order->payment_status = 'refunded';
-        }
-
-        $order->save();
-
-        return response()->json(['message' => 'Cập nhật trạng thái đơn hàng thành công!']);
     }
 
     public function approveCancel(Request $request, Order $order)
@@ -192,11 +315,11 @@ class OrderController extends Controller
 
                 $amount = (int) $order->total;
                 $before = (int) $user->wallet_balance;
-                $after  = $before + $amount;
+$after  = $before + $amount;
 
                 $history = $user->wallet_history ?? [];
                 $history[] = [
-                    'type'            => 'refund',        
+                    'type'            => 'refund',          // refund | withdraw
                     'amount'          => $amount,
                     'balance_before'  => $before,
                     'balance_after'   => $after,
@@ -204,8 +327,8 @@ class OrderController extends Controller
                     'order_code'        => $order->code,
                     'note'            => 'Hoàn tiền do duyệt hủy đơn',
                     'created_at'      => now()->toDateTimeString(),
-                    'created_by'      => Auth::id(),        
-                    'created_by_name'      => Auth::user()->name,       
+                    'created_by'      => Auth::id(),        // ai duyệt
+                    'created_by_name'      => Auth::user()->name,        // ai duyệt
                 ];
 
                 $user->wallet_balance = $after;
@@ -214,13 +337,26 @@ class OrderController extends Controller
             }
 
             $order->status = 'cancelled';
-            
+            // Optional: lưu trạng thái refund cho dễ kiểm soát
             $order->payment_status = 'refunded';
             // Lưu người cập nhật
             $order->updated_by = Auth::id();
 
             $order->save();
         });
+
+        // Broadcast event sau khi transaction commit
+        $order->refresh();
+        broadcast(new OrderStatusUpdated($order->load(['items.product', 'updatedByUser.roles'])))->toOthers();
+
+        // Trả về JSON nếu là AJAX request, ngược lại redirect back
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Đã duyệt yêu cầu hủy đơn thành công!',
+                'success' => true,
+                'order' => $order->load(['items.product', 'updatedByUser.roles'])
+            ]);
+        }
 
         return back()->with('success', 'Đã duyệt yêu cầu hủy đơn.');
     }
@@ -271,7 +407,21 @@ class OrderController extends Controller
 
             $order->save();
         });
-return back()->with('success', 'Đã duyệt yêu cầu trả hàng/hoàn tiền.');
+
+        // Broadcast event sau khi transaction commit
+        $order->refresh();
+        broadcast(new OrderStatusUpdated($order->load(['items.product', 'updatedByUser.roles'])))->toOthers();
+
+        // Trả về JSON nếu là AJAX request, ngược lại redirect back
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Đã duyệt yêu cầu trả hàng/hoàn tiền thành công!',
+                'success' => true,
+                'order' => $order->load(['items.product', 'updatedByUser.roles'])
+            ]);
+        }
+
+        return back()->with('success', 'Đã duyệt yêu cầu trả hàng/hoàn tiền.');
     }
 
     public function updatePaymentStatus(Request $request, Order $order)

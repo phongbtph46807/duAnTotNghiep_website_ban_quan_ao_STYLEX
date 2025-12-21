@@ -84,8 +84,32 @@ class RoleEntityController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
+        // Tự động gán màu cho role mới
+        $data['color'] = $this->generateRoleColor();
+        
         Role::create($data);
         return redirect()->route('admin.rbac.roles.index')->with('success', 'Tạo role thành công');
+    }
+
+    /**
+     * Tự động tạo màu cho role mới
+     * Sử dụng danh sách màu Bootstrap để đảm bảo đẹp và nhất quán
+     */
+    private function generateRoleColor(): string
+    {
+        // Danh sách màu Bootstrap có sẵn
+        $colors = [
+            'primary', 'secondary', 'success', 'danger', 'warning', 'info',
+            'purple', 'pink', 'orange', 'teal', 'cyan', 'indigo'
+        ];
+        
+        // Lấy số lượng role hiện có để phân phối màu
+        $roleCount = Role::count();
+        
+        // Chọn màu dựa trên số lượng role (round-robin)
+        $colorIndex = $roleCount % count($colors);
+        
+        return $colors[$colorIndex];
     }
 
     public function edit(Role $role)

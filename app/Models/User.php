@@ -18,6 +18,7 @@ class User extends Authenticatable
     const ROLE_USER = 0;
     const ROLE_ADMIN = 1;
     const ROLE_STAFF = 2;
+    const ROLE_WAREHOUSE_MANAGER = 3;
 
     /**
      * The attributes that are mass assignable.
@@ -72,6 +73,7 @@ class User extends Authenticatable
         return match ($this->role) {
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_STAFF => 'Staff',
+            self::ROLE_WAREHOUSE_MANAGER => 'Warehouse Manager',
             self::ROLE_USER => 'User',
             default => 'User'
         };
@@ -85,6 +87,11 @@ class User extends Authenticatable
     public function isStaff()
     {
         return $this->role === self::ROLE_STAFF;
+    }
+
+    public function isWarehouseManager()
+    {
+        return $this->role === self::ROLE_WAREHOUSE_MANAGER;
     }
 
     public function isUser()
@@ -130,9 +137,10 @@ class User extends Authenticatable
         $roleName = match ($this->role) {
             self::ROLE_ADMIN => 'Admin',
             self::ROLE_STAFF => 'Staff',
+            self::ROLE_WAREHOUSE_MANAGER => 'Warehouse Manager',
             default => null
         };
-        if ($roleName) {
+if ($roleName) {
             $role = Role::where('name', $roleName)->with('permissions')->first();
             if ($role) {
                 // Kiểm tra trong collection đã load
@@ -146,7 +154,7 @@ class User extends Authenticatable
                 
                 // Fallback: Kiểm tra bằng query
                 if ($role->permissions()->where('name', $permissionName)->exists()) {
-                    return true;
+                return true;
                 }
             }
         }
@@ -159,23 +167,36 @@ class User extends Authenticatable
      */
     public function getPermissions()
     {
-        $roleName = match ($this->role) {
-            self::ROLE_ADMIN => 'Admin',
-            self::ROLE_STAFF => 'Staff',
-            default => null
-        };
-
-        if (!$roleName) {
-            return collect([]);
+        // Ưu tiên lấy permissions từ RBAC roles (hỗ trợ role mới)
+        $permissions = collect();
+        
+        // Lấy permissions từ tất cả roles của user (RBAC)
+        $userRoles = $this->roles()->with('permissions')->get();
+        foreach ($userRoles as $role) {
+            $permissions = $permissions->merge($role->permissions);
         }
+        
+        // Loại bỏ duplicate permissions
+        $permissions = $permissions->unique('id');
+        
+        // Fallback: Nếu không có permissions từ RBAC, lấy từ role integer cũ
+        if ($permissions->isEmpty()) {
+            $roleName = match ($this->role) {
+                self::ROLE_ADMIN => 'Admin',
+                self::ROLE_STAFF => 'Staff',
+                self::ROLE_WAREHOUSE_MANAGER => 'Warehouse Manager',
+                default => null
+            };
 
-        $role = Role::where('name', $roleName)->first();
-
-        if (!$role) {
-            return collect([]);
+            if ($roleName) {
+                $role = Role::where('name', $roleName)->first();
+                if ($role) {
+                    $permissions = $role->permissions;
+                }
+            }
         }
-
-        return $role->permissions;
+        
+        return $permissions;
     }
 
     // Dynamic RBAC relations (Phase 2)

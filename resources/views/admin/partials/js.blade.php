@@ -163,3 +163,192 @@
             handleAction('.btn-forcedelete', actionConfigs.forceDelete);
         });
     </script>
+    
+    {{-- Realtime update cho badge yêu cầu hủy/trả hàng --}}
+    <script>
+        // Function để load và hiển thị thông báo
+        function loadNotifications() {
+            fetch("{{ route('admin.orders.notifications') }}", {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'Accept': 'application/json',
+                },
+            })
+            .then(res => res.json())
+            .then(data => {
+                const content = document.getElementById('notificationsContent');
+                if (!content) return;
+                
+                const newOrders = data.new_orders || [];
+                const pendingRequests = data.pending_requests || [];
+                const totalCount = (data.new_orders_count || 0) + (data.pending_requests_count || 0);
+                
+                // Cập nhật badge
+                const navbarBadge = document.getElementById('navbarPendingRequestsBadge');
+                if (navbarBadge) {
+                    if (totalCount > 0) {
+                        navbarBadge.textContent = totalCount;
+                        navbarBadge.classList.remove('d-none');
+                    } else {
+                        navbarBadge.classList.add('d-none');
+                    }
+                }
+                
+                // Cập nhật badge trong sidebar
+                const sidebarBadge = document.getElementById('pendingRequestsBadge');
+                if (sidebarBadge) {
+                    const requestsCount = data.pending_requests_count || 0;
+                    if (requestsCount > 0) {
+                        sidebarBadge.textContent = requestsCount;
+                        sidebarBadge.classList.remove('d-none');
+                    } else {
+                        sidebarBadge.classList.add('d-none');
+                    }
+                }
+                
+                // Hiển thị nội dung thông báo
+                if (newOrders.length === 0 && pendingRequests.length === 0) {
+                    content.innerHTML = '<div class="text-center p-4 text-muted">Không có thông báo mới</div>';
+                    return;
+                }
+                
+                let html = '';
+                
+                // Đơn hàng mới
+                if (newOrders.length > 0) {
+                    html += '<div class="p-2 border-bottom bg-light"><small class="text-muted fw-semibold"><i class="ri-shopping-bag-3-line me-1"></i>Đơn hàng mới</small></div>';
+                    newOrders.forEach(order => {
+                        html += `
+                            <a href="${order.url}" class="dropdown-item p-3 border-bottom text-decoration-none" style="transition: background 0.2s;">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="avatar-xs">
+                                            <span class="avatar-title bg-success-subtle text-success rounded-circle">
+                                                <i class="ri-shopping-bag-3-line"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h6 class="mb-1" style="font-size: 13px; color: #212529;">Đơn hàng #${order.code}</h6>
+                                        <p class="mb-0 text-muted" style="font-size: 12px;">${order.customer} - ${order.total}</p>
+                                        <small class="text-muted">${order.created_at}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                }
+                
+                // Yêu cầu hủy/trả hàng
+                if (pendingRequests.length > 0) {
+                    html += '<div class="p-2 border-bottom bg-light"><small class="text-muted fw-semibold"><i class="ri-error-warning-line me-1"></i>Yêu cầu cần xử lý</small></div>';
+                    pendingRequests.forEach(request => {
+                        const statusClass = request.status === 'cancel_request' ? 'danger' : 'warning';
+                        const statusIcon = request.status === 'cancel_request' ? 'ri-close-circle-line' : 'ri-refund-2-line';
+                        html += `
+                            <a href="${request.url}" class="dropdown-item p-3 border-bottom text-decoration-none" style="transition: background 0.2s;">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0">
+                                        <div class="avatar-xs">
+                                            <span class="avatar-title bg-${statusClass}-subtle text-${statusClass} rounded-circle">
+                                                <i class="${statusIcon}"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h6 class="mb-1" style="font-size: 13px; color: #212529;">${request.status_label} - #${request.code}</h6>
+                                        <p class="mb-0 text-muted" style="font-size: 12px;">${request.customer}</p>
+                                        <small class="text-muted">${request.created_at}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                }
+                
+                content.innerHTML = html;
+                
+                // Thêm hover effect
+                content.querySelectorAll('.dropdown-item').forEach(item => {
+                    item.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = '#f8f9fa';
+                    });
+                    item.addEventListener('mouseleave', function() {
+                        this.style.backgroundColor = '';
+                    });
+                });
+            })
+            .catch(err => {
+                console.error('Error loading notifications:', err);
+                const content = document.getElementById('notificationsContent');
+                if (content) {
+                    content.innerHTML = '<div class="text-center p-4 text-danger">Lỗi khi tải thông báo</div>';
+                }
+            });
+        }
+        
+        // Load thông báo khi dropdown được mở
+        const notificationsDropdown = document.getElementById('orderNotificationsDropdown');
+        if (notificationsDropdown) {
+            notificationsDropdown.addEventListener('shown.bs.dropdown', function() {
+                loadNotifications();
+            });
+            
+            // Lắng nghe khi dropdown đóng để reset
+            notificationsDropdown.addEventListener('hidden.bs.dropdown', function() {
+                // Có thể thêm logic reset nếu cần
+            });
+        }
+        
+        // Function để kiểm tra dropdown có đang mở không
+        function isNotificationsDropdownOpen() {
+            const dropdown = document.getElementById('orderNotificationsDropdown');
+            if (!dropdown) return false;
+            const dropdownMenu = dropdown.nextElementSibling;
+            return dropdownMenu && dropdownMenu.classList.contains('show');
+        }
+        
+        // Function để cập nhật badge số lượng yêu cầu
+        function updatePendingRequestsBadge() {
+            loadNotifications();
+        }
+        
+        // Lắng nghe event realtime khi có yêu cầu mới hoặc duyệt yêu cầu
+        if (typeof window.Echo !== 'undefined') {
+            // Lắng nghe khi có đơn hàng mới
+            window.Echo.channel('orders')
+                .listen('.order.created', (e) => {
+                    console.log('🆕 New order created (realtime):', e);
+                    // Cập nhật badge ngay lập tức
+                    updatePendingRequestsBadge();
+                    // Nếu dropdown đang mở, reload thông báo để hiển thị đơn hàng mới
+                    if (isNotificationsDropdownOpen()) {
+                        loadNotifications();
+                    }
+                })
+                .listen('.order.status.updated', (e) => {
+                    console.log('🔄 Order status updated (realtime):', e);
+                    // Nếu status là cancel_request, return_request, pending -> cập nhật
+                    // Nếu status là cancelled, returned -> cập nhật (giảm yêu cầu)
+                    if (['cancel_request', 'return_request', 'pending', 'cancelled', 'returned', 'delivered', 'completed'].includes(e.status)) {
+                        // Cập nhật badge ngay lập tức
+                        updatePendingRequestsBadge();
+                        // Nếu dropdown đang mở, reload thông báo
+                        if (isNotificationsDropdownOpen()) {
+                            loadNotifications();
+                        }
+                    }
+                });
+            
+            console.log('✅ Realtime notifications enabled');
+        } else {
+            console.warn('⚠️ Laravel Echo not loaded. Realtime notifications disabled.');
+        }
+        
+        // Cập nhật badge mỗi 30 giây để đảm bảo đồng bộ (fallback)
+        setInterval(updatePendingRequestsBadge, 30000);
+        
+        // Load thông báo lần đầu khi trang load (chỉ cập nhật badge, không load dropdown content)
+        updatePendingRequestsBadge();
+    </script>
