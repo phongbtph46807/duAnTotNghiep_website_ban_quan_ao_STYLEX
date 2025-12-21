@@ -88,6 +88,41 @@
             </button>
         </div>
 
+        {{-- Icon thông báo đơn hàng và yêu cầu --}}
+        <div class="dropdown ms-1 header-item d-none d-sm-flex">
+            <button type="button" class="btn btn-icon btn-topbar btn-ghost-secondary rounded-circle position-relative" id="orderNotificationsDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Thông báo đơn hàng">
+                <i class='ri-notification-3-line fs-22'></i>
+                @php
+                    $pendingRequestsCount = \App\Models\Order::whereIn('status', ['cancel_request', 'return_request'])->count();
+                    $newOrdersCount = \App\Models\Order::where('status', 'pending')
+                        ->where('created_at', '>=', now()->subDay())
+                        ->count();
+                    $totalNotifications = $pendingRequestsCount + $newOrdersCount;
+                @endphp
+                @if ($totalNotifications > 0)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="navbarPendingRequestsBadge" style="font-size: 10px; padding: 2px 5px;">
+                        {{ $totalNotifications }}
+                    </span>
+                @else
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="navbarPendingRequestsBadge" style="font-size: 10px; padding: 2px 5px;">0</span>
+                @endif
+            </button>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="orderNotificationsDropdown" style="width: 380px; max-height: 500px; overflow-y: auto;">
+                <div class="p-3 border-bottom">
+                    <h6 class="mb-0">Thông báo đơn hàng</h6>
+                </div>
+                <div id="notificationsContent">
+                    <div class="text-center p-4">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-2 border-top text-center">
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-link text-decoration-none">Xem tất cả đơn hàng</a>
+                </div>
+            </div>
+        </div>
 
         <div class="dropdown ms-sm-3 header-item topbar-user">
             <button type="button" class="btn" id="page-header-user-dropdown" data-bs-toggle="dropdown"
@@ -99,12 +134,33 @@
                     <span class="text-start ms-xl-2">
                         <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">
                             {{ Auth::user()->name ?? null}}
-                            @if(Auth::user()->role == 1)
-                                <span class="badge bg-danger ms-1">Admin</span>
-                            @elseif(Auth::user()->role == 2)
-                                <span class="badge bg-warning ms-1">Staff</span>
+                            @php
+                                $user = Auth::user();
+                                $userRoles = $user->roles;
+                                $displayRole = null;
+                                
+                                // Ưu tiên lấy role từ RBAC
+                                if ($userRoles && $userRoles->isNotEmpty()) {
+                                    $displayRole = $userRoles->first();
+                                } else {
+                                    // Fallback về role integer
+                                    $roleName = match($user->role) {
+                                        1 => 'Admin',
+                                        2 => 'Staff',
+                                        3 => 'Warehouse Manager',
+                                        default => null
+                                    };
+                                    if ($roleName) {
+                                        $displayRole = \App\Models\Role::where('name', $roleName)->first();
+                                    }
+                                }
+                            @endphp
+                            @if($displayRole)
+                                <span class="badge bg-{{ $displayRole->color ?? 'secondary' }}-subtle text-{{ $displayRole->color ?? 'secondary' }} ms-1">{{ $displayRole->name }}</span>
+                            @elseif($user->role == 0)
+                                <span class="badge bg-secondary-subtle text-secondary ms-1">User</span>
                             @else
-                                <span class="badge bg-info ms-1">User</span>
+                                <span class="badge bg-secondary-subtle text-secondary ms-1">Unknown</span>
                             @endif
                         </span>
                         <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">{{ Auth::user()->email ?? null }}</span>
@@ -115,10 +171,29 @@
                 <!-- item-->
 
                 <h6 class="dropdown-header">
-                    @if(Auth::user()->role == 1)
-                        Xin chào Admin {{ Auth::user()->name ?? null }}! 
-                    @elseif(Auth::user()->role == 2)
-                        Xin chào Staff {{ Auth::user()->name ?? null }}! 
+                    @php
+                        $user = Auth::user();
+                        $userRoles = $user->roles;
+                        $greetingRole = null;
+                        
+                        // Ưu tiên lấy role từ RBAC
+                        if ($userRoles && $userRoles->isNotEmpty()) {
+                            $greetingRole = $userRoles->first();
+                        } else {
+                            // Fallback về role integer
+                            $roleName = match($user->role) {
+                                1 => 'Admin',
+                                2 => 'Staff',
+                                3 => 'Warehouse Manager',
+                                default => null
+                            };
+                            if ($roleName) {
+                                $greetingRole = \App\Models\Role::where('name', $roleName)->first();
+                            }
+                        }
+                    @endphp
+                    @if($greetingRole)
+                        Xin chào {{ $greetingRole->name }} {{ Auth::user()->name ?? null }}! 
                     @else
                         Xin chào {{ Auth::user()->name ?? null }}! 
                     @endif

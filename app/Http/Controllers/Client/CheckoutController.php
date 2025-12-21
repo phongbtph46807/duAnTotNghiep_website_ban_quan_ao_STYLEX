@@ -19,6 +19,8 @@ use Illuminate\Support\Str;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\LoyaltyService;
+use App\Services\NotificationService;
+use App\Events\OrderStatusUpdated;
 use Illuminate\Support\Facades\Log;
 
 
@@ -26,11 +28,13 @@ class CheckoutController extends Controller
 {
     protected VoucherService $voucherService;
     protected LoyaltyService $loyaltyService;
+    protected NotificationService $notificationService;
 
-    public function __construct(VoucherService $voucherService, LoyaltyService $loyaltyService)
+    public function __construct(VoucherService $voucherService, LoyaltyService $loyaltyService, NotificationService $notificationService)
     {
         $this->voucherService = $voucherService;
         $this->loyaltyService = $loyaltyService;
+        $this->notificationService = $notificationService;
     }
     private function getOwnerKeys(): array
     {
@@ -188,8 +192,12 @@ class CheckoutController extends Controller
 
     public function thankyou($id)
     {
-        $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
-        return view('client.checkout.thankyou', compact('order'));
+        try {
+            $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
+            return view('client.checkout.thankyou', compact('order'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('home')->with('error', 'Không tìm thấy đơn hàng.');
+        }
     }
     public function track(Request $request)
     {
@@ -374,6 +382,9 @@ class CheckoutController extends Controller
         $order->cancel_images = $storedImages ?: null;
         $order->save();
 
+        // Broadcast event để cập nhật badge realtime cho admin
+        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+
         return back()->with('success', 'Yêu cầu hủy đã được gửi. Vui lòng đợi admin duyệt.');
     }
 
@@ -409,6 +420,9 @@ class CheckoutController extends Controller
         $order->return_reason = $data['return_reason'] ?? null;
         $order->return_images = $storedImages ?: null;
         $order->save();
+
+        // Broadcast event để cập nhật badge realtime cho admin
+        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
 
         return back()->with('success', 'Yêu cầu trả hàng đã được gửi. Vui lòng đợi admin duyệt.');
     }
@@ -655,6 +669,9 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        // Thông báo đơn hàng mới cho admin/staff
+        $this->notificationService->notifyNewOrder($order);
+
         return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
     }
 
@@ -840,6 +857,9 @@ class CheckoutController extends Controller
             });
 
             Log::info("=== ORDER HOÀN THÀNH ===");
+
+            // Thông báo đơn hàng mới cho admin/staff
+            $this->notificationService->notifyNewOrder($order);
 
             // Xóa key redis
             Cache::forget("order:$txnRef");

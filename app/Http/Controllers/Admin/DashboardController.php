@@ -54,6 +54,23 @@ class DashboardController extends Controller
                     'view_reports' => true
                 ]
             ]));
+        } elseif ($user->isWarehouseManager()) {
+            return view('admin.dashboard', array_merge($dashboardData, [
+                'userRole' => 'warehouse_manager',
+                'dashboardTitle' => 'Warehouse Manager Dashboard',
+                'period' => $period,
+                'permissions' => [
+                    'manage_users' => false,
+                    'manage_roles' => false,
+                    'manage_products' => false,
+                    'manage_categories' => false,
+                    'manage_posts' => false,
+                    'manage_loyalty' => false,
+                    'manage_tax_shipping' => false,
+                    'view_reports' => true,
+                    'manage_inventory' => true
+                ]
+            ]));
         }
 
         return redirect()->route('loginView')->with('error', 'Không có quyền truy cập');

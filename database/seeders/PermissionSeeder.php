@@ -738,5 +738,34 @@ class PermissionSeeder extends Seeder
         } else {
             $this->command->warn('Không tìm thấy role Staff!');
         }
+
+        // Gán quyền cho role Warehouse Manager
+        $warehouseManagerRole = Role::where('name', 'Warehouse Manager')->first();
+
+        if ($warehouseManagerRole) {
+            // Các quyền mà Warehouse Manager có thể truy cập (liên quan đến kho hàng và tồn kho)
+            $warehouseManagerPermissions = [
+                // Dashboard
+                'admin.dashboard',
+
+                // Profile
+                'admin.profile',
+                'admin.profile.edit',
+                'admin.profile.update',
+
+                // Inventory/Warehouse - Quản lý kho hàng và tồn kho
+                'admin.inventory.index',
+                
+                // Orders - Xem đơn hàng để theo dõi trả hàng và hoàn tiền
+                'admin.orders.index',
+            ];
+
+            $warehouseManagerPermissionIds = Permission::whereIn('name', $warehouseManagerPermissions)->pluck('id')->toArray();
+            $warehouseManagerRole->permissions()->sync($warehouseManagerPermissionIds);
+
+            $this->command->info("Đã gán " . count($warehouseManagerPermissionIds) . " permissions cho role Warehouse Manager (ID: {$warehouseManagerRole->id})");
+        } else {
+            $this->command->warn('Không tìm thấy role Warehouse Manager!');
+        }
     }
 }
