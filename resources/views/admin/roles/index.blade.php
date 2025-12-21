@@ -31,11 +31,10 @@
                     <strong>Quy trình quản lý tài khoản có quyền:</strong>
                 </p>
                 <ol class="mb-0">
-                    <li><strong>Tạo tài khoản:</strong> Tạo tài khoản mới và gán vai trò, quyền cụ thể</li>
-                    <li><strong>Quản lý vai trò:</strong> Gán một hoặc nhiều vai trò cho tài khoản</li>
-                    <li><strong>Phân quyền:</strong> Gán các quyền cụ thể cho tài khoản</li>
-                    <li><strong>Thay đổi quyền:</strong> Chọn người dùng → "Thay đổi quyền" → Chọn vai trò mới</li>
-                    <li><strong>Cập nhật hàng loạt:</strong> Chọn nhiều người dùng → "Cập nhật hàng loạt" → Chọn vai trò mới</li>
+                    <li><strong>Tạo tài khoản:</strong> Nhấn nút "Tạo tài khoản mới" để tạo tài khoản mới và gán vai trò (role), quyền cụ thể</li>
+                    <li><strong>Gán vai trò:</strong> Chọn một hoặc nhiều vai trò (role) cho tài khoản trong form tạo mới</li>
+                    <li><strong>Phân quyền:</strong> Gán các quyền (permissions) cụ thể cho tài khoản nếu cần</li>
+                    <li><strong>Quản lý tài khoản:</strong> Sau khi tạo, bạn có thể chỉnh sửa thông tin và quyền của tài khoản từ trang quản lý người dùng</li>
                 </ol>
             </div>
         </div>
@@ -114,134 +113,123 @@
         @endif
     </div>
 
-    <!-- Filter and Search -->
+    <!-- Danh sách tài khoản theo từng Role -->
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <div class="search-box">
-                                <input type="text" class="form-control search" placeholder="Tìm kiếm theo tên hoặc email..." id="searchInput" value="{{ request('search') }}">
-                                <i class="ri-search-line search-icon"></i>
-                            </div>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-6">
+                    <h5 class="card-title mb-0">
+                        <i class="ri-group-line me-2"></i>Danh sách tài khoản theo từng vai trò
+                    </h5>
                         </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="roleFilter">
-                                <option value="">Tất cả quyền</option>
-                                <option value="1" {{ request('role') == '1' ? 'selected' : '' }}>Admin</option>
-                                <option value="2" {{ request('role') == '2' ? 'selected' : '' }}>Staff</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="statusFilter">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Hoạt động</option>
-                                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Chưa kích hoạt</option>
-                                <option value="blocked" {{ request('status') == 'blocked' ? 'selected' : '' }}>Đã khóa</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('admin.roles.create') }}" class="btn btn-success">
-                                    <i class="ri-add-line me-1"></i> Tạo tài khoản mới
-                                </a>
-                                <button class="btn btn-primary" id="bulkUpdateBtn" disabled>
-                                    <i class="ri-settings-3-line me-1"></i> Cập nhật hàng loạt
-                                </button>
-                            </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{{ route('admin.roles.create') }}" class="btn btn-success">
+                                <i class="ri-add-line me-1"></i> Tạo tài khoản mới
+                            </a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table align-middle text-center table-nowrap" id="roleTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col">
-                                        <div class="form-check">
-                                            <input class="form-check-input fs-15" type="checkbox" id="checkAll">
-                                        </div>
-                                    </th>
-                                    <th scope="col">STT</th>
-                                    <th scope="col">Tên</th>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Quyền hiện tại</th>
-                                    <th scope="col">Trạng thái</th>
-                                    <th scope="col">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody class="list form-check-all">
-                                @php $stt = 0; @endphp
-                                @foreach ($users as $user)
-                                <tr>
-                                    <td scope="row">
-                                        <div class="form-check">
-                                            <input class="form-check-input fs-15" type="checkbox" name="user_ids[]" value="{{ $user->id }}">
-                                        </div>
-                                    </td>
-                                    <td class="id">{{ ++$stt }}</td>
-                                    <td class="customer_name">{{ $user->name }}</td>
-                                    <td class="email">{{ $user->email }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $user->role == 1 ? 'danger' : 'warning' }}-subtle text-{{ $user->role == 1 ? 'danger' : 'warning' }}">
-                                            @if($user->role == 1)
-                                                Admin
-                                            @elseif($user->role == 2)
-                                                Staff
+                    @if(isset($usersByRole) && count($usersByRole) > 0)
+                    <div class="accordion" id="roleUsersAccordion">
+                        @foreach($usersByRole as $roleId => $roleData)
+                            @if($roleData['count'] > 0)
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading{{ $roleId }}">
+                                    <button class="accordion-button {{ $loop->first ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $roleId }}" aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="collapse{{ $roleId }}">
+                                        <div class="d-flex align-items-center w-100">
+                                            <span class="badge bg-{{ $roleData['role']->color ?? 'secondary' }}-subtle text-{{ $roleData['role']->color ?? 'secondary' }} me-2">{{ $roleData['count'] }}</span>
+                                            <span class="badge bg-{{ $roleData['role']->color ?? 'secondary' }}-subtle text-{{ $roleData['role']->color ?? 'secondary' }} me-2">{{ $roleData['role']->name }}</span>
+                                            @if($roleData['role']->description)
+                                                <small class="text-muted ms-2">- {{ Str::limit($roleData['role']->description, 50) }}</small>
                                             @endif
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $user->status == 'active' ? 'success' : ($user->status == 'inactive' ? 'warning' : 'danger') }}-subtle text-{{ $user->status == 'active' ? 'success' : ($user->status == 'inactive' ? 'warning' : 'danger') }}">
-                                            @if($user->status == 'active')
-                                                Hoạt động
-                                            @elseif($user->status == 'inactive')
-                                                Chưa kích hoạt
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ $roleId }}" class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}" aria-labelledby="heading{{ $roleId }}" data-bs-parent="#roleUsersAccordion">
+                                    <div class="accordion-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th style="width: 50px;">STT</th>
+                                                        <th>Tên</th>
+                                                        <th>Email</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Ngày tạo</th>
+                                                        <th style="width: 120px;">Hành động</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($roleData['users'] as $index => $user)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+                                                        <td>
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="flex-shrink-0 me-2">
+                                                                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" 
+                                                                         alt="{{ $user->name }}" 
+                                                                         class="rounded-circle" 
+                                                                         style="width: 32px; height: 32px; object-fit: cover;">
+                                                                </div>
+                                                                <div class="flex-grow-1">
+                                                                    <div class="fw-semibold">{{ $user->name }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>{{ $user->email }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{{ $user->status == 'active' ? 'success' : ($user->status == 'inactive' ? 'warning' : 'danger') }}-subtle text-{{ $user->status == 'active' ? 'success' : ($user->status == 'inactive' ? 'warning' : 'danger') }}">
+                                                                @if($user->status == 'active')
+                                                                    Hoạt động
+                                                                @elseif($user->status == 'inactive')
+                                                                    Chưa kích hoạt
+                                                                @else
+                                                                    Đã khóa
+                                                                @endif
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
+                                                        <td>
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                    <i class="ri-more-fill align-middle"></i>
+                                                                </button>
+                                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                                    <li>
+                                                                        <a href="{{ route('admin.roles.edit', $user->id) }}" class="dropdown-item">
+                                                                            <i class="ri-edit-line align-bottom me-2 text-primary"></i> Sửa thông tin
+                                                                        </a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <button class="dropdown-item change-role" data-user-id="{{ $user->id }}" data-current-role="{{ $user->role }}">
+                                                                            <i class="ri-settings-3-line align-bottom me-2 text-muted"></i> Thay đổi quyền
+                                                                        </button>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        @endforeach
+                    </div>
                                             @else
-                                                Đã khóa
-                                            @endif
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <button class="btn btn-soft-secondary btn-sm dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="ri-more-fill align-middle"></i>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li>
-                                                    <a href="{{ route('admin.roles.edit', $user->id) }}" class="dropdown-item">
-                                                        <i class="ri-edit-line align-bottom me-2 text-primary"></i> Sửa thông tin
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <button class="dropdown-item change-role" data-user-id="{{ $user->id }}" data-current-role="{{ $user->role }}">
-                                                        <i class="ri-settings-3-line align-bottom me-2 text-muted"></i> Thay đổi quyền
-                                                    </button>
-                                                </li>
-                                                <li>
-                                                    <button class="dropdown-item text-danger delete-user" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-user-role="{{ $user->role }}">
-                                                        <i class="ri-delete-bin-line align-bottom me-2 text-danger"></i> Xóa tài khoản
-                                                    </button>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-center py-5">
                         <div class="text-muted">
-                            Hiển thị {{ $users->firstItem() ?? 0 }} đến {{ $users->lastItem() ?? 0 }} trong {{ $users->total() }} kết quả
-                        </div>
-                        <div>
-                            {{ $users->appends(request()->query())->links() }}
+                            <i class="ri-inbox-line" style="font-size: 64px; opacity: 0.3;"></i>
+                            <p class="mt-3 mb-0">Chưa có tài khoản nào</p>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -264,6 +252,7 @@
                         <select class="form-select" id="newRole" name="role" required>
                             <option value="1">Admin</option>
                             <option value="2">Staff</option>
+                            <option value="3">Warehouse Manager</option>
                         </select>
                     </div>
                 </form>
@@ -276,84 +265,9 @@
     </div>
 </div>
 
-<!-- Bulk Update Modal -->
-<div class="modal fade" id="bulkUpdateModal" tabindex="-1" aria-labelledby="bulkUpdateModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkUpdateModalLabel">Cập nhật quyền hàng loạt</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="bulkUpdateForm">
-                    <div class="mb-3">
-                        <label for="bulkRole" class="form-label">Chọn quyền mới cho tất cả người dùng đã chọn</label>
-                        <select class="form-select" id="bulkRole" name="role" required>
-                            <option value="1">Admin</option>
-                            <option value="2">Staff</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="confirmBulkUpdate">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete User Modal -->
-<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger" id="deleteUserModalLabel">
-                    <i class="ri-delete-bin-line me-2"></i>Xác nhận xóa tài khoản
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning" role="alert">
-                    <i class="ri-alert-line me-2"></i>
-                    <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
-                </div>
-                <p>Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteUserName"></strong>?</p>
-                <p class="text-muted mb-0">Tài khoản sẽ bị xóa hoàn toàn khỏi database và không thể khôi phục.</p>
-                <div class="alert alert-info mt-2 mb-0" id="adminWarning" style="display: none;">
-                    <i class="ri-information-line me-2"></i>
-                    <strong>Lưu ý:</strong> Đây là admin cuối cùng, không thể xóa!
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteUser">
-                    <i class="ri-delete-bin-line me-1"></i>Xóa tài khoản
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
-
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Check all functionality
-    $('#checkAll').on('change', function() {
-        $('input[name="user_ids[]"]').prop('checked', this.checked);
-        updateBulkUpdateButton();
-    });
-
-    $('input[name="user_ids[]"]').on('change', function() {
-        updateBulkUpdateButton();
-    });
-
-    function updateBulkUpdateButton() {
-        const checkedCount = $('input[name="user_ids[]"]:checked').length;
-        $('#bulkUpdateBtn').prop('disabled', checkedCount === 0);
-    }
-
     // Change role functionality
     $('.change-role').on('click', function() {
         const userId = $(this).data('user-id');
@@ -377,149 +291,21 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
+                    $('#changeRoleModal').modal('hide');
                     location.reload();
                 } else {
                     alert('Có lỗi xảy ra: ' + response.message);
                 }
             },
-            error: function() {
-                alert('Có lỗi xảy ra, vui lòng thử lại sau');
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON?.message || 'Có lỗi xảy ra, vui lòng thử lại sau';
+                alert(errorMsg);
             }
         });
-    });
-
-    // Bulk update functionality
-    $('#bulkUpdateBtn').on('click', function() {
-        $('#bulkUpdateModal').modal('show');
-    });
-
-    $('#confirmBulkUpdate').on('click', function() {
-        const selectedUsers = $('input[name="user_ids[]"]:checked').map(function() {
-            return this.value;
-        }).get();
-        const newRole = $('#bulkRole').val();
-        
-        $.ajax({
-            url: '/admin/roles/bulk-update',
-            method: 'POST',
-            data: {
-                user_ids: selectedUsers,
-                role: newRole,
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    location.reload();
-                } else {
-                    alert('Có lỗi xảy ra: ' + response.message);
-                }
-            },
-            error: function() {
-                alert('Có lỗi xảy ra, vui lòng thử lại sau');
-            }
-        });
-    });
-
-    // Delete user functionality
-    let userIdToDelete = null;
-    
-    $(document).on('click', '.delete-user', function() {
-        userIdToDelete = $(this).data('user-id');
-        const userName = $(this).data('user-name');
-        const userRole = $(this).data('user-role');
-        
-        $('#deleteUserName').text(userName);
-        
-        // Kiểm tra nếu là admin cuối cùng
-        if (userRole == 1) { // Admin
-            $.ajax({
-                url: '/admin/roles/check-admin-count',
-                type: 'GET',
-                success: function(response) {
-                    if (response.admin_count <= 1) {
-                        $('#adminWarning').show();
-                        $('#confirmDeleteUser').prop('disabled', true).text('Không thể xóa admin cuối cùng');
-                    } else {
-                        $('#adminWarning').hide();
-                        $('#confirmDeleteUser').prop('disabled', false).html('<i class="ri-delete-bin-line me-1"></i>Xóa tài khoản');
-                    }
-                }
-            });
-        } else {
-            $('#adminWarning').hide();
-            $('#confirmDeleteUser').prop('disabled', false).html('<i class="ri-delete-bin-line me-1"></i>Xóa tài khoản');
-        }
-        
-        $('#deleteUserModal').modal('show');
-    });
-
-    $('#confirmDeleteUser').on('click', function() {
-        if (!userIdToDelete) {
-            alert('Không tìm thấy ID user để xóa!');
-            return;
-        }
-        
-        console.log('Deleting user ID:', userIdToDelete);
-        console.log('CSRF Token:', $('meta[name="csrf-token"]').attr('content'));
-        
-        $.ajax({
-            url: `/admin/roles/${userIdToDelete}`,
-            type: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                console.log('Response:', response);
-                if (response.success) {
-                    $('#deleteUserModal').modal('hide');
-                    location.reload();
-                } else {
-                    alert('Có lỗi xảy ra: ' + response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.log('Error:', xhr.responseText);
-                console.log('Status:', status);
-                console.log('Error:', error);
-                alert('Có lỗi xảy ra: ' + xhr.responseText);
-            }
-        });
-    });
-
-    // Filter functionality
-    $('#searchInput').on('keyup', function() {
-        const search = $(this).val();
-        const role = $('#roleFilter').val();
-        const status = $('#statusFilter').val();
-        
-        // Reload page with filters
-        const url = new URL(window.location);
-        if (search) url.searchParams.set('search', search);
-        else url.searchParams.delete('search');
-        if (role) url.searchParams.set('role', role);
-        else url.searchParams.delete('role');
-        if (status) url.searchParams.set('status', status);
-        else url.searchParams.delete('status');
-        
-        window.location.href = url.toString();
-    });
-
-    $('#roleFilter, #statusFilter').on('change', function() {
-        const search = $('#searchInput').val();
-        const role = $('#roleFilter').val();
-        const status = $('#statusFilter').val();
-        
-        // Reload page with filters
-        const url = new URL(window.location);
-        if (search) url.searchParams.set('search', search);
-        else url.searchParams.delete('search');
-        if (role) url.searchParams.set('role', role);
-        else url.searchParams.delete('role');
-        if (status) url.searchParams.set('status', status);
-        else url.searchParams.delete('status');
-        
-        window.location.href = url.toString();
     });
 });
 </script>
 @endpush
+
+@endsection
+

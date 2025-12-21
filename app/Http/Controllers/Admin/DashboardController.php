@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -52,6 +53,23 @@ class DashboardController extends Controller
                     'manage_loyalty' => false,
                     'manage_tax_shipping' => false,
                     'view_reports' => true
+                ]
+            ]));
+        } elseif ($user->isWarehouseManager()) {
+            return view('admin.dashboard', array_merge($dashboardData, [
+                'userRole' => 'warehouse_manager',
+                'dashboardTitle' => 'Warehouse Manager Dashboard',
+                'period' => $period,
+                'permissions' => [
+                    'manage_users' => false,
+                    'manage_roles' => false,
+                    'manage_products' => false,
+                    'manage_categories' => false,
+                    'manage_posts' => false,
+                    'manage_loyalty' => false,
+                    'manage_tax_shipping' => false,
+                    'view_reports' => true,
+                    'manage_inventory' => true
                 ]
             ]));
         }
@@ -127,6 +145,13 @@ class DashboardController extends Controller
             ->orderBy('date')
             ->get();
 
+        // Recent orders - đơn hàng mới được đặt (chờ xác nhận)
+        $recentOrders = Order::with(['items.product', 'user'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         return [
             'totalInventoryValue' => $totalInventoryValue ?: 0,
             'stockInCount' => $stockMovements->stock_in_count ?: 0,
@@ -135,7 +160,8 @@ class DashboardController extends Controller
             'qcPassRate' => $qcPassRate,
             'lowStockCount' => $lowStockCount,
             'topProducts' => $topProducts,
-            'stockTrend' => $stockTrend
+            'stockTrend' => $stockTrend,
+            'recentOrders' => $recentOrders
         ];
     }
 }

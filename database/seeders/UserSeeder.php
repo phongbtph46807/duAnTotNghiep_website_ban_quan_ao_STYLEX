@@ -56,9 +56,23 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Gán role trong RBAC cho Admin và Staff
+        // Tạo Warehouse Manager
+        $warehouseManager = User::updateOrCreate(
+            ['email' => 'warehouse@test.com'],
+            [
+                'name' => 'Warehouse Manager',
+                'password' => Hash::make('123456'),
+                'role' => 3,
+                'is_admin' => 0,
+                'status' => 'active',
+                'email_verified_at' => now()
+            ]
+        );
+
+        // Gán role trong RBAC cho Admin, Staff và Warehouse Manager
         $adminRole = Role::where('name', 'Admin')->first();
         $staffRole = Role::where('name', 'Staff')->first();
+        $warehouseManagerRole = Role::where('name', 'Warehouse Manager')->first();
 
         if ($adminRole) {
             if (!$admin1->roles()->where('roles.id', $adminRole->id)->exists()) {
@@ -72,6 +86,12 @@ class UserSeeder extends Seeder
         if ($staffRole && $staff) {
             if (!$staff->roles()->where('roles.id', $staffRole->id)->exists()) {
                 $staff->roles()->attach($staffRole->id);
+            }
+        }
+
+        if ($warehouseManagerRole && $warehouseManager) {
+            if (!$warehouseManager->roles()->where('roles.id', $warehouseManagerRole->id)->exists()) {
+                $warehouseManager->roles()->attach($warehouseManagerRole->id);
             }
         }
 
@@ -131,6 +151,7 @@ class UserSeeder extends Seeder
         $this->command->info('Admin 1: admin@example.com / 123456 (role=1, status=active)');
         $this->command->info('Admin 2: admin@test.com / 123456 (role=1, status=active)');
         $this->command->info('Staff: staff@test.com / 123456 (role=2, status=active)');
+        $this->command->info('Warehouse Manager: warehouse@test.com / 123456 (role=3, status=active)');
         $this->command->info('User 1: user@test.com / 123456 (role=0, status=active)');
         $this->command->info('User 2: test1@test.com / 123456 (role=0, status=active)');
         $this->command->info('User 3: test2@test.com / 123456 (role=0, status=inactive)');

@@ -10,6 +10,7 @@ use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Client\AddressController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Client\ContactController;
 
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -24,6 +25,11 @@ Route::prefix('products')->as('client.products.')->group(function () {
 Route::prefix('blog')->as('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('detail');
+});
+
+    Route::prefix('contact')->as('contact.')->group(function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index');
+   
 });
 
 // Client Cart routes
@@ -67,6 +73,10 @@ Route::group(['middleware' => ['isAuthenticated']], function(){
 
     Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
     Route::post('/login', [AuthController::class,'login'])->name('login');
+    
+    // Google OAuth
+    Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'handleGoogleCallback'])->name('google.callback');
 });
 
 // Logout route - cần middleware auth để đảm bảo user đã đăng nhập

@@ -327,8 +327,8 @@
 									@foreach($shippingCarriers as $carrier)
 									<label class="shipping-carrier-box" 
 										   for="carrier_{{ $carrier->id }}"
-										   data-carrier-id="{{ $carrier->id }}"
-										   data-carrier-fee="{{ isset($carrier->fee) ? $carrier->fee : 0 }}"
+										 data-carrier-id="{{ $carrier->id }}"
+										 data-carrier-fee="{{ isset($carrier->fee) ? $carrier->fee : 0 }}"
 										   style="display: inline-flex; align-items: center; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: #fff; margin: 0; min-height: 32px; box-sizing: border-box;">
 										<input type="radio" 
 											   name="shipping_carrier" 
@@ -341,8 +341,8 @@
 											<span style="color: #666; font-weight: 400; font-size: 12px;">
 												{{ number_format(isset($carrier->fee) ? $carrier->fee : 0, 0, ',', '.') }} ₫
 											</span>
-										</span>
-									</label>
+											</span>
+										</label>
 									@endforeach
 								</div>
 							@else

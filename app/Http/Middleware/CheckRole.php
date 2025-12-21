@@ -35,28 +35,51 @@ class CheckRole
             3 => 'Warehouse Manager',
         ];
         
+        // Lấy tất cả roles từ database để hỗ trợ role mới
+        // Nếu role không có trong roleNameMap, thử tìm trong database theo ID hoặc tên
+        $allRoles = Role::pluck('name', 'id')->toArray();
+        
         // Convert string roles to role names
         $requiredRoleNames = [];
+        $requiredRoleIds = [];
         foreach ($roles as $role) {
             $roleInt = (int) $role;
             if (isset($roleNameMap[$roleInt])) {
+                // Nếu có trong roleNameMap (Admin, Staff, Warehouse Manager)
                 $requiredRoleNames[] = $roleNameMap[$roleInt];
+            } elseif (isset($allRoles[$roleInt])) {
+                // Nếu là số và có trong database (role mới được tạo) - dùng ID
+                $requiredRoleIds[] = $roleInt;
+                $requiredRoleNames[] = $allRoles[$roleInt];
             } else {
                 // Nếu không phải số, coi như là tên role trực tiếp
                 $requiredRoleNames[] = $role;
             }
         }
-        
+            
         // Kiểm tra role thông qua RBAC (roles relationship) trước
         $hasAccess = false;
-        if (!empty($requiredRoleNames)) {
-            $userRoles = $user->roles()->pluck('name')->toArray();
-            foreach ($requiredRoleNames as $requiredName) {
-                if (in_array($requiredName, $userRoles)) {
+        
+        // Kiểm tra bằng role ID (cho role mới từ database)
+        if (!empty($requiredRoleIds)) {
+            $userRoleIds = $user->roles()->pluck('roles.id')->toArray();
+            foreach ($requiredRoleIds as $requiredId) {
+                if (in_array($requiredId, $userRoleIds)) {
                     $hasAccess = true;
                     break;
                 }
             }
+        }
+        
+        // Kiểm tra bằng role name
+        if (!$hasAccess && !empty($requiredRoleNames)) {
+                $userRoles = $user->roles()->pluck('name')->toArray();
+                foreach ($requiredRoleNames as $requiredName) {
+                    if (in_array($requiredName, $userRoles)) {
+                        $hasAccess = true;
+                        break;
+                    }
+                }
         }
         
         // Fallback: Nếu không tìm thấy trong RBAC, kiểm tra trường role cũ (backward compatibility)
@@ -76,7 +99,7 @@ class CheckRole
         // Nếu user đã pass qua kiểm tra role ở trên, nghĩa là họ có role phù hợp với route group
         // -> Cho phép truy cập ngay, không cần kiểm tra permission nữa
         // (Permission sẽ được kiểm tra ở các middleware khác hoặc controller nếu cần)
-        
+
         return $next($request);
     }
 

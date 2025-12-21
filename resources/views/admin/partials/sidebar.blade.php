@@ -56,7 +56,7 @@
                             <li class="nav-item">
                                 <a href="{{ route('admin.orders.index') }}" class="nav-link"
                                     data-key="t-orders-list">
-                                    Danh sách đơn hàng
+                                    <i class="ri-file-list-3-line me-1"></i> Danh sách đơn hàng
                                 </a>
                             </li>
                         </ul>
@@ -83,6 +83,32 @@
                         </ul>
                     </div>
                 </li> <!-- end Dashboard Menu -->
+                        <!-- Quản lý thuộc tính sản phẩm -->
+                <li class="nav-item">
+                    <a class="nav-link menu-link" href="#sidebarAttributes" data-bs-toggle="collapse" role="button"
+                        aria-expanded="false" aria-controls="sidebarAttributes">
+                        <i class="ri-palette-line"></i> <span data-key="t-attributes">Thuộc tính sản phẩm</span>
+                    </a>
+                    <div class="collapse menu-dropdown" id="sidebarAttributes">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.colors.index') }}" class="nav-link" data-key="t-colors">
+                                    <i class="ri-palette-line me-1"></i> Quản lý màu sắc
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.sizes.index') }}" class="nav-link" data-key="t-sizes">
+                                    <i class="ri-ruler-line me-1"></i> Quản lý kích thước
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.textures.index') }}" class="nav-link" data-key="t-textures">
+                                    <i class="ri-scissors-line me-1"></i> Quản lý chất liệu
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button"
                         aria-expanded="false" aria-controls="sidebarProducts">
@@ -109,32 +135,7 @@
                     </div>
                 </li>
 
-                <!-- Quản lý thuộc tính sản phẩm -->
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarAttributes" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarAttributes">
-                        <i class="ri-palette-line"></i> <span data-key="t-attributes">Thuộc tính sản phẩm</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarAttributes">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.colors.index') }}" class="nav-link" data-key="t-colors">
-                                    <i class="ri-palette-line me-1"></i> Quản lý màu sắc
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.sizes.index') }}" class="nav-link" data-key="t-sizes">
-                                    <i class="ri-ruler-line me-1"></i> Quản lý kích thước
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.textures.index') }}" class="nav-link" data-key="t-textures">
-                                    <i class="ri-scissors-line me-1"></i> Quản lý chất liệu
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
+        
 
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarInventory" data-bs-toggle="collapse" role="button"
@@ -327,7 +328,7 @@
                             </li>
                             <li class="nav-item">
                                 <a href="{{ route('admin.posts.trash') }}" class="nav-link">
-                                    <i class="ri-add-circle-line me-1"></i> Danh sách bài viết đã xóa
+                                    <i class="ri-delete-bin-line me-1"></i> Danh sách bài viết đã xóa
                                 </a>
                             </li>
                         </ul>
@@ -366,7 +367,7 @@
                                     <li class="nav-item">
                                         <a href="{{ route('admin.users.trash') }}" class="nav-link"
                                             data-key="t-analytics">
-                                            Danh sách người dùng đã xóa
+                                            <i class="ri-delete-bin-line me-1"></i> Danh sách người dùng đã xóa
                                         </a>
                                     </li>
                                 @endif
@@ -417,13 +418,13 @@
                                 <li class="nav-item">
                                     <a href="{{ route('admin.loyalty-tiers.index') }}" class="nav-link"
                                         data-key="t-loyalty-list">
-                                        Danh sách cấp độ
+                                        <i class="ri-list-check me-1"></i> Danh sách cấp độ
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a href="{{ route('admin.loyalty-tiers.create') }}" class="nav-link"
                                         data-key="t-loyalty-create">
-                                        Thêm cấp độ mới
+                                        <i class="ri-add-circle-line me-1"></i> Thêm cấp độ mới
                                     </a>
                                 </li>
                             </ul>
@@ -478,3 +479,4 @@
 
 <link rel="stylesheet" href="{{ asset('assets/css/style-x-logo.css') }}">
 <script src="{{ asset('assets/js/sidebar-menu.js') }}"></script>
+

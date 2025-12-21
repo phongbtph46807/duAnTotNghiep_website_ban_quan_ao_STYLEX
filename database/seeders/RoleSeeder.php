@@ -18,19 +18,22 @@ class RoleSeeder extends Seeder
         Role::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // Tạo các role cơ bản
+        // Tạo các role cơ bản với màu
         $roles = [
             [
                 'name' => 'Admin',
-                'description' => 'Quản lý toàn bộ website'
+                'description' => 'Quản lý toàn bộ website',
+                'color' => 'danger' // Đỏ - quan trọng nhất
             ],
             [
                 'name' => 'Staff',
-                'description' => 'Nhân viên quản lý sản phẩm và đơn hàng'
+                'description' => 'Nhân viên quản lý sản phẩm và đơn hàng',
+                'color' => 'primary' // Xanh dương
             ],
             [
                 'name' => 'Warehouse Manager',
-                'description' => 'Quản lý kho hàng và tồn kho'
+                'description' => 'Quản lý kho hàng và tồn kho',
+                'color' => 'info' // Xanh nhạt
             ]
         ];
 

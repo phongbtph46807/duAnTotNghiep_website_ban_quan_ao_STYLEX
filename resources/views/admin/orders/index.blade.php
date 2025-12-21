@@ -231,8 +231,8 @@
         $statusTransitions = [
             'pending' => ['pending', 'processing', 'cancelled'],
             'processing' => ['processing', 'shipping', 'cancelled'],
-            'shipping' => ['shipping', 'delivered', 'completed', 'returned'],
-            'delivered' => ['delivered', 'completed', 'returned'],
+            'shipping' => ['shipping', 'delivered', 'returned'], // Chỉ có thể chọn 'delivered' hoặc 'returned', không có 'completed'
+            'delivered' => ['delivered', 'completed', 'returned'], // Chỉ từ 'delivered' mới được chọn 'completed'
             'completed' => ['completed', 'returned'],
             'cancelled' => ['cancelled'],
             'returned' => ['returned'],
@@ -250,7 +250,7 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lý đơn hàng</h4>
+                <h4 class="mb-sm-0"><i class="ri-shopping-bag-3-line me-2"></i>Quản lý đơn hàng</h4>
             </div>
         </div>
     </div>
@@ -309,7 +309,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h5 class="mb-0">Yêu cầu hủy / trả hàng</h5>
+                        <h5 class="mb-0"><i class="ri-error-warning-line me-2"></i>Yêu cầu hủy / trả hàng</h5>
                         <span class="badge bg-warning text-dark">{{ $requestOrders->total() }}</span>
                     </div>
                     @if($requestOrders->isEmpty())
@@ -341,7 +341,7 @@
                                     <td>{{ $ord->created_at?->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <button type="button" 
+                                                <button type="button" 
                                                     class="btn btn-sm btn-info view-request-detail" 
                                                     data-order-code="{{ $ord->code }}"
                                                     data-reason="{{ $ord->cancel_reason ?? $ord->return_reason ?? 'Không có lý do' }}"
@@ -349,18 +349,18 @@
                                                     data-status="{{ $ord->status }}"
                                                     title="Xem chi tiết">
                                                 <i class="ri-eye-line"></i> Xem
-                                            </button>
-                                            @if($ord->status === 'cancel_request')
-                                                <form method="POST" action="{{ route('admin.orders.approveCancel', $ord) }}" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger">Duyệt hủy</button>
-                                                </form>
-                                            @else
-                                                <form method="POST" action="{{ route('admin.orders.approveReturn', $ord) }}" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-warning">Duyệt trả</button>
-                                                </form>
-                                            @endif
+                                                </button>
+                                        @if($ord->status === 'cancel_request')
+                                                <form method="POST" action="{{ route('admin.orders.approveCancel', $ord) }}" class="d-inline approve-request-form" data-order-id="{{ $ord->id }}" data-type="cancel">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger">Duyệt hủy</button>
+                                            </form>
+                                        @else
+                                                <form method="POST" action="{{ route('admin.orders.approveReturn', $ord) }}" class="d-inline approve-request-form" data-order-id="{{ $ord->id }}" data-type="return">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning">Duyệt trả</button>
+                                            </form>
+                                        @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -381,7 +381,7 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
             <div>
-                <h4 class="card-title mb-0">Danh sách đơn hàng</h4>
+                <h4 class="card-title mb-0"><i class="ri-file-list-3-line me-2"></i>Danh sách đơn hàng</h4>
                 <span class="text-muted small">Theo dõi trạng thái và dòng tiền theo thời gian thực</span>
             </div>
             <div class="d-flex gap-2">
@@ -588,7 +588,9 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
-                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->map(function($role) {
+                                            return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                                        })->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -609,7 +611,7 @@
                                         $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
                                         $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                 @endphp
-                                <tr>
+                                <tr data-order-id="{{ $order->id }}">
                                     <td>{{ $order->id }}</td>
                                     <td>{{ $order->code }}</td>
                                     <td class="text-start">
@@ -648,7 +650,10 @@
                                                             @php
                                                                 $isActive = $currentStatusKey === $key;
                                                                 $disabled = !in_array($key, $allowedStatuses, true);
+                                                                // Ẩn hoàn toàn option "completed" khi status là "shipping"
+                                                                $shouldHide = ($currentStatusKey === 'shipping' && $key === 'completed');
                                                             @endphp
+                                                            @if (!$shouldHide)
                                                             <button type="button"
                                                                     class="dropdown-item status-action d-flex justify-content-between align-items-start {{ $isActive ? 'active' : '' }} {{ $disabled ? 'disabled' : '' }}"
                                                                     data-status="{{ $key }}">
@@ -661,6 +666,7 @@
                                                                 </span>
                                                                 <i class="ri-check-line status-check {{ $isActive ? '' : 'opacity-0' }}"></i>
                                                             </button>
+                                                            @endif
                                                         @endforeach
                                                     </div>
                                                 </div>
@@ -668,7 +674,7 @@
                                         </td>
                                         <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                         <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                        <td>
+                                        <td class="order-updater">
                                             @if($order->updatedByUser)
                                                 <div>
                                                     <span class="badge bg-primary-subtle text-primary">
@@ -678,7 +684,9 @@
                                                         <br>
                                                         <small class="text-muted">
                                                             @foreach($order->updatedByUser->roles as $role)
-                                                                <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                                <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                    {{ $role->name }}
+                                                                </span>
                                                             @endforeach
                                                         </small>
                                                     @endif
@@ -778,7 +786,7 @@
                                             $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
                                             $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                         @endphp
-                                    <tr>
+                                    <tr data-order-id="{{ $order->id }}">
                                         <td>{{ $order->id }}</td>
                                         <td>{{ $order->code }}</td>
                                         <td class="text-start">
@@ -817,7 +825,10 @@
                                                         @php
                                                             $isActive = $currentStatusKey === $key;
                                                             $disabled = !in_array($key, $allowedStatuses, true);
+                                                            // Ẩn hoàn toàn option "completed" khi status là "shipping"
+                                                            $shouldHide = ($currentStatusKey === 'shipping' && $key === 'completed');
                                                         @endphp
+                                                        @if (!$shouldHide)
                                                         <button type="button"
                                                             class="dropdown-item status-action d-flex justify-content-between align-items-start {{ $isActive ? 'active' : '' }} {{ $disabled ? 'disabled' : '' }}"
                                                             data-status="{{ $key }}">
@@ -830,6 +841,7 @@
                                                             </span>
                                                             <i class="ri-check-line status-check {{ $isActive ? '' : 'opacity-0' }}"></i>
                                                         </button>
+                                                        @endif
                                                     @endforeach
                                                 </div>
                                             </div>
@@ -837,7 +849,7 @@
                                     </td>
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td class="order-updater">
                                         @if($order->updatedByUser)
                                             <div>
                                                 <span class="badge bg-primary-subtle text-primary">
@@ -847,7 +859,9 @@
                                                     <br>
                                                     <small class="text-muted">
                                                         @foreach($order->updatedByUser->roles as $role)
-                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                {{ $role->name }}
+                                                            </span>
                                                         @endforeach
                                                     </small>
                                                 @endif
@@ -930,7 +944,9 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
-                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->map(function($role) {
+                                            return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                                        })->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -951,7 +967,7 @@
                                     $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['returned'];
                                     $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                 @endphp
-                                <tr>
+                                <tr data-order-id="{{ $order->id }}">
                                     <td>{{ $order->id }}</td>
                                     <td>{{ $order->code }}</td>
                                     <td class="text-start">
@@ -990,7 +1006,10 @@
                                                         @php
                                                             $isActive = $currentStatusKey === $key;
                                                             $disabled = !in_array($key, $allowedStatuses, true);
+                                                            // Ẩn hoàn toàn option "completed" khi status là "shipping"
+                                                            $shouldHide = ($currentStatusKey === 'shipping' && $key === 'completed');
                                                         @endphp
+                                                        @if (!$shouldHide)
                                                         <button type="button"
                                                                 class="dropdown-item status-action d-flex justify-content-between align-items-start {{ $isActive ? 'active' : '' }} {{ $disabled ? 'disabled' : '' }}"
                                                                 data-status="{{ $key }}">
@@ -1003,6 +1022,7 @@
                                                             </span>
                                                             <i class="ri-check-line status-check {{ $isActive ? '' : 'opacity-0' }}"></i>
                                                         </button>
+                                                        @endif
                                                     @endforeach
                                                 </div>
                                             </div>
@@ -1010,7 +1030,7 @@
                                     </td>
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td class="order-updater">
                                         @if($order->updatedByUser)
                                             <div>
                                                 <span class="badge bg-primary-subtle text-primary">
@@ -1020,7 +1040,9 @@
                                                     <br>
                                                     <small class="text-muted">
                                                         @foreach($order->updatedByUser->roles as $role)
-                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                {{ $role->name }}
+                                                            </span>
                                                         @endforeach
                                                     </small>
                                                 @endif
@@ -1107,7 +1129,9 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
-                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->map(function($role) {
+                                            return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                                        })->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -1128,7 +1152,7 @@
                                     $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['completed'];
                                     $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                 @endphp
-                                <tr>
+                                <tr data-order-id="{{ $order->id }}">
                                     <td>{{ $order->id }}</td>
                                     <td>{{ $order->code }}</td>
                                     <td class="text-start">
@@ -1167,7 +1191,10 @@
                                                         @php
                                                             $isActive = $currentStatusKey === $key;
                                                             $disabled = !in_array($key, $allowedStatuses, true);
+                                                            // Ẩn hoàn toàn option "completed" khi status là "shipping"
+                                                            $shouldHide = ($currentStatusKey === 'shipping' && $key === 'completed');
                                                         @endphp
+                                                        @if (!$shouldHide)
                                                         <button type="button"
                                                                 class="dropdown-item status-action d-flex justify-content-between align-items-start {{ $isActive ? 'active' : '' }} {{ $disabled ? 'disabled' : '' }}"
                                                                 data-status="{{ $key }}">
@@ -1180,6 +1207,7 @@
                                                             </span>
                                                             <i class="ri-check-line status-check {{ $isActive ? '' : 'opacity-0' }}"></i>
                                                         </button>
+                                                        @endif
                                                     @endforeach
                                                 </div>
                                             </div>
@@ -1187,7 +1215,7 @@
                                     </td>
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td class="order-updater">
                                         @if($order->updatedByUser)
                                             <div>
                                                 <span class="badge bg-primary-subtle text-primary">
@@ -1197,7 +1225,9 @@
                                                     <br>
                                                     <small class="text-muted">
                                                         @foreach($order->updatedByUser->roles as $role)
-                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                {{ $role->name }}
+                                                            </span>
                                                         @endforeach
                                                     </small>
                                                 @endif
@@ -1281,7 +1311,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <div>
-                        <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng</h5>
+                        <h5 class="modal-title" id="orderDetailModalLabel"><i class="ri-file-text-line me-2"></i>Chi tiết đơn hàng</h5>
                         <small class="text-muted">Theo dõi trạng thái xử lý theo thời gian thực</small>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1414,40 +1444,56 @@
 @endsection
 
 @push('scripts')
+    {{-- Load Laravel Echo và Pusher --}}
+    @vite(['resources/js/app.js'])
     <script>
         function updateStatus(orderId, status) {
+            // Validate inputs
+            if (!orderId || !status) {
+                toastr.error('Thiếu thông tin đơn hàng hoặc trạng thái!');
+                return Promise.reject(new Error('Missing orderId or status'));
+            }
+
             const url = "{{ route('admin.orders.updateStatus', ':id') }}".replace(':id', orderId);
+            console.log('Updating order status:', { orderId, status, url });
+            
             return fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({ status })
             })
-                .then(res => {
+                .then(async res => {
                     // Kiểm tra status code
                     if (!res.ok) {
-                        // Nếu là lỗi 403 hoặc 500, đọc response để lấy thông báo
-                        return res.json().then(err => {
-                            throw new Error(err.message || 'Lỗi khi cập nhật trạng thái đơn hàng!');
-                        }).catch(() => {
-                            throw new Error(`Lỗi ${res.status}: ${res.statusText}`);
-                        });
+                        // Đọc response để lấy thông báo lỗi
+                        let errorMessage = `Lỗi ${res.status}: ${res.statusText}`;
+                        try {
+                            const errorData = await res.json();
+                            errorMessage = errorData.message || errorMessage;
+                            console.error('Error response:', errorData);
+                        } catch (e) {
+                            console.error('Could not parse error response:', e);
+                        }
+                        throw new Error(errorMessage);
                     }
                     return res.json();
                 })
                 .then(data => {
                     if (data.message) {
-                        toastr.success(data.message);
+                    toastr.success(data.message);
                     } else {
                         toastr.success('Cập nhật trạng thái đơn hàng thành công!');
                     }
-                    // Reload trang để cập nhật dữ liệu
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    // Không cần reload nữa vì đã có realtime update
+                    // Chỉ reload nếu cần thiết (ví dụ: order chuyển sang tab khác)
+                    // setTimeout(() => {
+                    //     window.location.reload();
+                    // }, 1000);
                     return data;
                 })
                 .catch(err => {
@@ -1541,8 +1587,8 @@
         const statusTransitions = {
             pending:   ['pending', 'processing', 'cancelled'],
             processing:['processing', 'shipping', 'cancelled'],
-            shipping:  ['shipping', 'delivered', 'completed', 'returned'],
-            delivered: ['delivered', 'completed', 'returned'],
+            shipping:  ['shipping', 'delivered', 'returned'], // Chỉ có thể chọn 'delivered' hoặc 'returned', không có 'completed'
+            delivered: ['delivered', 'completed', 'returned'], // Chỉ từ 'delivered' mới được chọn 'completed'
             completed: ['completed', 'returned'],
             cancelled: ['cancelled'],
             returned:  ['returned'],
@@ -1650,9 +1696,11 @@
                     // Hiển thị roles
                     if (data.updated_by_roles && data.updated_by_roles.length > 0) {
                         updatedByRolesEl.innerHTML = '<small class="text-muted">' + 
-                            data.updated_by_roles.map(role => 
-                                '<span class="badge bg-secondary-subtle text-secondary me-1">' + role + '</span>'
-                            ).join('') + 
+                            data.updated_by_roles.map(role => {
+                                const roleName = typeof role === 'string' ? role : role.name;
+                                const roleColor = typeof role === 'object' ? (role.color || '#6c757d') : '#6c757d';
+                                return `<span class="badge me-1" style="background-color: ${roleColor}20; color: ${roleColor}; border: 1px solid ${roleColor}40;">${roleName}</span>`;
+                            }).join('') + 
                             '</small>';
                     } else {
                         updatedByRolesEl.innerHTML = '';
@@ -1779,6 +1827,324 @@
             if (requestDetailModal) {
                 requestDetailModal.show();
             }
+        });
+
+        // ========== REALTIME ORDER UPDATES ==========
+        // Chỉ chạy khi window.Echo đã được load (từ bootstrap.js)
+        if (typeof window.Echo !== 'undefined') {
+            // Lắng nghe event cập nhật trạng thái đơn hàng
+            window.Echo.channel('orders')
+                .listen('.order.status.updated', (e) => {
+                    console.log('Order status updated:', e);
+                    
+                    const orderData = e;
+                    const orderId = orderData.id;
+                    const newStatus = orderData.status;
+                    
+                    // Tìm tất cả các row chứa order này trong các bảng
+                    const orderRows = document.querySelectorAll(`tr[data-order-id="${orderId}"]`);
+                    
+                    if (orderRows.length === 0) {
+                        // Nếu không tìm thấy order trong trang hiện tại, có thể là order mới hoặc đã bị filter
+                        // Hiển thị thông báo
+                        toastr.info(`Đơn hàng #${orderData.code} đã được cập nhật trạng thái: ${getStatusLabel(newStatus)}`);
+                        return;
+                    }
+                    
+                    // Cập nhật từng row
+                    orderRows.forEach(row => {
+                        // Cập nhật status badge
+                        const statusBadge = row.querySelector('.order-status-badge');
+                        if (statusBadge) {
+                            const statusMeta = getStatusMeta(newStatus);
+                            statusBadge.className = `badge order-status-badge ${statusMeta.class}`;
+                            statusBadge.innerHTML = `<i class="${statusMeta.icon} me-1"></i>${statusMeta.label}`;
+                        }
+                        
+                        // Cập nhật status control nếu có
+                        const statusControl = row.querySelector(`.status-control[data-order-id="${orderId}"]`);
+                        if (statusControl) {
+                            applyStatusUI(statusControl, newStatus);
+                        }
+                        
+                        // Cập nhật người cập nhật
+                        const updaterCell = row.querySelector('.order-updater');
+                        if (updaterCell && orderData.updated_by_name) {
+                            let rolesHtml = '';
+                            if (orderData.updated_by_roles && orderData.updated_by_roles.length > 0) {
+                                rolesHtml = '<br><small class="text-muted">' + 
+                                    orderData.updated_by_roles.map(role => {
+                                        const roleName = typeof role === 'string' ? role : role.name;
+                                        const roleColor = typeof role === 'object' ? (role.color || '#6c757d') : '#6c757d';
+                                        return `<span class="badge me-1" style="background-color: ${roleColor}20; color: ${roleColor}; border: 1px solid ${roleColor}40;">${roleName}</span>`;
+                                    }).join('') + 
+                                    '</small>';
+                            }
+                            updaterCell.innerHTML = `
+                                <div>
+                                    <span class="badge bg-primary-subtle text-primary">${orderData.updated_by_name}</span>
+                                    ${rolesHtml}
+                                </div>
+                            `;
+                        }
+                        
+                        // Cập nhật payment status nếu có
+                        if (orderData.payment_status) {
+                            const paymentBadge = row.querySelector('.payment-status-badge');
+                            if (paymentBadge) {
+                                const paymentLabels = {
+                                    paid: { label: 'Đã thanh toán', class: 'bg-success-subtle text-success' },
+                                    unpaid: { label: 'Chưa thanh toán', class: 'bg-warning-subtle text-warning' },
+                                    refunded: { label: 'Đã hoàn tiền', class: 'bg-info-subtle text-info' },
+                                };
+                                const paymentMeta = paymentLabels[orderData.payment_status] || { label: orderData.payment_status, class: 'bg-secondary-subtle text-secondary' };
+                                paymentBadge.className = `badge payment-status-badge ${paymentMeta.class}`;
+                                paymentBadge.textContent = paymentMeta.label;
+                            }
+                        }
+                    });
+                    
+                    // Hiển thị thông báo đặc biệt cho yêu cầu hủy/trả hàng
+                    const statusMeta = getStatusMeta(newStatus);
+                    const isRequestStatus = newStatus === 'return_request' || newStatus === 'cancel_request';
+                    
+                    if (isRequestStatus) {
+                        // Thông báo nổi bật cho yêu cầu hủy/trả hàng
+                        const requestType = newStatus === 'return_request' ? 'Trả hàng' : 'Hủy đơn';
+                        const requestIcon = newStatus === 'return_request' ? '🔄' : '❌';
+                        const orderUrl = "{{ route('admin.orders.index') }}?code=" + orderData.code;
+                        
+                        const message = `${requestIcon} <strong>Yêu cầu ${requestType}</strong><br>` +
+                            `Đơn hàng: <strong>#${orderData.code}</strong><br>` +
+                            `Khách hàng: <strong>${orderData.full_name}</strong><br>` +
+                            `<span class="text-muted">Vui lòng xem và xử lý yêu cầu này</span>`;
+                        
+                        toastr.warning(message, `⚠️ Yêu cầu ${requestType} mới`, {
+                            timeOut: 10000,
+                            progressBar: true,
+                            closeButton: true,
+                            onclick: function() {
+                                window.location.href = orderUrl;
+                            },
+                            onShown: function() {
+                                // Highlight tab "Yêu cầu hủy/trả" nếu có
+                                const requestTab = document.querySelector('[data-bs-target="#pane-request-orders"]');
+                                if (requestTab) {
+                                    requestTab.classList.add('border-warning', 'border-2');
+                                    setTimeout(() => {
+                                        requestTab.classList.remove('border-warning', 'border-2');
+                                    }, 3000);
+                                }
+                            }
+                        });
+                        
+                        // Cập nhật badge số lượng yêu cầu đang chờ
+                        fetch("{{ route('admin.orders.pendingRequestsCount') }}")
+                            .then(res => res.json())
+                            .then(data => {
+                                const badge = document.querySelector('.badge.bg-warning.text-dark');
+                                if (badge && data.count !== undefined) {
+                                    badge.textContent = data.count;
+                                }
+                            })
+                            .catch(err => console.error('Error updating request count:', err));
+                        
+                        // Scroll đến phần "Yêu cầu hủy/trả hàng" và highlight
+                        setTimeout(() => {
+                            // Tìm card chứa "Yêu cầu hủy / trả hàng"
+                            const cards = document.querySelectorAll('.card');
+                            let requestSection = null;
+                            for (let card of cards) {
+                                const heading = card.querySelector('h5');
+                                if (heading && heading.textContent.includes('Yêu cầu hủy / trả hàng')) {
+                                    requestSection = card;
+                                    break;
+                                }
+                            }
+                            if (requestSection) {
+                                requestSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                requestSection.classList.add('border-warning', 'border-3', 'shadow-lg');
+                                setTimeout(() => {
+                                    requestSection.classList.remove('border-warning', 'border-3', 'shadow-lg');
+                                }, 5000);
+                            }
+                        }, 500);
+                    } else {
+                        // Thông báo thông thường cho các trạng thái khác
+                        toastr.success(`Đơn hàng #${orderData.code} đã được cập nhật: ${statusMeta.label}`, 'Cập nhật realtime', {
+                            timeOut: 3000,
+                            progressBar: true
+                        });
+                    }
+                    
+                    // Nếu đang mở modal chi tiết của order này, cập nhật luôn
+                    const detailModal = document.getElementById('orderDetailModal');
+                    if (detailModal && detailModal.classList.contains('show')) {
+                        const detailCode = document.getElementById('detailCode');
+                        if (detailCode && detailCode.textContent === orderData.code) {
+                            // Cập nhật timeline trong modal
+                            resetTimeline(newStatus);
+                            
+                            // Cập nhật status trong modal nếu có
+                            const modalStatusBadge = detailModal.querySelector('.modal-status-badge');
+                            if (modalStatusBadge) {
+                                const statusMeta = getStatusMeta(newStatus);
+                                modalStatusBadge.className = `badge modal-status-badge ${statusMeta.class}`;
+                                modalStatusBadge.innerHTML = `<i class="${statusMeta.icon} me-1"></i>${statusMeta.label}`;
+                            }
+                        }
+                    }
+                });
+            
+            // Lắng nghe event đơn hàng mới
+            window.Echo.channel('orders')
+                .listen('.order.created', (e) => {
+                    console.log('New order created:', e);
+                    
+                    const orderData = e;
+                    
+                    // Hiển thị thông báo với nút xem chi tiết
+                    const orderUrl = "{{ route('admin.orders.index') }}?code=" + orderData.code;
+                    const message = `Đơn hàng mới #${orderData.code}<br>` +
+                        `<strong>${orderData.full_name}</strong><br>` +
+                        `<span class="text-muted">${orderData.items_count} sản phẩm</span> - ` +
+                        `<strong class="text-primary">${new Intl.NumberFormat('vi-VN').format(orderData.total)} ₫</strong>`;
+                    
+                    toastr.success(message, '🆕 Đơn hàng mới', {
+                        timeOut: 8000,
+                        progressBar: true,
+                        closeButton: true,
+                        onclick: function() {
+                            window.location.href = orderUrl;
+                        },
+                        onShown: function() {
+                            // Thêm class để có thể click vào thông báo
+                            const toast = $('.toast:last');
+                            toast.css('cursor', 'pointer');
+                            toast.on('click', function() {
+                                window.location.href = orderUrl;
+                            });
+                        }
+                    });
+                    
+                    // Không reload trang nữa - dùng realtime update
+                    // Nếu có đơn hàng mới hoặc yêu cầu mới, sẽ được cập nhật qua event realtime
+                });
+            
+            console.log('✅ Realtime order updates enabled');
+        } else {
+            console.warn('⚠️ Laravel Echo not loaded. Realtime updates disabled.');
+        }
+        
+        // Helper function để lấy status meta
+        function getStatusMeta(status) {
+            const statusMetaMap = {
+                pending:   { label: 'Chờ xác nhận', class: 'bg-warning-subtle text-warning', icon: 'ri-time-line' },
+                processing:{ label: 'Đang xử lý',   class: 'bg-primary-subtle text-primary', icon: 'ri-loader-4-line' },
+                shipping:  { label: 'Chờ giao hàng',class: 'bg-info-subtle text-info', icon: 'ri-truck-line' },
+                delivered: { label: 'Đã giao',      class: 'bg-success-subtle text-success', icon: 'ri-checkbox-circle-line' },
+                completed: { label: 'Hoàn thành',   class: 'bg-success-subtle text-success', icon: 'ri-check-double-line' },
+                cancelled: { label: 'Đã hủy',       class: 'bg-danger-subtle text-danger', icon: 'ri-close-line' },
+                cancel_request: { label: 'Yêu cầu hủy', class: 'bg-danger-subtle text-danger', icon: 'ri-time-line' },
+                returned:  { label: 'Trả hàng/Hoàn tiền', class: 'bg-warning-subtle text-warning', icon: 'ri-refund-2-line' },
+                return_request: { label: 'Yêu cầu trả hàng', class: 'bg-warning-subtle text-warning', icon: 'ri-time-line' },
+            };
+            return statusMetaMap[status] || { label: status, class: 'bg-secondary-subtle text-secondary', icon: 'ri-question-line' };
+        }
+        
+        function getStatusLabel(status) {
+            return getStatusMeta(status).label;
+        }
+
+        // Chuyển form approve cancel/return sang AJAX để không reload trang
+        document.addEventListener('DOMContentLoaded', function() {
+            const approveForms = document.querySelectorAll('.approve-request-form');
+            approveForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const form = this;
+                    const action = form.action;
+                    const orderId = form.dataset.orderId;
+                    const type = form.dataset.type;
+                    const button = form.querySelector('button[type="submit"]');
+                    const originalText = button.textContent;
+                    
+                    // Disable button
+                    button.disabled = true;
+                    button.textContent = 'Đang xử lý...';
+                    
+                    // Lấy CSRF token
+                    const csrfToken = form.querySelector('input[name="_token"]').value;
+                    
+                    // Tạo FormData từ form
+                    const formData = new FormData(form);
+                    
+                    // Gửi AJAX request
+                    fetch(action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(async res => {
+                        if (!res.ok) {
+                            const errorData = await res.json().catch(() => ({}));
+                            throw new Error(errorData.message || `Lỗi ${res.status}: ${res.statusText}`);
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        const message = data.message || (type === 'cancel' ? 'Đã duyệt yêu cầu hủy đơn thành công!' : 'Đã duyệt yêu cầu trả hàng thành công!');
+                        toastr.success(message);
+                        
+                        // Tìm row chứa order này và xóa nó (vì đã được duyệt)
+                        const row = form.closest('tr');
+                        if (row) {
+                            // Fade out animation
+                            row.style.transition = 'opacity 0.3s ease';
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+                                
+                                // Cập nhật badge số lượng
+                                const badge = document.querySelector('.badge.bg-warning.text-dark');
+                                if (badge) {
+                                    const currentCount = parseInt(badge.textContent) || 0;
+                                    const newCount = Math.max(0, currentCount - 1);
+                                    if (newCount > 0) {
+                                        badge.textContent = newCount;
+                                    } else {
+                                        badge.classList.add('d-none');
+                                        badge.textContent = '0';
+                                    }
+                                }
+                                
+                                // Kiểm tra xem còn yêu cầu nào không
+                                const tbody = document.querySelector('table tbody');
+                                if (tbody && tbody.querySelectorAll('tr').length === 0) {
+                                    const card = document.querySelector('.card');
+                                    if (card) {
+                                        const emptyMessage = document.createElement('p');
+                                        emptyMessage.className = 'text-muted mb-0';
+                                        emptyMessage.textContent = 'Không có yêu cầu nào.';
+                                        tbody.parentElement.parentElement.insertBefore(emptyMessage, tbody.parentElement);
+                                    }
+                                }
+                            }, 300);
+                        }
+                    })
+                    .catch(err => {
+                        toastr.error(err.message || 'Có lỗi xảy ra khi duyệt yêu cầu!');
+                        button.disabled = false;
+                        button.textContent = originalText;
+                    });
+                });
+            });
         });
 
     </script>

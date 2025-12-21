@@ -22,6 +22,7 @@ class ReviewController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'content' => 'nullable|string|max:1000',
             'tags' => 'nullable|array',
+            'variant_id' => 'nullable|integer', // Thêm validation cho variant_id (optional)
         ]);
 
         $userId = Auth::id();
@@ -57,17 +58,35 @@ class ReviewController extends Controller
         // Lấy order item
         $orderItem = $order->items()->findOrFail($request->order_item_id);
         $productId = $orderItem->getAttribute('product_id');
-        $variantId = $orderItem->getAttribute('variant_id');
+        
+        // Ưu tiên variant_id từ request (đảm bảo đúng biến thể được chọn)
+        // Nếu không có trong request, lấy từ order_item
+        $variantId = $request->input('variant_id') ? $request->input('variant_id') : $orderItem->getAttribute('variant_id');
+        
+        // Kiểm tra variant_id có tồn tại trong product_variants không (nếu có)
+        $validVariantId = null;
+        if ($variantId) {
+            $variantExists = \App\Models\ProductVariant::where('id', $variantId)
+                ->where('product_id', $productId) // Đảm bảo variant thuộc về product này
+                ->exists();
+            if ($variantExists) {
+                $validVariantId = $variantId;
+            } else {
+                // Nếu variant không tồn tại, không lưu variant_id
+                $validVariantId = null;
+            }
+        }
 
         // Kiểm tra đã đánh giá chưa (kiểm tra theo product_id + variant_id + order_id)
+        // QUAN TRỌNG: Mỗi variant phải được đánh giá riêng
         $existingReviewQuery = Review::where('order_id', $order->id)
             ->where('product_id', $productId);
         
         // Xử lý null variant_id đúng cách (vì NULL = NULL = FALSE trong SQL)
-        if ($variantId === null) {
+        if ($validVariantId === null) {
             $existingReviewQuery = $existingReviewQuery->whereNull('product_variant_id');
         } else {
-            $existingReviewQuery = $existingReviewQuery->where('product_variant_id', $variantId);
+            $existingReviewQuery = $existingReviewQuery->where('product_variant_id', $validVariantId);
         }
         
         $existingReview = $existingReviewQuery->first();
@@ -75,20 +94,31 @@ class ReviewController extends Controller
         if ($existingReview) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn đã đánh giá sản phẩm này rồi.'
+                'message' => 'Bạn đã đánh giá biến thể này rồi.'
             ], 400);
         }
 
-        // Tạo review
+        // Lấy thông tin biến thể để lưu hiển thị (nếu có)
+        $variantColor = null;
+        $variantSize = null;
+        if ($validVariantId) {
+            $variant = \App\Models\ProductVariant::find($validVariantId);
+            $variantColor = $variant?->color?->name;
+            $variantSize = $variant?->size?->name;
+        }
+
+        // Tạo review - ĐÁNH GIÁ THEO BIẾN THỂ
         $review = Review::create([
             'user_id' => $userId,
             'product_id' => $productId,
-            'product_variant_id' => $variantId ?? null,
+            'product_variant_id' => $validVariantId, // Lưu variant_id để đánh giá theo variant
             'order_id' => $order->id,
             'rating' => $request->rating,
             'content' => $request->content,
             'tags' => $request->tags ?? [],
-            'status' => 'public', // Match với getProductReviews() - chỉ hiển thị public
+            'status' => 'public',
+            'variant_color' => $variantColor,
+            'variant_size' => $variantSize,
         ]);
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Setting;
 use App\Events\NotificationCreated;
+use App\Events\NewOrderCreated;
 use Illuminate\Support\Facades\DB;
 
 class NotificationService
@@ -128,7 +129,7 @@ class NotificationService
                 'user_id' => $user->id,
                 'type' => 'new_order',
                 'title' => 'Đơn hàng mới',
-                'message' => "Đơn hàng #{$order->code} - {$order->customer_name} - " . number_format($order->total_amount) . 'đ',
+                'message' => "Đơn hàng #{$order->code} - {$order->full_name} - " . number_format($order->total) . 'đ',
                 'data' => json_encode([
                     'order_id' => $order->id,
                     'url' => route('admin.orders.show', $order->id)
@@ -137,6 +138,9 @@ class NotificationService
                 'updated_at' => now(),
             ]);
         }
+        
+        // Broadcast event để cập nhật realtime
+        broadcast(new NewOrderCreated($order->fresh()))->toOthers();
     }
 
     // Thông báo QC failed

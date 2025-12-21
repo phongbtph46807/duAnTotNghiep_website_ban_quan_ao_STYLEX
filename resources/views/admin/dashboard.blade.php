@@ -235,6 +235,117 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Bảng đơn hàng mới --}}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header border-0 align-items-center d-flex">
+                                <h4 class="card-title mb-0 flex-grow-1">Đơn hàng chờ xác nhận</h4>
+                                <div>
+                                    <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" class="btn btn-soft-primary btn-sm">
+                                        <i class="ri-eye-line align-middle me-1"></i> Xem tất cả
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle table-nowrap mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Mã đơn</th>
+                                                <th>Khách hàng</th>
+                                                <th>Sản phẩm</th>
+                                                <th>Tổng tiền</th>
+                                                <th>Trạng thái</th>
+                                                <th>Thanh toán</th>
+                                                <th>Ngày đặt</th>
+                                                <th>Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($recentOrders as $order)
+                                                <tr>
+                                                    <td>
+                                                        <span class="fw-semibold">{{ $order->code }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div>
+                                                                <div class="fw-semibold">{{ $order->full_name }}</div>
+                                                                <small class="text-muted">{{ $order->email }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-soft-dark text-body">
+                                                            {{ $order->items->count() }} sản phẩm
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="fw-semibold text-primary">
+                                                            {{ number_format($order->total, 0, ',', '.') }}₫
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $statusBadges = [
+                                                                'pending' => ['label' => 'Chờ xác nhận', 'class' => 'bg-warning-subtle text-warning'],
+                                                                'processing' => ['label' => 'Đang xử lý', 'class' => 'bg-info-subtle text-info'],
+                                                                'shipping' => ['label' => 'Đang giao', 'class' => 'bg-primary-subtle text-primary'],
+                                                                'delivered' => ['label' => 'Đã giao', 'class' => 'bg-success-subtle text-success'],
+                                                                'completed' => ['label' => 'Hoàn thành', 'class' => 'bg-success-subtle text-success'],
+                                                                'cancelled' => ['label' => 'Đã hủy', 'class' => 'bg-danger-subtle text-danger'],
+                                                                'returned' => ['label' => 'Trả hàng', 'class' => 'bg-warning-subtle text-warning'],
+                                                                'cancel_request' => ['label' => 'Yêu cầu hủy', 'class' => 'bg-danger-subtle text-danger'],
+                                                                'return_request' => ['label' => 'Yêu cầu trả', 'class' => 'bg-warning-subtle text-warning'],
+                                                            ];
+                                                            $status = $statusBadges[$order->status] ?? ['label' => $order->status, 'class' => 'bg-secondary-subtle text-secondary'];
+                                                        @endphp
+                                                        <span class="badge {{ $status['class'] }}">
+                                                            {{ $status['label'] }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $paymentBadges = [
+                                                                'paid' => ['label' => 'Đã thanh toán', 'class' => 'bg-success-subtle text-success'],
+                                                                'unpaid' => ['label' => 'Chưa thanh toán', 'class' => 'bg-warning-subtle text-warning'],
+                                                                'refunded' => ['label' => 'Đã hoàn tiền', 'class' => 'bg-info-subtle text-info'],
+                                                            ];
+                                                            $payment = $paymentBadges[$order->payment_status] ?? ['label' => $order->payment_status, 'class' => 'bg-secondary-subtle text-secondary'];
+                                                        @endphp
+                                                        <span class="badge {{ $payment['class'] }}">
+                                                            {{ $payment['label'] }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-muted">
+                                                            {{ $order->created_at ? $order->created_at->format('d/m/Y H:i') : '-' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ route('admin.orders.index', ['code' => $order->code]) }}" 
+                                                           class="btn btn-soft-primary btn-sm">
+                                                            <i class="ri-eye-line"></i> Xem
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="8" class="text-center text-muted py-4">
+                                                        <i class="ri-inbox-line fs-3 d-block mb-2"></i>
+                                                        Chưa có đơn hàng nào
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
