@@ -122,9 +122,19 @@ class AuthController extends Controller
                 } catch (\Throwable $e) {
                     // ignore merge errors to not block login
                 }
-                if(Auth::user()->role == 1 || Auth::user()->role == 2){
+                $user = Auth::user();
+                
+                // Kiểm tra role integer (Admin, Staff, Warehouse Manager)
+                if($user->role == 1 || $user->role == 2 || $user->role == 3){
                     return redirect()->route('admin.dashboard');
-                }else{
+                }
+                // Kiểm tra role từ RBAC (role mới được tạo)
+                elseif($user->roles()->exists()){
+                    // Nếu user có role trong RBAC (không phải role integer chuẩn), redirect đến admin
+                    return redirect()->route('admin.dashboard');
+                }
+                // User thường
+                else{
                     return redirect()->route('user.dashboard');
                 }
             }else{

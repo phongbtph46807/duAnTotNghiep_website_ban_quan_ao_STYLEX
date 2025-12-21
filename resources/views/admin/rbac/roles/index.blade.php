@@ -43,7 +43,9 @@
             <td>{{ $role->id }}</td>
             <td>
               <div>
-                <strong>{{ $role->name }}</strong>
+                <span class="badge bg-{{ $role->color ?? 'secondary' }}-subtle text-{{ $role->color ?? 'secondary' }} me-2">
+                  {{ $role->name }}
+                </span>
                 @if($isAdmin)
                   <span class="badge bg-danger ms-2">Bắt buộc</span>
                 @endif

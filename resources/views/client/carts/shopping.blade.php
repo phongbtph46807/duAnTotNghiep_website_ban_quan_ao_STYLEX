@@ -216,7 +216,7 @@
 			<div class="col-lg-10 col-xl-12 m-lr-auto m-b-50" style="margin-top: 30px;">
 				<div class="m-l-25 m-r--38 m-lr-0-xl">
 					<div class="bor10 p-lr-40 p-t-30 p-b-40 p-lr-15-sm">
-						<h4 class="mtext-109 cl2 p-b-30">Tổng cộng</h4>
+						<h4 class="mtext-109 cl2 p-b-30" style="font-size: 20px; font-weight: 700;">Tổng cộng</h4>
 					
 					<!-- Voucher Section -->
 					<div class="bor12 p-b-15 m-b-20">
@@ -319,41 +319,40 @@
 						<div class="size-208"><span class="stext-110 cl2" style="color: #28a745;">Giảm giá:</span></div>
 						<div class="size-209"><span class="mtext-110 cl2" id="discountAmount" style="color: #28a745;">0 ₫</span></div>
 					</div>
-					<div class="flex-w flex-t bor12 p-t-15 p-b-30">
-						<div class="size-208 w-full-ssm"><span class="stext-110 cl2">Vận chuyển:</span></div>
+					<div class="flex-w flex-t bor12 p-t-10 p-b-10">
+						<div class="size-208 w-full-ssm"><span class="stext-110 cl2" style="font-size: 14px;">Vận chuyển:</span></div>
 						<div class="size-209 p-r-18 p-r-0-sm w-full-ssm">
 							@if(!empty($shippingCarriers) && count($shippingCarriers) > 0)
-								<div class="shipping-carriers-list" style="display: flex; flex-wrap: wrap; gap: 8px;">
+								<div class="shipping-carriers-list" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
 									@foreach($shippingCarriers as $carrier)
-									<div class="shipping-carrier-box" 
+									<label class="shipping-carrier-box" 
+										   for="carrier_{{ $carrier->id }}"
 										 data-carrier-id="{{ $carrier->id }}"
 										 data-carrier-fee="{{ isset($carrier->fee) ? $carrier->fee : 0 }}"
-										 style="display: inline-block; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: #fff; margin-right: 8px; margin-bottom: 8px;"
-										 onmouseover="this.style.borderColor='#333'; this.style.backgroundColor='#f9f9f9';"
-										 onmouseout="if(!this.classList.contains('selected')) { this.style.borderColor='#e0e0e0'; this.style.backgroundColor='#fff'; }">
+										   style="display: inline-flex; align-items: center; padding: 6px 12px; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; transition: all 0.2s; background: #fff; margin: 0; min-height: 32px; box-sizing: border-box;">
 										<input type="radio" 
 											   name="shipping_carrier" 
 											   id="carrier_{{ $carrier->id }}" 
 											   value="{{ $carrier->id }}"
 											   data-fee="{{ isset($carrier->fee) ? $carrier->fee : 0 }}"
-											   style="margin-right: 6px; vertical-align: middle;">
-										<label for="carrier_{{ $carrier->id }}" style="cursor: pointer; margin: 0; font-weight: 600; color: #333; font-size: 14px; vertical-align: middle;">
-											{{ $carrier->name }}
-											<span style="margin-left: 8px; color: #666; font-weight: 500;">
-												({{ number_format(isset($carrier->fee) ? $carrier->fee : 0, 0, ',', '.') }} ₫)
+											   style="margin: 0; margin-right: 6px; cursor: pointer; flex-shrink: 0;">
+										<span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 500; color: #333; font-size: 13px; white-space: nowrap;">
+											<span>{{ $carrier->name }}</span>
+											<span style="color: #666; font-weight: 400; font-size: 12px;">
+												{{ number_format(isset($carrier->fee) ? $carrier->fee : 0, 0, ',', '.') }} ₫
+											</span>
 											</span>
 										</label>
-									</div>
 									@endforeach
 								</div>
 							@else
-								<span class="stext-111 cl6 p-t-2">Tính khi thanh toán</span>
+								<span class="stext-111 cl6" style="font-size: 13px;">Tính khi thanh toán</span>
 							@endif
 						</div>
 					</div>
 					<div class="flex-w flex-t p-t-27 p-b-33">
-						<div class="size-208"><span class="mtext-101 cl2">Tổng:</span></div>
-						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal">{{ number_format($total ?? 0, 0, ',', '.') }} ₫</span></div>
+						<div class="size-208"><span class="mtext-101 cl2" style="color: #dc3545; font-weight: 600; font-size: 18px;">Tổng:</span></div>
+						<div class="size-209 p-t-1"><span class="mtext-110 cl2" id="cart-grandtotal" style="color: #dc3545; font-weight: 700; font-size: 22px;">{{ number_format($total ?? 0, 0, ',', '.') }} ₫</span></div>
 					</div>
 						<a href="{{ route('client.checkout.index') }}" id="btn-go-checkout" class="flex-c-m stext-101 cl0 size-116 bg1 bor14 hov-btn3 p-lr-15 trans-04 pointer">Thanh toán</a>
 					</div>

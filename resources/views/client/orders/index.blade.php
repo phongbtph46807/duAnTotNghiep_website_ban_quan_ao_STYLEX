@@ -61,7 +61,7 @@
             'cancelled' => 'Đã hủy',
             'returned' => 'Trả hàng/Hoàn tiền',
         ];
-            @endphp
+    @endphp
 
     @if(session('success'))
         <div class="alert alert-success" role="alert">{{ session('success') }}</div>
@@ -259,6 +259,8 @@
 </div>
 
 @push('scripts')
+{{-- Load Laravel Echo và Pusher --}}
+@vite(['resources/js/app.js'])
 <script>
 (function(){
     const cancelModal = document.getElementById('cancelModal');
@@ -360,34 +362,220 @@
     bindPreview('returnImagesInput', 'returnPreview');
 })();
 
-// Auto-poll trạng thái đơn hàng, nếu thay đổi thì reload
+// ========== REALTIME ORDER STATUS UPDATES ==========
+// Lắng nghe event cập nhật trạng thái đơn hàng từ admin
 (function(){
-    const pollUrl = "{{ route('client.order.poll') }}";
-    const cardEls = Array.from(document.querySelectorAll('.order-card[data-order-id]'));
-    if (!pollUrl || cardEls.length === 0) return;
-
-    const currentStatuses = {};
-    cardEls.forEach(el => {
-        currentStatuses[el.dataset.orderId] = el.dataset.orderStatus;
-    });
-
-    function poll() {
-        fetch(pollUrl, { credentials: 'same-origin' })
-            .then(res => res.json())
-            .then(json => {
-                if (!json || !json.data) return;
-                for (const item of json.data) {
-                    const old = currentStatuses[item.id];
-                    if (old && old !== item.status) {
-                        window.location.reload();
-                        return;
+    @auth
+    const userId = {{ Auth::id() }};
+    
+    // Chỉ chạy khi window.Echo đã được load (từ bootstrap.js)
+    if (typeof window.Echo !== 'undefined') {
+        // Lắng nghe trên private channel của user
+        window.Echo.private(`user.${userId}.orders`)
+            .listen('.order.status.updated', (e) => {
+                console.log('Order status updated (client):', e);
+                
+                const orderData = e;
+                const orderId = orderData.id;
+                const newStatus = orderData.status;
+                
+                // Tìm order card trong trang
+                const orderCard = document.querySelector(`.order-card[data-order-id="${orderId}"]`);
+                
+                if (!orderCard) {
+                    // Nếu không tìm thấy order trong trang, có thể đã bị filter hoặc chưa load
+                    console.log('Order not found in current page:', orderId);
+                    return;
+                }
+                
+                // Cập nhật status trong data attribute
+                orderCard.setAttribute('data-order-status', newStatus);
+                
+                // Cập nhật hiển thị status
+                const statusEl = orderCard.querySelector('.order-card__status');
+                if (statusEl) {
+                    const statusLabels = {
+                        'pending': 'Chờ xác nhận',
+                        'processing': 'Đang xử lý',
+                        'shipping': 'Chờ giao hàng',
+                        'delivered': 'Đã giao',
+                        'completed': 'Hoàn thành',
+                        'cancel_request': 'Yêu cầu hủy',
+                        'return_request': 'Yêu cầu trả hàng',
+                        'cancelled': 'Đã hủy',
+                        'returned': 'Trả hàng/Hoàn tiền',
+                    };
+                    statusEl.textContent = statusLabels[newStatus] || newStatus;
+                    
+                    // Cập nhật màu sắc theo status
+                    statusEl.className = 'order-card__status';
+                    if (newStatus === 'completed' || newStatus === 'delivered') {
+                        statusEl.style.color = '#10b981';
+                    } else if (newStatus === 'cancelled' || newStatus === 'cancel_request') {
+                        statusEl.style.color = '#ef4444';
+                    } else if (newStatus === 'returned' || newStatus === 'return_request') {
+                        statusEl.style.color = '#f59e0b';
+                    } else {
+                        statusEl.style.color = '#ff7a45';
                     }
                 }
-            })
-            .catch(() => {});
-    }
+                
+                // Hiển thị thông báo
+                const statusLabels = {
+                    'pending': 'Chờ xác nhận',
+                    'processing': 'Đang xử lý',
+                    'shipping': 'Chờ giao hàng',
+                    'delivered': 'Đã giao',
+                    'completed': 'Hoàn thành',
+                    'cancel_request': 'Yêu cầu hủy',
+                    'return_request': 'Yêu cầu trả hàng',
+                    'cancelled': 'Đã hủy',
+                    'returned': 'Trả hàng/Hoàn tiền',
+                };
+                
+                // Sử dụng toast notification nếu có, hoặc alert đơn giản
+                if (typeof showToast === 'function') {
+                    showToast(`Đơn hàng #${orderData.code} đã được cập nhật: ${statusLabels[newStatus] || newStatus}`, 'success');
+                } else {
+                    // Fallback: hiển thị thông báo đơn giản
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:99999;font-weight:600;';
+                    notification.textContent = `Đơn hàng #${orderData.code}: ${statusLabels[newStatus] || newStatus}`;
+                    document.body.appendChild(notification);
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                        notification.style.transition = 'opacity 0.3s';
+                        setTimeout(() => notification.remove(), 300);
+                    }, 3000);
+                }
+                
+                // Cập nhật actions buttons dựa trên status mới
+                const actionsEl = orderCard.querySelector('.order-actions');
+                if (actionsEl) {
+                    // Xóa các button cũ
+                    const oldButtons = actionsEl.querySelectorAll('.btn-cancel-order, .btn-return-order');
+                    oldButtons.forEach(btn => btn.remove());
+                    
+                    // Thêm button mới dựa trên status
+                    if (newStatus === 'pending') {
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.type = 'button';
+                        cancelBtn.className = 'btn-outline btn-cancel-order';
+                        cancelBtn.setAttribute('data-order-id', orderId);
+                        cancelBtn.setAttribute('data-order-code', orderData.code);
+                        cancelBtn.style.cssText = 'border-color:#ff4d4f;color:#ff4d4f;';
+                        cancelBtn.textContent = 'Hủy đơn';
+                        cancelBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const orderId = cancelBtn.dataset.orderId;
+                            const orderCode = cancelBtn.dataset.orderCode;
+                            // Trigger modal mở (code đã có ở trên)
+                            document.querySelectorAll('.btn-cancel-order').forEach(btn => {
+                                if (btn.dataset.orderId === orderId) {
+                                    btn.click();
+                                }
+                            });
+                        });
+                        actionsEl.insertBefore(cancelBtn, actionsEl.firstChild);
+                    } else if (newStatus === 'completed' || newStatus === 'delivered') {
+                        const returnBtn = document.createElement('button');
+                        returnBtn.type = 'button';
+                        returnBtn.className = 'btn-outline btn-return-order';
+                        returnBtn.setAttribute('data-order-id', orderId);
+                        returnBtn.setAttribute('data-order-code', orderData.code);
+                        returnBtn.style.cssText = 'border-color:#f59e0b;color:#f59e0b;';
+                        returnBtn.textContent = 'Yêu cầu trả hàng';
+                        returnBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const orderId = returnBtn.dataset.orderId;
+                            const orderCode = returnBtn.dataset.orderCode;
+                            // Trigger modal mở (code đã có ở trên)
+                            document.querySelectorAll('.btn-return-order').forEach(btn => {
+                                if (btn.dataset.orderId === orderId) {
+                                    btn.click();
+                                }
+                            });
+                        });
+                        const buyAgainBtn = document.createElement('a');
+                        buyAgainBtn.className = 'btn-primary-x';
+                        buyAgainBtn.href = "{{ route('client.products.index') }}";
+                        buyAgainBtn.textContent = 'Mua lại';
+                        actionsEl.appendChild(returnBtn);
+                        actionsEl.appendChild(buyAgainBtn);
+                    }
+                }
+                
+                // Nếu order chuyển sang tab khác, chỉ hiển thị thông báo, không reload
+                const currentTab = new URLSearchParams(window.location.search).get('status');
+                const statusTabMap = {
+                    'pending': null,
+                    'processing': 'processing',
+                    'shipping': 'shipping',
+                    'delivered': 'delivered',
+                    'completed': 'completed',
+                    'cancelled': 'cancelled',
+                    'cancel_request': 'cancelled',
+                    'returned': 'returned',
+                    'return_request': 'returned',
+                };
+                
+                const expectedTab = statusTabMap[newStatus];
+                if (expectedTab !== undefined && currentTab !== expectedTab) {
+                    // Chỉ hiển thị thông báo, không reload
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#3b82f6;color:#fff;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:99999;font-weight:600;max-width:300px;';
+                    notification.innerHTML = `
+                        <div>Đơn hàng đã chuyển trạng thái</div>
+                        <div style="font-size:12px;margin-top:4px;opacity:0.9;">
+                            Đơn hàng #${orderData.code} hiện ở tab "${statusLabels[newStatus] || newStatus}"
+                        </div>
+                    `;
+                    document.body.appendChild(notification);
+                    setTimeout(() => {
+                        notification.style.opacity = '0';
+                        notification.style.transition = 'opacity 0.3s';
+                        setTimeout(() => notification.remove(), 300);
+                    }, 4000);
+                }
+            });
+        
+        console.log('✅ Realtime order updates enabled for client');
+    } else {
+        console.warn('⚠️ Laravel Echo not loaded. Realtime updates disabled.');
+        
+        // Fallback: sử dụng polling nếu Echo không có
+        const pollUrl = "{{ route('client.order.poll') }}";
+        const cardEls = Array.from(document.querySelectorAll('.order-card[data-order-id]'));
+        if (pollUrl && cardEls.length > 0) {
+            const currentStatuses = {};
+            cardEls.forEach(el => {
+                currentStatuses[el.dataset.orderId] = el.dataset.orderStatus;
+            });
 
-    setInterval(poll, 10000); // 10s
+            function poll() {
+                fetch(pollUrl, { credentials: 'same-origin' })
+                    .then(res => res.json())
+                    .then(json => {
+                        if (!json || !json.data) return;
+                        for (const item of json.data) {
+                            const old = currentStatuses[item.id];
+                            if (old && old !== item.status) {
+                                window.location.reload();
+                                return;
+                            }
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+            setInterval(poll, 10000); // 10s
+            console.log('✅ Fallback polling enabled');
+        }
+    }
+    @else
+    // User chưa đăng nhập, không có realtime
+    console.log('User not authenticated, realtime disabled');
+    @endauth
 })();
 </script>
 @endpush

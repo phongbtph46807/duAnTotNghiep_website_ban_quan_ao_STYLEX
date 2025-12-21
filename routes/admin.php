@@ -33,10 +33,21 @@ use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\SalaryController;
 
-// Admin và Staff routes - cả hai đều có thể truy cập
-Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function () {
+// Dashboard và Profile - cho phép Admin, Staff và Warehouse Manager
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Profile routes
+        Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+        Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
+        Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+    });
+});
+
+// Admin, Staff và Warehouse Manager routes - cả ba đều có thể truy cập
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {
+    Route::prefix('admin')->as('admin.')->group(function () {
 
         //Categories route
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -68,11 +79,6 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
             Route::post('/{product}/images', [ProductImageController::class, 'storeProduct'])->name('images.store');
         });
         Route::post('/variants/{variant}/images', [ProductImageController::class, 'storeVariant'])->name('variants.images.store');
-
-        // Profile routes
-        Route::get('/profile', [UserController::class, 'profile'])->name('profile');
-        Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
-        Route::put('/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
 
         // Banners routes
         Route::prefix('banners')->as('banners.')->group(function () {
@@ -110,8 +116,18 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2']], function 
             Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])->name('toggleStatus');
             Route::delete('/{id}', [ReviewController::class, 'destroy'])->name('destroy');
         });
-        // Orders list: allow both Admin and Staff to view orders
+        // Orders list: allow Admin, Staff và Warehouse Manager to view orders
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/pending-requests-count', [OrderController::class, 'getPendingRequestsCount'])->name('orders.pendingRequestsCount');
+        
+        // Orders management - cho phép Admin, Staff và Warehouse Manager xem thông báo và quản lý đơn hàng
+        Route::prefix('orders')->as('orders.')->group(function () {
+            Route::get('/pending-requests-count', [OrderController::class, 'getPendingRequestsCount'])->name('pendingRequestsCount');
+            Route::get('/notifications', [OrderController::class, 'getNotifications'])->name('notifications');
+            Route::post('/{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+            Route::post('/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('approveCancel');
+            Route::post('/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('approveReturn');
+        });
     });
 });
 
@@ -241,14 +257,14 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             Route::resource('permissions', PermissionEntityController::class)->except(['show']);
         });
 
-        // Orders
+        // Orders - các route này chỉ dành cho Admin
         Route::prefix('orders')->as('orders.')->group(function () {
-            Route::get('/', [OrderController::class, 'index'])->name('index');
+            // Route index đã được định nghĩa ở trên cho cả Admin và Staff, không cần định nghĩa lại
             Route::get('{order}', [OrderController::class, 'show'])->name('show');
             Route::post('{order}/confirm', [OrderController::class, 'confirm'])->name('confirm');
             Route::post('{order}/ship', [OrderController::class, 'ship'])->name('ship');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
-            Route::post('{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+            // Route updateStatus đã được định nghĩa ở trên cho cả Admin và Staff, không cần định nghĩa lại
             Route::post('{itemId}/return', [OrderController::class, 'returnItem'])->name('returnItem');
 
             Route::prefix('fulfillment')->as('fulfillment.')->group(function () {
@@ -263,10 +279,9 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
 
         // Users
         
-        // Orders management
-        Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-        Route::post('/orders/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('orders.approveCancel');
-        Route::post('/orders/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('orders.approveReturn');
+        // Orders management - CHỈ ADMIN
+        // Các route updateStatus, approveCancel, approveReturn đã được định nghĩa cho cả Admin và Staff ở trên
+        // Chỉ còn payment-status là chỉ dành cho Admin
         Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
         
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)

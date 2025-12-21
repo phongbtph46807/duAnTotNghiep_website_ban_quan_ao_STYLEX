@@ -19,6 +19,8 @@ use Illuminate\Support\Str;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\LoyaltyService;
+use App\Services\NotificationService;
+use App\Events\OrderStatusUpdated;
 use Illuminate\Support\Facades\Log;
 
 
@@ -26,11 +28,13 @@ class CheckoutController extends Controller
 {
     protected VoucherService $voucherService;
     protected LoyaltyService $loyaltyService;
+    protected NotificationService $notificationService;
 
-    public function __construct(VoucherService $voucherService, LoyaltyService $loyaltyService)
+    public function __construct(VoucherService $voucherService, LoyaltyService $loyaltyService, NotificationService $notificationService)
     {
         $this->voucherService = $voucherService;
         $this->loyaltyService = $loyaltyService;
+        $this->notificationService = $notificationService;
     }
     private function getOwnerKeys(): array
     {
@@ -188,8 +192,12 @@ class CheckoutController extends Controller
 
     public function thankyou($id)
     {
-        $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
-        return view('client.checkout.thankyou', compact('order'));
+        try {
+            $order = Order::with('items.product', 'items.variant.size', 'items.variant.color', 'items.variant.texture')->findOrFail($id);
+            return view('client.checkout.thankyou', compact('order'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('home')->with('error', 'Không tìm thấy đơn hàng.');
+        }
     }
     public function track(Request $request)
     {
@@ -235,10 +243,8 @@ class CheckoutController extends Controller
             'shipping' => 'Chờ giao hàng',
             'delivered' => 'Đã giao',
             'completed' => 'Hoàn thành',
-            'cancel_request' => 'Yêu cầu hủy',
-            'return_request' => 'Yêu cầu trả hàng',
-            'cancelled' => 'Đã hủy',
-            'returned' => 'Trả hàng/Hoàn tiền',
+            'cancelled' => 'Hủy', // Gộp cancel_request và cancelled
+            'returned' => 'Trả hàng', // Gộp return_request và returned
         ];
         $statusFilter = $request->query('status');
         if ($statusFilter && !array_key_exists($statusFilter, $statusTabs)) {
@@ -246,14 +252,44 @@ class CheckoutController extends Controller
         }
 
         $orders = \App\Models\Order::query()
-            ->when($userId, function ($q) use ($userId) {
-                $q->where('user_id', $userId);
+            ->when($userId, function ($q) use ($userId, $sessionId) {
+                // Ưu tiên đơn gắn với user hiện tại
+                $q->where(function ($qq) use ($userId, $sessionId) {
+                    $qq->where('user_id', $userId);
+
+                    // Kèm theo các đơn chưa gắn user nhưng cùng session hiện tại (nếu có)
+                    if ($sessionId) {
+                        $qq->orWhere(function ($qq2) use ($sessionId) {
+                            $qq2->whereNull('user_id')
+                                ->where('session_id', $sessionId);
+                        });
+                    }
+
+                    // Kèm theo các đơn chưa gắn user nhưng trùng email đăng nhập
+                    $email = Auth::user()->email ?? null;
+                    if ($email) {
+                        $qq->orWhere(function ($qq3) use ($email) {
+                            $qq3->whereNull('user_id')
+                                ->where('email', $email);
+                        });
+                    }
+                });
             })
             ->when(!$userId, function ($q) use ($sessionId) {
+                // Khách chưa đăng nhập: lọc theo session hiện tại
                 $q->where('session_id', $sessionId);
             })
             ->when($statusFilter, function ($q) use ($statusFilter) {
-                $q->where('status', $statusFilter);
+                // Gộp các trạng thái liên quan
+                if ($statusFilter === 'cancelled') {
+                    // Hiển thị cả cancel_request và cancelled
+                    $q->whereIn('status', ['cancel_request', 'cancelled']);
+                } elseif ($statusFilter === 'returned') {
+                    // Hiển thị cả return_request và returned
+                    $q->whereIn('status', ['return_request', 'returned']);
+                } else {
+                    $q->where('status', $statusFilter);
+                }
             })
             ->orderByDesc('created_at')
             ->with([
@@ -346,6 +382,9 @@ class CheckoutController extends Controller
         $order->cancel_images = $storedImages ?: null;
         $order->save();
 
+        // Broadcast event để cập nhật badge realtime cho admin
+        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+
         return back()->with('success', 'Yêu cầu hủy đã được gửi. Vui lòng đợi admin duyệt.');
     }
 
@@ -381,6 +420,9 @@ class CheckoutController extends Controller
         $order->return_reason = $data['return_reason'] ?? null;
         $order->return_images = $storedImages ?: null;
         $order->save();
+
+        // Broadcast event để cập nhật badge realtime cho admin
+        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
 
         return back()->with('success', 'Yêu cầu trả hàng đã được gửi. Vui lòng đợi admin duyệt.');
     }
@@ -627,6 +669,9 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        // Thông báo đơn hàng mới cho admin/staff
+        $this->notificationService->notifyNewOrder($order);
+
         return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
     }
 
@@ -812,6 +857,9 @@ class CheckoutController extends Controller
             });
 
             Log::info("=== ORDER HOÀN THÀNH ===");
+
+            // Thông báo đơn hàng mới cho admin/staff
+            $this->notificationService->notifyNewOrder($order);
 
             // Xóa key redis
             Cache::forget("order:$txnRef");

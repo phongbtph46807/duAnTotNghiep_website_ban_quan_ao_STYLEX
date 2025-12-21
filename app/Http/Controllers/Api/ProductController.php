@@ -28,15 +28,30 @@ class ProductController extends Controller
         // only active/visible products (optional)
         $q->where('is_active', true);
 
-        // keyword search
-        $keyword = $request->input('keyword');
+        // keyword search - hỗ trợ nhiều tên parameter: keyword, search, q
+        $keyword = $request->input('keyword') 
+                ?? $request->input('search') 
+                ?? $request->input('q');
+        
+        // Trim và loại bỏ khoảng trắng thừa, chỉ tìm kiếm nếu keyword không rỗng
+        $searchKeyword = null;
         if ($keyword) {
-            // simple approach: name + short_description + description
-            $q->where(function($qq) use ($keyword) {
-                $qq->where('name', 'like', "%{$keyword}%")
-                   ->orWhere('short_description', 'like', "%{$keyword}%")
-                   ->orWhere('description', 'like', "%{$keyword}%");
+            $trimmedKeyword = trim($keyword);
+            
+            if (!empty($trimmedKeyword) && strlen($trimmedKeyword) > 0) {
+                $searchKeyword = $trimmedKeyword;
+                // Laravel tự động escape khi dùng where('column', 'like', ...)
+                // Tìm kiếm trong name, description
+                // Nếu muốn tìm theo SKU, tìm trong variants thông qua relationship
+                $q->where(function($qq) use ($searchKeyword) {
+                    $qq->where('name', 'like', "%{$searchKeyword}%")
+                       ->orWhere('description', 'like', "%{$searchKeyword}%")
+                       // Tìm kiếm trong SKU của variants
+                       ->orWhereHas('variants', function($qvv) use ($searchKeyword) {
+                           $qvv->where('sku', 'like', "%{$searchKeyword}%");
             });
+                });
+            }
         }
 
         // filters
@@ -104,9 +119,9 @@ class ProductController extends Controller
             $q->orderBy('created_at','desc');
         } else {
             // relevance: if keyword present, try to order by match (simple approach)
-            if ($keyword) {
-                // naive scoring: name matches first
-                $q->orderByRaw("CASE WHEN name LIKE ? THEN 1 WHEN short_description LIKE ? THEN 2 ELSE 3 END", ["%{$keyword}%","%{$keyword}%"]);
+            if ($searchKeyword) {
+                // naive scoring: name matches first, then description
+                $q->orderByRaw("CASE WHEN name LIKE ? THEN 1 WHEN description LIKE ? THEN 2 ELSE 3 END", ["%{$searchKeyword}%","%{$searchKeyword}%"]);
             } else {
                 $q->orderBy('id','desc');
             }
@@ -138,8 +153,13 @@ class ProductController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Product API Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
+            
+            // Trả về 200 với data rỗng thay vì 500 để frontend không bị lỗi
             return response()->json([
                 'data' => [],
                 'meta' => [
@@ -147,8 +167,9 @@ class ProductController extends Controller
                     'last_page' => 1,
                     'per_page' => 15,
                     'total' => 0,
-                ]
-            ], 500);
+                ],
+                'error' => config('app.debug') ? $e->getMessage() : 'Có lỗi xảy ra khi tải sản phẩm'
+            ], 200);
         }
     }
 

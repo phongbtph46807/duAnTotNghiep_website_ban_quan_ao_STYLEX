@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -17,7 +18,7 @@ class UserSeeder extends Seeder
         User::withTrashed()->forceDelete();
 
         // Tạo Admin 1
-        User::updateOrCreate(
+        $admin1 = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Phong',
@@ -30,7 +31,7 @@ class UserSeeder extends Seeder
         );
 
         // Tạo Admin 2
-        User::updateOrCreate(
+        $admin2 = User::updateOrCreate(
             ['email' => 'admin@test.com'],
             [
                 'name' => 'Admin User',
@@ -43,7 +44,7 @@ class UserSeeder extends Seeder
         );
 
         // Tạo Staff
-        User::updateOrCreate(
+        $staff = User::updateOrCreate(
             ['email' => 'staff@test.com'],
             [
                 'name' => 'Phong',
@@ -54,6 +55,45 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now()
             ]
         );
+
+        // Tạo Warehouse Manager
+        $warehouseManager = User::updateOrCreate(
+            ['email' => 'warehouse@test.com'],
+            [
+                'name' => 'Warehouse Manager',
+                'password' => Hash::make('123456'),
+                'role' => 3,
+                'is_admin' => 0,
+                'status' => 'active',
+                'email_verified_at' => now()
+            ]
+        );
+
+        // Gán role trong RBAC cho Admin, Staff và Warehouse Manager
+        $adminRole = Role::where('name', 'Admin')->first();
+        $staffRole = Role::where('name', 'Staff')->first();
+        $warehouseManagerRole = Role::where('name', 'Warehouse Manager')->first();
+
+        if ($adminRole) {
+            if (!$admin1->roles()->where('roles.id', $adminRole->id)->exists()) {
+                $admin1->roles()->attach($adminRole->id);
+            }
+            if (!$admin2->roles()->where('roles.id', $adminRole->id)->exists()) {
+                $admin2->roles()->attach($adminRole->id);
+            }
+        }
+
+        if ($staffRole && $staff) {
+            if (!$staff->roles()->where('roles.id', $staffRole->id)->exists()) {
+                $staff->roles()->attach($staffRole->id);
+            }
+        }
+
+        if ($warehouseManagerRole && $warehouseManager) {
+            if (!$warehouseManager->roles()->where('roles.id', $warehouseManagerRole->id)->exists()) {
+                $warehouseManager->roles()->attach($warehouseManagerRole->id);
+            }
+        }
 
         // Tạo User thường 1
         User::updateOrCreate(
@@ -111,6 +151,7 @@ class UserSeeder extends Seeder
         $this->command->info('Admin 1: admin@example.com / 123456 (role=1, status=active)');
         $this->command->info('Admin 2: admin@test.com / 123456 (role=1, status=active)');
         $this->command->info('Staff: staff@test.com / 123456 (role=2, status=active)');
+        $this->command->info('Warehouse Manager: warehouse@test.com / 123456 (role=3, status=active)');
         $this->command->info('User 1: user@test.com / 123456 (role=0, status=active)');
         $this->command->info('User 2: test1@test.com / 123456 (role=0, status=active)');
         $this->command->info('User 3: test2@test.com / 123456 (role=0, status=inactive)');

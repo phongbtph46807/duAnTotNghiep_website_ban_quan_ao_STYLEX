@@ -17,11 +17,12 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         try {
-            // Chỉ hiển thị Admin và Staff, không hiển thị User
-            $query = User::query()->whereIn('role', [1, 2])->orderByRaw('CASE 
+            // Chỉ hiển thị Admin, Staff và Warehouse Manager, không hiển thị User
+            $query = User::query()->whereIn('role', [1, 2, 3])->orderByRaw('CASE 
                 WHEN role = 1 THEN 1 
                 WHEN role = 2 THEN 2 
-                ELSE 3 
+                WHEN role = 3 THEN 3 
+                ELSE 4 
             END')->latest('id');
 
             // Filter by role
@@ -46,11 +47,14 @@ class RoleController extends Controller
             $users = $query->paginate(10);
             
             // Get role statistics - tổng số tài khoản có quyền
-            $totalUsers = User::whereIn('role', [1, 2])->count();
+            $totalUsers = User::whereIn('role', [1, 2, 3])->count();
             
             // Get statistics by Role from database
             $roles = Role::orderBy('name')->get();
             $roleStats = [];
+            
+            // Lấy danh sách users theo từng role
+            $usersByRole = [];
             
             // Kiểm tra xem bảng role_user có tồn tại không
             $roleUserTableExists = false;
@@ -63,6 +67,7 @@ class RoleController extends Controller
             
             foreach ($roles as $role) {
                 $count = 0;
+                $roleUsers = collect();
                 
                 // Map role name sang role integer để đếm từ bảng users
                 $roleName = strtolower($role->name);
@@ -71,21 +76,37 @@ class RoleController extends Controller
                     $roleInteger = User::ROLE_ADMIN;
                 } elseif ($roleName === 'staff') {
                     $roleInteger = User::ROLE_STAFF;
+                } elseif ($roleName === 'warehouse manager') {
+                    $roleInteger = User::ROLE_WAREHOUSE_MANAGER;
+                } elseif ($roleName === 'user') {
+                    $roleInteger = User::ROLE_USER;
                 }
                 
-                // Đếm từ trường role integer (nguồn dữ liệu chính xác nhất)
+                // Lấy users từ trường role integer (nguồn dữ liệu chính xác nhất)
                 if ($roleInteger !== null) {
-                    $count = User::where('role', $roleInteger)->count();
+                    $roleUsers = User::where('role', $roleInteger)
+                        ->orderBy('name')
+                        ->get(['id', 'name', 'email', 'role', 'status', 'avatar', 'created_at']);
+                    $count = $roleUsers->count();
                 } else {
-                    // Nếu không phải Admin hoặc Staff, đếm từ bảng role_user
+                    // Nếu không phải Admin, Staff, User - lấy từ bảng role_user (RBAC)
                     if ($roleUserTableExists) {
                         try {
-                            $count = DB::table('role_user')
+                            $userIds = DB::table('role_user')
                                 ->where('role_id', $role->id)
-                                ->count();
+                                ->pluck('user_id');
+                            
+                            $roleUsers = User::whereIn('id', $userIds)
+                                ->orderBy('name')
+                                ->get(['id', 'name', 'email', 'role', 'status', 'avatar', 'created_at']);
+                            $count = $roleUsers->count();
                         } catch (\Exception $e) {
                             $count = 0;
+                            $roleUsers = collect();
                         }
+                    } else {
+                        $count = 0;
+                        $roleUsers = collect();
                     }
                 }
                 
@@ -93,9 +114,15 @@ class RoleController extends Controller
                     'role' => $role,
                     'count' => $count
                 ];
+                
+                $usersByRole[$role->id] = [
+                    'role' => $role,
+                    'users' => $roleUsers,
+                    'count' => $count
+                ];
             }
 
-            return view('admin.roles.index', compact('users', 'totalUsers', 'roleStats'));
+            return view('admin.roles.index', compact('users', 'totalUsers', 'roleStats', 'usersByRole'));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return redirect()->back()->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau');
@@ -106,7 +133,7 @@ class RoleController extends Controller
     {
         try {
             $request->validate([
-                'role' => 'required|in:1,2' // Chỉ cho phép Admin hoặc Staff
+                'role' => 'required|in:1,2,3' // Cho phép Admin, Staff hoặc Warehouse Manager
             ]);
 
             // Kiểm tra nếu đang thay đổi admin cuối cùng thành staff
@@ -241,6 +268,7 @@ class RoleController extends Controller
                     $roleInteger = match(strtolower($firstRole->name)) {
                         'admin' => User::ROLE_ADMIN,
                         'staff' => User::ROLE_STAFF,
+                        'warehouse manager' => User::ROLE_WAREHOUSE_MANAGER,
                         default => User::ROLE_USER
                     };
                 }
@@ -327,6 +355,7 @@ class RoleController extends Controller
                     $roleInteger = match(strtolower($firstRole->name)) {
                         'admin' => User::ROLE_ADMIN,
                         'staff' => User::ROLE_STAFF,
+                        'warehouse manager' => User::ROLE_WAREHOUSE_MANAGER,
                         default => User::ROLE_USER
                     };
             }

@@ -581,6 +581,14 @@ class PermissionSeeder extends Seeder
                 'name' => 'admin.orders.updateStatus',
                 'description' => 'Cập nhật trạng thái đơn hàng'
             ],
+            [
+                'name' => 'admin.orders.approveCancel',
+                'description' => 'Duyệt yêu cầu hủy đơn hàng'
+            ],
+            [
+                'name' => 'admin.orders.approveReturn',
+                'description' => 'Duyệt yêu cầu trả hàng'
+            ],
 
             // kho hàng giao dịch kho và tồn kho
             [
@@ -715,6 +723,12 @@ class PermissionSeeder extends Seeder
                 'admin.users.index',
                 'admin.users.edit',
                 'admin.users.update',
+
+                // Orders (Staff có thể xem và cập nhật trạng thái)
+                'admin.orders.index',
+                'admin.orders.updateStatus',
+                'admin.orders.approveCancel',
+                'admin.orders.approveReturn',
             ];
 
             $staffPermissionIds = Permission::whereIn('name', $staffPermissions)->pluck('id')->toArray();
@@ -723,6 +737,35 @@ class PermissionSeeder extends Seeder
             $this->command->info("Đã gán " . count($staffPermissionIds) . " permissions cho role Staff (ID: {$staffRole->id})");
         } else {
             $this->command->warn('Không tìm thấy role Staff!');
+        }
+
+        // Gán quyền cho role Warehouse Manager
+        $warehouseManagerRole = Role::where('name', 'Warehouse Manager')->first();
+
+        if ($warehouseManagerRole) {
+            // Các quyền mà Warehouse Manager có thể truy cập (liên quan đến kho hàng và tồn kho)
+            $warehouseManagerPermissions = [
+                // Dashboard
+                'admin.dashboard',
+
+                // Profile
+                'admin.profile',
+                'admin.profile.edit',
+                'admin.profile.update',
+
+                // Inventory/Warehouse - Quản lý kho hàng và tồn kho
+                'admin.inventory.index',
+                
+                // Orders - Xem đơn hàng để theo dõi trả hàng và hoàn tiền
+                'admin.orders.index',
+            ];
+
+            $warehouseManagerPermissionIds = Permission::whereIn('name', $warehouseManagerPermissions)->pluck('id')->toArray();
+            $warehouseManagerRole->permissions()->sync($warehouseManagerPermissionIds);
+
+            $this->command->info("Đã gán " . count($warehouseManagerPermissionIds) . " permissions cho role Warehouse Manager (ID: {$warehouseManagerRole->id})");
+        } else {
+            $this->command->warn('Không tìm thấy role Warehouse Manager!');
         }
     }
 }

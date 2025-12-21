@@ -102,3 +102,9 @@ Route::group(['middleware' => ['onlyAuthenticated']], function(){
 });
 
 
+use App\Events\TestPusher;
+
+Route::get('/test-api', function () {
+    event(new TestPusher("Thông báo: Có đơn hàng mới từ StyleX!"));
+    return "Đã gửi dữ liệu lên Pusher!";
+});
