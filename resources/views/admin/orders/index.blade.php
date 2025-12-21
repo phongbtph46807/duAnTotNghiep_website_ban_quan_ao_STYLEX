@@ -250,7 +250,7 @@
     <div class="row">
         <div class="col-12">
             <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-                <h4 class="mb-sm-0">Quản lý đơn hàng</h4>
+                <h4 class="mb-sm-0"><i class="ri-shopping-bag-3-line me-2"></i>Quản lý đơn hàng</h4>
             </div>
         </div>
     </div>
@@ -309,7 +309,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h5 class="mb-0">Yêu cầu hủy / trả hàng</h5>
+                        <h5 class="mb-0"><i class="ri-error-warning-line me-2"></i>Yêu cầu hủy / trả hàng</h5>
                         <span class="badge bg-warning text-dark">{{ $requestOrders->total() }}</span>
                     </div>
                     @if($requestOrders->isEmpty())
@@ -381,7 +381,7 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
             <div>
-                <h4 class="card-title mb-0">Danh sách đơn hàng</h4>
+                <h4 class="card-title mb-0"><i class="ri-file-list-3-line me-2"></i>Danh sách đơn hàng</h4>
                 <span class="text-muted small">Theo dõi trạng thái và dòng tiền theo thời gian thực</span>
             </div>
             <div class="d-flex gap-2">
@@ -588,7 +588,9 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
-                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->map(function($role) {
+                                            return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                                        })->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -609,7 +611,7 @@
                                         $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
                                         $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                 @endphp
-                                <tr>
+                                <tr data-order-id="{{ $order->id }}">
                                     <td>{{ $order->id }}</td>
                                     <td>{{ $order->code }}</td>
                                     <td class="text-start">
@@ -672,7 +674,7 @@
                                         </td>
                                         <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                         <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                        <td>
+                                        <td class="order-updater">
                                             @if($order->updatedByUser)
                                                 <div>
                                                     <span class="badge bg-primary-subtle text-primary">
@@ -682,7 +684,9 @@
                                                         <br>
                                                         <small class="text-muted">
                                                             @foreach($order->updatedByUser->roles as $role)
-                                                                <span class="badge bg-{{ $role->color ?? 'secondary' }}-subtle text-{{ $role->color ?? 'secondary' }}">{{ $role->name }}</span>
+                                                                <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                    {{ $role->name }}
+                                                                </span>
                                                             @endforeach
                                                         </small>
                                                     @endif
@@ -782,7 +786,7 @@
                                             $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['pending'];
                                             $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                         @endphp
-                                    <tr>
+                                    <tr data-order-id="{{ $order->id }}">
                                         <td>{{ $order->id }}</td>
                                         <td>{{ $order->code }}</td>
                                         <td class="text-start">
@@ -845,7 +849,7 @@
                                     </td>
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td class="order-updater">
                                         @if($order->updatedByUser)
                                             <div>
                                                 <span class="badge bg-primary-subtle text-primary">
@@ -855,7 +859,9 @@
                                                     <br>
                                                     <small class="text-muted">
                                                         @foreach($order->updatedByUser->roles as $role)
-                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                {{ $role->name }}
+                                                            </span>
                                                         @endforeach
                                                     </small>
                                                 @endif
@@ -938,7 +944,9 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
-                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->map(function($role) {
+                                            return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                                        })->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -959,7 +967,7 @@
                                     $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['returned'];
                                     $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                 @endphp
-                                <tr>
+                                <tr data-order-id="{{ $order->id }}">
                                     <td>{{ $order->id }}</td>
                                     <td>{{ $order->code }}</td>
                                     <td class="text-start">
@@ -1022,7 +1030,7 @@
                                     </td>
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td class="order-updater">
                                         @if($order->updatedByUser)
                                             <div>
                                                 <span class="badge bg-primary-subtle text-primary">
@@ -1032,7 +1040,9 @@
                                                     <br>
                                                     <small class="text-muted">
                                                         @foreach($order->updatedByUser->roles as $role)
-                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                {{ $role->name }}
+                                                            </span>
                                                         @endforeach
                                                     </small>
                                                 @endif
@@ -1119,7 +1129,9 @@
                                         'created_at' => $order->created_at ? $order->created_at->format('d/m/Y H:i') : '',
                                         'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                         'updated_by_name' => $order->updatedByUser->name ?? null,
-                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->pluck('name')->toArray() : [],
+                                        'updated_by_roles' => $order->updatedByUser ? $order->updatedByUser->roles->map(function($role) {
+                                            return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                                        })->toArray() : [],
                                         'notes' => $order->note ?? 'Không có ghi chú',
                                         'subtotal' => number_format($order->subtotal ?? 0, 0, ',', '.'),
                                         'discount' => number_format($order->discount ?? 0, 0, ',', '.'),
@@ -1140,7 +1152,7 @@
                                     $currentStatus = $statusStyles[$currentStatusKey] ?? $statusStyles['completed'];
                                     $allowedStatuses = $statusTransitions[$currentStatusKey] ?? [$currentStatusKey];
                                 @endphp
-                                <tr>
+                                <tr data-order-id="{{ $order->id }}">
                                     <td>{{ $order->id }}</td>
                                     <td>{{ $order->code }}</td>
                                     <td class="text-start">
@@ -1203,7 +1215,7 @@
                                     </td>
                                     <td>{{ optional($order->created_at)->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->updated_at->format('d/m/Y H:i') }}</td>
-                                    <td>
+                                    <td class="order-updater">
                                         @if($order->updatedByUser)
                                             <div>
                                                 <span class="badge bg-primary-subtle text-primary">
@@ -1213,7 +1225,9 @@
                                                     <br>
                                                     <small class="text-muted">
                                                         @foreach($order->updatedByUser->roles as $role)
-                                                            <span class="badge bg-secondary-subtle text-secondary">{{ $role->name }}</span>
+                                                            <span class="badge" style="background-color: {{ $role->color ?? '#6c757d' }}20; color: {{ $role->color ?? '#6c757d' }}; border: 1px solid {{ $role->color ?? '#6c757d' }}40;">
+                                                                {{ $role->name }}
+                                                            </span>
                                                         @endforeach
                                                     </small>
                                                 @endif
@@ -1297,7 +1311,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <div>
-                        <h5 class="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng</h5>
+                        <h5 class="modal-title" id="orderDetailModalLabel"><i class="ri-file-text-line me-2"></i>Chi tiết đơn hàng</h5>
                         <small class="text-muted">Theo dõi trạng thái xử lý theo thời gian thực</small>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1682,9 +1696,11 @@
                     // Hiển thị roles
                     if (data.updated_by_roles && data.updated_by_roles.length > 0) {
                         updatedByRolesEl.innerHTML = '<small class="text-muted">' + 
-                            data.updated_by_roles.map(role => 
-                                '<span class="badge bg-secondary-subtle text-secondary me-1">' + role + '</span>'
-                            ).join('') + 
+                            data.updated_by_roles.map(role => {
+                                const roleName = typeof role === 'string' ? role : role.name;
+                                const roleColor = typeof role === 'object' ? (role.color || '#6c757d') : '#6c757d';
+                                return `<span class="badge me-1" style="background-color: ${roleColor}20; color: ${roleColor}; border: 1px solid ${roleColor}40;">${roleName}</span>`;
+                            }).join('') + 
                             '</small>';
                     } else {
                         updatedByRolesEl.innerHTML = '';
@@ -1857,14 +1873,18 @@
                             let rolesHtml = '';
                             if (orderData.updated_by_roles && orderData.updated_by_roles.length > 0) {
                                 rolesHtml = '<br><small class="text-muted">' + 
-                                    orderData.updated_by_roles.map(role => 
-                                        '<span class="badge bg-secondary-subtle text-secondary me-1">' + role + '</span>'
-                                    ).join('') + 
+                                    orderData.updated_by_roles.map(role => {
+                                        const roleName = typeof role === 'string' ? role : role.name;
+                                        const roleColor = typeof role === 'object' ? (role.color || '#6c757d') : '#6c757d';
+                                        return `<span class="badge me-1" style="background-color: ${roleColor}20; color: ${roleColor}; border: 1px solid ${roleColor}40;">${roleName}</span>`;
+                                    }).join('') + 
                                     '</small>';
                             }
                             updaterCell.innerHTML = `
-                                <div class="fw-semibold">${orderData.updated_by_name}</div>
-                                ${rolesHtml}
+                                <div>
+                                    <span class="badge bg-primary-subtle text-primary">${orderData.updated_by_name}</span>
+                                    ${rolesHtml}
+                                </div>
                             `;
                         }
                         

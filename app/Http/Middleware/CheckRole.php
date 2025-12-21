@@ -73,13 +73,13 @@ class CheckRole
         
         // Kiểm tra bằng role name
         if (!$hasAccess && !empty($requiredRoleNames)) {
-            $userRoles = $user->roles()->pluck('name')->toArray();
-            foreach ($requiredRoleNames as $requiredName) {
-                if (in_array($requiredName, $userRoles)) {
-                    $hasAccess = true;
-                    break;
+                $userRoles = $user->roles()->pluck('name')->toArray();
+                foreach ($requiredRoleNames as $requiredName) {
+                    if (in_array($requiredName, $userRoles)) {
+                        $hasAccess = true;
+                        break;
+                    }
                 }
-            }
         }
         
         // Fallback: Nếu không tìm thấy trong RBAC, kiểm tra trường role cũ (backward compatibility)

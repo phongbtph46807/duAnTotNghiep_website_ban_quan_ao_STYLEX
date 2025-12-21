@@ -198,13 +198,15 @@ class RoleController extends Controller
 
     public function create()
     {
-        // Lấy danh sách các tài khoản Admin và Staff hiện có
-        $existingUsers = User::whereIn('role', [User::ROLE_ADMIN, User::ROLE_STAFF])
+        // Lấy danh sách các tài khoản có quyền (Admin, Staff, Warehouse Manager)
+        $existingUsers = User::whereIn('role', [User::ROLE_ADMIN, User::ROLE_STAFF, User::ROLE_WAREHOUSE_MANAGER])
+            ->with('roles') // Load roles từ RBAC
             ->select('id', 'name', 'email', 'role', 'status')
             ->orderByRaw('CASE 
                 WHEN role = 1 THEN 1 
                 WHEN role = 2 THEN 2 
-                ELSE 3 
+                WHEN role = 3 THEN 3 
+                ELSE 4 
             END')
             ->orderBy('name')
             ->get();

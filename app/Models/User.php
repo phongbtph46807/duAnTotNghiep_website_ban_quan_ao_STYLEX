@@ -181,15 +181,15 @@ if ($roleName) {
         
         // Fallback: Nếu không có permissions từ RBAC, lấy từ role integer cũ
         if ($permissions->isEmpty()) {
-            $roleName = match ($this->role) {
-                self::ROLE_ADMIN => 'Admin',
-                self::ROLE_STAFF => 'Staff',
+        $roleName = match ($this->role) {
+            self::ROLE_ADMIN => 'Admin',
+            self::ROLE_STAFF => 'Staff',
                 self::ROLE_WAREHOUSE_MANAGER => 'Warehouse Manager',
-                default => null
-            };
+            default => null
+        };
 
             if ($roleName) {
-                $role = Role::where('name', $roleName)->first();
+        $role = Role::where('name', $roleName)->first();
                 if ($role) {
                     $permissions = $role->permissions;
                 }

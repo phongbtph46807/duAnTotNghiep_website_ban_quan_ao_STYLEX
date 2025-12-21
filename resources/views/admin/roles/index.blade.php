@@ -120,9 +120,9 @@
                 <div class="card-header">
                     <div class="row g-3 align-items-center">
                         <div class="col-md-6">
-                            <h5 class="card-title mb-0">
-                                <i class="ri-group-line me-2"></i>Danh sách tài khoản theo từng vai trò
-                            </h5>
+                    <h5 class="card-title mb-0">
+                        <i class="ri-group-line me-2"></i>Danh sách tài khoản theo từng vai trò
+                    </h5>
                         </div>
                         <div class="col-md-6 text-end">
                             <a href="{{ route('admin.roles.create') }}" class="btn btn-success">
@@ -222,7 +222,7 @@
                             @endif
                         @endforeach
                     </div>
-                    @else
+                                            @else
                     <div class="text-center py-5">
                         <div class="text-muted">
                             <i class="ri-inbox-line" style="font-size: 64px; opacity: 0.3;"></i>

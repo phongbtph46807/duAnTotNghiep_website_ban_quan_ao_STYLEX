@@ -211,8 +211,8 @@
                                 <div class="review-item-card" data-item-id="{{ $item->id }}" style="background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);border:1px solid #e9ecef;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.3s ease;">
                                     <div class="d-flex gap-3 align-items-start">
                                         <div style="position:relative;">
-                                            <img src="{{ $item->product->default_image_url ?? asset('client/images/product/product-01.jpg') }}" 
-                                                 alt="{{ $item->product->name }}" 
+                                        <img src="{{ $item->product->default_image_url ?? asset('client/images/product/product-01.jpg') }}" 
+                                             alt="{{ $item->product->name }}" 
                                                  style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:2px solid #e9ecef;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
                                         </div>
                                         <div style="flex:1;min-width:0;">
@@ -251,9 +251,9 @@
                                                     <label style="font-size:13px;font-weight:600;margin-bottom:6px;display:block;color:#495057;">
                                                         <i class="ri-message-3-line" style="font-size:12px;"></i> Nhận xét (tùy chọn):
                                                     </label>
-                                                    <textarea class="review-content" 
-                                                              data-item-id="{{ $item->id }}" 
-                                                              placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
+                                                <textarea class="review-content" 
+                                                          data-item-id="{{ $item->id }}" 
+                                                          placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
                                                               style="width:100%;min-height:100px;padding:12px;border:1px solid #ced4da;border-radius:8px;font-size:13px;resize:vertical;font-family:inherit;transition:all 0.3s ease;background:#fff;"></textarea>
                                                 </div>
                                                 <button type="button" 
@@ -598,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         successMsg.style.transition = 'opacity 0.3s ease';
                         setTimeout(() => {
                             successMsg.remove();
-                            location.reload();
+                    location.reload();
                         }, 300);
                     }, 2000);
                 } else {

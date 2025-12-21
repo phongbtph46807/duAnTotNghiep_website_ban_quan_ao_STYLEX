@@ -73,6 +73,10 @@ Route::group(['middleware' => ['isAuthenticated']], function(){
 
     Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
     Route::post('/login', [AuthController::class,'login'])->name('login');
+    
+    // Google OAuth
+    Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'handleGoogleCallback'])->name('google.callback');
 });
 
 // Logout route - cần middleware auth để đảm bảo user đã đăng nhập

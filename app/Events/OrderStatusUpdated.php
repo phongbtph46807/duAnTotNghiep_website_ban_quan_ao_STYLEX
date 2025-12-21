@@ -97,7 +97,9 @@ class OrderStatusUpdated implements ShouldBroadcast
             'updated_by' => $this->order->updated_by,
             'updated_by_name' => $this->order->updatedByUser?->name,
             'updated_by_roles' => $this->order->updatedByUser?->roles 
-                ? $this->order->updatedByUser->roles->pluck('name')->toArray() 
+                ? $this->order->updatedByUser->roles->map(function($role) {
+                    return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                })->toArray() 
                 : [],
             'items_count' => $this->order->items->count(),
         ];
