@@ -53,7 +53,7 @@
 					        </li>
 
 					        <li class="{{ request()->is('contact') ? 'active-menu' : '' }}">
-					            <a href="contact.html">Liên Hệ</a>
+					            <a href="{{ route('contact.index') }}">Liên Hệ</a>
 					        </li>
 					    </ul>
 					</div>

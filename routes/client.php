@@ -10,6 +10,7 @@ use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Client\AddressController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Client\ContactController;
 
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -24,6 +25,11 @@ Route::prefix('products')->as('client.products.')->group(function () {
 Route::prefix('blog')->as('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('detail');
+});
+
+    Route::prefix('contact')->as('contact.')->group(function () {
+    Route::get('/', [ContactController::class, 'index'])->name('index');
+   
 });
 
 // Client Cart routes
