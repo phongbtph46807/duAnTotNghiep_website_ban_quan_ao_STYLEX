@@ -49,14 +49,63 @@
 			e.preventDefault();
 		});
 
-		$('.js-addwish-b2').each(function(){
-			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-b2');
-				$(this).off('click');
+		// Xử lý click vào icon heart để thêm/xóa wishlist
+		$(document).on('click', '.js-addwish-b2', function(e){
+			e.preventDefault();
+			
+			// Kiểm tra user đã đăng nhập chưa
+			@auth
+			var $btn = $(this);
+			var productId = $btn.data('product-id');
+			var nameProduct = $btn.closest('.block2-txt').find('.js-name-b2').text() || 'Sản phẩm';
+			
+			if (!productId) {
+				swal("Lỗi", "Không tìm thấy ID sản phẩm", "error");
+				return;
+			}
+			
+			// Gọi API toggle wishlist
+			$.ajax({
+				url: '{{ route("client.wishlist.toggle") }}',
+				method: 'POST',
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+					'Content-Type': 'application/json'
+				},
+				data: JSON.stringify({
+					product_id: productId
+				}),
+				success: function(response) {
+					if (response.status === 'added') {
+						swal(nameProduct, response.message || "Đã thêm vào danh sách yêu thích!", "success");
+						$btn.addClass('js-addedwish-b2');
+					} else if (response.status === 'removed') {
+						swal(nameProduct, response.message || "Đã xóa khỏi danh sách yêu thích!", "info");
+						$btn.removeClass('js-addedwish-b2');
+					}
+					
+					// Cập nhật số lượng wishlist trong header nếu có
+					if (response.newCount !== undefined) {
+						$('.icon-header-noti[href*="wishlist"]').attr('data-notify', response.newCount);
+					}
+				},
+				error: function(xhr) {
+					var message = "Có lỗi xảy ra";
+					if (xhr.status === 401) {
+						message = "Vui lòng đăng nhập để sử dụng chức năng này";
+						window.location.href = '{{ route("loginView") }}';
+					} else if (xhr.responseJSON && xhr.responseJSON.message) {
+						message = xhr.responseJSON.message;
+					}
+					swal("Lỗi", message, "error");
+				}
 			});
+			@else
+			// User chưa đăng nhập - chuyển đến trang đăng nhập
+			swal("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thêm sản phẩm vào danh sách yêu thích", "info").then(function() {
+				window.location.href = '{{ route("loginView") }}';
+			});
+			@endauth
 		});
 
 		$('.js-addwish-detail').each(function(){

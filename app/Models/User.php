@@ -268,6 +268,14 @@ if ($roleName) {
     }
 
     /**
+     * Quan hệ với Wishlist (many-to-many với Products)
+     */
+    public function wishlistProducts()
+    {
+        return $this->belongsToMany(Product::class, 'wishlist', 'user_id', 'product_id')->withTimestamps();
+    }
+
+    /**
      * Lấy URL avatar - hỗ trợ cả URL từ Google và file path trong storage
      */
     public function getAvatarUrlAttribute()

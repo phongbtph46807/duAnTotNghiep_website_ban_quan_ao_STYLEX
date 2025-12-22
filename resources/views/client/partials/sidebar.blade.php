@@ -80,9 +80,15 @@
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
+						@auth
+							<a href="{{ route('client.wishlist.index') }}" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="{{ Auth::user()->wishlistProducts()->count() }}">
+								<i class="zmdi zmdi-favorite-outline"></i>
+							</a>
+						@else
+							<a href="{{ route('loginView') }}" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+								<i class="zmdi zmdi-favorite-outline"></i>
+							</a>
+						@endauth
 						
 						@auth
 							@php 
@@ -178,7 +184,7 @@
 										<i class="zmdi zmdi-card me-2"></i>
 										Ví của tôi
 									</a>
-									<a class="dropdown-item" href="#">
+									<a class="dropdown-item" href="{{ route('client.wishlist.index') }}">
 										<i class="zmdi zmdi-favorite me-2"></i>
 										Yêu thích
 									</a>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Client\AddressController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Client\ContactController;
+use App\Http\Controllers\Client\WishlistController;
 
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -85,6 +86,10 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 // User dashboard (khách đăng nhập)
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
     Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
+    
+    // Wishlist routes
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('client.wishlist.index');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('client.wishlist.toggle');
     
     // Profile routes
     Route::prefix('profile')->as('client.profile.')->group(function(){
