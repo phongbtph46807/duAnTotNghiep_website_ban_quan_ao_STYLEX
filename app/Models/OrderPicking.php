@@ -18,6 +18,7 @@ class OrderPicking extends Model
     ];
 
     protected $casts = [
+        'status' => 'string',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
@@ -30,5 +31,10 @@ class OrderPicking extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 }

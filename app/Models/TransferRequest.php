@@ -8,12 +8,7 @@ class TransferRequest extends Model
 {
     protected $fillable = [
         'from_warehouse_id', 'to_warehouse_id', 'variant_id', 'quantity', 'status',
-        'created_by', 'out_confirmed_by', 'in_confirmed_by', 'out_confirmed_at', 'in_confirmed_at', 'notes'
-    ];
-
-    protected $casts = [
-        'out_confirmed_at' => 'datetime',
-        'in_confirmed_at' => 'datetime',
+        'created_by', 'out_confirmed_by', 'in_confirmed_by', 'qc_confirmed_by', 'notes', 'batch_number', 'location'
     ];
 
     public function fromWarehouse()

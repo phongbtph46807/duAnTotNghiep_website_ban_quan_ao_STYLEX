@@ -14,13 +14,12 @@ class ProductVariant extends Model
         'sku',
         'image',
         'price',
-        'quantity',
+        'cost_price',
         'status',
     ];
 
     protected $casts = [
         'price' => 'decimal:0',
-        'quantity' => 'integer',
         'status' => 'integer',
     ];
 
@@ -42,5 +41,15 @@ class ProductVariant extends Model
     public function texture()
     {
         return $this->belongsTo(Texture::class);
+    }
+
+    public function warehouseStocks()
+    {
+        return $this->hasMany(WarehouseStock::class, 'variant_id');
+    }
+
+    public function getTotalAvailableStock(): int
+    {
+        return (int) $this->warehouseStocks()->sum('available');
     }
 }

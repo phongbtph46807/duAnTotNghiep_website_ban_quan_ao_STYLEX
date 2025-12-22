@@ -74,6 +74,23 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
+                        <label class="form-label">Lô Hàng <span class="text-danger">*</span></label>
+                        <select name="batch_number" id="batch_number" class="form-select @error('batch_number') is-invalid @enderror" required>
+                            <option value="">-- Chọn Lô Hàng --</option>
+                        </select>
+                        @error('batch_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <small id="batch-info" class="text-muted d-block mt-2"></small>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Vị Trí Kho</label>
+                        <input type="text" id="location" class="form-control" disabled>
+                        <input type="hidden" id="location_hidden" name="location" value="">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Người Tạo</label>
                         <input type="text" class="form-control" value="{{ auth()->user()->name }}" disabled>
                         <input type="hidden" name="created_by" value="{{ auth()->id() }}">
@@ -100,34 +117,61 @@
 </div>
 
 <script>
-function updateStockInfo() {
+function updateBatches() {
     const fromWarehouseId = document.getElementById('from_warehouse_id').value;
     const variantId = document.getElementById('variant_id').value;
-    const stockInfo = document.getElementById('stock-info');
+    const batchSelect = document.getElementById('batch_number');
+    const batchInfo = document.getElementById('batch-info');
+    const locationInput = document.getElementById('location');
 
-    if (!fromWarehouseId || !variantId) {
-        stockInfo.textContent = '';
-        return;
-    }
+    batchSelect.innerHTML = '<option value="">-- Chọn Lô Hàng --</option>';
+    locationInput.value = '';
+    batchInfo.textContent = '';
 
-    fetch(`/api/v1/warehouses/${fromWarehouseId}/variants/${variantId}/stock`)
+    if (!fromWarehouseId || !variantId) return;
+
+    fetch(`/admin/inventory/transfer/batches/${fromWarehouseId}/${variantId}`)
         .then(response => response.json())
-        .then(data => {
-            const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num || 0);
-            stockInfo.innerHTML = `
-                <span class="badge bg-info me-2">📦 Tồn: ${formatNumber(data.on_hand)}</span>
-                <span class="badge bg-success me-2">✅ Sẵn sàng: ${formatNumber(data.available)}</span>
-                <span class="badge bg-warning me-2">⏳ Cách ly: ${formatNumber(data.quarantine)}</span>
-                <span class="badge bg-danger">❌ Hỏng: ${formatNumber(data.damaged)}</span>
-            `;
+        .then(batches => {
+            console.log('Batches received:', batches);
+            if (!batches || batches.length === 0) {
+                batchInfo.textContent = 'Không có lô hàng nào có sẵn';
+                return;
+            }
+            batches.forEach(batch => {
+                const option = document.createElement('option');
+                option.value = batch.batch_number;
+                option.textContent = `${batch.batch_number} (Sẵn: ${batch.available})`;
+                option.dataset.available = batch.available;
+                option.dataset.location = batch.location || 'Chưa xác định';
+                batchSelect.appendChild(option);
+            });
         })
         .catch(error => {
             console.error('Error:', error);
-            stockInfo.textContent = '';
+            batchInfo.textContent = 'Lỗi tải dữ liệu lô hàng';
         });
 }
 
-document.getElementById('from_warehouse_id').addEventListener('change', updateStockInfo);
-document.getElementById('variant_id').addEventListener('change', updateStockInfo);
+document.getElementById('from_warehouse_id').addEventListener('change', updateBatches);
+document.getElementById('variant_id').addEventListener('change', updateBatches);
+
+document.getElementById('batch_number').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const locationInput = document.getElementById('location');
+    const locationHidden = document.getElementById('location_hidden');
+    const batchInfo = document.getElementById('batch-info');
+    
+    if (selectedOption.value) {
+        const location = selectedOption.dataset.location || 'Chưa xác định';
+        locationInput.value = location;
+        locationHidden.value = location;
+        batchInfo.textContent = `Có sẵn: ${selectedOption.dataset.available} cái`;
+    } else {
+        locationInput.value = '';
+        locationHidden.value = '';
+        batchInfo.textContent = '';
+    }
+});
 </script>
 @endsection

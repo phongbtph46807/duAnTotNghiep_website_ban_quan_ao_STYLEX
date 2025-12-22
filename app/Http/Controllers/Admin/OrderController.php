@@ -260,6 +260,13 @@ class OrderController extends Controller
                 ], 400);
             }
 
+            if ($newStatus === 'shipping' && (!$order->picking || $order->picking->status !== 'PACKED')) {
+                return response()->json([
+                    'message' => 'Phải đóng gói xong mới được giao cho vận chuyển!',
+                    'error' => 'validation_error'
+                ], 400);
+            }
+
             $order->status = $newStatus;
             // Lưu người cập nhật trạng thái
             $order->updated_by = Auth::id();
@@ -275,8 +282,16 @@ class OrderController extends Controller
             }
 
             $order->save();
-
-            // Broadcast event để cập nhật realtime
+            if ($newStatus === 'processing' && !$order->picking) {
+                $order->picking()->create(['status' => 'PENDING']);
+            }
+            if ($order->picking) {
+                if ($newStatus === 'shipping') {
+                    $order->picking->update(['status' => 'PACKED']);
+                } elseif ($newStatus === 'delivered') {
+                    $order->picking->update(['status' => 'SHIPPED']);
+                }
+            }
             broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
 
             return response()->json([

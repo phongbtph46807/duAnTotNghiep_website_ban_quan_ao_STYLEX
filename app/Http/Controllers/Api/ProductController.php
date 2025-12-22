@@ -29,15 +29,15 @@ class ProductController extends Controller
         $q->where('is_active', true);
 
         // keyword search - hỗ trợ nhiều tên parameter: keyword, search, q
-        $keyword = $request->input('keyword') 
-                ?? $request->input('search') 
+        $keyword = $request->input('keyword')
+                ?? $request->input('search')
                 ?? $request->input('q');
-        
+
         // Trim và loại bỏ khoảng trắng thừa, chỉ tìm kiếm nếu keyword không rỗng
         $searchKeyword = null;
         if ($keyword) {
             $trimmedKeyword = trim($keyword);
-            
+
             if (!empty($trimmedKeyword) && strlen($trimmedKeyword) > 0) {
                 $searchKeyword = $trimmedKeyword;
                 // Laravel tự động escape khi dùng where('column', 'like', ...)
@@ -158,7 +158,7 @@ class ProductController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            
+
             // Trả về 200 với data rỗng thay vì 500 để frontend không bị lỗi
             return response()->json([
                 'data' => [],

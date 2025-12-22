@@ -56,14 +56,6 @@ class Warehouse extends Model
     }
 
     /**
-     * Quan hệ: Phiếu xuất kho
-     */
-    public function stockOutRequests(): HasMany
-    {
-        return $this->hasMany(StockOutRequest::class, 'warehouse_id');
-    }
-
-    /**
      * Quan hệ: Phiếu chuyển kho (kho nguồn)
      */
     public function transferRequestsFrom(): HasMany

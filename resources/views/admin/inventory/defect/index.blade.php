@@ -33,10 +33,9 @@
             <div>
                 <strong>Quy trình Xử Lý Hàng Hỏng:</strong>
                 <ol class="mb-0 mt-2 ps-3 small">
-                    <li>Báo cáo hàng hỏng: Tạo báo cáo với số lượng và mức độ hỏng</li>
-                    <li>Đánh giá: Click "Đánh Giá" khi ở trạng thái "Chờ Đánh Giá" - nhập loại lỗi, mô tả, phân loại</li>
-                    <li>Phê duyệt: Click "Phê Duyệt" khi ở trạng thái "Chờ Phê Duyệt" - QC xác nhận</li>
-                    <li>Hoàn thành: Click "Hoàn Thành" khi ở trạng thái "Đã Phê Duyệt" - nhập chi phí xử lý</li>
+                    <li>Báo cáo hàng hỏng: Tạo báo cáo với số lượng, mức độ và phân loại</li>
+                    <li>Phê duyệt: Click "Phê Duyệt" khi ở trạng thái "Chờ Phê Duyệt"</li>
+                    <li>Hoàn thành: Click "Hoàn Thành" khi ở trạng thái "Đã Phê Duyệt"</li>
                 </ol>
             </div>
         </div>
@@ -50,22 +49,24 @@
 
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-0 small">
                     <thead class="table-light">
                         <tr>
+                            <th>SKU</th>
                             <th>Sản Phẩm</th>
                             <th class="text-end">Số Lượng</th>
                             <th>Mức Độ</th>
                             <th>Phân Loại</th>
-                            <th>Loại Lỗi</th>
                             <th>Trạng Thái</th>
                             <th>Người Báo Cáo</th>
+                            <th>Người Phê Duyệt</th>
                             <th class="text-end">Hành Động</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($assessments as $assessment)
                             <tr>
+                                <td><span class="badge bg-secondary">{{ $assessment->variant->sku ?? 'N/A' }}</span></td>
                                 <td>{{ $assessment->variant->product->name ?? 'N/A' }}</td>
                                 <td class="text-end"><span class="badge bg-warning">{{ number_format($assessment->quantity) }}</span></td>
                                 <td>
@@ -79,17 +80,14 @@
                                     @elseif ($assessment->classification === 'B-GRADE')
                                         <span class="badge bg-secondary">Hàng Loại B</span>
                                     @elseif ($assessment->classification === 'SCRAP')
-                                        <span class="badge bg-dark">Tiêu Hủy</span>
+                                        <span class="badge bg-dark">Thanh Lý</span>
                                     @else
-                                        <span class="badge bg-light text-dark">-</span>
+                                        <span class="badge bg-light text-dark">Chưa phân loại</span>
                                     @endif
                                 </td>
-                                <td><small>{{ $assessment->defect_type ?? '-' }}</small></td>
                                 <td>
                                     @if ($assessment->status === 'PENDING')
-                                        <span class="badge bg-secondary">Chờ Đánh Giá</span>
-                                    @elseif ($assessment->status === 'ASSESSED')
-                                        <span class="badge bg-warning">Chờ Phê Duyệt</span>
+                                        <span class="badge bg-secondary">Chờ Phê Duyệt</span>
                                     @elseif ($assessment->status === 'APPROVED')
                                         <span class="badge bg-info">Đã Phê Duyệt</span>
                                     @elseif ($assessment->status === 'COMPLETED')
@@ -99,19 +97,23 @@
                                     @endif
                                 </td>
                                 <td><small>{{ $assessment->createdBy->name ?? 'N/A' }}</small></td>
+                                <td><small>{{ $assessment->approvedBy->name ?? '-' }}</small></td>
                                 <td class="text-end">
                                     @if ($assessment->status === 'PENDING')
-                                        <a href="{{ route('admin.inventory.defect.assess', $assessment->id) }}" class="btn btn-sm btn-primary" title="Đánh Giá">
-                                            <i class="bx bx-check"></i>
-                                        </a>
-                                    @elseif ($assessment->status === 'ASSESSED')
-                                        <a href="{{ route('admin.inventory.defect.assess', $assessment->id) }}" class="btn btn-sm btn-warning" title="Phê Duyệt">
-                                            <i class="bx bx-check-double"></i>
-                                        </a>
+                                        <form action="{{ route('admin.inventory.defect.approve', $assessment->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="repair_cost" value="0">
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Phê Duyệt">
+                                                <i class="bx bx-check-double"></i>
+                                            </button>
+                                        </form>
                                     @elseif ($assessment->status === 'APPROVED')
-                                        <a href="{{ route('admin.inventory.defect.assess', $assessment->id) }}" class="btn btn-sm btn-success" title="Hoàn Thành">
-                                            <i class="bx bx-check-circle"></i>
-                                        </a>
+                                        <form action="{{ route('admin.inventory.defect.complete', $assessment->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success" title="Hoàn Thành">
+                                                <i class="bx bx-check-circle"></i>
+                                            </button>
+                                        </form>
                                     @else
                                         <a href="{{ route('admin.inventory.defect.assess', $assessment->id) }}" class="btn btn-sm btn-secondary" title="Xem Chi Tiết">
                                             <i class="bx bx-show"></i>
@@ -121,7 +123,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     <i class="bx bx-inbox"></i> Không có báo cáo nào
                                 </td>
                             </tr>

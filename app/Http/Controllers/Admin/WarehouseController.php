@@ -101,12 +101,6 @@ class WarehouseController extends Controller
                     ->whereIn('status', ['PENDING', 'QC_PASSED', 'QC_FAILED'])
                     ->count();
 
-                // Kiểm tra phiếu xuất kho đang xử lý
-                // Status: PENDING (chờ xử lý), QC_PASSED (QC đạt chưa confirm), QC_FAILED (QC không đạt chưa xử lý)
-                $pendingStockOut = $warehouse->stockOutRequests()
-                    ->whereIn('status', ['PENDING', 'QC_PASSED', 'QC_FAILED'])
-                    ->count();
-
                 // Kiểm tra phiếu chuyển kho đang xử lý (cả kho nguồn và kho đích)
                 // Status: PENDING (chờ xử lý), OUT_CONFIRMED (đã xuất kho nguồn), IN_CONFIRMED (đã nhập kho đích)
                 $pendingTransfer = $warehouse->transferRequestsFrom()
@@ -116,7 +110,7 @@ class WarehouseController extends Controller
                     ->whereIn('status', ['PENDING', 'OUT_CONFIRMED', 'IN_CONFIRMED'])
                     ->count();
 
-                $totalPending = $pendingStockIn + $pendingStockOut + $pendingTransfer;
+                $totalPending = $pendingStockIn + $pendingTransfer;
 
                 if ($totalPending > 0) {
                     return redirect()->back()

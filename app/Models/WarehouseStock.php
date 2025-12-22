@@ -12,11 +12,14 @@ class WarehouseStock extends Model
     protected $fillable = [
         'warehouse_id',
         'variant_id',
+        'batch_number',
+        'location',
         'on_hand',
         'available',
         'reserved',
         'quarantine',
         'damaged',
+        'clearance',
     ];
 
     protected $casts = [
@@ -25,6 +28,7 @@ class WarehouseStock extends Model
         'reserved' => 'integer',
         'quarantine' => 'integer',
         'damaged' => 'integer',
+        'clearance' => 'integer',
     ];
 
     public function warehouse(): BelongsTo
@@ -37,13 +41,26 @@ class WarehouseStock extends Model
         return $this->belongsTo(ProductVariant::class);
     }
 
+    public function stockInRequest(): BelongsTo
+    {
+        return $this->belongsTo(StockInRequest::class, 'batch_number', 'batch_number');
+    }
+
     public function getTotalStock(): int
     {
-        return $this->on_hand;
+        return $this->available + $this->reserved + $this->quarantine + $this->damaged + ($this->clearance ?? 0);
     }
 
     public function getSellableStock(): int
     {
         return $this->available;
+    }
+
+    public function syncOnHand(): void
+    {
+        $total = $this->available + $this->reserved + $this->quarantine + $this->damaged + ($this->clearance ?? 0);
+        if ($this->on_hand !== $total) {
+            $this->update(['on_hand' => $total]);
+        }
     }
 }

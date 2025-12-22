@@ -21,10 +21,10 @@ class DatabaseSeeder extends Seeder
             ColorSeeder::class, // Cần cho ProductSeeder
             SizeSeeder::class, // Cần cho ProductSeeder
             TextureSeeder::class, // Cần cho ProductSeeder
-            ProductSeeder::class, // Cần categories, colors, sizes, textures
             ProductImageSeeder::class, // Cần products
             LoyaltyTierSeeder::class,
             WarehouseSeeder::class,
+            WarehouseStockSeeder::class, // Nhập kho cho tất cả biến thể
             ShippingCarrierSeeder::class,
             TaxRateSeeder::class,
             BannerSeeder::class,

@@ -35,7 +35,6 @@ class UpdateProductRequest extends FormRequest
             'variants.*.size_id' => 'nullable|exists:sizes,id',
             'variants.*.texture_id' => 'nullable|exists:textures,id',
             'variants.*.price' => 'nullable|numeric|min:0',
-            'variants.*.quantity' => 'nullable|integer|min:0',
             'variants.*.image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'variants.*.status' => 'boolean',
         ];

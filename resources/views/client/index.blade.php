@@ -8,7 +8,7 @@
 	@include('client.partials.css.css')
 </head>
 <body class="animsition">
-	
+
 	<!-- Header -->
 	<header class="header-v4">
 		<!-- Header menu desktop -->
@@ -16,7 +16,7 @@
 
         <!-- mobile reponsive -->
         @include('client.partials.mobile')
-		
+
 	</header>
 
 	<!-- Cart -->
@@ -65,7 +65,7 @@
 						Tìm Kiếm
 					</div>
 				</div>
-				
+
 				<!-- Search product -->
 				<div class="dis-none panel-search w-full p-t-10 p-b-15">
 					<div class="bor8 dis-flex p-l-15">
@@ -74,7 +74,7 @@
 						</button>
 
 						<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" id="homeSearchInput" placeholder="Tìm kiếm sản phẩm...">
-					</div>	
+					</div>
 				</div>
 
 				@include('client.partials.filter-product')
@@ -89,7 +89,7 @@
 							<div class="block2-pic hov-img0">
 								<img src="{{ $product->default_image_url }}" alt="{{ $product->name }}">
 
-                            <a href="{{ route('home', ['quick_view' => $product->id]) }}" 
+                            <a href="{{ route('home', ['quick_view' => $product->id]) }}"
                                class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
                                 Xem nhanh
                             </a>
@@ -127,7 +127,7 @@
 					</div>
 				@endif
 			</div>
-			
+
 
 			<!-- Load more -->
 			<div class="flex-c-m flex-w w-full p-t-45 p-b-20">
@@ -137,7 +137,7 @@
 			</div>
 		</div>
 	</section>
-	
+
 	<style>
 		/* Đảm bảo section product không tràn xuống footer */
 		section.bg0 {
@@ -145,12 +145,12 @@
 			z-index: 1;
 			margin-bottom: 0;
 		}
-		
+
 		#homeProductGrid {
 			position: relative;
 			min-height: 400px;
 		}
-		
+
 		#homeProductGrid::after {
 			content: '';
 			display: block;
@@ -159,7 +159,7 @@
 			visibility: hidden;
 		}
 	</style>
-	
+
 	<!-- Content -->
 	@include('client.products.mini-product')
 
@@ -167,7 +167,7 @@
     @include('client.partials.footer')
 </body>
 </html>
-<!--===============================================================================================-->	
+<!--===============================================================================================-->
 @include('client.partials.js.js')
 
 <!-- Home Product Filter Script -->
