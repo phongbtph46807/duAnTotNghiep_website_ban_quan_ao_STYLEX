@@ -3,6 +3,14 @@
 @section('title', 'Thanh toán - ' . env('APP_NAME'))
 
 @section('content')
+@php
+    // Helper function để format số tiền: làm tròn về số nguyên (giống phí vận chuyển)
+    function formatMoney($amount) {
+        $amount = (float) $amount;
+        $rounded = round($amount); // Làm tròn về số nguyên
+        return number_format($rounded, 0, ',', '.'); // Luôn hiển thị 0 chữ số thập phân
+    }
+@endphp
 
 <div class="container p-t-40 p-b-60">
     <style>
@@ -77,6 +85,43 @@
                         Giống người đặt
                     </label>
                 </div>
+
+                @if(auth()->check() && isset($addresses) && $addresses->count() > 0)
+                <div class="co-grid" style="margin-bottom:16px;">
+                    <div class="co-col-12">
+                        <label class="co-label">
+                            <i class="ri-map-pin-line me-1"></i>Chọn địa chỉ đã lưu
+                        </label>
+                        <select id="select-saved-address" class="co-select">
+                            <option value="">-- Chọn địa chỉ hoặc nhập mới --</option>
+                            @foreach($addresses as $addr)
+                                @php
+                                    // Lấy phường/xã: ưu tiên ward, nếu không có thì dùng district
+                                    $commune = $addr->ward ?: $addr->district;
+                                @endphp
+                                <option value="{{ $addr->id }}" 
+                                        data-full-name="{{ $addr->full_name }}"
+                                        data-phone="{{ $addr->phone }}"
+                                        data-email="{{ $addr->email ?? '' }}"
+                                        data-city="{{ $addr->city }}"
+                                        data-district="{{ $commune }}"
+                                        data-address="{{ $addr->address }}">
+                                    {{ $addr->full_name }} - {{ $addr->phone }} 
+                                    @if($addr->is_default)
+                                        <span style="color:#6777ef;">(Mặc định)</span>
+                                    @endif
+                                    - {{ $addr->full_address }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small style="color:#666; font-size:12px; margin-top:4px; display:block;">
+                            <a href="{{ route('client.profile.addresses.index') }}" target="_blank" style="color:#6777ef; text-decoration:none;">
+                                <i class="ri-add-line me-1"></i>Quản lý địa chỉ
+                            </a>
+                        </small>
+                    </div>
+                </div>
+                @endif
 
                 <div class="co-grid">
                     <div class="co-col-6">
@@ -205,7 +250,7 @@
                             </div>
                         </div>
                         <div class="co-qty">x {{ $it['quantity'] }}</div>
-                        <div class="co-price">{{ number_format($it['line_total'], 0, ',', '.') }} ₫</div>
+                        <div class="co-price">{{ formatMoney($it['line_total']) }} ₫</div>
                     </li>
                     @endforeach
                 </ul>
@@ -214,7 +259,7 @@
                 <div class="co-hint m-t-15" style="font-size:13px;">
                     <div><strong>Đơn vị vận chuyển:</strong>
                         @if(isset($shippingCarrier) && $shippingCarrier)
-                            {{ $shippingCarrier->name }} @if(isset($shippingFee)) - {{ number_format($shippingFee, 0, ',', '.') }} ₫ @endif
+                            {{ $shippingCarrier->name }} @if(isset($shippingFee)) - {{ formatMoney($shippingFee) }} ₫ @endif
                         @else
                             Chưa chọn
                         @endif
@@ -234,7 +279,7 @@
                 <div style="padding-top:10px; border-top:1px solid #eee; margin-top:10px;">
                     <div class="flex-w flex-sb-m m-t-10">
                         <span class="mtext-101 cl2">Tạm tính</span>
-                        <span class="mtext-101 cl2">{{ number_format($subtotal, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2">{{ formatMoney($subtotal) }} ₫</span>
                     </div>
                     @if(isset($voucherDiscount) && $voucherDiscount > 0 && $voucher)
                     <div class="flex-w flex-sb-m m-t-10" style="color:#28a745;">
@@ -242,7 +287,7 @@
                             Giảm giá Voucher
                             <small style="font-size:11px; color:#666;">({{ $voucher['code'] }})</small>
                         </span>
-                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ number_format($voucherDiscount, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2" style="color:#28a745; font-weight:700;">-{{ formatMoney($voucherDiscount) }} ₫</span>
                     </div>
                     @endif
 
@@ -252,7 +297,7 @@
                             Giảm giá thành viên
                             <small style="font-size:11px; color:#666;">({{ $currentTier->name }} -{{ number_format($currentTier->discount_rate, 0) }}%)</small>
                         </span>
-                        <span class="mtext-101 cl2" style="color:#6777ef; font-weight:700;">-{{ number_format($loyaltyDiscount, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2" style="color:#6777ef; font-weight:700;">-{{ formatMoney($loyaltyDiscount) }} ₫</span>
                     </div>
                     @endif
 
@@ -261,7 +306,7 @@
                         <span class="mtext-101 cl2">
                             Thuế ({{ $taxRate->name }})
                         </span>
-                        <span class="mtext-101 cl2">{{ number_format($taxAmount, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2">{{ formatMoney($taxAmount) }} ₫</span>
                     </div>
                     @endif
 
@@ -273,13 +318,13 @@
                                 <small style="font-size:11px; color:#666;">({{ $shippingCarrier->name }})</small>
                             @endif
                         </span>
-                        <span class="mtext-101 cl2">{{ number_format($shippingFee, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2">{{ formatMoney($shippingFee) }} ₫</span>
                     </div>
                     @endif
 
                     <div class="flex-w flex-sb-m m-t-10" style="padding-top:10px; border-top:1px solid #eee;">
                         <span class="mtext-101 cl2" style="font-weight:700; font-size:16px;">Tổng cộng</span>
-                        <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;">{{ number_format($total, 0, ',', '.') }} ₫</span>
+                        <span class="mtext-101 cl2 co-price" style="font-size:18px; color:#6777ef;">{{ formatMoney($total) }} ₫</span>
                     </div>
                 </div>
                 </div>
@@ -343,6 +388,157 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 
     toggle();
+
+    // Xử lý chọn địa chỉ đã lưu
+    var selectAddress = document.getElementById('select-saved-address');
+    var provinceSelect = document.getElementById('province');
+    var communeSelect = document.getElementById('commune');
+    var cityHidden = document.querySelector('input[name="city"]');
+    var districtHidden = document.querySelector('input[name="district"]');
+    var addressInput = document.querySelector('input[name="address"]');
+
+    if (selectAddress) {
+        selectAddress.addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                return; // Không chọn gì hoặc chọn "-- Chọn địa chỉ hoặc nhập mới --"
+            }
+
+            // Lấy dữ liệu từ data attributes
+            // data-district đã được set thành commune (phường/xã) từ PHP
+            var fullName = selectedOption.getAttribute('data-full-name') || '';
+            var phone = selectedOption.getAttribute('data-phone') || '';
+            var email = selectedOption.getAttribute('data-email') || '';
+            var city = selectedOption.getAttribute('data-city') || '';
+            var commune = selectedOption.getAttribute('data-district') || ''; // Phường/Xã
+            var address = selectedOption.getAttribute('data-address') || '';
+
+            // Điền thông tin vào form
+            if (receiverFields.name) receiverFields.name.value = fullName;
+            if (receiverFields.phone) receiverFields.phone.value = phone;
+            if (receiverFields.email) receiverFields.email.value = email;
+            if (addressInput) addressInput.value = address;
+
+            // Set giá trị vào hidden fields trước (provinces-api.js sẽ tự động restore)
+            if (cityHidden) cityHidden.value = city;
+            if (districtHidden) {
+                districtHidden.value = commune; // commune là phường/xã
+                // Đảm bảo giá trị được set trước khi provinces load
+                districtHidden.setAttribute('value', commune);
+            }
+
+            // Hàm chọn phường/xã sau khi communes đã load
+            function selectCommune() {
+                if (!commune || !communeSelect) return;
+                
+                // Đợi communes load xong (không disabled và có options)
+                var checkCommuneInterval = setInterval(function() {
+                    if (!communeSelect.disabled && communeSelect.options.length > 1) {
+                        clearInterval(checkCommuneInterval);
+                        
+                        // Đảm bảo hidden field vẫn có giá trị
+                        if (districtHidden && !districtHidden.value) {
+                            districtHidden.value = commune;
+                        }
+                        
+                        // Tìm và chọn phường/xã
+                        var foundCommune = false;
+                        for (var k = 0; k < communeSelect.options.length; k++) {
+                            var commOpt = communeSelect.options[k];
+                            if (!commOpt.value) continue; // Bỏ qua option rỗng
+                            
+                            var commText = commOpt.textContent || commOpt.text || '';
+                            var commName = commOpt.dataset.name || '';
+                            
+                            // So sánh chính xác hoặc chứa (bỏ qua "Xã", "Phường", "Thị trấn")
+                            var communeClean = commune.replace(/^(Xã|Phường|Thị trấn)\s*/i, '').trim();
+                            var commTextClean = commText.replace(/^(Xã|Phường|Thị trấn)\s*/i, '').trim();
+                            var commNameClean = commName.replace(/^(Xã|Phường|Thị trấn)\s*/i, '').trim();
+                            
+                            if (commText === commune || commName === commune || 
+                                commText.includes(commune) || commName.includes(commune) ||
+                                commTextClean === communeClean || commNameClean === communeClean ||
+                                commOpt.value === commune) {
+                                communeSelect.value = commOpt.value;
+                                communeSelect.dispatchEvent(new Event('change'));
+                                foundCommune = true;
+                                console.log('Đã chọn phường/xã:', commune, '->', commText);
+                                break;
+                            }
+                        }
+                        
+                        if (!foundCommune) {
+                            console.warn('Không tìm thấy phường/xã:', commune, 'Có', communeSelect.options.length, 'options');
+                            // Thử lại với provinces-api.js restore logic
+                            if (districtHidden && districtHidden.value) {
+                                var matching = Array.from(communeSelect.options).find(function(opt) {
+                                    return opt.dataset.name === districtHidden.value || 
+                                           opt.textContent === districtHidden.value;
+                                });
+                                if (matching) {
+                                    communeSelect.value = matching.value;
+                                    communeSelect.dispatchEvent(new Event('change'));
+                                    console.log('Đã chọn phường/xã bằng restore logic:', districtHidden.value);
+                                }
+                            }
+                        }
+                    }
+                }, 100);
+                
+                // Timeout sau 5 giây
+                setTimeout(function() {
+                    clearInterval(checkCommuneInterval);
+                }, 5000);
+            }
+
+            // Tìm và chọn tỉnh/thành phố từ dropdown
+            if (city && provinceSelect) {
+                // Hàm tìm và chọn tỉnh
+                function findAndSelectProvince() {
+                    if (provinceSelect.options.length <= 1) return false; // Chưa load xong
+                    
+                    for (var i = 0; i < provinceSelect.options.length; i++) {
+                        var opt = provinceSelect.options[i];
+                        if (!opt.value) continue; // Bỏ qua option rỗng
+                        
+                        var optText = opt.textContent || opt.text || '';
+                        var optName = opt.dataset.name || '';
+                        
+                        // So sánh chính xác hoặc chứa
+                        if (optText === city || optName === city || 
+                            optText.includes(city) || optName.includes(city) ||
+                            opt.value === city) {
+                            provinceSelect.value = opt.value;
+                            provinceSelect.dispatchEvent(new Event('change'));
+                            console.log('Đã chọn tỉnh/thành phố:', city);
+                            
+                            // Sau khi chọn tỉnh, đợi communes load xong rồi chọn phường/xã
+                            selectCommune();
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                
+                // Thử tìm ngay lập tức
+                var foundProvince = findAndSelectProvince();
+                
+                // Nếu không tìm thấy, đợi provinces load xong rồi thử lại
+                if (!foundProvince) {
+                    var checkProvinceInterval = setInterval(function() {
+                        if (findAndSelectProvince()) {
+                            clearInterval(checkProvinceInterval);
+                        }
+                    }, 200);
+                    
+                    // Timeout sau 5 giây
+                    setTimeout(function() {
+                        clearInterval(checkProvinceInterval);
+                    }, 5000);
+                }
+            }
+        });
+    }
 });
 </script>
 @endpush

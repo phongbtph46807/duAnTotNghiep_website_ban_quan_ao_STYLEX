@@ -137,6 +137,23 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], functio
             Route::post('/{id}/reject', [WithdrawRequestController::class, 'reject'])->name('reject');
             Route::post('/{id}/complete', [WithdrawRequestController::class, 'complete'])->name('complete');
         });
+        
+        // Test Realtime Broadcast
+        Route::get('/test-realtime', function() {
+            $order = \App\Models\Order::with(['items.product', 'updatedByUser.roles'])->first();
+            if ($order) {
+                broadcast(new \App\Events\OrderStatusUpdated($order))->toOthers();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Test broadcast sent for order #' . $order->code,
+                    'order_id' => $order->id
+                ]);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'No orders found to test'
+            ], 404);
+        })->name('test-realtime');
     });
 });
 
