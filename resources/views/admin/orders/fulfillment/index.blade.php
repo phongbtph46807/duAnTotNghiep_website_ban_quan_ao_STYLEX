@@ -91,7 +91,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($orders as $order)
+                    @forelse ($shippingOrders as $order)
                         @php
                             $pickingStatus = $order->picking?->status ?? 'PENDING';
                             $status = match(true) {
@@ -146,9 +146,7 @@
                                         <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#warehouseModal{{ $order->id }}">
                                             <i class="ri-check-line"></i>
                                         </button>
-                                    @endif
-
-                                    @if ($order->picking && $order->picking->status === 'CONFIRMED' && $order->status === 'processing')
+                                    @elseif ($status === 'CONFIRMED')
                                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#packingModal{{ $order->id }}">
                                             <i class="ri-box-3-line"></i>
                                         </button>
@@ -234,7 +232,7 @@
     </div>
 
     <div class="d-flex justify-content-center mt-4">
-        {{ $orders->links() }}
+        {{ $shippingOrders->links() }}
     </div>
 </div>
 @endsection

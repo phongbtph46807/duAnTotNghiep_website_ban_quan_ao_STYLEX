@@ -3,86 +3,36 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{DefectAssessment, Warehouse, ProductVariant, WarehouseStock, StockInRequest, StockOutInvoice, StockOutInvoiceItem, InventoryLog};
-use App\Services\NotificationService;
+use App\Models\DefectAssessment;
+use App\Models\StockInRequest;
+use App\Models\WarehouseStock;
+use App\Models\ProductVariant;
+use App\Models\StockOutInvoice;
+use App\Models\StockOutInvoiceItem;
+use App\Models\InventoryLog;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Exception;
 
 class DefectAssessmentController extends Controller
 {
     public function index()
     {
-        $assessments = DefectAssessment::with(['warehouse', 'variant.product', 'createdBy', 'assessedBy', 'approvedBy', 'completedBy', 'rejectedBy'])
-            ->latest()
+        $assessments = DefectAssessment::with(['warehouse', 'variant.product', 'createdBy', 'approvedBy'])
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
+
         return view('admin.inventory.defect.index', compact('assessments'));
     }
 
     public function create()
     {
-        $warehouses = Warehouse::where('operational_status', 'ACTIVE')->get();
-        $variants = ProductVariant::with('product')->get();
-        return view('admin.inventory.defect.create', compact('warehouses', 'variants'));
+        return view('admin.inventory.defect.create');
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        try {
-            $data = request()->validate([
-                'warehouse_id' => 'required|exists:warehouses,id',
-                'variant_id' => 'required|exists:product_variants,id',
-                'quantity' => 'required|integer|min:1',
-                'defect_level' => 'required|in:LIGHT,MEDIUM,HEAVY',
-                'description' => 'nullable|string',
-                'notes' => 'nullable|string',
-            ]);
-
-            DB::beginTransaction();
-
-            $stock = WarehouseStock::where('warehouse_id', $data['warehouse_id'])
-                ->where('variant_id', $data['variant_id'])
-                ->first();
-
-            if (!$stock || $stock->available < $data['quantity']) {
-                DB::rollBack();
-                return redirect()->back()->withInput()->with('error', 'Không đủ hàng tồn để báo cáo hỏng!');
-            }
-
-            $availableBefore = $stock->available;
-            $stock->update([
-                'available' => $stock->available - $data['quantity'],
-                'damaged' => $stock->damaged + $data['quantity'],
-            ]);
-            $stock->syncOnHand();
-
-            InventoryLog::create([
-                'warehouse_id' => $data['warehouse_id'],
-                'variant_id' => $data['variant_id'],
-                'action' => 'ADJUSTMENT',
-                'quantity_before' => $availableBefore,
-                'quantity_change' => -$data['quantity'],
-                'quantity_after' => $stock->available,
-                'reference_type' => 'defect_assessment',
-                'reference_id' => null,
-                'user_id' => Auth::id(),
-                'notes' => "Báo cáo hàng hỏng: {$data['description']}",
-            ]);
-
-            $data['created_by'] = auth()->id();
-            $data['status'] = 'PENDING';
-            $defectAssessment = DefectAssessment::create($data);
-            
-            app(NotificationService::class)->notifyDefectFound($defectAssessment, $data['quantity']);
-
-            DB::commit();
-
-            return redirect()->route('admin.inventory.defect.index')
-                ->with('success', 'Tạo báo cáo hàng hỏng thành công!');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withInput()->with('error', 'Lỗi: ' . $e->getMessage());
-        }
+        return back()->with('error', 'Defects are created automatically from count workflow');
     }
 
     public function assess($id)
@@ -91,242 +41,285 @@ class DefectAssessmentController extends Controller
         return view('admin.inventory.defect.assess', compact('defect'));
     }
 
-    public function confirmAssess($id)
+    public function confirmAssess(Request $request, $id)
     {
-        try {
-            $defect = DefectAssessment::findOrFail($id);
-
-            if ($defect->status !== 'PENDING') {
-                return redirect()->back()->with('error', 'Chỉ có thể đánh giá báo cáo ở trạng thái chờ đánh giá!');
-            }
-
-            $data = request()->validate([
-                'defect_type' => 'required|string',
-                'defect_description' => 'required|string',
-                'classification' => 'required|in:REWORK,B-GRADE,SCRAP',
-                'notes' => 'nullable|string',
-            ]);
-
-            $defect->update([
-                'status' => 'ASSESSED',
-                'assessed_by' => auth()->id(),
-                'defect_type' => $data['defect_type'],
-                'defect_description' => $data['defect_description'],
-                'classification' => $data['classification'],
-                'notes' => $data['notes'] ?? null,
-            ]);
-
-            return redirect()->route('admin.inventory.defect.index')
-                ->with('success', 'Đánh giá hàng hỏng thành công!');
-        } catch (Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Lỗi: ' . $e->getMessage());
-        }
+        return back()->with('error', 'Use approve method instead');
     }
 
-    public function approve($id)
+    public function approve(Request $request, $id)
     {
+        $validated = $request->validate([
+            'repair_cost' => 'nullable|integer|min:0',
+        ]);
+
         try {
             $defect = DefectAssessment::findOrFail($id);
-
-            if ($defect->status !== 'ASSESSED') {
-                return redirect()->back()->with('error', 'Chỉ có thể phê duyệt báo cáo đã được đánh giá!');
-            }
-
-            $defect->update([
-                'status' => 'APPROVED',
-                'approved_by' => auth()->id()
-            ]);
-
-            return redirect()->route('admin.inventory.defect.index')
-                ->with('success', 'Phê duyệt xử lý hàng hỏng thành công!');
-        } catch (Exception $e) {
-            return redirect()->back()->with('error', 'Lỗi: ' . $e->getMessage());
-        }
-    }
-
-    public function complete($id)
-    {
-        try {
-            $defect = DefectAssessment::findOrFail($id);
-
-            if ($defect->status !== 'APPROVED') {
-                return redirect()->back()->with('error', 'Chỉ có thể hoàn thành báo cáo đã được phê duyệt!');
-            }
-
-            $data = request()->validate([
-                'repair_cost' => 'nullable|integer|min:0',
-                'material_cost' => 'nullable|integer|min:0',
-                'other_cost' => 'nullable|integer|min:0',
-                'notes' => 'nullable|string',
-            ]);
-
-            DB::beginTransaction();
-
-            $stock = WarehouseStock::where('warehouse_id', $defect->warehouse_id)
-                ->where('variant_id', $defect->variant_id)
-                ->first();
-
-            if (!$stock || $stock->damaged < $defect->quantity) {
-                DB::rollBack();
-                return redirect()->back()->with('error', 'Số lượng hỏng trong kho không đủ!');
-            }
-
-            $damagedBefore = $stock->damaged;
-            $stock->decrement('damaged', $defect->quantity);
             
+            if ($defect->status !== 'PENDING') {
+                return back()->with('error', 'Chỉ có thể duyệt đánh giá ở trạng thái PENDING');
+            }
+
+            DB::transaction(function () use ($defect, $validated) {
+                $originalBatch = StockInRequest::where('batch_number', $defect->batch_number)
+                    ->where('warehouse_id', $defect->warehouse_id)
+                    ->where('variant_id', $defect->variant_id)
+                    ->first();
+
+                if (!$originalBatch) {
+                    throw new \Exception('Không tìm thấy lô hàng gốc');
+                }
+
+                if ($defect->classification === 'REWORK') {
+                    $newCostPrice = $originalBatch->cost_price + ($validated['repair_cost'] ?? 0);
+                    $newBatchNumber = 'REWORK-' . $defect->id . '-' . now()->format('YmdHis');
+                    
+                    StockInRequest::create([
+                        'warehouse_id' => $defect->warehouse_id,
+                        'variant_id' => $defect->variant_id,
+                        'batch_number' => $newBatchNumber,
+                        'quantity' => $defect->quantity,
+                        'cost_price' => $newCostPrice,
+                        'received_date' => now()->toDateString(),
+                        'supplier_name' => $originalBatch->supplier_name,
+                        'supplier_contact' => $originalBatch->supplier_contact,
+                        'location' => $defect->location,
+                        'status' => 'PENDING',
+                        'created_by' => Auth::id(),
+                        'notes' => 'Sửa chữa từ lô ' . $defect->batch_number,
+                    ]);
+                    
+                    WarehouseStock::updateOrCreate(
+                        [
+                            'warehouse_id' => $defect->warehouse_id,
+                            'variant_id' => $defect->variant_id,
+                            'batch_number' => $newBatchNumber,
+                        ],
+                        [
+                            'location' => $defect->location,
+                            'on_hand' => $defect->quantity,
+                            'available' => $defect->quantity,
+                            'reserved' => 0,
+                            'quarantine' => 0,
+                            'damaged' => 0,
+                        ]
+                    );
+
+                    InventoryLog::create([
+                        'warehouse_id' => $defect->warehouse_id,
+                        'variant_id' => $defect->variant_id,
+                        'action' => 'ADJUSTMENT',
+                        'quantity_before' => 0,
+                        'quantity_change' => $defect->quantity,
+                        'quantity_after' => $defect->quantity,
+                        'reference_type' => 'defect_assessment',
+                        'reference_id' => $defect->id,
+                        'user_id' => Auth::id(),
+                        'notes' => 'Tạo lô sửa chữa ' . $newBatchNumber . ' - Chi phí: ' . ($validated['repair_cost'] ?? 0),
+                    ]);
+                    
+                    $stock = WarehouseStock::where('warehouse_id', $defect->warehouse_id)
+                        ->where('variant_id', $defect->variant_id)
+                        ->where('batch_number', $defect->batch_number)
+                        ->first();
+
+                    if ($stock && $stock->damaged >= $defect->quantity) {
+                        $quantityBefore = $stock->damaged;
+                        $stock->decrement('damaged', $defect->quantity);
+                        $stock->decrement('on_hand', $defect->quantity);
+
+                        InventoryLog::create([
+                            'warehouse_id' => $defect->warehouse_id,
+                            'variant_id' => $defect->variant_id,
+                            'action' => 'ADJUSTMENT',
+                            'quantity_before' => $quantityBefore,
+                            'quantity_change' => -$defect->quantity,
+                            'quantity_after' => $stock->damaged,
+                            'reference_type' => 'defect_assessment',
+                            'reference_id' => $defect->id,
+                            'user_id' => Auth::id(),
+                            'notes' => 'Xóa hàng hỏng từ lô ' . $defect->batch_number,
+                        ]);
+                    }
+                } elseif ($defect->classification === 'B-GRADE') {
+                    $variant = ProductVariant::findOrFail($defect->variant_id);
+                    $salePrice = $variant->selling_price ?? 0;
+                    $bgradePrice = (int)($salePrice * 0.8);
+
+                    $invoice = StockOutInvoice::create([
+                        'invoice_number' => 'BGRADE-' . $defect->id . '-' . now()->format('YmdHis'),
+                        'warehouse_id' => $defect->warehouse_id,
+                        'type' => 'CLEARANCE',
+                        'total_amount' => $bgradePrice * $defect->quantity,
+                        'status' => 'PENDING',
+                        'created_by' => Auth::id(),
+                        'notes' => 'Thanh lý từ lô ' . $defect->batch_number,
+                    ]);
+
+                    StockOutInvoiceItem::create([
+                        'stock_out_invoice_id' => $invoice->id,
+                        'variant_id' => $defect->variant_id,
+                        'quantity' => $defect->quantity,
+                        'unit_price' => $bgradePrice,
+                        'line_total' => $bgradePrice * $defect->quantity,
+                        'defect_assessment_id' => $defect->id,
+                    ]);
+
+                    InventoryLog::create([
+                        'warehouse_id' => $defect->warehouse_id,
+                        'variant_id' => $defect->variant_id,
+                        'action' => 'OUT',
+                        'quantity_before' => 0,
+                        'quantity_change' => $defect->quantity,
+                        'quantity_after' => 0,
+                        'reference_type' => 'defect_assessment',
+                        'reference_id' => $defect->id,
+                        'user_id' => Auth::id(),
+                        'notes' => 'Tạo đơn thanh lý ' . $invoice->invoice_number . ' - Giá: ' . $bgradePrice . '/cái',
+                    ]);
+                    
+                    $stock = WarehouseStock::where('warehouse_id', $defect->warehouse_id)
+                        ->where('variant_id', $defect->variant_id)
+                        ->where('batch_number', $defect->batch_number)
+                        ->first();
+
+                    if ($stock && $stock->damaged >= $defect->quantity) {
+                        $quantityBefore = $stock->damaged;
+                        $stock->decrement('damaged', $defect->quantity);
+                        $stock->decrement('on_hand', $defect->quantity);
+
+                        InventoryLog::create([
+                            'warehouse_id' => $defect->warehouse_id,
+                            'variant_id' => $defect->variant_id,
+                            'action' => 'ADJUSTMENT',
+                            'quantity_before' => $quantityBefore,
+                            'quantity_change' => -$defect->quantity,
+                            'quantity_after' => $stock->damaged,
+                            'reference_type' => 'defect_assessment',
+                            'reference_id' => $defect->id,
+                            'user_id' => Auth::id(),
+                            'notes' => 'Xóa hàng hỏng từ lô ' . $defect->batch_number,
+                        ]);
+                    }
+                } else {
+                    InventoryLog::create([
+                        'warehouse_id' => $defect->warehouse_id,
+                        'variant_id' => $defect->variant_id,
+                        'action' => 'OUT',
+                        'quantity_before' => 0,
+                        'quantity_change' => -$defect->quantity,
+                        'quantity_after' => 0,
+                        'reference_type' => 'defect_assessment',
+                        'reference_id' => $defect->id,
+                        'user_id' => Auth::id(),
+                        'notes' => 'Tiêu hủy hàng hỏng từ lô ' . $defect->batch_number,
+                    ]);
+                    
+                    $stock = WarehouseStock::where('warehouse_id', $defect->warehouse_id)
+                        ->where('variant_id', $defect->variant_id)
+                        ->where('batch_number', $defect->batch_number)
+                        ->first();
+
+                    if ($stock && $stock->damaged >= $defect->quantity) {
+                        $quantityBefore = $stock->damaged;
+                        $stock->decrement('damaged', $defect->quantity);
+                        $stock->decrement('on_hand', $defect->quantity);
+
+                        InventoryLog::create([
+                            'warehouse_id' => $defect->warehouse_id,
+                            'variant_id' => $defect->variant_id,
+                            'action' => 'ADJUSTMENT',
+                            'quantity_before' => $quantityBefore,
+                            'quantity_change' => -$defect->quantity,
+                            'quantity_after' => $stock->damaged,
+                            'reference_type' => 'defect_assessment',
+                            'reference_id' => $defect->id,
+                            'user_id' => Auth::id(),
+                            'notes' => 'Xóa hàng hỏng từ lô ' . $defect->batch_number,
+                        ]);
+                    }
+                }
+
+                $defect->update([
+                    'repair_cost' => $validated['repair_cost'] ?? 0,
+                    'status' => 'APPROVED',
+                    'approved_by' => Auth::id(),
+                ]);
+            });
+
+            return back()->with('success', 'Duyệt đánh giá thành công');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function complete(Request $request, $id)
+    {
+        try {
+            $defect = DefectAssessment::findOrFail($id);
+            
+            if ($defect->status !== 'APPROVED') {
+                return back()->with('error', 'Chỉ có thể hoàn thành khi ở trạng thái APPROVED');
+            }
+
+            $defect->update([
+                'status' => 'COMPLETED',
+                'completed_by' => Auth::id(),
+            ]);
+
             InventoryLog::create([
                 'warehouse_id' => $defect->warehouse_id,
                 'variant_id' => $defect->variant_id,
                 'action' => 'ADJUSTMENT',
-                'quantity_before' => $damagedBefore,
-                'quantity_change' => -$defect->quantity,
-                'quantity_after' => $stock->damaged,
+                'quantity_before' => 0,
+                'quantity_change' => 0,
+                'quantity_after' => 0,
                 'reference_type' => 'defect_assessment',
                 'reference_id' => $defect->id,
                 'user_id' => Auth::id(),
-                'notes' => "Thanh ly hang hong: {$defect->classification}",
+                'notes' => 'Hoàn thành xử lý defect từ lô ' . $defect->batch_number,
             ]);
 
-            $stockInRequest = null;
-            if ($defect->classification === 'SCRAP') {
-                $this->createClearanceInvoice($defect, $data);
-            } elseif ($defect->classification === 'B-GRADE') {
-                $stock->update([
-                    'clearance' => ($stock->clearance ?? 0) + $defect->quantity,
-                ]);
-                
-                InventoryLog::create([
-                    'warehouse_id' => $defect->warehouse_id,
-                    'variant_id' => $defect->variant_id,
-                    'action' => 'ADJUSTMENT',
-                    'quantity_before' => $stock->on_hand,
-                    'quantity_change' => 0,
-                    'quantity_after' => $stock->on_hand,
-                    'reference_type' => 'defect_assessment',
-                    'reference_id' => $defect->id,
-                    'user_id' => Auth::id(),
-                    'notes' => "Chuyen hang B-GRADE tu damaged sang clearance",
-                ]);
-            } else {
-                $totalCost = ($data['repair_cost'] ?? 0) + ($data['material_cost'] ?? 0) + ($data['other_cost'] ?? 0);
-                $costPrice = $totalCost > 0 ? round($totalCost / $defect->quantity) : 0;
-
-                $stockInRequest = StockInRequest::create([
-                    'warehouse_id' => $defect->warehouse_id,
-                    'variant_id' => $defect->variant_id,
-                    'quantity' => $defect->quantity,
-                    'batch_number' => 'REWORK-' . date('YmdHis'),
-                    'cost_price' => $costPrice,
-                    'received_date' => now()->toDateString(),
-                    'status' => 'PENDING',
-                    'created_by' => auth()->id(),
-                    'notes' => "Sua chua tu lo hong - Phan loai: {$defect->classification}",
-                ]);
-            }
-
-            $stock->syncOnHand();
-
-            $defect->update([
-                'status' => 'COMPLETED',
-                'completed_by' => auth()->id(),
-                'repair_cost' => $data['repair_cost'] ?? 0,
-                'material_cost' => $data['material_cost'] ?? 0,
-                'notes' => $data['notes'] ?? $defect->notes,
-                'stock_in_request_id' => $stockInRequest?->id,
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('admin.inventory.defect.index')
-                ->with('success', 'Hoàn thành xử lý hàng hỏng thành công!');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withInput()->with('error', 'Lỗi: ' . $e->getMessage());
+            return back()->with('success', 'Hoàn thành xử lý defect thành công');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
     }
 
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
         try {
             $defect = DefectAssessment::findOrFail($id);
-
-            if ($defect->status !== 'ASSESSED') {
-                return redirect()->back()->with('error', 'Chỉ có thể từ chối báo cáo đã được đánh giá!');
-            }
-
-            $data = request()->validate([
-                'rejection_reason' => 'required|string',
-            ]);
-
-            DB::beginTransaction();
-
-            $stock = WarehouseStock::where('warehouse_id', $defect->warehouse_id)
-                ->where('variant_id', $defect->variant_id)
-                ->first();
-
-            if ($stock && $stock->damaged >= $defect->quantity) {
-                $damagedBefore = $stock->damaged;
-                $stock->update([
-                    'damaged' => $stock->damaged - $defect->quantity,
-                    'available' => $stock->available + $defect->quantity,
-                ]);
-                $stock->syncOnHand();
-                
-                InventoryLog::create([
-                    'warehouse_id' => $defect->warehouse_id,
-                    'variant_id' => $defect->variant_id,
-                    'action' => 'ADJUSTMENT',
-                    'quantity_before' => $damagedBefore,
-                    'quantity_change' => -$defect->quantity,
-                    'quantity_after' => $stock->damaged,
-                    'reference_type' => 'defect_assessment',
-                    'reference_id' => $defect->id,
-                    'user_id' => Auth::id(),
-                    'notes' => "Tu choi bao cao hang hong - Ly do: {$data['rejection_reason']}",
-                ]);
+            
+            if ($defect->status !== 'PENDING') {
+                return back()->with('error', 'Chỉ có thể từ chối khi ở trạng thái PENDING');
             }
 
             $defect->update([
                 'status' => 'REJECTED',
-                'rejected_by' => auth()->id(),
-                'rejection_reason' => $data['rejection_reason'],
+                'rejection_reason' => $validated['rejection_reason'],
+                'rejected_by' => Auth::id(),
             ]);
 
-            DB::commit();
+            InventoryLog::create([
+                'warehouse_id' => $defect->warehouse_id,
+                'variant_id' => $defect->variant_id,
+                'action' => 'ADJUSTMENT',
+                'quantity_before' => 0,
+                'quantity_change' => 0,
+                'quantity_after' => 0,
+                'reference_type' => 'defect_assessment',
+                'reference_id' => $defect->id,
+                'user_id' => Auth::id(),
+                'notes' => 'Từ chối: ' . $validated['rejection_reason'],
+            ]);
 
-            return redirect()->route('admin.inventory.defect.index')
-                ->with('success', 'Từ chối xử lý hàng hỏng!');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withInput()->with('error', 'Lỗi: ' . $e->getMessage());
+            return back()->with('success', 'Từ chối đánh giá thành công');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-    }
-
-    private function createClearanceInvoice(DefectAssessment $defect, array $data): void
-    {
-        $costPrice = ($data['repair_cost'] ?? 0) + ($data['material_cost'] ?? 0) + ($data['other_cost'] ?? 0);
-        $clearancePrice = round($costPrice * 0.7);
-        $totalAmount = $clearancePrice * $defect->quantity;
-
-        $invoice = StockOutInvoice::create([
-            'invoice_number' => 'CLR-' . date('YmdHis'),
-            'warehouse_id' => $defect->warehouse_id,
-            'type' => 'CLEARANCE',
-            'total_amount' => $totalAmount,
-            'status' => 'COMPLETED',
-            'created_by' => auth()->id(),
-            'completed_by' => auth()->id(),
-            'completed_at' => now(),
-            'notes' => "Thanh ly hang hong - Phan loai: {$defect->classification}",
-        ]);
-
-        StockOutInvoiceItem::create([
-            'stock_out_invoice_id' => $invoice->id,
-            'variant_id' => $defect->variant_id,
-            'quantity' => $defect->quantity,
-            'unit_price' => $clearancePrice,
-            'line_total' => $totalAmount,
-            'defect_assessment_id' => $defect->id,
-        ]);
     }
 }

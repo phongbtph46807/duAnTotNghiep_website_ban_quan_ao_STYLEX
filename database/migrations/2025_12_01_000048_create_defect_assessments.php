@@ -34,7 +34,7 @@ return new class extends Migration
             $table->integer('material_cost')->default(0);
 
             // Trạng thái
-            $table->enum('status', ['PENDING', 'ASSESSED', 'APPROVED', 'COMPLETED', 'REJECTED'])->default('PENDING');
+            $table->enum('status', ['PENDING', 'APPROVED', 'COMPLETED', 'REJECTED'])->default('PENDING')->index();
 
             // Người thực hiện
             $table->unsignedBigInteger('created_by')->nullable();
@@ -49,6 +49,8 @@ return new class extends Migration
 
             // Liên kết
             $table->unsignedBigInteger('stock_in_request_id')->nullable();
+            $table->string('batch_number')->nullable();
+            $table->string('location')->nullable();
 
             $table->timestamps();
             $table->index(['warehouse_id', 'status']);

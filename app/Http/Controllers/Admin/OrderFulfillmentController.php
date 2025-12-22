@@ -16,41 +16,81 @@ class OrderFulfillmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with('items.variant.product', 'items.variant.color', 'items.variant.size', 'picking.warehouse')
-            ->whereIn('status', ['processing', 'pending', 'shipping', 'delivered'])
-            ->where(function ($q) {
-                $q->whereDoesntHave('picking')
-                  ->orWhereHas('picking', function ($p) {
-                      $p->whereIn('status', ['PENDING', 'CONFIRMED', 'PICKING', 'PACKED', 'SHIPPED']);
-                  });
-            });
+        $baseQuery = Order::with(['items.variant.product', 'items.variant.color', 'items.variant.size', 'picking.warehouse']);
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%$search%")
-                  ->orWhere('buyer_name', 'like', "%$search%")
-                  ->orWhere('buyer_phone', 'like', "%$search%");
+                  ->orWhere('full_name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%");
             });
         }
 
         if ($request->filled('status')) {
-            $status = $request->status;
-            $query->whereHas('picking', function ($q) use ($status) {
-                $q->where('status', $status);
-            });
+            $baseQuery->where('status', $request->status);
         }
 
-        if ($request->filled('warehouse')) {
-            $query->whereHas('picking', function ($q) use ($request) {
-                $q->where('warehouse_id', $request->warehouse);
-            });
+        if ($request->filled('payment_status')) {
+            $baseQuery->where('payment_status', $request->payment_status);
         }
 
-        $orders = $query->latest()->paginate(20);
+        if ($request->filled('date_from')) {
+            $baseQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $baseQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $perPage = (int) $request->input('per_page', 20);
+        $allowedPerPage = [10, 20, 50, 100];
+        if (!in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 20;
+        }
+
+        $shippingStatuses = ['pending', 'processing', 'shipping'];
+        $shippingOrders = (clone $baseQuery)
+            ->whereIn('status', $shippingStatuses)
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'shipping_page')
+            ->appends($request->except('shipping_page'));
+
+        $completedStatuses = ['completed', 'delivered'];
+        $completedOrders = (clone $baseQuery)
+            ->whereIn('status', $completedStatuses)
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'completed_page')
+            ->appends($request->except('completed_page'));
+
+        $cancelOrders = (clone $baseQuery)
+            ->where('status', 'cancelled')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'cancel_page')
+            ->appends($request->except('cancel_page'));
+
+        $returnOrders = (clone $baseQuery)
+            ->where('status', 'returned')
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'return_page')
+            ->appends($request->except('return_page'));
+
+        $requestOrders = (clone $baseQuery)
+            ->whereIn('status', ['cancel_request', 'return_request'])
+            ->orderByDesc('created_at')
+            ->paginate($perPage, ['*'], 'request_page')
+            ->appends($request->except('request_page'));
+
         $warehouses = Warehouse::where('operational_status', 'ACTIVE')->get();
 
-        return view('admin.orders.fulfillment.index', compact('orders', 'warehouses'));
+        return view('admin.orders.fulfillment.index', compact(
+            'shippingOrders',
+            'completedOrders',
+            'cancelOrders',
+            'returnOrders',
+            'requestOrders',
+            'warehouses'
+        ));
     }
 
     public function confirm(Request $request, Order $order)
@@ -241,6 +281,58 @@ class OrderFulfillmentController extends Controller
             return back()->with('success', 'Cập nhật giao hàng thành công.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+            $newStatus = $request->input('status');
+
+            if (empty($newStatus)) {
+                return response()->json(['message' => 'Trạng thái không được để trống!', 'error' => 'validation_error'], 400);
+            }
+
+            $validStatuses = ['pending', 'confirmed', 'processing', 'shipping', 'shipped', 'delivered', 'completed', 'cancelled', 'cancel_request', 'return_request', 'returned'];
+            if (!in_array($newStatus, $validStatuses)) {
+                return response()->json(['message' => 'Trạng thái không hợp lệ!', 'error' => 'validation_error'], 400);
+            }
+
+            if ($newStatus === 'completed' && $order->status !== 'delivered') {
+                return response()->json(['message' => 'Chỉ có thể chọn "Hoàn thành" sau khi đơn hàng đã ở trạng thái "Đã giao"!', 'error' => 'validation_error'], 400);
+            }
+
+            if ($newStatus === 'shipping' && (!$order->picking || $order->picking->status !== 'PACKED')) {
+                return response()->json(['message' => 'Phải đóng gói xong mới được giao cho vận chuyển!', 'error' => 'validation_error'], 400);
+            }
+
+            $order->status = $newStatus;
+            $order->updated_by = Auth::id();
+
+            if (in_array($newStatus, ['completed', 'delivered']) && $order->payment_status === 'unpaid') {
+                $order->payment_status = 'paid';
+            }
+            if ($newStatus === 'returned' && $order->payment_status === 'paid') {
+                $order->payment_status = 'refunded';
+            }
+
+            $order->save();
+            
+            if ($newStatus === 'processing' && !$order->picking) {
+                $order->picking()->create(['status' => 'PENDING']);
+            }
+            if ($order->picking) {
+                if ($newStatus === 'shipping') {
+                    $order->picking->update(['status' => 'PACKED']);
+                } elseif ($newStatus === 'delivered') {
+                    $order->picking->update(['status' => 'SHIPPED']);
+                }
+            }
+
+            return response()->json(['message' => 'Cập nhật trạng thái đơn hàng thành công!', 'success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Có lỗi xảy ra: ' . $e->getMessage(), 'error' => 'server_error'], 500);
         }
     }
 }

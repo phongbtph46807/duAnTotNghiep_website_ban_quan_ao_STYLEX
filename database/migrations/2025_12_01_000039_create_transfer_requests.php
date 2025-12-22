@@ -14,10 +14,12 @@ return new class extends Migration
             $table->unsignedBigInteger('to_warehouse_id');
             $table->unsignedBigInteger('variant_id');
             $table->integer('quantity');
-            $table->enum('status', ['PENDING', 'OUT_CONFIRMED', 'IN_CONFIRMED', 'COMPLETED', 'CANCELLED'])->default('PENDING');
+            $table->enum('status', ['PENDING', 'OUT_CONFIRMED', 'QC_CHECKING', 'COMPLETED', 'CANCELLED'])->default('PENDING');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('out_confirmed_by')->nullable();
             $table->unsignedBigInteger('in_confirmed_by')->nullable();
+            $table->unsignedBigInteger('qc_confirmed_by')->nullable();
+            $table->string('batch_number')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->index(['from_warehouse_id', 'status']);

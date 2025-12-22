@@ -231,10 +231,27 @@ class InventoryController extends Controller
             ->limit(10)
             ->get();
 
+        // Thống kê defect assessments theo classification
+        $defectStats = DB::table('defect_assessments')
+            ->whereDate('created_at', '>=', now()->subDays($timeRange))
+            ->selectRaw('classification, COUNT(*) as count, SUM(quantity) as total_qty')
+            ->groupBy('classification')
+            ->get()
+            ->keyBy('classification');
+
+        // Thống kê defect assessments theo defect_level
+        $defectByLevel = DB::table('defect_assessments')
+            ->whereDate('created_at', '>=', now()->subDays($timeRange))
+            ->selectRaw('defect_level, COUNT(*) as count, SUM(quantity) as total_qty')
+            ->groupBy('defect_level')
+            ->get()
+            ->keyBy('defect_level');
+
         $warehouses = Warehouse::where('operational_status', 'ACTIVE')->get();
 
         return view('admin.inventory.reports', compact(
-            'inventoryValueByWarehouse', 'fastMovingVariants', 'warehouses', 'timeRange'
+            'inventoryValueByWarehouse', 'fastMovingVariants', 'warehouses', 'timeRange',
+            'defectStats', 'defectByLevel'
         ));
     }
 

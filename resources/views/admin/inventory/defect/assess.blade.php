@@ -58,7 +58,7 @@
                 <strong>Hướng dẫn:</strong> Nhập loại lỗi, mô tả chi tiết và phân loại xử lý hàng hỏng
             </div>
 
-            <form action="{{ route('admin.inventory.defect.confirm-assess', $defect->id) }}" method="POST">
+            <form action="{{ route('admin.inventory.defect.approve', $defect->id) }}" method="POST">
                 @csrf
 
                 <div class="row">
@@ -88,74 +88,33 @@
                     @error('defect_description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Ghi Chú</label>
-                    <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" 
-                              rows="3" placeholder="Ghi chú thêm...">{{ old('notes', $defect->notes) }}</textarea>
-                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Chi Phí Sửa Chữa (VNĐ)</label>
+                        <input type="number" name="repair_cost" class="form-control @error('repair_cost') is-invalid @enderror" 
+                               step="1" min="0" value="{{ old('repair_cost', $defect->repair_cost ?? 0) }}" placeholder="0">
+                        @error('repair_cost') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ghi Chú</label>
+                        <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" 
+                                  rows="2" placeholder="Ghi chú thêm...">{{ old('notes', $defect->notes) }}</textarea>
+                        @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
                 </div>
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check"></i> Xác Nhận Đánh Giá
+                        <i class="bi bi-check"></i> Phê Duyệt
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                        <i class="bi bi-x-circle"></i> Từ Chối
                     </button>
                     <a href="{{ route('admin.inventory.defect.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-x"></i> Hủy
+                        <i class="bi bi-arrow-left"></i> Quay Lại
                     </a>
                 </div>
             </form>
-        </div>
-    </div>
-
-    @elseif ($defect->status === 'ASSESSED')
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Phê Duyệt Xử Lý</h5>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <p><strong>Loại Lỗi:</strong> {{ $defect->defect_type }}</p>
-                    <p><strong>Phân Loại:</strong>
-                        @if ($defect->classification === 'REWORK')
-                            <span class="badge bg-primary">Sửa Chữa</span>
-                        @elseif ($defect->classification === 'B-GRADE')
-                            <span class="badge bg-secondary">Hàng Loại B</span>
-                        @elseif ($defect->classification === 'SCRAP')
-                            <span class="badge bg-dark">Thanh Lý</span>
-                        @endif
-                    </p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Người Đánh Giá:</strong> {{ $defect->assessedBy->name ?? 'N/A' }}</p>
-                    <p><strong>Thời Gian:</strong> {{ $defect->updated_at->format('d/m/Y H:i') }}</p>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <p><strong>Mô Tả Lỗi:</strong></p>
-                <p class="text-muted">{{ $defect->defect_description }}</p>
-            </div>
-
-            <div class="mb-3">
-                <p><strong>Ghi Chú:</strong></p>
-                <p class="text-muted">{{ $defect->notes ?? 'Không có ghi chú' }}</p>
-            </div>
-
-            <div class="d-flex gap-2">
-                <form action="{{ route('admin.inventory.defect.approve', $defect->id) }}" method="POST" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Phê Duyệt
-                    </button>
-                </form>
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                    <i class="bi bi-x-circle"></i> Từ Chối
-                </button>
-                <a href="{{ route('admin.inventory.defect.index') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Quay Lại
-                </a>
-            </div>
         </div>
     </div>
 
@@ -190,41 +149,6 @@
 
             <form action="{{ route('admin.inventory.defect.complete', $defect->id) }}" method="POST">
                 @csrf
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Chi Phí Sửa Chữa (VNĐ)</label>
-                        <input type="number" name="repair_cost" class="form-control @error('repair_cost') is-invalid @enderror" 
-                               step="1" min="0" value="{{ old('repair_cost', $defect->repair_cost ?? 0) }}" placeholder="0">
-                        @error('repair_cost') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Chi Phí Vật Tư (VNĐ)</label>
-                        <input type="number" name="material_cost" class="form-control @error('material_cost') is-invalid @enderror" 
-                               step="1" min="0" value="{{ old('material_cost', $defect->material_cost ?? 0) }}" placeholder="0">
-                        @error('material_cost') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Chi Phí Phát Sinh (VNĐ)</label>
-                        <input type="number" name="other_cost" class="form-control @error('other_cost') is-invalid @enderror" 
-                               step="1" min="0" value="{{ old('other_cost', $defect->other_cost ?? 0) }}" placeholder="0">
-                        @error('other_cost') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Ghi Chú</label>
-                    <textarea name="notes" class="form-control @error('notes') is-invalid @enderror" 
-                              rows="3" placeholder="Nhập ghi chú...">{{ old('notes', $defect->notes) }}</textarea>
-                    @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-
-                <div class="alert alert-info">
-                    <strong>Tổng Chi Phí:</strong> <span class="badge bg-primary" id="total-cost">0 VNĐ</span>
-                </div>
-
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check"></i> Hoàn Thành
@@ -257,25 +181,13 @@
                     </p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Người Hoàn Thành:</strong> {{ $defect->completedBy->name ?? 'N/A' }}</p>
+                    <p><strong>Người Phê Duyệt:</strong> {{ $defect->approvedBy->name ?? 'N/A' }}</p>
                     <p><strong>Thời Gian:</strong> {{ $defect->updated_at->format('d/m/Y H:i') }}</p>
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <p><strong>Chi Phí Sửa Chữa:</strong> {{ number_format($defect->repair_cost ?? 0) }} VNĐ</p>
-                </div>
-                <div class="col-md-4">
-                    <p><strong>Chi Phí Vật Tư:</strong> {{ number_format($defect->material_cost ?? 0) }} VNĐ</p>
-                </div>
-                <div class="col-md-4">
-                    <p><strong>Chi Phí Phát Sinh:</strong> {{ number_format($defect->other_cost ?? 0) }} VNĐ</p>
-                </div>
-            </div>
-
-            <div class="alert alert-success">
-                <strong>Tổng Chi Phí:</strong> {{ number_format(($defect->repair_cost ?? 0) + ($defect->material_cost ?? 0) + ($defect->other_cost ?? 0)) }} VNĐ
+            <div class="mb-3">
+                <p><strong>Chi Phí Sửa Chữa:</strong> {{ number_format($defect->repair_cost ?? 0) }} VNĐ</p>
             </div>
 
             <div class="mb-3">
@@ -354,28 +266,5 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const repairCostInput = document.querySelector('input[name="repair_cost"]');
-    const materialCostInput = document.querySelector('input[name="material_cost"]');
-    const otherCostInput = document.querySelector('input[name="other_cost"]');
-    const totalCostDisplay = document.getElementById('total-cost');
 
-    function updateTotalCost() {
-        if (repairCostInput && materialCostInput && otherCostInput && totalCostDisplay) {
-            const repairCost = parseInt(repairCostInput.value) || 0;
-            const materialCost = parseInt(materialCostInput.value) || 0;
-            const otherCost = parseInt(otherCostInput.value) || 0;
-            const total = repairCost + materialCost + otherCost;
-            totalCostDisplay.textContent = total.toLocaleString('vi-VN') + ' VNĐ';
-        }
-    }
-
-    if (repairCostInput) repairCostInput.addEventListener('input', updateTotalCost);
-    if (materialCostInput) materialCostInput.addEventListener('input', updateTotalCost);
-    if (otherCostInput) otherCostInput.addEventListener('input', updateTotalCost);
-    
-    updateTotalCost();
-});
-</script>
 @endsection

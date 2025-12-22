@@ -12,6 +12,8 @@ class WarehouseStock extends Model
     protected $fillable = [
         'warehouse_id',
         'variant_id',
+        'batch_number',
+        'location',
         'on_hand',
         'available',
         'reserved',
@@ -37,6 +39,11 @@ class WarehouseStock extends Model
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
+    }
+
+    public function stockInRequest(): BelongsTo
+    {
+        return $this->belongsTo(StockInRequest::class, 'batch_number', 'batch_number');
     }
 
     public function getTotalStock(): int

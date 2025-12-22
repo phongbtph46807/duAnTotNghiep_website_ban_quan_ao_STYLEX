@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CountController;
+use App\Http\Controllers\Admin\BatchCountController;
 use App\Http\Controllers\Admin\DefectAssessmentController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\NotificationController;
@@ -173,13 +174,14 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,3']], function 
                 Route::post('{id}/reject', [StockInController::class, 'reject'])->name('reject');
             });
 
-
             Route::prefix('transfer')->as('transfer.')->group(function () {
                 Route::get('/', [TransferController::class, 'index'])->name('index');
                 Route::get('create', [TransferController::class, 'create'])->name('create');
                 Route::post('/', [TransferController::class, 'store'])->name('store');
                 Route::post('{id}/confirm-out', [TransferController::class, 'confirmOut'])->name('confirm-out');
                 Route::post('{id}/confirm-in', [TransferController::class, 'confirmIn'])->name('confirm-in');
+                Route::post('{id}/confirm-qc', [TransferController::class, 'confirmQC'])->name('confirm-qc');
+                Route::get('batches/{warehouseId}/{variantId}', [TransferController::class, 'getBatches'])->name('batches');
             });
 
             Route::prefix('count')->as('count.')->group(function () {
@@ -189,6 +191,14 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,3']], function 
                 Route::get('{id}/count', [CountController::class, 'count'])->name('count');
                 Route::post('{id}/confirm-count', [CountController::class, 'confirmCount'])->name('confirm-count');
                 Route::post('{id}/confirm-adjustment', [CountController::class, 'confirmAdjustment'])->name('confirm-adjustment');
+            });
+
+            Route::prefix('count-batch')->as('count-batch.')->group(function () {
+                Route::get('/', [BatchCountController::class, 'index'])->name('index');
+                Route::get('create', [BatchCountController::class, 'create'])->name('create');
+                Route::post('/', [BatchCountController::class, 'store'])->name('store');
+                Route::get('{id}', [BatchCountController::class, 'show'])->name('show');
+                Route::post('{id}/confirm-count', [BatchCountController::class, 'confirmCount'])->name('confirm-count');
             });
 
             Route::prefix('defect')->as('defect.')->group(function () {
@@ -259,12 +269,10 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
 
         // Orders - các route này chỉ dành cho Admin
         Route::prefix('orders')->as('orders.')->group(function () {
-            // Route index đã được định nghĩa ở trên cho cả Admin và Staff, không cần định nghĩa lại
             Route::get('{order}', [OrderController::class, 'show'])->name('show');
             Route::post('{order}/confirm', [OrderController::class, 'confirm'])->name('confirm');
             Route::post('{order}/ship', [OrderController::class, 'ship'])->name('ship');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
-            // Route updateStatus đã được định nghĩa ở trên cho cả Admin và Staff, không cần định nghĩa lại
             Route::post('{itemId}/return', [OrderController::class, 'returnItem'])->name('returnItem');
 
             Route::prefix('fulfillment')->as('fulfillment.')->group(function () {
@@ -276,11 +284,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             });
         });
 
-        // Users
-
         // Orders management - CHỈ ADMIN
-        // Các route updateStatus, approveCancel, approveReturn đã được định nghĩa cho cả Admin và Staff ở trên
-        // Chỉ còn payment-status là chỉ dành cho Admin
         Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
 
         // Withdraw Requests - CHỈ ADMIN

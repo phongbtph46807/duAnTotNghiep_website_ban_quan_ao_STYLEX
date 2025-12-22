@@ -38,20 +38,6 @@
         <div class="container-fluid">
             <div id="two-column-menu"></div>
             <ul class="navbar-nav" id="navbar-nav">
-                
-
-                    <div class="collapse menu-dropdown" id="sidebarOrders">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.orders.index') }}" class="nav-link"
-                                    data-key="t-orders-list">
-                                    <i class="ri-file-list-3-line me-1"></i> Danh sách đơn hàng
-                                </a>
-                            </li>
-
-                        </ul>
-                    </div>
-                </li>
 
                 <!-- ===== QUẢN LÝ SẢN PHẨM ===== -->
                 <li class="menu-title"><span>Sản Phẩm</span></li>
@@ -136,12 +122,13 @@
                     <div class="collapse menu-dropdown" id="sidebarOrders">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('admin.orders.index') }}" class="nav-link">
-                                    <i class="ri-list-check me-1"></i> Danh sách đơn hàng
+                                <a href="{{ route('admin.orders.index') }}" class="nav-link"
+                                    data-key="t-orders-list">
+                                    <i class="ri-file-list-3-line me-1"></i> Danh sách đơn hàng
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.orders.fulfillment.index') }}" class="nav-link">
+                                <a href="{{ route('admin.orders.fulfillment.index') }}" class="nav-link" data-key="t-fulfillment">
                                     <i class="ri-truck-line me-1"></i> Đóng gói & Giao hàng
                                 </a>
                             </li>
