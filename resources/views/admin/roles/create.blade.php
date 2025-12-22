@@ -89,7 +89,7 @@
                                                            {{ in_array($role->id, old('role_ids', [])) ? 'checked' : '' }}>
                                                     <label class="form-check-label" for="role_{{ $role->id }}">
                                                         <span class="badge bg-{{ $role->color ?? 'secondary' }}-subtle text-{{ $role->color ?? 'secondary' }} me-1">
-                                                            <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
+                                                        <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
                                                         </span>
                                                         @if($role->description)
                                                             <small class="text-muted d-block">{{ $role->description }}</small>
@@ -209,25 +209,25 @@
                                                             <i class="ri-shield-user-line me-1"></i>{{ $role->name }}
                                                         </span>
                                                     @endforeach
-                                                @endif
-                                                
-                                                {{-- Luôn hiển thị role integer để đảm bảo có dữ liệu --}}
-                                                @if($user->role == 1)
-                                                    <span class="badge bg-danger">
-                                                        <i class="ri-admin-line me-1"></i>Admin
-                                                    </span>
-                                                @elseif($user->role == 2)
-                                                    <span class="badge bg-warning">
-                                                        <i class="ri-team-line me-1"></i>Staff
-                                                    </span>
-                                                @elseif($user->role == 3)
-                                                    <span class="badge bg-info">
-                                                        <i class="ri-store-3-line me-1"></i>Warehouse Manager
-                                                    </span>
                                                 @else
-                                                    <span class="badge bg-secondary">
-                                                        <i class="ri-user-line me-1"></i>User
-                                                    </span>
+                                                    {{-- Chỉ hiển thị role integer nếu không có RBAC roles --}}
+                                                    @if($user->role == 1)
+                                                        <span class="badge bg-danger">
+                                                            <i class="ri-admin-line me-1"></i>Admin
+                                                        </span>
+                                                    @elseif($user->role == 2)
+                                                        <span class="badge bg-warning">
+                                                            <i class="ri-team-line me-1"></i>Staff
+                                                        </span>
+                                                    @elseif($user->role == 3)
+                                                        <span class="badge bg-info">
+                                                            <i class="ri-store-3-line me-1"></i>Warehouse Manager
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-secondary">
+                                                            <i class="ri-user-line me-1"></i>User
+                                                        </span>
+                                                    @endif
                                                 @endif
                                             </td>
                                             <td>

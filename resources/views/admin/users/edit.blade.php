@@ -285,7 +285,7 @@
                             <div class="col-lg-4 " style="animation-delay: 0.4s">
                                 <div class="user-profile-card">
                                     <div class="avatar-upload-wrapper">
-                                        <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" alt="Avatar" id="avatarDisplay"
+                                        <img src="{{ $user->avatar_url }}" alt="Avatar" id="avatarDisplay"
                                             class="avatar-image rounded-circle">
                                         <div id="triggerAvatarUpload" class="avatar-upload-button" data-bs-toggle="tooltip"
                                             data-bs-placement="bottom" title="Thay đổi avatar">

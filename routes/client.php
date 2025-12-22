@@ -92,6 +92,8 @@ Route::group(['middleware' => ['onlyAuthenticated']], function(){
         Route::put('/', [ProfileController::class, 'update'])->name('update');
         Route::get('/card', [ProfileController::class, 'card'])->name('card');
         Route::post('/card', [ProfileController::class, 'withdraw'])->name('withdraw');
+        // Trang "Đánh giá của tôi"
+        Route::get('/reviews', [ProfileController::class, 'reviews'])->name('reviews');
         // Address routes
         Route::prefix('addresses')->as('addresses.')->group(function(){
             Route::get('/', [AddressController::class, 'index'])->name('index');

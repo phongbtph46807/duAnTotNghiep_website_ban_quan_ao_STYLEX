@@ -13,7 +13,7 @@
                 <div class="card-body text-center p-4">
                     <div class="mb-4">
                         @if(auth()->user()->avatar)
-                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" class="profile-avatar">
+                            <img src="{{ auth()->user()->avatar_url }}" alt="Avatar" class="profile-avatar">
                         @else
                             <div class="profile-avatar-placeholder">
                                 <span style="font-size: 48px; color: white; font-weight: bold;">
@@ -40,7 +40,7 @@
                             <i class="ri-user-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Hồ sơ cá nhân</span>
                         </a>
-                        <a href="{{ route('client.order.list') }}" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
+                        <a href="{{ route('client.profile.index', ['tab' => 'orders']) }}" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
                             <i class="ri-shopping-bag-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Đơn hàng của tôi</span>
                         </a>
@@ -48,21 +48,9 @@
                             <i class="ri-map-pin-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Địa chỉ giao hàng</span>
                         </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-bank-card-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Phương thức thanh toán</span>
-                        </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-notification-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Cài đặt thông báo</span>
-                        </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-shield-check-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Bảo mật tài khoản</span>
-                        </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-star-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Đánh giá của tôi</span>
+                        <a href="{{ route('client.profile.index', ['tab' => 'card']) }}" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
+                            <i class="ri-wallet-3-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
+                            <span style="font-size: 14px; font-weight: 500;">Ví của tôi</span>
                         </a>
                     </div>
                 </div>

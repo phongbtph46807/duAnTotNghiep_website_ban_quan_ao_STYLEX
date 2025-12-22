@@ -169,7 +169,7 @@
                                                         <td>
                                                             <div class="d-flex align-items-center">
                                                                 <div class="flex-shrink-0 me-2">
-                                                                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" 
+                                                                    <img src="{{ $user->avatar_url }}" 
                                                                          alt="{{ $user->name }}" 
                                                                          class="rounded-circle" 
                                                                          style="width: 32px; height: 32px; object-fit: cover;">

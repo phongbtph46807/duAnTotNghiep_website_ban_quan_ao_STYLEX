@@ -182,10 +182,6 @@
 										<i class="zmdi zmdi-favorite me-2"></i>
 										Yêu thích
 									</a>
-									<a class="dropdown-item" href="#">
-										<i class="zmdi zmdi-settings me-2"></i>
-										Cài đặt
-									</a>
 									<div class="dropdown-divider"></div>
 									<form method="POST" action="{{ route('logout') }}">
 										@csrf

@@ -258,4 +258,30 @@ if ($roleName) {
     {
         return $this->hasOne(Address::class)->where('is_default', true);
     }
+
+    /**
+     * Quan hệ với Reviews
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Lấy URL avatar - hỗ trợ cả URL từ Google và file path trong storage
+     */
+    public function getAvatarUrlAttribute()
+    {
+        if (!$this->avatar) {
+            return \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT;
+        }
+
+        // Nếu avatar là URL đầy đủ (từ Google hoặc external), dùng trực tiếp
+        if (filter_var($this->avatar, FILTER_VALIDATE_URL)) {
+            return $this->avatar;
+        }
+
+        // Nếu là file path trong storage, dùng asset
+        return asset('storage/' . $this->avatar);
+    }
 }
