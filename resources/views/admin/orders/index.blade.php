@@ -150,9 +150,10 @@
             pointer-events: none;
             opacity: 0.5;
         }
-        /* Giữ dropdown trạng thái không bị che khi scroll/clip */
+        /* Giữ dropdown trạng thái không bị che theo chiều dọc nhưng vẫn cho phép bảng scroll ngang trên màn nhỏ */
         .order-table-wrapper {
-            overflow: visible !important;
+            overflow-x: auto;
+            overflow-y: visible;
         }
         .order-table-wrapper .dropdown-menu {
             z-index: 2000;
@@ -2099,7 +2100,7 @@
             });
         } else {
             console.warn('⚠️ Laravel Echo not loaded. Realtime updates disabled.');
-            console.warn('💡 Make sure @vite(["resources/js/app.js"]) is loaded and BROADCAST_CONNECTION is set in .env');
+            console.warn('💡 Make sure Vite app.js is loaded và BROADCAST_CONNECTION trong .env được set đúng (pusher/reverb).');
         }
     </script>
     <script>
