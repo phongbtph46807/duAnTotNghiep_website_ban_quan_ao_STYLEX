@@ -152,11 +152,27 @@
         }
         /* Giữ dropdown trạng thái không bị che theo chiều dọc nhưng vẫn cho phép bảng scroll ngang trên màn nhỏ */
         .order-table-wrapper {
-            overflow-x: auto;
-            overflow-y: visible;
+            position: relative; /* làm gốc cho dropdown */
+            overflow-x: auto !important;
+            overflow-y: visible !important;
         }
+        /* Dropdown trạng thái hiển thị dạng overlay, nằm trên các dòng khác nhưng không bị cắt */
         .order-table-wrapper .dropdown-menu {
-            z-index: 2000;
+            z-index: 99999 !important; /* rất cao để luôn nổi trên tất cả card */
+            position: fixed !important; /* dùng fixed để luôn nổi trên mọi thứ */
+        }
+        /* Card Danh sách đơn hàng không cắt dropdown và nằm trên card Yêu cầu hủy/trả hàng */
+        .orders-list-card {
+            position: relative;
+            z-index: 100;
+        }
+        .orders-list-card .card-body {
+            overflow: visible;
+        }
+        /* Card Yêu cầu hủy/trả hàng có z-index thấp hơn để không che dropdown */
+        .request-orders-card {
+            position: relative;
+            z-index: 1;
         }
     </style>
 @endpush
@@ -307,7 +323,7 @@
     {{-- Yêu cầu hủy / trả hàng --}}
     <div class="row mt-3">
         <div class="col-12">
-            <div class="card">
+            <div class="card request-orders-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h5 class="mb-0"><i class="ri-error-warning-line me-2"></i>Yêu cầu hủy / trả hàng</h5>
@@ -379,7 +395,7 @@
     </div>
 
     {{-- 🔎 Bộ lọc --}}
-    <div class="card">
+    <div class="card orders-list-card" style="position: relative; z-index: 100;">
         <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
             <div>
                 <h4 class="card-title mb-0"><i class="ri-file-list-3-line me-2"></i>Danh sách đơn hàng</h4>
@@ -644,7 +660,7 @@
                                                     <i class="{{ $currentStatus['icon'] }} me-1"></i>
                                                     {{ $currentStatus['label'] }}
                                                 </span>
-                                                <div class="dropdown">
+                                                <div class="dropdown dropup">
                                                     <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
                                                             data-bs-toggle="dropdown" aria-expanded="false">
                                                         <i class="ri-arrow-down-s-line"></i>
@@ -1466,6 +1482,33 @@
     {{-- Load Laravel Echo và Pusher --}}
     @vite(['resources/js/app.js'])
     <script>
+        // Force dropdown trạng thái luôn render với z-index cao và position fixed
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lắng nghe tất cả dropdown show event
+            document.addEventListener('show.bs.dropdown', function(e) {
+                const button = e.target.closest('.status-toggle');
+                if (button) {
+                    setTimeout(() => {
+                        // Tìm dropdown menu (có thể là nextElementSibling hoặc trong dropdown container)
+                        const dropdown = button.closest('.dropdown');
+                        if (dropdown) {
+                            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                            if (dropdownMenu) {
+                                dropdownMenu.style.zIndex = '99999';
+                                dropdownMenu.style.position = 'fixed';
+                                // Đảm bảo nó không bị che bởi bất kỳ card nào
+                                const rect = button.getBoundingClientRect();
+                                const menuRect = dropdownMenu.getBoundingClientRect();
+                                // Nếu dropdown bị che ở trên, điều chỉnh top
+                                if (menuRect.top < 0) {
+                                    dropdownMenu.style.top = (rect.top - menuRect.height) + 'px';
+                                }
+                            }
+                        }
+                    }, 50);
+                }
+            });
+        });
         function updateStatus(orderId, status) {
             // Validate inputs
             if (!orderId || !status) {
