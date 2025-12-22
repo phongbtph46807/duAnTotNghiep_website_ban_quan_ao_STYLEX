@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Log;
+use Laravel\Socialite\Two\InvalidStateException;
+use GuzzleHttp\Exception\ClientException;
 
 class GoogleAuthController extends Controller
 {
@@ -27,7 +29,16 @@ class GoogleAuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
+            // Lấy thông tin user từ Google
             $googleUser = Socialite::driver('google')->user();
+            
+            // Validate email từ Google
+            if (!$googleUser->email) {
+                Log::error('Google OAuth: No email provided', [
+                    'google_user_id' => $googleUser->id ?? 'unknown'
+                ]);
+                return redirect()->route('loginView')->with('error', 'Google không cung cấp email. Vui lòng thử lại hoặc đăng nhập bằng email/mật khẩu.');
+            }
 
             // Tìm user đã tồn tại theo email (không phân biệt hoa thường)
             // Bao gồm cả user đã bị soft delete để restore nếu cần
@@ -85,30 +96,70 @@ class GoogleAuthController extends Controller
                 return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
             } else {
                 // User chưa tồn tại - tạo tài khoản mới
-                $user = User::create([
-                    'name' => $googleUser->name,
-                    'email' => $googleUser->email, // Email từ Google (đã được verify)
-                    'password' => Hash::make(Str::random(32)), // Random password vì đăng nhập bằng Google
-                    'email_verified_at' => now(), // Google đã verify email
-                    'avatar' => $googleUser->avatar,
-                    'role' => User::ROLE_USER,
-                    'status' => 'active',
-                    'is_verified' => 1, // Đã verify qua Google
-                ]);
+                try {
+                    $user = User::create([
+                        'name' => $googleUser->name ?? 'User',
+                        'email' => $googleUser->email, // Email từ Google (đã được verify)
+                        'password' => Hash::make(Str::random(32)), // Random password vì đăng nhập bằng Google
+                        'email_verified_at' => now(), // Google đã verify email
+                        'avatar' => $googleUser->avatar ?? null,
+                        'role' => User::ROLE_USER,
+                        'status' => 'active',
+                        'is_verified' => 1, // Đã verify qua Google
+                    ]);
 
-                Auth::login($user, true);
+                    Auth::login($user, true);
 
-                // Merge session cart vào DB
-                $this->mergeSessionCart($user);
+                    // Merge session cart vào DB
+                    $this->mergeSessionCart($user);
 
-                return redirect()->route('home')->with('success', 'Đăng ký và đăng nhập thành công!');
+                    return redirect()->route('home')->with('success', 'Đăng ký và đăng nhập thành công!');
+                } catch (\Exception $createException) {
+                    Log::error('Google OAuth: Error creating user', [
+                        'email' => $googleUser->email,
+                        'error' => $createException->getMessage(),
+                        'trace' => $createException->getTraceAsString()
+                    ]);
+                    
+                    // Nếu lỗi do email đã tồn tại, thử tìm lại
+                    $existingUser = User::withTrashed()
+                        ->whereRaw('LOWER(email) = ?', [strtolower($googleUser->email)])
+                        ->first();
+                    
+                    if ($existingUser) {
+                        // Restore và đăng nhập
+                        if ($existingUser->trashed()) {
+                            $existingUser->restore();
+                        }
+                        Auth::login($existingUser, true);
+                        return redirect()->route('home')->with('success', 'Đăng nhập thành công!');
+                    }
+                    
+                    return redirect()->route('loginView')->with('error', 'Không thể tạo tài khoản. Email có thể đã được sử dụng. Vui lòng thử đăng nhập bằng email/mật khẩu.');
+                }
             }
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            // Lỗi do session expired hoặc state mismatch
+            Log::warning('Google OAuth: InvalidStateException', [
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->route('loginView')->with('error', 'Phiên đăng nhập đã hết hạn. Vui lòng thử lại.');
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            // Lỗi từ Google API
+            Log::error('Google OAuth: ClientException', [
+                'error' => $e->getMessage(),
+                'response' => $e->getResponse()->getBody()->getContents() ?? 'no response'
+            ]);
+            return redirect()->route('loginView')->with('error', 'Lỗi kết nối với Google. Vui lòng kiểm tra cấu hình OAuth và thử lại.');
         } catch (\Exception $e) {
             Log::error('Google OAuth Error: ' . $e->getMessage(), [
                 'email' => $googleUser->email ?? 'unknown',
+                'class' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return redirect()->route('loginView')->with('error', 'Đăng nhập bằng Google thất bại. Vui lòng thử lại.');
+            return redirect()->route('loginView')->with('error', 'Đăng nhập bằng Google thất bại: ' . $e->getMessage() . '. Vui lòng thử lại hoặc đăng nhập bằng email/mật khẩu.');
         }
     }
 

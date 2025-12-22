@@ -403,7 +403,7 @@
 	// Initialize voucher UI if voucher is applied
 	$(document).ready(function(){
 		if (appliedVoucher) {
-			currentDiscount = Math.round(parseFloat('{{ $discount ?? 0 }}') || 0);
+			currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
 			$('#voucherInfo').show();
 			$('#appliedVoucherCode').text(appliedVoucher.code);
 			updateGrandTotal();
@@ -427,15 +427,15 @@
 		// Recalculate discount if voucher is applied
 		if (appliedVoucher) {
 			if (appliedVoucher.type === 'percent') {
-				currentDiscount = Math.round((grand * appliedVoucher.value) / 100);
+				currentDiscount = (grand * appliedVoucher.value) / 100;
 				// Áp dụng max_discount_amount nếu có
 				if (appliedVoucher.max_discount_amount && currentDiscount > appliedVoucher.max_discount_amount) {
-					currentDiscount = Math.round(appliedVoucher.max_discount_amount);
+					currentDiscount = appliedVoucher.max_discount_amount;
 				}
 			} else if (appliedVoucher.type === 'fixed') {
-				currentDiscount = Math.round(appliedVoucher.value);
+				currentDiscount = appliedVoucher.value;
 				if (currentDiscount > grand) {
-					currentDiscount = Math.round(grand);
+					currentDiscount = grand;
 				}
 			}
 		}
@@ -446,14 +446,12 @@
 	var currentShippingFee = 0;
 	
 	function updateGrandTotal(){
-		// Đảm bảo tất cả số đều là số nguyên
-		var subtotal = Math.round(currentSubtotal || 0);
-		var discount = Math.round(currentDiscount || 0);
-		var shipping = Math.round(currentShippingFee || 0);
+		var subtotal = currentSubtotal || 0;
+		var discount = currentDiscount || 0;
+		var shipping = currentShippingFee || 0;
 		
 		var finalTotal = subtotal - discount + shipping;
 		if (finalTotal < 0) finalTotal = 0;
-		finalTotal = Math.round(finalTotal);
 		
 		$('#cart-grandtotal').text(format(finalTotal));
 		if (discount > 0) {
@@ -853,7 +851,7 @@
 			data: { code: code.trim(), _token: $('meta[name="csrf-token"]').attr('content') }
 		}).done(function(res){
 			if (res.success) {
-				currentDiscount = Math.round(parseFloat(res.discount) || 0);
+				currentDiscount = parseFloat(res.discount) || 0;
 				appliedVoucher = res.voucher;
 				recalcTotals(); // Recalculate để đảm bảo tính toán đúng
 				updateGrandTotal();
