@@ -18,62 +18,97 @@ class OrderFulfillmentController extends Controller
         $this->fulfillmentService = $fulfillmentService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with('items', 'picking')
-            ->whereIn('fulfillment_status', ['PENDING', 'CONFIRMED', 'PICKING', 'PACKED', 'CANCELLED'])
-            ->latest()
-            ->paginate(20);
-        
-        return view('admin.orders.fulfillment.index', compact('orders'));
+        $query = Order::with('items', 'picking')
+            ->whereIn('status', ['processing', 'pending'])
+            ->whereHas('picking', function ($q) {
+                $q->whereIn('status', ['PENDING', 'CONFIRMED', 'PACKED']);
+            });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%$search%")
+                  ->orWhere('buyer_name', 'like', "%$search%")
+                  ->orWhere('buyer_phone', 'like', "%$search%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->status;
+            $query->whereHas('picking', function ($q) use ($status) {
+                $q->where('status', $status);
+            });
+        }
+
+        if ($request->filled('warehouse')) {
+            $query->whereHas('picking', function ($q) use ($request) {
+                $q->where('warehouse_id', $request->warehouse);
+            });
+        }
+
+        $orders = $query->latest()->paginate(20);
+        $warehouses = Warehouse::where('operational_status', 'ACTIVE')->get();
+
+        return view('admin.orders.fulfillment.index', compact('orders', 'warehouses'));
     }
 
-    public function confirm(Order $order)
+    public function confirm(Request $request, Order $order)
     {
         try {
-            $this->fulfillmentService->confirmOrder($order);
-            return back()->with('success', 'Xác nhận đơn hàng thành công. Tồn kho đã được tạm giữ.');
+            if (!$order->picking) {
+                $order->picking()->create(['status' => 'PENDING']);
+            }
+            $order->picking->update(['status' => 'CONFIRMED']);
+            return back()->with('success', 'Xác nhận đơn hàng thành công.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
 
-    public function startPicking(Order $order)
+    public function show(Order $order)
     {
-        $warehouses = Warehouse::where('operational_status', 'ACTIVE')->get();
-        return view('admin.orders.fulfillment.picking', compact('order', 'warehouses'));
+        $order->load('items.variant.product', 'picking.warehouse');
+        return view('admin.orders.fulfillment.show', compact('order'));
     }
 
-    public function storePicking(Request $request, Order $order)
+    public function completePacking(Request $request, Order $order)
     {
-        $validated = $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
+        $request->validate([
+            'warehouse_id' => 'required|integer|exists:warehouses,id',
         ]);
 
         try {
-            $this->fulfillmentService->startPicking($order, $validated['warehouse_id']);
-            return redirect()->route('admin.orders.fulfillment.index')
-                ->with('success', 'Bắt đầu picking. Nhân viên kho có thể in phiếu và lấy hàng.');
+            $warehouseId = $request->input('warehouse_id');
+
+            foreach ($order->items as $item) {
+                $stock = \App\Models\WarehouseStock::where('warehouse_id', $warehouseId)
+                    ->where('variant_id', $item->variant_id)
+                    ->first();
+
+                if (!$stock || $stock->available < $item->quantity) {
+                    throw new \Exception('Tồn kho không đủ.');
+                }
+            }
+
+            $order->picking->update([
+                'warehouse_id' => $warehouseId,
+                'status' => 'PACKED'
+            ]);
+            
+            return redirect()->route('admin.orders.fulfillment.show', $order)
+                ->with('success', 'Đóng gói thành công.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
 
-    public function completePacking(OrderPicking $picking)
+    public function completeShipping(Order $order)
     {
         try {
-            $this->fulfillmentService->completePacking($picking);
-            return back()->with('success', 'Hoàn tất packing. Đơn hàng sẵn sàng để vận chuyển.');
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    public function ship(Order $order)
-    {
-        try {
-            $this->fulfillmentService->shipOrder($order);
-            return back()->with('success', 'Xuất kho thành công. Đơn hàng đã hoàn tất.');
+            $this->fulfillmentService->completeShipping($order);
+            return back()->with('success', 'Cập nhật giao hàng thành công.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

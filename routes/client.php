@@ -29,7 +29,7 @@ Route::prefix('blog')->as('blog.')->group(function () {
 
     Route::prefix('contact')->as('contact.')->group(function () {
     Route::get('/', [ContactController::class, 'index'])->name('index');
-   
+
 });
 
 // Client Cart routes
@@ -73,7 +73,7 @@ Route::group(['middleware' => ['isAuthenticated']], function(){
 
     Route::get('/login', [AuthController::class,'loginView'])->name('loginView');
     Route::post('/login', [AuthController::class,'login'])->name('login');
-    
+
     // Google OAuth
     Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'handleGoogleCallback'])->name('google.callback');
@@ -85,7 +85,7 @@ Route::post('/logout', [AuthController::class,'logout'])->middleware('auth')->na
 // User dashboard (khách đăng nhập)
 Route::group(['middleware' => ['onlyAuthenticated']], function(){
     Route::get('/dashboard', [HomeController::class, 'index'])->name('user.dashboard');
-    
+
     // Profile routes
     Route::prefix('profile')->as('client.profile.')->group(function(){
         Route::get('/', [ProfileController::class, 'index'])->name('index');

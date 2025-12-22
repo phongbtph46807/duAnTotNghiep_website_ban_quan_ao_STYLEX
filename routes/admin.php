@@ -27,7 +27,6 @@ use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ReturnController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\StockInController;
-use App\Http\Controllers\Admin\StockOutController;
 use App\Http\Controllers\Admin\StockOutInvoiceController;
 use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\WarehouseController;
@@ -37,7 +36,7 @@ use App\Http\Controllers\Admin\SalaryController;
 Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        
+
         // Profile routes
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
@@ -119,7 +118,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], functio
         // Orders list: allow Admin, Staff và Warehouse Manager to view orders
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/pending-requests-count', [OrderController::class, 'getPendingRequestsCount'])->name('orders.pendingRequestsCount');
-        
+
         // Orders management - cho phép Admin, Staff và Warehouse Manager xem thông báo và quản lý đơn hàng
         Route::prefix('orders')->as('orders.')->group(function () {
             Route::get('/pending-requests-count', [OrderController::class, 'getPendingRequestsCount'])->name('pendingRequestsCount');
@@ -127,6 +126,15 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], functio
             Route::post('/{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
             Route::post('/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('approveCancel');
             Route::post('/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('approveReturn');
+        });
+
+        // Order Fulfillment - Admin & Staff
+        Route::prefix('orders/fulfillment')->as('orders.fulfillment.')->group(function () {
+            Route::get('/', [OrderFulfillmentController::class, 'index'])->name('index');
+            Route::get('{order}', [OrderFulfillmentController::class, 'show'])->name('show');
+            Route::post('{order}/confirm', [OrderFulfillmentController::class, 'confirm'])->name('confirm');
+            Route::post('{picking}/pack', [OrderFulfillmentController::class, 'completePacking'])->name('pack');
+            Route::post('{order}/ship', [OrderFulfillmentController::class, 'completeShipping'])->name('ship');
         });
     });
 });
@@ -164,15 +172,6 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,3']], function 
                 Route::post('{id}/reject', [StockInController::class, 'reject'])->name('reject');
             });
 
-            Route::prefix('stock-out')->as('stock-out.')->group(function () {
-                Route::get('/', [StockOutController::class, 'index'])->name('index');
-                Route::get('create', [StockOutController::class, 'create'])->name('create');
-                Route::post('/', [StockOutController::class, 'store'])->name('store');
-                Route::get('{id}/qc', [StockOutController::class, 'qc'])->name('qc');
-                Route::post('{id}/confirm-qc', [StockOutController::class, 'confirmQC'])->name('confirm-qc');
-                Route::post('{id}/confirm', [StockOutController::class, 'confirm'])->name('confirm');
-                Route::post('{id}/reject', [StockOutController::class, 'reject'])->name('reject');
-            });
 
             Route::prefix('transfer')->as('transfer.')->group(function () {
                 Route::get('/', [TransferController::class, 'index'])->name('index');
@@ -269,21 +268,22 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
 
             Route::prefix('fulfillment')->as('fulfillment.')->group(function () {
                 Route::get('/', [OrderFulfillmentController::class, 'index'])->name('index');
+                Route::get('{order}', [OrderFulfillmentController::class, 'show'])->name('show');
                 Route::post('{order}/confirm', [OrderFulfillmentController::class, 'confirm'])->name('confirm');
                 Route::get('{order}/picking', [OrderFulfillmentController::class, 'startPicking'])->name('picking');
                 Route::post('{order}/picking', [OrderFulfillmentController::class, 'storePicking'])->name('picking.store');
-                Route::post('{picking}/pack', [OrderFulfillmentController::class, 'completePacking'])->name('pack');
+                Route::post('{order}/pack', [OrderFulfillmentController::class, 'completePacking'])->name('pack');
                 Route::post('{order}/ship', [OrderFulfillmentController::class, 'ship'])->name('ship');
             });
         });
 
         // Users
-        
+
         // Orders management - CHỈ ADMIN
         // Các route updateStatus, approveCancel, approveReturn đã được định nghĩa cho cả Admin và Staff ở trên
         // Chỉ còn payment-status là chỉ dành cho Admin
         Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
-        
+
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {
             Route::get('/trash', [UserController::class, 'trash'])->name('trash');

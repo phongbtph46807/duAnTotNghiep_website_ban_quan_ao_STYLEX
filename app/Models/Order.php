@@ -62,4 +62,9 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function picking(): BelongsTo
+    {
+        return $this->belongsTo(OrderPicking::class, 'id', 'order_id');
+    }
 }

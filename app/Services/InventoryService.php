@@ -337,3 +337,20 @@ class InventoryService
         });
     }
 }
+
+    public static function getVariantAvailableStock(int $variantId): int
+    {
+        return WarehouseStock::where('variant_id', $variantId)->sum('available');
+    }
+
+    public static function getVariantTotalStock(int $variantId): int
+    {
+        return WarehouseStock::where('variant_id', $variantId)->sum('on_hand');
+    }
+
+    public static function getVariantStockByWarehouse(int $variantId, int $warehouseId): ?WarehouseStock
+    {
+        return WarehouseStock::where('variant_id', $variantId)
+            ->where('warehouse_id', $warehouseId)
+            ->first();
+    }

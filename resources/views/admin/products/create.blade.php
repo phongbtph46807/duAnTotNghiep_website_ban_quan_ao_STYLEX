@@ -121,7 +121,7 @@
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" name="is_featured" value="1"
                                 {{ old('is_featured', 0) == 1 ? 'checked' : '' }}>
-                            <label class="form-check-label">Gắn “Đặc biệt”</label>
+                            <label class="form-check-label">Gắn "Đặc biệt"</label>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -191,9 +191,7 @@
                                 <th>Màu</th>
                                 <th>Size</th>
                                 <th>Chất liệu</th>
-                                
                                 <th>Giá (VND)</th>
-                                <th>Số lượng</th>
                                 <th>Ảnh</th>
                                 <th>Trạng thái</th>
                                 <th></th>
@@ -351,7 +349,6 @@
           <td><input type="hidden" name="variants[${i}][size_id]" value="${s.id}"><span class="badge bg-light text-dark">${s.name}</span></td>
           <td><input type="hidden" name="variants[${i}][texture_id]" value="${t.id}"><span class="badge bg-light text-dark">${t.name}</span></td>
           <td><input type="text" class="form-control form-control-sm input-price" name="variants[${i}][price]" value="0"></td>
-          <td><input type="number" step="1" value="1" class="form-control form-control-sm" name="variants[${i}][quantity]" placeholder="1"></td>
           <td><input type="file" class="form-control form-control-sm" name="variants[${i}][image]" accept="image/*"></td>
           <td class="text-center">
             <input type="hidden" name="variants[${i}][status]" value="0">

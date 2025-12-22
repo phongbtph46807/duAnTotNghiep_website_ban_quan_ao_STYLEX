@@ -1,4 +1,4 @@
-﻿@extends('client.layouts.app')
+@extends('client.layouts.app')
 
 @section('title', $product->name . ' - ' . env('APP_NAME'))
 
@@ -13,7 +13,7 @@
         image-rendering: crisp-edges;
         -ms-interpolation-mode: nearest-neighbor;
     }
-    
+
     .wrap-pic-w img {
         width: 100% !important;
         height: auto !important;
@@ -94,7 +94,7 @@
 						</div>
 					</div>
 				</div>
-					
+
 				<div class="col-md-6 col-lg-5 p-b-30">
 					<div class="p-r-50 p-t-5 p-lr-0-lg">
 						<h4 class="mtext-105 cl2 js-name-detail p-b-14">
@@ -115,7 +115,7 @@
 						<p class="stext-102 cl3 p-t-23">
 							{{ $product->description ?? 'Sản phẩm chất lượng cao với thiết kế hiện đại và phong cách độc đáo.' }}
 						</p>
-						
+
 						<!-- Product Options -->
 						<div class="p-t-33">
 							@if($product->productVariants && $product->productVariants->count() > 0)
@@ -126,11 +126,11 @@
 									$defaultColor = $firstVariant->color ? $firstVariant->color->name : '';
 									$defaultTexture = $firstVariant->texture ? $firstVariant->texture->name : '';
 									$defaultVariantId = $firstVariant->id;
-									
+
 									$sizes = $product->productVariants->pluck('size.name')->unique()->filter();
 									$colors = $product->productVariants->pluck('color.name')->unique()->filter();
 									$textures = $product->productVariants->pluck('texture.name')->unique()->filter();
-									
+
 									// Tạo map variant_id => variant data để JavaScript dùng
 									$variantsMap = $product->productVariants->mapWithKeys(function($variant) {
 										$key = '';
@@ -145,7 +145,7 @@
 										]];
 									})->toArray();
 								@endphp
-								
+
 								@if($sizes->count() > 0)
 								<div class="flex-w flex-r-m p-b-10">
 									<div class="size-203 flex-c-m respon6">
@@ -157,12 +157,12 @@
 											@foreach($sizes as $size)
 											@php
 												$isSelected = $size == $defaultSize;
-												$btnStyle = $isSelected 
+												$btnStyle = $isSelected
 													? 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #333; color: #fff; border-color: #333;'
 													: 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #f5f5f5; color: #666; border-color: #e0e0e0;';
 											@endphp
-											<button type="button" 
-													class="size-variant-btn stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04" 
+											<button type="button"
+													class="size-variant-btn stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04"
 													data-size="{{ $size }}"
 													style="{{ $btnStyle }}"
 													title="{{ $size }}">
@@ -188,12 +188,12 @@
 											@php
 												$isSelected = $color == $defaultColor;
 												// Dùng style giống nút kích thước để màu sắc nhìn đồng bộ
-												$btnStyle = $isSelected 
+												$btnStyle = $isSelected
 													? 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #333; color: #fff; border-color: #333;'
 													: 'min-width: 60px; padding: 8px 12px; border-radius: 4px; cursor: pointer; transition: all 0.3s; background-color: #f5f5f5; color: #666; border-color: #e0e0e0;';
 											@endphp
-											<button type="button" 
-													class="color-variant-btn stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04" 
+											<button type="button"
+													class="color-variant-btn stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04"
 													data-color="{{ $color }}"
 													style="{{ $btnStyle }}"
 													title="{{ $color }}">
@@ -221,7 +221,7 @@
 									];
 								})->toArray();
 							@endphp
-							<div class="flex-w flex-r-m p-b-10" 
+							<div class="flex-w flex-r-m p-b-10"
 								 data-product-id="{{ $product->id }}"
 								 data-original-price="{{ $product->price }}"
 								 data-original-price-sale="{{ $product->price_sale }}">
@@ -251,7 +251,7 @@
 										Thêm vào giỏ
 									</button>
                                 </form>
-							</div>	
+							</div>
 						</div>
 
 						<!-- Social Share -->
@@ -293,7 +293,7 @@
 
 						<li class="nav-item p-b-10">
 							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">
-								Đánh giá 
+								Đánh giá
 								({{ $product->reviews()->where('status', 'public')->count() }})
 							</a>
 						</li>
@@ -340,7 +340,7 @@
 												$sizes = $product->productVariants->pluck('size.name')->unique()->filter();
 												$colors = $product->productVariants->pluck('color.name')->unique()->filter();
 											@endphp
-											
+
 											@if($colors->count() > 0)
 											<li class="flex-w flex-t p-b-7">
 												<span class="stext-102 cl3 size-205">
@@ -378,7 +378,7 @@
 									$hasHalfStar = ($avgRating ?? 0) - $fullStars >= 0.5;
 									$reviewsCount = $product->reviews()->where('status', 'public')->count();
 								@endphp
-								
+
 								<!-- Tổng quan đánh giá -->
 								@if($reviewsCount > 0)
 									<div class="p-b-30 bor12">
@@ -585,45 +585,45 @@ $(document).ready(function() {
     } catch(e) {
         variants = [];
     }
-    
+
     // Lấy giá từ data attributes
     const productContainer = $('[data-product-id]');
     const originalPrice = parseFloat(productContainer.attr('data-original-price') || 0);
     const originalPriceSale = parseFloat(productContainer.attr('data-original-price-sale') || 0);
     const hasPriceSale = originalPriceSale && originalPriceSale < originalPrice;
-    
+
     // Function đơn giản để tìm variant dựa trên size, color, texture
     function findVariant(size, color, texture) {
         size = (size || '').toString().trim();
         color = (color || '').toString().trim();
         texture = (texture || '').toString().trim();
-        
+
         return variants.find(variant => {
             const vSize = (variant.size || '').toString().trim();
             const vColor = (variant.color || '').toString().trim();
             const vTexture = (variant.texture || '').toString().trim();
-            
+
             // Phải khớp chính xác tất cả các thuộc tính được chọn
             const matchSize = !size || vSize === size;
             const matchColor = !color || vColor === color;
             const matchTexture = !texture || vTexture === texture;
-            
+
             return matchSize && matchColor && matchTexture;
         });
     }
-    
+
     // Function để lọc và hiển thị các button màu dựa trên size đã chọn
     function filterColorButtons() {
         let currentSize = '';
-        
+
         // Lấy giá trị size từ hidden input (không còn là select2 nữa)
         if ($('#size-select').length) {
             currentSize = ($('#size-select').val() || '').trim();
         }
-        
+
         // Lấy màu hiện tại
         let currentColor = ($('#color-select').val() || '').trim();
-        
+
         // Lọc màu dựa trên size đã chọn
         let availableColors = [];
         if (currentSize) {
@@ -643,12 +643,12 @@ $(document).ready(function() {
                 }
             });
         }
-        
+
         // Cập nhật các button màu
         let $colorButtonsContainer = $('#color-buttons-container');
         if ($colorButtonsContainer.length) {
             $colorButtonsContainer.empty();
-            
+
             // Nếu không có màu khả dụng, clear input và thoát
             if (availableColors.length === 0) {
                 $('#color-select').val('');
@@ -682,35 +682,35 @@ $(document).ready(function() {
                         'color': isSelected ? '#fff' : '#666',
                         'border-color': isSelected ? '#333' : '#e0e0e0'
                     });
-                
+
                 $colorButtonsContainer.append($btn);
             });
         }
     }
-    
+
     // Function để cập nhật giá và variant_id khi chọn variant
     function updateVariant() {
         let size = '';
         let color = '';
-        
+
         // Lấy giá trị size từ hidden input (không còn là select2 nữa)
         if ($('#size-select').length) {
             size = ($('#size-select').val() || '').trim();
         }
-        
+
         // Lấy màu từ hidden input (không còn là select2 nữa)
         if ($('#color-select').length) {
             color = ($('#color-select').val() || '').trim();
         }
-        
+
         // DEBUG: Log để kiểm tra
         console.log('updateVariant called - Size:', size, 'Color:', color);
-        
+
         // Tìm variant dựa trên size và color (không cần texture vì texture sẽ lấy từ variant)
         // Thử tìm variant với texture hiện tại trước, nếu không có thì tìm bất kỳ
         let texture = $('#texture-select').val() || '';
         let variant = findVariant(size, color, texture);
-        
+
         // Nếu không tìm thấy với texture hiện tại, thử tìm không cần texture
         if (!variant) {
             variant = variants.find(v => {
@@ -721,7 +721,7 @@ $(document).ready(function() {
                 return matchSize && matchColor;
             });
         }
-        
+
         // Lấy tất cả các chất liệu unique từ variants
         let allTextures = [];
         variants.forEach(function(v) {
@@ -730,37 +730,37 @@ $(document).ready(function() {
                 allTextures.push(vTexture);
             }
         });
-        
+
         // Hiển thị tất cả các chất liệu
         if (allTextures.length > 0) {
             $('#texture-display').text(allTextures.join(', '));
         }
-        
+
         // QUAN TRỌNG: Luôn cập nhật size_name và color_name vào form, ngay cả khi không tìm thấy variant
         // Điều này đảm bảo backend luôn nhận được giá trị mới nhất từ dropdown
         $('input[name="size_name"]').val(size);
         $('input[name="color_name"]').val(color);
-        
+
         // Cập nhật texture từ variant được chọn (cho hidden input)
         if (variant) {
             texture = (variant.texture || '').toString().trim();
             $('#texture-select').val(texture);
-            
+
             $('input[name="variant_id"]').val(variant.id);
             $('input[name="texture_name"]').val(texture);
-            
+
             // DEBUG: Log variant found
             console.log('Variant found - ID:', variant.id, 'Size:', size, 'Color:', color, 'Texture:', texture);
-            
+
             // Cập nhật giá hiển thị - chỉ cập nhật giá sản phẩm, không ảnh hưởng đến mini cart
             if (variant.price && parseFloat(variant.price) > 0) {
-                $('#product-price-display').html('<span class="fw-bold">' + 
+                $('#product-price-display').html('<span class="fw-bold">' +
                     new Intl.NumberFormat('vi-VN').format(variant.price) + 'đ</span>');
             } else {
                 if (hasPriceSale) {
-                    $('#product-price-display').html('<span class="fw-bold">' + 
+                    $('#product-price-display').html('<span class="fw-bold">' +
                         new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
-                        '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
+                        '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' +
                         new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
                 } else {
                     $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
@@ -770,25 +770,25 @@ $(document).ready(function() {
             // Nếu không tìm thấy variant, reset variant_id và texture_name
             $('input[name="variant_id"]').val('');
             $('input[name="texture_name"]').val('');
-            
+
             // DEBUG: Log variant not found
             console.log('Variant NOT found for Size:', size, 'Color:', color);
-            
+
             // Nếu không tìm thấy variant, giữ nguyên giá mặc định - chỉ cập nhật giá sản phẩm
             if (hasPriceSale) {
-                $('#product-price-display').html('<span class="fw-bold">' + 
+                $('#product-price-display').html('<span class="fw-bold">' +
                     new Intl.NumberFormat('vi-VN').format(originalPriceSale) + 'đ</span>' +
-                    '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' + 
+                    '<span style="text-decoration: line-through; color: red; margin-left: 8px;">' +
                     new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ</span>');
             } else {
                 $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
             }
         }
-        
+
         // DEBUG: Log final form values
         console.log('Form values updated - size_name:', $('input[name="size_name"]').val(), 'color_name:', $('input[name="color_name"]').val(), 'variant_id:', $('input[name="variant_id"]').val());
     }
-    
+
     // Khởi tạo: lọc button màu và cập nhật variant khi trang load
     filterColorButtons();
     updateVariant();
@@ -796,10 +796,10 @@ $(document).ready(function() {
     // Event listener cho button size (click)
     $(document).on('click', '.size-variant-btn', function() {
         let selectedSize = $(this).data('size') || '';
-        
+
         // Cập nhật hidden input
         $('#size-select').val(selectedSize);
-        
+
         // Cập nhật style của các button size
         $('.size-variant-btn').css({
             'background-color': '#f5f5f5',
@@ -811,19 +811,19 @@ $(document).ready(function() {
             'color': '#fff',
             'border-color': '#333'
         });
-        
+
         // Lọc và cập nhật button màu khi size thay đổi
         filterColorButtons();
         updateVariant();
     });
-    
+
     // Event listener cho button màu (click)
     $(document).on('click', '.color-variant-btn', function() {
         let selectedColor = $(this).data('color') || '';
-        
+
         // Cập nhật hidden input
         $('#color-select').val(selectedColor);
-        
+
         // Cập nhật style của các button
         $('.color-variant-btn').css({
             'background-color': '#f5f5f5',
@@ -835,16 +835,16 @@ $(document).ready(function() {
             'color': '#fff',
             'border-color': '#333'
         });
-        
+
         // Cập nhật variant
         updateVariant();
     });
-    
+
     // Quantity controls - tắt event listener từ main.js trước, rồi đăng ký lại
     // Tắt tất cả event listener cũ (từ main.js và các script khác)
     $('.btn-num-product-down').off('click');
     $('.btn-num-product-up').off('click');
-    
+
     // Đăng ký lại với namespace để quản lý dễ hơn
     $('.btn-num-product-down').on('click.quantity', function(e) {
         e.preventDefault();
@@ -857,7 +857,7 @@ $(document).ready(function() {
         }
         return false;
     });
-    
+
     $('.btn-num-product-up').on('click.quantity', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -867,12 +867,12 @@ $(document).ready(function() {
         input.val(currentValue + 1);
         return false;
     });
-    
+
     // Sync trước khi submit - Đảm bảo giá trị mới nhất được cập nhật
     $('#add-to-cart-form').on('submit', function(e){
         // Gọi updateVariant() một lần nữa trước khi submit để đảm bảo giá trị mới nhất
         updateVariant();
-        
+
         // DEBUG: Log trước khi submit
         console.log('Form submitting - size_name:', $('input[name="size_name"]').val(), 'color_name:', $('input[name="color_name"]').val(), 'variant_id:', $('input[name="variant_id"]').val());
         updateVariant();

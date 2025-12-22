@@ -11,15 +11,10 @@ class OrderPicking extends Model
         'order_id',
         'warehouse_id',
         'status',
-        'assigned_to',
-        'started_at',
-        'completed_at',
-        'notes',
     ];
 
     protected $casts = [
-        'started_at' => 'datetime',
-        'completed_at' => 'datetime',
+        'status' => 'string',
     ];
 
     public function order(): BelongsTo
