@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\StockOutInvoiceController;
 use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\SalaryController;
+use App\Http\Controllers\Admin\WithdrawRequestController;
 
 // Dashboard và Profile - cho phép Admin, Staff và Warehouse Manager
 Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {

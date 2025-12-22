@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 // use App\Jobs\SendOrderInvoiceMail;
+use App\Mail\OrderConfirmationMail;
 use App\Models\Cart;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ShippingCarrier;
@@ -167,11 +169,17 @@ class CheckoutController extends Controller
         $taxRate = TaxRate::orderByDesc('rate')->first();
         $taxAmount = 0.0;
         if ($taxRate && $subtotal > 0) {
-            $taxAmount = (float) round($subtotal * (float) $taxRate->rate);
+            $taxAmount = (float) ($subtotal * (float) $taxRate->rate);
         }
 
         // Tổng cuối cùng = tiền hàng - giảm giá + thuế + phí ship
         $grandTotal = max(0, $subtotal - $totalDiscount + $taxAmount + $shippingFee);
+
+        // Lấy danh sách địa chỉ của user nếu đã đăng nhập
+        $addresses = [];
+        if (Auth::check()) {
+            $addresses = Auth::user()->addresses()->orderBy('is_default', 'desc')->orderBy('created_at', 'desc')->get();
+        }
 
         return view('client.checkout.index', [
             'cartData' => $cartData,
@@ -186,6 +194,7 @@ class CheckoutController extends Controller
             'shippingFee' => $shippingFee,
             'shippingCarrier' => $shippingCarrier,
             'voucher' => $appliedVoucher,
+            'addresses' => $addresses,
         ]);
     }
 
@@ -584,7 +593,7 @@ class CheckoutController extends Controller
         $taxRate   = TaxRate::orderByDesc('rate')->first();
         $taxAmount = 0.0;
         if ($taxRate && $subtotal > 0) {
-            $taxAmount = (float) round($subtotal * (float) $taxRate->rate);
+            $taxAmount = (float) ($subtotal * (float) $taxRate->rate);
         }
 
         // 6. GRAND TOTAL
@@ -671,6 +680,38 @@ class CheckoutController extends Controller
 
         // Thông báo đơn hàng mới cho admin/staff
         $this->notificationService->notifyNewOrder($order);
+
+        // Gửi email xác nhận đơn hàng cho khách hàng
+        try {
+            if ($order->email) {
+                Log::info('Sending order confirmation email', [
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'email' => $order->email
+                ]);
+                Mail::to($order->email)->send(new OrderConfirmationMail($order));
+                Log::info('Order confirmation email sent successfully', [
+                    'order_id' => $order->id,
+                    'email' => $order->email
+                ]);
+            } else {
+                Log::warning('Order has no email, skipping email confirmation', [
+                    'order_id' => $order->id,
+                    'order_code' => $order->code
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error sending order confirmation email: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'email' => $order->email,
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Không throw exception để không làm gián đoạn quá trình đặt hàng
+        }
 
         return redirect()->route('client.checkout.thankyou', ['id' => $order->id]);
     }
@@ -768,9 +809,9 @@ class CheckoutController extends Controller
         $shippingCarrierId = $reqData['shipping_carrier_id'] ?? null;
         $total             = (float) ($reqData['total'] ?? 0);
 
-        // So sánh số tiền
+        // So sánh số tiền - làm tròn về số nguyên trước khi nhân 100 để khớp với khi gửi lên VNPay
         $vnpAmount   = (int) ($inputData['vnp_Amount'] ?? 0);
-        $localAmount = (int) round($total * 100);
+        $localAmount = (int) (round($total) * 100);
 
         Log::info("Total Verification:", [
             'vnp_Amount'  => $vnpAmount,
@@ -861,6 +902,38 @@ class CheckoutController extends Controller
             // Thông báo đơn hàng mới cho admin/staff
             $this->notificationService->notifyNewOrder($order);
 
+            // Gửi email xác nhận đơn hàng cho khách hàng
+            try {
+                if ($order->email) {
+                    Log::info('Sending order confirmation email', [
+                        'order_id' => $order->id,
+                        'order_code' => $order->code,
+                        'email' => $order->email
+                    ]);
+                    Mail::to($order->email)->send(new OrderConfirmationMail($order));
+                    Log::info('Order confirmation email sent successfully', [
+                        'order_id' => $order->id,
+                        'email' => $order->email
+                    ]);
+                } else {
+                    Log::warning('Order has no email, skipping email confirmation', [
+                        'order_id' => $order->id,
+                        'order_code' => $order->code
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error sending order confirmation email: ' . $e->getMessage(), [
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'email' => $order->email,
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                // Không throw exception để không làm gián đoạn quá trình đặt hàng
+            }
+
             // Xóa key redis
             Cache::forget("order:$txnRef");
 
@@ -891,7 +964,8 @@ class CheckoutController extends Controller
         $vnp_HashSecret = "TRGJ5Z3UY1YOO1QY35RKSU063180BJT4"; // đúng chuỗi bí mật trong email VNPAY
 
         $vnp_TxnRef    = (string) Str::uuid();
-        $vnp_Amount    = (int) $dataRequest['total'] * 100;
+        // Làm tròn về số nguyên trước khi nhân 100 để khớp với callback
+        $vnp_Amount    = (int) round($dataRequest['total']) * 100;
         $vnp_IpAddr    = request()->ip();
         $vnp_OrderInfo = "Thanh toan don hang";
         $vnp_OrderType = "other";

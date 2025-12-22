@@ -13,7 +13,7 @@
                 <div class="card-body text-center p-4">
                     <div class="mb-4">
                         @if($user->avatar)
-                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="profile-avatar">
+                            <img src="{{ $user->avatar_url }}" alt="Avatar" class="profile-avatar">
                         @else
                             <div class="profile-avatar-placeholder">
                                 <span style="font-size: 48px; color: white; font-weight: bold;">
@@ -36,11 +36,11 @@
                         </h6>
                     </div>
                     <div style="padding: 8px;">
-                        <a href="{{ route('client.profile.index') }}" class="settings-menu-item-sidebar active" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
+                        <a href="{{ route('client.profile.index') }}" class="settings-menu-item-sidebar {{ $activeTab === 'profile' ? 'active' : '' }}" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
                             <i class="ri-user-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Hồ sơ cá nhân</span>
                         </a>
-                        <a href="{{ route('client.order.list') }}" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
+                        <a href="{{ route('client.profile.index', ['tab' => 'orders']) }}" class="settings-menu-item-sidebar {{ $activeTab === 'orders' ? 'active' : '' }}" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
                             <i class="ri-shopping-bag-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Đơn hàng của tôi</span>
                         </a>
@@ -48,19 +48,11 @@
                             <i class="ri-map-pin-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Địa chỉ giao hàng</span>
                         </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-bank-card-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Phương thức thanh toán</span>
+                        <a href="{{ route('client.profile.index', ['tab' => 'card']) }}" class="settings-menu-item-sidebar {{ $activeTab === 'card' ? 'active' : '' }}" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
+                            <i class="ri-wallet-3-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
+                            <span style="font-size: 14px; font-weight: 500;">Ví của tôi</span>
                         </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-notification-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Cài đặt thông báo</span>
-                        </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
-                            <i class="ri-shield-check-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
-                            <span style="font-size: 14px; font-weight: 500;">Bảo mật tài khoản</span>
-                        </a>
-                        <a href="#" class="settings-menu-item-sidebar" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
+                        <a href="{{ route('client.profile.reviews') }}" class="settings-menu-item-sidebar {{ $activeTab === 'reviews' ? 'active' : '' }}" style="display: flex; align-items: center; padding: 12px; text-decoration: none; color: #333; transition: all 0.3s; border-radius: 8px; margin-bottom: 4px;">
                             <i class="ri-star-line" style="font-size: 20px; color: #6777ef; margin-right: 12px; width: 24px;"></i>
                             <span style="font-size: 14px; font-weight: 500;">Đánh giá của tôi</span>
                         </a>
@@ -71,6 +63,14 @@
 
         <!-- Main Content -->
         <div class="col-lg-9 col-md-8">
+            @if($activeTab === 'orders')
+                @include('client.profile.orders-section')
+                @include('client.profile.orders-modals')
+            @elseif($activeTab === 'reviews')
+                @include('client.profile.reviews-section')
+            @elseif($activeTab === 'card')
+                @include('client.profile.card-section')
+            @else
             <div class="card profile-card">
                 <div class="profile-card-header">
                     <h4 class="mb-0" style="font-weight: 600; color: #333;">
@@ -104,7 +104,7 @@
                                 </label>
                                 <div>
                                     @if($user->avatar)
-                                        <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" 
+                                        <img src="{{ $user->avatar_url }}" alt="Avatar" 
                                              id="avatarPreview"
                                              class="avatar-preview-large"
                                              onclick="document.getElementById('avatar').click();">
@@ -230,6 +230,7 @@
                     </form>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </div>

@@ -150,9 +150,10 @@
             pointer-events: none;
             opacity: 0.5;
         }
-        /* Giữ dropdown trạng thái không bị che khi scroll/clip */
+        /* Giữ dropdown trạng thái không bị che theo chiều dọc nhưng vẫn cho phép bảng scroll ngang trên màn nhỏ */
         .order-table-wrapper {
-            overflow: visible !important;
+            overflow-x: auto;
+            overflow-y: visible;
         }
         .order-table-wrapper .dropdown-menu {
             z-index: 2000;
@@ -576,6 +577,9 @@
                                     $detailPayload = [
                                         'id' => $order->id,
                                         'code' => $order->code,
+                                        'buyer_name' => $order->buyer_name,
+                                        'buyer_email' => $order->buyer_email,
+                                        'buyer_phone' => $order->buyer_phone,
                                         'full_name' => $order->full_name,
                                         'email' => $order->email,
                                         'phone' => $order->phone,
@@ -760,6 +764,9 @@
                                         $detailPayload = [
                                             'id' => $order->id,
                                             'code' => $order->code,
+                                            'buyer_name' => $order->buyer_name,
+                                            'buyer_email' => $order->buyer_email,
+                                            'buyer_phone' => $order->buyer_phone,
                                             'full_name' => $order->full_name,
                                             'email' => $order->email,
                                             'phone' => $order->phone,
@@ -932,6 +939,9 @@
                                     $detailPayload = [
                                         'id' => $order->id,
                                         'code' => $order->code,
+                                        'buyer_name' => $order->buyer_name,
+                                        'buyer_email' => $order->buyer_email,
+                                        'buyer_phone' => $order->buyer_phone,
                                         'full_name' => $order->full_name,
                                         'email' => $order->email,
                                         'phone' => $order->phone,
@@ -1117,6 +1127,9 @@
                                     $detailPayload = [
                                         'id' => $order->id,
                                         'code' => $order->code,
+                                        'buyer_name' => $order->buyer_name,
+                                        'buyer_email' => $order->buyer_email,
+                                        'buyer_phone' => $order->buyer_phone,
                                         'full_name' => $order->full_name,
                                         'email' => $order->email,
                                         'phone' => $order->phone,
@@ -1325,10 +1338,16 @@
                                     <div class="order-detail-value" id="detailCode">#</div>
                                 </div>
                                 <div class="mb-3">
-                                    <div class="order-detail-label">Khách hàng</div>
-                                    <div class="order-detail-value" id="detailCustomer">-</div>
-                                    <div class="text-muted" id="detailEmail">-</div>
-                                    <div class="text-muted" id="detailPhone">-</div>
+                                    <div class="order-detail-label">Thông tin người đặt</div>
+                                    <div class="order-detail-value" id="detailBuyerName">-</div>
+                                    <div class="text-muted" id="detailBuyerEmail">-</div>
+                                    <div class="text-muted" id="detailBuyerPhone">-</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="order-detail-label">Thông tin người nhận</div>
+                                    <div class="order-detail-value" id="detailReceiverName">-</div>
+                                    <div class="text-muted" id="detailReceiverEmail">-</div>
+                                    <div class="text-muted" id="detailReceiverPhone">-</div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="order-detail-label">Địa chỉ người nhận</div>
@@ -1658,9 +1677,17 @@
             btn.addEventListener('click', () => {
                 const data = JSON.parse(btn.dataset.order);
                 document.getElementById('detailCode').textContent = data.code;
-                document.getElementById('detailCustomer').textContent = data.full_name;
-                document.getElementById('detailEmail').textContent = data.email || '—';
-                document.getElementById('detailPhone').textContent = data.phone || '—';
+                
+                // Thông tin người đặt
+                document.getElementById('detailBuyerName').textContent = data.buyer_name || '—';
+                document.getElementById('detailBuyerEmail').textContent = data.buyer_email || '—';
+                document.getElementById('detailBuyerPhone').textContent = data.buyer_phone ? 'ĐT: ' + data.buyer_phone : '—';
+                
+                // Thông tin người nhận
+                document.getElementById('detailReceiverName').textContent = data.full_name || '—';
+                document.getElementById('detailReceiverEmail').textContent = data.email || '—';
+                document.getElementById('detailReceiverPhone').textContent = data.phone ? 'ĐT: ' + data.phone : '—';
+                
                 // Hiển thị địa chỉ người nhận
                 const addressParts = [];
                 if (data.address) {
@@ -1670,13 +1697,6 @@
                     addressParts.push(data.city);
                 }
                 document.getElementById('detailAddress').textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Không cung cấp';
-                
-                // Hiển thị thông tin liên hệ
-                if (data.phone) {
-                    document.getElementById('detailPhone').textContent = 'ĐT: ' + data.phone;
-                } else {
-                    document.getElementById('detailPhone').textContent = '—';
-                }
                 document.getElementById('detailPaymentStatus').textContent =
                     paymentStatusLabels[data.payment_status] || (data.payment_status || '—');
                 document.getElementById('detailPaymentMethod').textContent = 'Phương thức: ' + data.payment_method;
@@ -1824,6 +1844,27 @@
                 requestDetailModal.show();
             }
         });
+    </script>
+    <script>
+        // Helper function để lấy status meta (phải định nghĩa trước khi sử dụng)
+        function getStatusMeta(status) {
+            const statusMetaMap = {
+                pending:   { label: 'Chờ xác nhận', class: 'bg-warning-subtle text-warning', icon: 'ri-time-line' },
+                processing:{ label: 'Đang xử lý',   class: 'bg-primary-subtle text-primary', icon: 'ri-loader-4-line' },
+                shipping:  { label: 'Chờ giao hàng',class: 'bg-info-subtle text-info', icon: 'ri-truck-line' },
+                delivered: { label: 'Đã giao',      class: 'bg-success-subtle text-success', icon: 'ri-checkbox-circle-line' },
+                completed: { label: 'Hoàn thành',   class: 'bg-success-subtle text-success', icon: 'ri-check-double-line' },
+                cancelled: { label: 'Đã hủy',       class: 'bg-danger-subtle text-danger', icon: 'ri-close-line' },
+                cancel_request: { label: 'Yêu cầu hủy', class: 'bg-danger-subtle text-danger', icon: 'ri-time-line' },
+                returned:  { label: 'Trả hàng/Hoàn tiền', class: 'bg-warning-subtle text-warning', icon: 'ri-refund-2-line' },
+                return_request: { label: 'Yêu cầu trả hàng', class: 'bg-warning-subtle text-warning', icon: 'ri-time-line' },
+            };
+            return statusMetaMap[status] || { label: status, class: 'bg-secondary-subtle text-secondary', icon: 'ri-question-line' };
+        }
+        
+        function getStatusLabel(status) {
+            return getStatusMeta(status).label;
+        }
 
         // ========== REALTIME ORDER UPDATES ==========
         // Chỉ chạy khi window.Echo đã được load (từ bootstrap.js)
@@ -2028,30 +2069,37 @@
                 });
             
             console.log('✅ Realtime order updates enabled');
+            console.log('📡 Listening on channel: orders');
+            console.log('📡 Listening for events: .order.status.updated, .order.created');
+            
+            // Test connection
+            window.Echo.connector.pusher.connection.bind('connected', function() {
+                console.log('✅ Pusher connected successfully');
+            });
+            
+            window.Echo.connector.pusher.connection.bind('disconnected', function() {
+                console.warn('⚠️ Pusher disconnected');
+            });
+            
+            window.Echo.connector.pusher.connection.bind('error', function(err) {
+                console.error('❌ Pusher connection error:', err);
+            });
+            
+            // Test channel subscription
+            const ordersChannel = window.Echo.channel('orders');
+            ordersChannel.subscribed(() => {
+                console.log('✅ Successfully subscribed to orders channel');
+            });
+            
+            ordersChannel.error((error) => {
+                console.error('❌ Error subscribing to orders channel:', error);
+            });
         } else {
             console.warn('⚠️ Laravel Echo not loaded. Realtime updates disabled.');
+            console.warn('💡 Make sure Vite app.js is loaded và BROADCAST_CONNECTION trong .env được set đúng (pusher/reverb).');
         }
-        
-        // Helper function để lấy status meta
-        function getStatusMeta(status) {
-            const statusMetaMap = {
-                pending:   { label: 'Chờ xác nhận', class: 'bg-warning-subtle text-warning', icon: 'ri-time-line' },
-                processing:{ label: 'Đang xử lý',   class: 'bg-primary-subtle text-primary', icon: 'ri-loader-4-line' },
-                shipping:  { label: 'Chờ giao hàng',class: 'bg-info-subtle text-info', icon: 'ri-truck-line' },
-                delivered: { label: 'Đã giao',      class: 'bg-success-subtle text-success', icon: 'ri-checkbox-circle-line' },
-                completed: { label: 'Hoàn thành',   class: 'bg-success-subtle text-success', icon: 'ri-check-double-line' },
-                cancelled: { label: 'Đã hủy',       class: 'bg-danger-subtle text-danger', icon: 'ri-close-line' },
-                cancel_request: { label: 'Yêu cầu hủy', class: 'bg-danger-subtle text-danger', icon: 'ri-time-line' },
-                returned:  { label: 'Trả hàng/Hoàn tiền', class: 'bg-warning-subtle text-warning', icon: 'ri-refund-2-line' },
-                return_request: { label: 'Yêu cầu trả hàng', class: 'bg-warning-subtle text-warning', icon: 'ri-time-line' },
-            };
-            return statusMetaMap[status] || { label: status, class: 'bg-secondary-subtle text-secondary', icon: 'ri-question-line' };
-        }
-        
-        function getStatusLabel(status) {
-            return getStatusMeta(status).label;
-        }
-
+    </script>
+    <script>
         // Chuyển form approve cancel/return sang AJAX để không reload trang
         document.addEventListener('DOMContentLoaded', function() {
             const approveForms = document.querySelectorAll('.approve-request-form');
