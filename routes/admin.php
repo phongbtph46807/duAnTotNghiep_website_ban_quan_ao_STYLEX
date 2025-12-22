@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\StockOutInvoiceController;
 use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\SalaryController;
+use App\Http\Controllers\Admin\WithdrawRequestController;
 
 // Dashboard và Profile - cho phép Admin, Staff và Warehouse Manager
 Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {
@@ -127,6 +128,14 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], functio
             Route::post('/{id}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
             Route::post('/{order}/approve-cancel', [OrderController::class, 'approveCancel'])->name('approveCancel');
             Route::post('/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('approveReturn');
+        });
+
+        // Withdraw Requests - Yêu cầu rút tiền
+        Route::prefix('withdraw-requests')->as('withdraw-requests.')->group(function () {
+            Route::get('/', [WithdrawRequestController::class, 'index'])->name('index');
+            Route::post('/{id}/approve', [WithdrawRequestController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [WithdrawRequestController::class, 'reject'])->name('reject');
+            Route::post('/{id}/complete', [WithdrawRequestController::class, 'complete'])->name('complete');
         });
     });
 });

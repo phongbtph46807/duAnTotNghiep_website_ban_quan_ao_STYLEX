@@ -23,7 +23,7 @@
             <div class="card">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <img src="{{ $user->avatar ? Storage::url($user->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}" 
+                        <img src="{{ $user->avatar_url }}" 
                              alt="Avatar" class="rounded-circle" width="150" height="150">
                     </div>
                     <h5>{{ $user->name }}</h5>

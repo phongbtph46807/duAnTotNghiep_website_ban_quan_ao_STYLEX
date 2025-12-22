@@ -366,7 +366,18 @@
 @push('scripts')
 <script>
 (function($){
-	function format(n){ try { return new Intl.NumberFormat('vi-VN').format(n) + ' ₫'; } catch(e){ return n + ' ₫'; } }
+	function format(n){ 
+		// Làm tròn về số nguyên để tránh lỗi định dạng
+		n = Math.round(parseFloat(n) || 0);
+		try { 
+			return new Intl.NumberFormat('vi-VN', { 
+				minimumFractionDigits: 0,
+				maximumFractionDigits: 0
+			}).format(n) + ' ₫'; 
+		} catch(e){ 
+			return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₫'; 
+		} 
+	}
 	var currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
 	var currentSubtotal = 0;
 	var appliedVoucher = <?php echo json_encode($voucher); ?>;
@@ -392,7 +403,7 @@
 	// Initialize voucher UI if voucher is applied
 	$(document).ready(function(){
 		if (appliedVoucher) {
-			currentDiscount = parseFloat('{{ $discount ?? 0 }}') || 0;
+			currentDiscount = Math.round(parseFloat('{{ $discount ?? 0 }}') || 0);
 			$('#voucherInfo').show();
 			$('#appliedVoucherCode').text(appliedVoucher.code);
 			updateGrandTotal();
@@ -406,21 +417,25 @@
 			var price = parseFloat($row.data('price')||0);
 			var qty = parseInt($row.find('input.num-product').val(), 10);
 			if (isNaN(qty) || qty < 1) qty = 1;
-			var line = price * qty;
+			var line = Math.round(price * qty); // Làm tròn từng dòng
 			$row.find('.line-total').text(format(line));
 			grand += line;
 		});
-		currentSubtotal = grand;
+		currentSubtotal = Math.round(grand); // Đảm bảo subtotal là số nguyên
 		$('#cart-subtotal').text(format(grand));
 		
 		// Recalculate discount if voucher is applied
 		if (appliedVoucher) {
 			if (appliedVoucher.type === 'percent') {
-				currentDiscount = (grand * appliedVoucher.value) / 100;
+				currentDiscount = Math.round((grand * appliedVoucher.value) / 100);
+				// Áp dụng max_discount_amount nếu có
+				if (appliedVoucher.max_discount_amount && currentDiscount > appliedVoucher.max_discount_amount) {
+					currentDiscount = Math.round(appliedVoucher.max_discount_amount);
+				}
 			} else if (appliedVoucher.type === 'fixed') {
-				currentDiscount = appliedVoucher.value;
+				currentDiscount = Math.round(appliedVoucher.value);
 				if (currentDiscount > grand) {
-					currentDiscount = grand;
+					currentDiscount = Math.round(grand);
 				}
 			}
 		}
@@ -431,12 +446,19 @@
 	var currentShippingFee = 0;
 	
 	function updateGrandTotal(){
-		var finalTotal = currentSubtotal - currentDiscount + currentShippingFee;
+		// Đảm bảo tất cả số đều là số nguyên
+		var subtotal = Math.round(currentSubtotal || 0);
+		var discount = Math.round(currentDiscount || 0);
+		var shipping = Math.round(currentShippingFee || 0);
+		
+		var finalTotal = subtotal - discount + shipping;
 		if (finalTotal < 0) finalTotal = 0;
+		finalTotal = Math.round(finalTotal);
+		
 		$('#cart-grandtotal').text(format(finalTotal));
-		if (currentDiscount > 0) {
+		if (discount > 0) {
 			$('#discountRow').show();
-			$('#discountAmount').text(format(currentDiscount));
+			$('#discountAmount').text(format(discount));
 		} else {
 			$('#discountRow').hide();
 		}
@@ -831,7 +853,9 @@
 			data: { code: code.trim(), _token: $('meta[name="csrf-token"]').attr('content') }
 		}).done(function(res){
 			if (res.success) {
-				currentDiscount = res.discount;
+				currentDiscount = Math.round(parseFloat(res.discount) || 0);
+				appliedVoucher = res.voucher;
+				recalcTotals(); // Recalculate để đảm bảo tính toán đúng
 				updateGrandTotal();
 				$('#voucherMessage').text(res.message).css('color', '#28a745');
 				if (typeof showToast === 'function') {

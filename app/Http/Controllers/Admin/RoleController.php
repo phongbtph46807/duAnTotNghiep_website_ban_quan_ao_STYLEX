@@ -211,6 +211,16 @@ class RoleController extends Controller
             ->orderBy('name')
             ->get();
         
+        // Đảm bảo role "User" luôn có trong database
+        Role::firstOrCreate(
+            ['name' => 'User'],
+            [
+                'name' => 'User',
+                'description' => 'Người dùng thông thường',
+                'color' => 'secondary'
+            ]
+        );
+        
         // Lấy danh sách tất cả roles từ database
         $roles = Role::orderBy('name')->get();
         
@@ -222,6 +232,16 @@ class RoleController extends Controller
 
     public function edit(User $user)
     {
+        // Đảm bảo role "User" luôn có trong database
+        Role::firstOrCreate(
+            ['name' => 'User'],
+            [
+                'name' => 'User',
+                'description' => 'Người dùng thông thường',
+                'color' => 'secondary'
+            ]
+        );
+        
         // Lấy danh sách tất cả roles từ database
         $roles = Role::orderBy('name')->get();
         
@@ -231,6 +251,14 @@ class RoleController extends Controller
             $userRoles = $user->roles->pluck('id')->toArray();
         } catch (\Exception $e) {
             $userRoles = [];
+        }
+        
+        // Nếu user không có RBAC roles và có role integer = 0 (User), tự động thêm role "User"
+        if (empty($userRoles) && $user->role == User::ROLE_USER) {
+            $userRole = Role::where('name', 'User')->first();
+            if ($userRole) {
+                $userRoles = [$userRole->id];
+            }
         }
         
         // Lấy danh sách tất cả permissions
@@ -271,6 +299,7 @@ class RoleController extends Controller
                         'admin' => User::ROLE_ADMIN,
                         'staff' => User::ROLE_STAFF,
                         'warehouse manager' => User::ROLE_WAREHOUSE_MANAGER,
+                        'user' => User::ROLE_USER,
                         default => User::ROLE_USER
                     };
                 }
@@ -334,6 +363,8 @@ class RoleController extends Controller
                         $newRoleInteger = match(strtolower($firstRole->name)) {
                             'admin' => User::ROLE_ADMIN,
                             'staff' => User::ROLE_STAFF,
+                            'warehouse manager' => User::ROLE_WAREHOUSE_MANAGER,
+                            'user' => User::ROLE_USER,
                             default => User::ROLE_USER
                         };
                     }
@@ -358,6 +389,7 @@ class RoleController extends Controller
                         'admin' => User::ROLE_ADMIN,
                         'staff' => User::ROLE_STAFF,
                         'warehouse manager' => User::ROLE_WAREHOUSE_MANAGER,
+                        'user' => User::ROLE_USER,
                         default => User::ROLE_USER
                     };
             }

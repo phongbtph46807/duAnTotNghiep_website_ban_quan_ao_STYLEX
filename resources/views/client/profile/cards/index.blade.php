@@ -291,7 +291,7 @@
                             Đóng
                         </button>
                         <button type="submit" id="btnWithdrawSubmit" class="btn btn-primary"
-                            style="border-radius: 10px; font-weight: 800;" disabled>
+                            style="border-radius: 10px; font-weight: 800;">
                             <i class="ri-send-plane-2-line me-1"></i>Rút tiền
                         </button>
                     </div>
@@ -328,7 +328,6 @@
         }
 
         (function() {
-            
             const amountDisplay = document.getElementById('amountDisplay');
             const amountHidden = document.getElementById('amount');
             const balanceEl = document.getElementById('availableBalance');
@@ -338,15 +337,14 @@
             const bankSelectEl = document.getElementById('bankSelect');
             const modalEl = document.getElementById('withdrawModal');
 
-            
-            if (!amountDisplay || !amountHidden || !balanceEl || !errBox || !form || !btnSubmit || !bankSelectEl)
+            if (!amountDisplay || !amountHidden || !balanceEl || !errBox || !form || !btnSubmit || !bankSelectEl) {
+                console.error('Không tìm thấy các phần tử cần thiết');
                 return;
+            }
 
-           
             const MAX = parseInt(balanceEl.value || '0', 10);
-            const MIN = 100000;
+            const MIN = 100000; // Tối thiểu 100,000 ₫ (theo server validation)
 
-            
             function onlyDigits(str) {
                 return (str || '').toString().replace(/[^\d]/g, '');
             }
@@ -374,86 +372,65 @@
                 return (bankSelectEl.value || '').trim();
             }
 
-            function validateAndToggleButton() {
+            // Chỉ hiển thị cảnh báo, không chặn submit
+            function showWarning() {
                 const bank = getBank();
                 const amount = getAmount();
 
-                btnSubmit.disabled = true;
-
                 if (!bank) {
                     setError('Vui lòng chọn ngân hàng.');
-                    return false;
+                    return;
                 }
-
                 if (!amount || amount <= 0) {
                     setError('Vui lòng nhập số tiền cần rút.');
-                    return false;
+                    return;
                 }
-
                 if (amount < MIN) {
                     setError('Số tiền rút tối thiểu là 100.000 ₫.');
-                    return false;
+                    return;
                 }
-
                 if (amount > MAX) {
                     setError('Số tiền rút vượt quá số dư khả dụng.');
-                    return false;
+                    return;
                 }
 
                 setError('');
-                btnSubmit.disabled = false;
-                return true;
             }
 
-            
-            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
-                window.jQuery('#bankSelect').select2({
-                    dropdownParent: window.jQuery('#withdrawModal'),
-                    placeholder: '-- Chọn ngân hàng --',
-                    width: '100%',
-                });
+            // Format số tiền khi nhập
+            bankSelectEl.addEventListener('change', showWarning);
 
-               
-                window.jQuery('#bankSelect').on('change', function() {
-                    validateAndToggleButton();
-                });
-            } else {
-               
-                bankSelectEl.addEventListener('change', validateAndToggleButton);
-            }
-
-            
             amountDisplay.addEventListener('input', function() {
                 const raw = onlyDigits(amountDisplay.value);
                 const n = parseInt(raw || '0', 10);
-
                 amountHidden.value = n > 0 ? n : '';
                 amountDisplay.value = raw ? formatVND(raw) : '';
-
-                validateAndToggleButton();
+                showWarning();
             });
 
-            
+            // KHÔNG chặn submit - để form submit bình thường
             form.addEventListener('submit', function(e) {
-                if (!validateAndToggleButton()) {
-                    e.preventDefault();
-                }
+                showWarning();
+                // Không có e.preventDefault() - form sẽ submit
+                console.log('Form đang submit...');
             });
 
-            
             if (modalEl) {
                 modalEl.addEventListener('shown.bs.modal', function() {
-                    validateAndToggleButton();
+                    btnSubmit.disabled = false;
+                    showWarning();
                 });
-
-              
                 modalEl.addEventListener('hidden.bs.modal', function() {
                     setError('');
+                    form.reset();
+                    amountDisplay.value = '';
+                    amountHidden.value = '';
                 });
             }
 
-            
-            validateAndToggleButton();
+            // Đảm bảo nút luôn enabled
+            btnSubmit.disabled = false;
+            showWarning();
         })();
     </script>
 

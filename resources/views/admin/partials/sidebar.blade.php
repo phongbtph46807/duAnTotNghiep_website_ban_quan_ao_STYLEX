@@ -59,6 +59,12 @@
                                     <i class="ri-file-list-3-line me-1"></i> Danh sách đơn hàng
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.withdraw-requests.index') }}" class="nav-link"
+                                    data-key="t-withdraw-requests">
+                                    <i class="ri-wallet-3-line me-1"></i> Yêu cầu rút tiền
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>

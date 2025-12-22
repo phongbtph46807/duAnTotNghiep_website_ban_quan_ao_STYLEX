@@ -115,7 +115,7 @@
                                             <td class="customer_id">{{ $item->id }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                <img src="{{ $item->avatar ? Storage::url($item->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
+                                                <img src="{{ $item->avatar_url }}"
                                                     width="50">
                                             </td>
                                             <td class="customer_name">{{ $item->email }}</td>

@@ -268,7 +268,7 @@
                                             <td>{{ ++$stt }}</td>
                                             <td class="customer_name">{{ $item->name }}</td>
                                             <td class="email">
-                                                <img src="{{ $item->avatar ? asset('storage/' . $item->avatar) : \App\Http\Controllers\Admin\UserController::URLIMAGEDEFAULT }}"
+                                                <img src="{{ $item->avatar_url }}"
                                                     width="50" height="50" class="user-avatar" alt="Avatar">
                                             </td>
                                             <td class="customer_name">{{ $item->email }}</td>

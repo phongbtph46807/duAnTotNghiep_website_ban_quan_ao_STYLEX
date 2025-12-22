@@ -17,16 +17,123 @@ class ProfileController extends Controller
     /**
      * Hiển thị trang hồ sơ cá nhân
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
-        return view('client.profile.index', compact('user'));
-    }
+        $activeTab = $request->query('tab', 'profile'); // 'profile', 'orders', 'reviews', 'card'
+        
+        // Đơn hàng
+        $orders = collect();
+        $statusTabs = [];
+        $activeStatus = null;
+        
+        // Đánh giá
+        $reviews = null;
 
-    public function card()
-    {
-        $user = auth()->user();
+        // Ví
+        $walletHistory = [];
+        
+        if ($activeTab === 'orders') {
+            $userId = Auth::id();
+            $sessionId = session()->getId();
+            $statusTabs = [
+                'pending' => 'Chờ xác nhận',
+                'processing' => 'Đang xử lý',
+                'shipping' => 'Chờ giao hàng',
+                'delivered' => 'Đã giao',
+                'completed' => 'Hoàn thành',
+                'cancelled' => 'Hủy',
+                'returned' => 'Trả hàng',
+            ];
+            $statusFilter = $request->query('status');
+            if ($statusFilter && !array_key_exists($statusFilter, $statusTabs)) {
+                $statusFilter = null;
+            }
+            $activeStatus = $statusFilter;
 
+            $orders = \App\Models\Order::query()
+                ->when($userId, function ($q) use ($userId, $sessionId) {
+                    $q->where(function ($qq) use ($userId, $sessionId) {
+                        $qq->where('user_id', $userId);
+                        if ($sessionId) {
+                            $qq->orWhere(function ($qq2) use ($sessionId) {
+                                $qq2->whereNull('user_id')
+                                    ->where('session_id', $sessionId);
+                            });
+                        }
+                        $email = Auth::user()->email ?? null;
+                        if ($email) {
+                            $qq->orWhere(function ($qq3) use ($email) {
+                                $qq3->whereNull('user_id')
+                                    ->where('email', $email);
+                            });
+                        }
+                    });
+                })
+                ->when(!$userId, function ($q) use ($sessionId) {
+                    $q->where('session_id', $sessionId);
+                })
+                ->when($statusFilter, function ($q) use ($statusFilter) {
+                    if ($statusFilter === 'cancelled') {
+                        $q->whereIn('status', ['cancel_request', 'cancelled']);
+                    } elseif ($statusFilter === 'returned') {
+                        $q->whereIn('status', ['return_request', 'returned']);
+                    } else {
+                        $q->where('status', $statusFilter);
+                    }
+                })
+                ->orderByDesc('created_at')
+                ->with([
+                    'items.product.productVariants.texture',
+                    'items.product.productImages',
+                    'items.product.primaryImage',
+                    'items.variant',
+                    'items.variant.size',
+                    'items.variant.color',
+                    'items.variant.texture',
+                    'reviews'
+                ])
+                ->get();
+
+            // Đánh dấu sản phẩm đã được đánh giá
+            foreach ($orders as $order) {
+                if (in_array($order->status, ['completed', 'delivered'])) {
+                    $reviewed = $order->reviews->map(fn($r) => [
+                        'p' => $r->product_id,
+                        'v' => $r->product_variant_id,
+                    ])->toArray();
+                    foreach ($order->items as $item) {
+                        $item->is_reviewed = collect($reviewed)->contains(function($rev) use ($item) {
+                            return $rev['p'] == $item->product_id && $rev['v'] == $item->variant_id;
+                        });
+                    }
+                }
+            }
+        } elseif ($activeTab === 'reviews') {
+            // Load reviews của user với thông tin sản phẩm
+            try {
+                $reviews = \App\Models\Review::where('user_id', $user->id)
+                    ->with([
+                        'product' => function($q) {
+                            $q->withTrashed(); // Bao gồm cả sản phẩm đã xóa
+                        },
+                        'productVariant.size',
+                        'productVariant.color',
+                        'productVariant.texture',
+                        'product.primaryImage',
+                        'order' => function($q) {
+                            $q->select('id', 'code');
+                        }
+                    ])
+                    ->orderByDesc('created_at')
+                    ->paginate(10);
+            } catch (\Exception $e) {
+                Log::error('Error loading reviews: ' . $e->getMessage());
+                // Tạo empty paginator khi có lỗi
+                $reviews = \App\Models\Review::where('id', 0)->paginate(10);
+            }
+        } elseif ($activeTab === 'card') {
+            // Ví của tôi - chuẩn bị lịch sử giao dịch
         $walletHistory = collect($user->wallet_history ?? [])
             ->sortByDesc(function ($item) {
                 // sort theo created_at (string) -> strtotime
@@ -34,7 +141,40 @@ class ProfileController extends Controller
             })
             ->values()
             ->all();
-        return view('client.profile.cards.index', compact('user', 'walletHistory'));
+        }
+        
+        // Đảm bảo $reviews luôn được khởi tạo
+        if ($reviews === null) {
+            $reviews = \App\Models\Review::where('id', 0)->paginate(10);
+        }
+        
+        return view('client.profile.index', compact(
+            'user',
+            'activeTab',
+            'orders',
+            'statusTabs',
+            'activeStatus',
+            'reviews',
+            'walletHistory'
+        ));
+    }
+
+    public function card(Request $request)
+    {
+        // Điều hướng về trang profile với tab = card
+        $request->merge(['tab' => 'card']);
+        return $this->index($request);
+    }
+
+    /**
+     * Trang danh sách "Đánh giá của tôi"
+     * Tạo route riêng để người dùng bấm từ menu ngoài.
+     */
+    public function reviews(Request $request)
+    {
+        // Ép tab = reviews và tái sử dụng logic của index()
+        $request->merge(['tab' => 'reviews']);
+        return $this->index($request);
     }
 
     public function withdraw(Request $request)
@@ -51,8 +191,6 @@ class ProfileController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-
-
                 $user = User::query()->whereKey(Auth::id())->lockForUpdate()->firstOrFail();
 
                 $amount = (int) $request->amount;
@@ -64,34 +202,43 @@ class ProfileController extends Controller
                     ]);
                 }
 
-                $before = (int) $user->wallet_balance;
-                $after  = $before - $amount;
+                $currentBalance = (int) $user->wallet_balance;
 
-                $history = $user->wallet_history;
+                // Tạo yêu cầu rút tiền trong bảng withdraw_requests
+                // KHÔNG trừ tiền ngay - chờ admin duyệt và hoàn thành mới trừ
+                $withdrawRequest = \App\Models\WithdrawRequest::create([
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                    'bank_code' => $request->bank_code,
+                    'account_number' => $request->account_number,
+                    'account_name' => $request->account_name,
+                    'note' => $request->note,
+                    'status' => 'pending',
+                ]);
+
+                // Thêm vào lịch sử ví (chỉ để ghi nhận yêu cầu, chưa trừ tiền)
+                $history = $user->wallet_history ?? [];
                 if (!is_array($history)) $history = [];
 
                 $history[] = [
-                    'note'            => $request->note ?: 'Yêu cầu rút tiền',
-                    'type'            => 'withdraw',
-                    'amount'          => $amount,
-
-                    'balance_before'  => $before,
-                    'balance_after'   => $after,
+                    'note' => $request->note ?: 'Yêu cầu rút tiền (Chờ duyệt)',
+                    'type' => 'withdraw_request',
+                    'amount' => $amount,
+                    'balance_before' => $currentBalance,
+                    'balance_after' => $currentBalance, // Chưa trừ tiền
                     'order_id' => '-',
                     'order_code' => '-',
-                    'created_at'      => now()->toDateTimeString(),
-                    'created_by'      => $user->id,
+                    'withdraw_request_id' => $withdrawRequest->id,
+                    'status' => 'pending', // Trạng thái yêu cầu
+                    'created_at' => now()->toDateTimeString(),
+                    'created_by' => $user->id,
                     'created_by_name' => $user->name,
-
-                    // thông tin nhận tiền
-'bank_code'       => $request->bank_code,
-                    'account_number'  => $request->account_number,
-                    'account_name'    => $request->account_name,
+                    'bank_code' => $request->bank_code,
+                    'account_number' => $request->account_number,
+                    'account_name' => $request->account_name,
                 ];
 
-                // Trừ tiền ngay để tránh user rút 2 lần.
-                // (Chuẩn hơn là có wallet_hold/frozen, nhưng theo mô hình JSON hiện tại thì làm vậy là hợp lý nhất)
-                $user->wallet_balance = $after;
+                // KHÔNG trừ tiền - chỉ lưu lịch sử yêu cầu
                 $user->wallet_history = $history;
                 $user->save();
             });
@@ -100,7 +247,12 @@ class ProfileController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Throwable $e) {
-            return back()->with('error', 'Có lỗi khi rút tiền. Vui lòng thử lại.');
+            Log::error('Error creating withdraw request: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'amount' => $request->amount,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Có lỗi khi rút tiền: ' . $e->getMessage());
         }
     }
 

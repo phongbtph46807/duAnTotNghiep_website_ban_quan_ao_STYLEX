@@ -201,7 +201,7 @@
                                             {{-- Tên người dùng --}}
                                             <td>
                                                 @if ($review->user)
-                                                    <img src="{{ $review->user->avatar ?? 'https://res.cloudinary.com/dvrexlsgx/image/upload/v1732148083/Avatar-trang-den_apceuv_pgbce6.png' }}"
+                                                    <img src="{{ $review->user ? $review->user->avatar_url : 'https://res.cloudinary.com/dvrexlsgx/image/upload/v1732148083/Avatar-trang-den_apceuv_pgbce6.png' }}"
                                                         width="50px">
                                                 @endif
                                                 {{ $review->user->name ?? 'Ẩn danh' }}
