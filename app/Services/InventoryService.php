@@ -327,7 +327,7 @@ class InventoryService
                     'variant_id' => $request->variant_id,
                     'quantity' => $damagedQty,
                     'defect_level' => 'MEDIUM',
-                    'description' => "Phát hiện từ kiểm kê - {$notes}",
+                    'defect_description' => "Phát hiện từ kiểm kê - {$notes}",
                     'status' => 'PENDING',
                     'created_by' => Auth::id(),
                 ]);
@@ -336,7 +336,6 @@ class InventoryService
             }
         });
     }
-}
 
     public static function getVariantAvailableStock(int $variantId): int
     {
@@ -354,3 +353,4 @@ class InventoryService
             ->where('warehouse_id', $warehouseId)
             ->first();
     }
+}

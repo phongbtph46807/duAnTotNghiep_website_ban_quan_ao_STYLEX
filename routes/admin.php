@@ -271,10 +271,8 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
                 Route::get('/', [OrderFulfillmentController::class, 'index'])->name('index');
                 Route::get('{order}', [OrderFulfillmentController::class, 'show'])->name('show');
                 Route::post('{order}/confirm', [OrderFulfillmentController::class, 'confirm'])->name('confirm');
-                Route::get('{order}/picking', [OrderFulfillmentController::class, 'startPicking'])->name('picking');
-                Route::post('{order}/picking', [OrderFulfillmentController::class, 'storePicking'])->name('picking.store');
-                Route::post('{order}/pack', [OrderFulfillmentController::class, 'completePacking'])->name('pack');
-                Route::post('{order}/ship', [OrderFulfillmentController::class, 'ship'])->name('ship');
+                Route::post('{picking}/pack', [OrderFulfillmentController::class, 'completePacking'])->name('pack');
+                Route::post('{order}/ship', [OrderFulfillmentController::class, 'completeShipping'])->name('ship');
             });
         });
 
@@ -284,6 +282,14 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
         // Các route updateStatus, approveCancel, approveReturn đã được định nghĩa cho cả Admin và Staff ở trên
         // Chỉ còn payment-status là chỉ dành cho Admin
         Route::post('/orders/{order}/payment-status', [OrderController::class, 'updatePaymentStatus'])->name('orders.updatePaymentStatus');
+
+        // Withdraw Requests - CHỈ ADMIN
+        Route::prefix('withdraw-requests')->as('withdraw-requests.')->group(function () {
+            Route::get('/', [WithdrawRequestController::class, 'index'])->name('index');
+            Route::post('{id}/approve', [WithdrawRequestController::class, 'approve'])->name('approve');
+            Route::post('{id}/reject', [WithdrawRequestController::class, 'reject'])->name('reject');
+            Route::post('{id}/complete', [WithdrawRequestController::class, 'complete'])->name('complete');
+        });
 
         //Route Users - CHỈ ADMIN (bổ sung thêm chức năng)
         Route::prefix('users')->as('users.')->group(function () {

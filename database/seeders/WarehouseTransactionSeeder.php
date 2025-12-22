@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\StockInRequest;
-use App\Models\StockOutRequest;
 use App\Models\TransferRequest;
 use App\Models\CountRequest;
 use App\Models\DefectAssessment;
@@ -41,9 +40,6 @@ class WarehouseTransactionSeeder extends Seeder
         // 1. NHẬP KHO (Stock In)
         $this->seedStockIn($warehouses, $variants, $admin, $warehouseManager);
 
-        // 2. XUẤT KHO (Stock Out)
-        $this->seedStockOut($warehouses, $variants, $admin, $warehouseManager);
-
         // 3. CHUYỂN KHO (Transfer)
         $this->seedTransfer($warehouses, $variants, $admin, $warehouseManager);
 
@@ -65,10 +61,10 @@ class WarehouseTransactionSeeder extends Seeder
     private function seedStockIn($warehouses, $variants, $admin, $warehouseManager): void
     {
         $warehouse = $warehouses->first();
-        
+
         for ($i = 1; $i <= 3; $i++) {
             $variant = $variants->random();
-            
+
             StockInRequest::create([
                 'warehouse_id' => $warehouse->id,
                 'variant_id' => $variant->id,
@@ -90,28 +86,6 @@ class WarehouseTransactionSeeder extends Seeder
         $this->command->info('  ✓ Stock In: 3 records');
     }
 
-    private function seedStockOut($warehouses, $variants, $admin, $warehouseManager): void
-    {
-        $warehouse = $warehouses->first();
-        
-        for ($i = 1; $i <= 3; $i++) {
-            $variant = $variants->random();
-            
-            StockOutRequest::create([
-                'warehouse_id' => $warehouse->id,
-                'variant_id' => $variant->id,
-                'batch_number' => 'BATCH-OUT-' . date('Ymd') . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'quantity' => rand(10, 50),
-                'status' => ['PENDING', 'QC_PASSED', 'CONFIRMED'][rand(0, 2)],
-                'created_by' => $warehouseManager->id,
-                'confirmed_by' => rand(0, 1) ? $admin->id : null,
-                'notes' => 'Xuất kho cho đơn hàng - Lô ' . $i,
-            ]);
-        }
-
-        $this->command->info('  ✓ Stock Out: 3 records');
-    }
-
     private function seedTransfer($warehouses, $variants, $admin, $warehouseManager): void
     {
         if ($warehouses->count() < 2) {
@@ -124,7 +98,7 @@ class WarehouseTransactionSeeder extends Seeder
 
         for ($i = 1; $i <= 3; $i++) {
             $variant = $variants->random();
-            
+
             TransferRequest::create([
                 'from_warehouse_id' => $fromWarehouse->id,
                 'to_warehouse_id' => $toWarehouse->id,
@@ -144,12 +118,12 @@ class WarehouseTransactionSeeder extends Seeder
     private function seedCount($warehouses, $variants, $admin, $warehouseManager): void
     {
         $warehouse = $warehouses->first();
-        
+
         for ($i = 1; $i <= 3; $i++) {
             $variant = $variants->random();
             $systemQty = rand(100, 500);
             $physicalQty = $systemQty + rand(-10, 10);
-            
+
             CountRequest::create([
                 'warehouse_id' => $warehouse->id,
                 'variant_id' => $variant->id,
@@ -174,11 +148,11 @@ class WarehouseTransactionSeeder extends Seeder
     private function seedDefectAssessment($warehouses, $variants, $admin, $warehouseManager): void
     {
         $warehouse = $warehouses->first();
-        
+
         for ($i = 1; $i <= 3; $i++) {
             $variant = $variants->random();
             $classification = ['REWORK', 'SCRAP'][rand(0, 1)];
-            
+
             DefectAssessment::create([
                 'warehouse_id' => $warehouse->id,
                 'variant_id' => $variant->id,
@@ -249,7 +223,7 @@ class WarehouseTransactionSeeder extends Seeder
     private function seedStockOutInvoice($warehouses, $variants, $admin, $warehouseManager): void
     {
         $warehouse = $warehouses->first();
-        
+
         for ($i = 1; $i <= 3; $i++) {
             $type = ['NORMAL', 'CLEARANCE', 'RETURN'][rand(0, 2)];
             $totalAmount = 0;

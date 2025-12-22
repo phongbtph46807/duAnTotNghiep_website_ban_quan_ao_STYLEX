@@ -82,6 +82,7 @@
                     <tr>
                         <th>Mã đơn</th>
                         <th>Khách hàng</th>
+                        <th>Địa chỉ</th>
                         <th>Tổng tiền</th>
                         <th>Trạng thái</th>
                         <th>Kho</th>
@@ -92,12 +93,18 @@
                 <tbody>
                     @forelse ($orders as $order)
                         @php
-                            $status = $order->picking?->status ?? 'PENDING';
+                            $pickingStatus = $order->picking?->status ?? 'PENDING';
+                            $status = match(true) {
+                                $order->status === 'delivered' => 'SHIPPED',
+                                $order->status === 'shipping' => 'PACKED',
+                                default => $pickingStatus
+                            };
                             $statusClass = match($status) {
                                 'PENDING' => 'badge bg-secondary',
                                 'CONFIRMED' => 'badge bg-info',
                                 'PICKING' => 'badge bg-warning',
                                 'PACKED' => 'badge bg-primary',
+                                'SHIPPED' => 'badge bg-success',
                                 'CANCELLED' => 'badge bg-danger',
                                 default => 'badge bg-light'
                             };
@@ -106,55 +113,57 @@
                                 'CONFIRMED' => '✓ Đã xác nhận',
                                 'PICKING' => '📋 Đang lấy hàng',
                                 'PACKED' => '📦 Đã đóng gói',
+                                'SHIPPED' => '✓ Đã giao',
                                 'CANCELLED' => '❌ Đã hủy',
                                 default => 'Không xác định'
                             };
                         @endphp
                         <tr>
                             <td><strong>#{{ $order->code }}</strong></td>
-                            <td>{{ $order->buyer_name }}</td>
+                            <td>
+                                <div>{{ $order->buyer_name ?? $order->full_name ?? 'N/A' }}</div>
+                                <small class="text-muted">{{ $order->buyer_phone ?? $order->phone ?? '-' }}</small>
+                            </td>
+                            <td><small>{{ $order->address }}</small></td>
                             <td><strong class="text-danger">{{ number_format($order->total) }} đ</strong></td>
                             <td><span class="{{ $statusClass }}">{{ $statusText }}</span></td>
                             <td><small class="badge bg-light text-dark">{{ $order->picking?->warehouse?->name ?? '-' }}</small></td>
                             <td>
                                 <small>
                                     @foreach ($order->items as $item)
-                                        <div>{{ $item->variant->product->name }} - {{ $item->variant->name }}</div>
-                                        <div class="text-muted">SKU: {{ $item->variant->sku }} | GTIN: {{ $item->variant->gtin ?? '-' }} | SL: {{ $item->quantity }}</div>
+                                        <div>{{ $item->variant?->product?->name ?? 'N/A' }} - Size: {{ $item->variant?->size?->name ?? '-' }} | Màu: {{ $item->variant?->color?->name ?? '-' }}</div>
+                                        <div class="text-muted">SKU: {{ $item->variant?->sku ?? '-' }} | SL: {{ $item->quantity }}</div>
                                     @endforeach
                                 </small>
                             </td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a href="{{ route('admin.orders.fulfillment.show', $order) }}" class="btn btn-outline-secondary btn-sm">
-                                        👁️ Chi tiết
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('admin.orders.fulfillment.show', $order) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="ri-eye-line"></i>
                                     </a>
 
-                                    @if (!$order->picking || $order->picking->status === 'PENDING')
-                                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#warehouseModal{{ $order->id }}">
-                                            ✓ Chọn kho
+                                    @if ($status === 'PENDING')
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#warehouseModal{{ $order->id }}">
+                                            <i class="ri-check-line"></i>
                                         </button>
                                     @endif
 
-                                    @if ($order->picking && $order->picking->status === 'CONFIRMED')
-                                        <form action="{{ route('admin.orders.fulfillment.pack', $order->picking) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Đóng gói & giao vận chuyển?')">
-                                                📦 Đóng gói
-                                            </button>
-                                        </form>
+                                    @if ($order->picking && $order->picking->status === 'CONFIRMED' && $order->status === 'processing')
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#packingModal{{ $order->id }}">
+                                            <i class="ri-box-3-line"></i>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
                         </tr>
 
                         <!-- Modal chọn kho -->
-                        <div class="modal fade" id="warehouseModal{{ $order->id }}" tabindex="-1">
+                        <div class="modal fade" id="warehouseModal{{ $order->id }}" tabindex="-1" @if ($errors->has('warehouse_id') && old('order_id') == $order->id) data-bs-backdrop="static" @endif>
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title">Chọn kho xuất - #{{ $order->code }}</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" @if ($errors->has('warehouse_id') && old('order_id') == $order->id) disabled @endif></button>
                                     </div>
                                     <form action="{{ route('admin.orders.fulfillment.confirm', $order) }}" method="POST">
                                         @csrf
@@ -164,25 +173,57 @@
                                                 <select name="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
                                                     <option value="">-- Chọn kho --</option>
                                                     @foreach ($warehouses as $wh)
-                                                        <option value="{{ $wh->id }}">{{ $wh->name }}</option>
+                                                        <option value="{{ $wh->id }}" @if (old('warehouse_id') == $wh->id) selected @endif>{{ $wh->name }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('warehouse_id')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                            <button type="submit" class="btn btn-success">Xác nhận & Reserve</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @if ($errors->has('warehouse_id') && old('order_id') == $order->id) disabled @endif>Hủy</button>
+                                            <button type="submit" class="btn btn-success">Xác nhận</button>
                                         </div>
                                     </form>
                                 </div>
                             </div>
                         </div>
+
+                        @if ($errors->has('warehouse_id') && old('order_id') == $order->id)
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const modal = new bootstrap.Modal(document.getElementById('warehouseModal{{ $order->id }}'));
+                                    modal.show();
+                                });
+                            </script>
+                        @endif
+
+                        @if ($order->picking)
+                        <!-- Modal xác nhận đóng gói -->
+                        <div class="modal fade" id="packingModal{{ $order->id }}" tabindex="-1" data-bs-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Xác nhận đóng gói</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Bạn có chắc chắn muốn đóng gói đơn hàng <strong>#{{ $order->code }}</strong>?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <form action="{{ route('admin.orders.fulfillment.pack', $order->picking) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary">Xác nhận đóng gói</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 Không có đơn hàng nào
                             </td>
                         </tr>

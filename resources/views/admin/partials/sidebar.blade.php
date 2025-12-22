@@ -38,13 +38,7 @@
         <div class="container-fluid">
             <div id="two-column-menu"></div>
             <ul class="navbar-nav" id="navbar-nav">
-                <li class="menu-title"><span data-key="t-menu">Sản Phẩm</span></li>
-                                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarOrders" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarOrders">
-                        <i class="ri-shopping-bag-3-line"></i>
-                        <span data-key="t-orders">Quản lý đơn hàng</span>
-                    </a>
+                
 
                     <div class="collapse menu-dropdown" id="sidebarOrders">
                         <ul class="nav nav-sm flex-column">
@@ -54,12 +48,7 @@
                                     <i class="ri-file-list-3-line me-1"></i> Danh sách đơn hàng
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.withdraw-requests.index') }}" class="nav-link"
-                                    data-key="t-withdraw-requests">
-                                    <i class="ri-wallet-3-line me-1"></i> Yêu cầu rút tiền
-                                </a>
-                            </li>
+
                         </ul>
                     </div>
                 </li>
@@ -156,11 +145,15 @@
                                     <i class="ri-truck-line me-1"></i> Đóng gói & Giao hàng
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.withdraw-requests.index') }}" class="nav-link"
+                                    data-key="t-withdraw-requests">
+                                    <i class="ri-wallet-3-line me-1"></i> Yêu cầu rút tiền
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
-
-                @if (auth()->user()->role == 1)
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarVouchers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarVouchers">
                             <i class="ri-ticket-line"></i> <span>Quản lý voucher</span>
@@ -215,12 +208,7 @@
                             </ul>
                         </div>
                     </li>
-                @endif
 
-                {{-- Giao diện/Truyền Thông - Ẩn với Warehouse Manager --}}
-                @if (auth()->user()->role != \App\Models\User::ROLE_WAREHOUSE_MANAGER)
-                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Giao diện/Truyền
-                            Thông</span></li>
                 <!-- ===== QUẢN LÝ KHO ===== -->
                 <li class="menu-title"><span>Kho Hàng (WMS)</span></li>
 
@@ -335,62 +323,33 @@
                 </li>
 
                 <!-- ===== GIAO DIỆN & TRUYỀN THÔNG ===== -->
-                <li class="menu-title"><span>Giao Diện & Truyền Thông</span></li>
+                @if (auth()->user()->role != \App\Models\User::ROLE_WAREHOUSE_MANAGER)
+                    <li class="menu-title"><span>Giao Diện & Truyền Thông</span></li>
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link" href="#sidebarAuth" data-bs-toggle="collapse" role="button"
-                            aria-expanded="false" aria-controls="sidebarAuth">
-                            <i class="ri-account-circle-line"></i> <span data-key="t-authentication">Quản lí banner</span>
+                        <a class="nav-link menu-link" href="#sidebarBanners" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBanners">
+                            <i class="ri-image-add-line"></i> <span>Quản lí banner</span>
                         </a>
-                        <div class="collapse menu-dropdown" id="sidebarAuth">
+                        <div class="collapse menu-dropdown" id="sidebarBanners">
                             <ul class="nav nav-sm flex-column">
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.banners.index') }}" class="nav-link"
-                                        data-key="t-analytics">
+                                    <a href="{{ route('admin.banners.index') }}" class="nav-link">
                                         <i class="ri-list-check me-1"></i> Danh sách banner
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.banners.create') }}" class="nav-link"
-                                        data-key="t-analytics">
-                                        <i class="ri-add-circle-line me-1"></i>
-                                        Thêm mới banner
+                                    <a href="{{ route('admin.banners.create') }}" class="nav-link">
+                                        <i class="ri-add-circle-line me-1"></i> Thêm mới banner
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('admin.banners.trash') }}" class="nav-link"
-                                        data-key="t-analytics">
-                                        <i class="ri-delete-bin-line me-1"></i>
-                                        Danh sách banner đã xóa
+                                    <a href="{{ route('admin.banners.trash') }}" class="nav-link">
+                                        <i class="ri-delete-bin-line me-1"></i> Danh sách banner đã xóa
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </li>
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarBanners" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarBanners">
-                        <i class="ri-image-add-line"></i> <span>Quản lí banner</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarBanners">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.banners.index') }}" class="nav-link">
-                                    <i class="ri-list-check me-1"></i> Danh sách banner
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.banners.create') }}" class="nav-link">
-                                    <i class="ri-add-circle-line me-1"></i> Thêm mới banner
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.banners.trash') }}" class="nav-link">
-                                    <i class="ri-delete-bin-line me-1"></i> Danh sách banner đã xóa
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
 
                     <li class="nav-item">
                         <a class="nav-link menu-link" href="#sidebarPosts" data-bs-toggle="collapse" role="button"
@@ -418,38 +377,7 @@
                         </div>
                     </li>
                 @endif
-                <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarPosts" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="sidebarPosts">
-                        <i class="ri-pages-line"></i> <span>Quản lí bài viết</span>
-                    </a>
-                    <div class="collapse menu-dropdown" id="sidebarPosts">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.posts.index') }}" class="nav-link">
-                                    <i class="ri-list-check me-1"></i> Danh sách bài viết
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.posts.create') }}" class="nav-link">
-                                    <i class="ri-add-circle-line me-1"></i> Thêm bài viết mới
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.posts.trash') }}" class="nav-link">
-                                    <i class="ri-delete-bin-line me-1"></i> Danh sách bài viết đã xóa
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
 
-                {{-- END HIDE BLOCK --}}
-                {{-- Khách hàng và đơn hàng - Ẩn với Warehouse Manager --}}
-                @if (auth()->user()->role != \App\Models\User::ROLE_WAREHOUSE_MANAGER)
-                    <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-components">Khách hàng và đơn
-                            hàng</span>
-                    </li>
-                @endif
                 <!-- ===== QUẢN LÝ NGƯỜI DÙNG ===== -->
                 <li class="menu-title"><span>Người Dùng & Quyền Hạn</span></li>
 

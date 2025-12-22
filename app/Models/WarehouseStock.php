@@ -17,6 +17,7 @@ class WarehouseStock extends Model
         'reserved',
         'quarantine',
         'damaged',
+        'clearance',
     ];
 
     protected $casts = [
@@ -25,6 +26,7 @@ class WarehouseStock extends Model
         'reserved' => 'integer',
         'quarantine' => 'integer',
         'damaged' => 'integer',
+        'clearance' => 'integer',
     ];
 
     public function warehouse(): BelongsTo
@@ -39,11 +41,19 @@ class WarehouseStock extends Model
 
     public function getTotalStock(): int
     {
-        return $this->on_hand;
+        return $this->available + $this->reserved + $this->quarantine + $this->damaged + ($this->clearance ?? 0);
     }
 
     public function getSellableStock(): int
     {
         return $this->available;
+    }
+
+    public function syncOnHand(): void
+    {
+        $total = $this->available + $this->reserved + $this->quarantine + $this->damaged + ($this->clearance ?? 0);
+        if ($this->on_hand !== $total) {
+            $this->update(['on_hand' => $total]);
+        }
     }
 }

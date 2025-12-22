@@ -38,12 +38,12 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <p><strong>Mã đơn:</strong> #{{ $order->code }}</p>
-                            <p><strong>Khách hàng:</strong> {{ $order->buyer_name }}</p>
-                            <p><strong>Điện thoại:</strong> {{ $order->buyer_phone }}</p>
+                            <p><strong>Khách hàng:</strong> {{ $order->buyer_name ?? $order->full_name ?? 'N/A' }}</p>
+                            <p><strong>Điện thoại:</strong> {{ $order->buyer_phone ?? $order->phone ?? '-' }}</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Email:</strong> {{ $order->buyer_email }}</p>
-                            <p><strong>Địa chỉ:</strong> {{ $order->buyer_address }}</p>
+                            <p><strong>Email:</strong> {{ $order->buyer_email ?? $order->email ?? '-' }}</p>
+                            <p><strong>Địa chỉ:</strong> {{ $order->address ?? '-' }}</p>
                         </div>
                     </div>
                 </div>
@@ -70,11 +70,11 @@
                             @foreach ($order->items as $item)
                                 <tr>
                                     <td>{{ $item->variant->product->name }}</td>
-                                    <td>{{ $item->variant->name }}</td>
+                                    <td>Size: {{ $item->variant->size?->name ?? '-' }} | Màu: {{ $item->variant->color?->name ?? '-' }}</td>
                                     <td><small>{{ $item->variant->sku }}</small></td>
                                     <td>{{ $item->quantity }}</td>
-                                    <td>{{ number_format($item->price) }} đ</td>
-                                    <td><strong>{{ number_format($item->quantity * $item->price) }} đ</strong></td>
+                                    <td>{{ number_format($item->price) }} d</td>
+                                    <td><strong>{{ number_format($item->quantity * $item->price) }} d</strong></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -101,11 +101,11 @@
                             default => 'badge bg-light'
                         };
                         $statusText = match($status) {
-                            'PENDING' => '⏳ Chờ chọn kho',
-                            'CONFIRMED' => '✓ Đã xác nhận',
-                            'PICKING' => '📋 Đang lấy hàng',
-                            'PACKED' => '📦 Đã đóng gói',
-                            'CANCELLED' => '❌ Đã hủy',
+                            'PENDING' => 'Chờ chọn kho',
+                            'CONFIRMED' => 'Đã xác nhận',
+                            'PICKING' => 'Đang lấy hàng',
+                            'PACKED' => 'Đã đóng gói',
+                            'CANCELLED' => 'Đã hủy',
                             default => 'Không xác định'
                         };
                     @endphp
@@ -114,21 +114,13 @@
                     </p>
                     <p class="mb-3">
                         <strong>Order:</strong> 
-                        <span class="badge bg-{{ $order->status === 'processing' ? 'warning' : ($order->status === 'completed' ? 'success' : 'secondary') }}">
+                        <span class="badge bg-{{ $order->status === 'processing' ? 'warning' : ($order->status === 'shipping' ? 'info' : ($order->status === 'delivered' ? 'success' : 'secondary')) }}">
                             {{ ucfirst($order->status) }}
                         </span>
                     </p>
                     <p class="mb-0">
                         <strong>Kho:</strong> {{ $order->picking?->warehouse?->name ?? '-' }}
                     </p>
-                    @if($order->picking?->packed_at)
-                        <p class="mb-0 mt-2">
-                            <small class="text-muted">
-                                <strong>Đóng gói:</strong> {{ $order->picking->packed_at->format('d/m/Y H:i') }}<br>
-                                <strong>Người đóng gói:</strong> {{ $order->picking->packedBy?->name ?? 'N/A' }}
-                            </small>
-                        </p>
-                    @endif
                 </div>
             </div>
 
@@ -137,32 +129,23 @@
                     <h5 class="mb-0">Thao tác</h5>
                 </div>
                 <div class="card-body">
-                    @if (!$order->picking || $order->picking->status === 'PENDING')
-                        <button type="button" class="btn btn-success btn-sm w-100 mb-2" data-bs-toggle="modal" data-bs-target="#warehouseModal">
-                            ✓ Chọn kho
+                    @if ($order->picking?->status === 'PENDING')
+                        <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#warehouseModal">
+                            Chọn kho
                         </button>
+                    @elseif ($order->picking?->status === 'CONFIRMED')
+                        <button type="button" class="btn btn-warning btn-sm w-100" data-bs-toggle="modal" data-bs-target="#packingModal">
+                            Đóng gói
+                        </button>
+                    @elseif ($order->picking?->status === 'PACKED')
+                        <button type="button" class="btn btn-success btn-sm w-100" data-bs-toggle="modal" data-bs-target="#shippingModal">
+                            Giao hàng
+                        </button>
+                    @elseif ($order->picking?->status === 'SHIPPED')
+                        <span class="badge bg-success w-100 p-2">✓ Đã giao hàng</span>
                     @endif
-
-                    @if ($order->picking && $order->picking->status === 'CONFIRMED')
-                        <form action="{{ route('admin.orders.fulfillment.pack', $order->picking) }}" method="POST" class="mb-2">
-                            @csrf
-                            <button type="submit" class="btn btn-primary btn-sm w-100" onclick="return confirm('Đóng gói & giao vận chuyển?')">
-                                📦 Đóng gói
-                            </button>
-                        </form>
-                    @endif
-
-                    @if ($order->picking && $order->picking->status === 'PACKED' && $order->status === 'processing')
-                        <form action="{{ route('admin.orders.fulfillment.ship', $order) }}" method="POST" class="mb-2">
-                            @csrf
-                            <button type="submit" class="btn btn-success btn-sm w-100" onclick="return confirm('Cập nhật giao hàng thành công?')">
-                                ✓ Giao hàng thành công
-                            </button>
-                        </form>
-                    @endif
-
-                    <a href="{{ route('admin.orders.fulfillment.index') }}" class="btn btn-outline-secondary btn-sm w-100">
-                        ← Quay lại danh sách
+                    <a href="{{ route('admin.orders.fulfillment.index') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+                        Quay lại danh sách
                     </a>
                 </div>
             </div>
@@ -191,36 +174,63 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Chọn kho <span class="text-danger">*</span></label>
-                            <select name="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
+                            <select name="warehouse_id" class="form-select" required>
                                 <option value="">-- Chọn kho --</option>
                                 @foreach (\App\Models\Warehouse::where('operational_status', 'ACTIVE')->get() as $wh)
                                     <option value="{{ $wh->id }}">{{ $wh->name }}</option>
                                 @endforeach
                             </select>
-                            @error('warehouse_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-success">Xác nhận & Reserve</button>
+                        <button type="submit" class="btn btn-success">Xác nhận</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <!-- Modal xác nhận đóng gói -->
+    <div class="modal fade" id="packingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận đóng gói</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn đóng gói đơn hàng <strong>#{{ $order->code }}</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form action="{{ route('admin.orders.fulfillment.pack', $order->picking) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">Xác nhận đóng gói</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận giao hàng -->
+    <div class="modal fade" id="shippingModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận giao hàng</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn đơn hàng <strong>#{{ $order->code }}</strong> đã được giao thành công?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form action="{{ route('admin.orders.fulfillment.ship', $order) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-success">Xác nhận giao hàng</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-// Tự động mở modal nếu có lỗi validation warehouse_id
-@if($errors->has('warehouse_id'))
-    document.addEventListener('DOMContentLoaded', function() {
-        var warehouseModal = new bootstrap.Modal(document.getElementById('warehouseModal'));
-        warehouseModal.show();
-    });
-@endif
-</script>
-@endpush

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class DefectAssessment extends Model
 {
     protected $fillable = [
-        'warehouse_id', 'variant_id', 'quantity', 'defect_level', 'defect_type', 'defect_description',
+        'warehouse_id', 'variant_id', 'quantity', 'defect_level', 'defect_type', 'defect_description', 'description',
         'classification', 'repair_cost', 'material_cost', 'status',
         'created_by', 'assessed_by', 'approved_by', 'completed_by', 'rejected_by',
         'rejection_reason', 'notes', 'stock_in_request_id'

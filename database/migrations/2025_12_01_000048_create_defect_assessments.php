@@ -26,7 +26,8 @@ return new class extends Migration
             // Đánh giá
             $table->string('defect_type')->nullable();
             $table->text('defect_description')->nullable();
-            $table->enum('classification', ['REWORK', 'SCRAP'])->nullable();
+            $table->text('description')->nullable();
+            $table->enum('classification', ['REWORK', 'SCRAP', 'B-GRADE'])->nullable();
 
             // Chi phí
             $table->integer('repair_cost')->default(0);

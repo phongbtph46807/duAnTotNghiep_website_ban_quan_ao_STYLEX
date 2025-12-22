@@ -105,9 +105,12 @@
                                             <i class="bx bx-check"></i>
                                         </a>
                                     @elseif ($assessment->status === 'ASSESSED')
-                                        <a href="{{ route('admin.inventory.defect.assess', $assessment->id) }}" class="btn btn-sm btn-warning" title="Phê Duyệt">
-                                            <i class="bx bx-check-double"></i>
-                                        </a>
+                                        <form action="{{ route('admin.inventory.defect.approve', $assessment->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Phê Duyệt">
+                                                <i class="bx bx-check-double"></i>
+                                            </button>
+                                        </form>
                                     @elseif ($assessment->status === 'APPROVED')
                                         <a href="{{ route('admin.inventory.defect.assess', $assessment->id) }}" class="btn btn-sm btn-success" title="Hoàn Thành">
                                             <i class="bx bx-check-circle"></i>

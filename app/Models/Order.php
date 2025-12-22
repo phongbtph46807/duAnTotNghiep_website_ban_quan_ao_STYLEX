@@ -15,7 +15,7 @@ class Order extends Model
         'subtotal','shipping_fee','discount',
         'tax_rate_id','tax_amount',
         'shipping_carrier_id',
-        'total',
+        'total','total_cost',
         'payment_method','payment_status','status',
         'momo_order_id','momo_trans_id',
         'cancel_reason','cancel_images',
@@ -63,8 +63,8 @@ class Order extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function picking(): BelongsTo
+    public function picking()
     {
-        return $this->belongsTo(OrderPicking::class, 'id', 'order_id');
+        return $this->hasOne(OrderPicking::class, 'order_id', 'id');
     }
 }
