@@ -2,7 +2,11 @@
     <div class="d-flex">
         <!-- LOGO -->
         <div class="navbar-brand-box horizontal-logo">
-            <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
+            @php
+                // Admin link đến dashboard, Staff và Warehouse Manager link đến orders
+                $homeRoute = auth()->user()->isAdmin() ? route('admin.dashboard') : route('admin.orders.index');
+            @endphp
+            <a href="{{ $homeRoute }}" class="logo logo-dark">
                 <span class="logo-sm">
                     <div class="style-x-logo-sm">
                         <span class="style-text">S</span>
@@ -17,7 +21,7 @@
                 </span>
             </a>
 
-            <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
+            <a href="{{ $homeRoute }}" class="logo logo-light">
                 <span class="logo-sm">
                     <div class="style-x-logo-sm">
                         <span class="style-text">S</span>
@@ -136,14 +140,9 @@
                             {{ Auth::user()->name ?? null}}
                             @php
                                 $user = Auth::user();
-                                $userRoles = $user->roles;
                                 $displayRole = null;
                                 
-                                // Ưu tiên lấy role từ RBAC
-                                if ($userRoles && $userRoles->isNotEmpty()) {
-                                    $displayRole = $userRoles->first();
-                                } else {
-                                    // Fallback về role integer
+                                // Ưu tiên lấy role từ trường role (integer) - nguồn dữ liệu chính xác nhất
                                     $roleName = match($user->role) {
                                         1 => 'Admin',
                                         2 => 'Staff',
@@ -152,6 +151,13 @@
                                     };
                                     if ($roleName) {
                                         $displayRole = \App\Models\Role::where('name', $roleName)->first();
+                                }
+                                
+                                // Fallback về RBAC nếu không tìm thấy từ role integer
+                                if (!$displayRole) {
+                                    $userRoles = $user->roles;
+                                    if ($userRoles && $userRoles->isNotEmpty()) {
+                                        $displayRole = $userRoles->first();
                                     }
                                 }
                             @endphp
@@ -173,14 +179,9 @@
                 <h6 class="dropdown-header">
                     @php
                         $user = Auth::user();
-                        $userRoles = $user->roles;
                         $greetingRole = null;
                         
-                        // Ưu tiên lấy role từ RBAC
-                        if ($userRoles && $userRoles->isNotEmpty()) {
-                            $greetingRole = $userRoles->first();
-                        } else {
-                            // Fallback về role integer
+                        // Ưu tiên lấy role từ trường role (integer) - nguồn dữ liệu chính xác nhất
                             $roleName = match($user->role) {
                                 1 => 'Admin',
                                 2 => 'Staff',
@@ -189,6 +190,13 @@
                             };
                             if ($roleName) {
                                 $greetingRole = \App\Models\Role::where('name', $roleName)->first();
+                        }
+                        
+                        // Fallback về RBAC nếu không tìm thấy từ role integer
+                        if (!$greetingRole) {
+                            $userRoles = $user->roles;
+                            if ($userRoles && $userRoles->isNotEmpty()) {
+                                $greetingRole = $userRoles->first();
                             }
                         }
                     @endphp

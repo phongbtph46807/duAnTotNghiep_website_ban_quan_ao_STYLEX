@@ -19,17 +19,17 @@ class IsAuthenticated
         if (Auth::check()) {
             $user = Auth::user();
             
-            // Admin (role = 1)
+            // Admin (role = 1) - redirect về dashboard
             if ($user->role == 1) {
                 return redirect()->route('admin.dashboard');
             }
-            // Staff (role = 2)
+            // Staff (role = 2) - redirect về trang đơn hàng
             elseif ($user->role == 2) {
-                return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.orders.index');
             }
-            // Warehouse Manager (role = 3)
+            // Warehouse Manager (role = 3) - redirect về trang đơn hàng hoặc inventory
             elseif ($user->role == 3) {
-            return redirect()->route('admin.dashboard');
+                return redirect()->route('admin.orders.index');
             }
             // Regular user (role = 0)
             else {

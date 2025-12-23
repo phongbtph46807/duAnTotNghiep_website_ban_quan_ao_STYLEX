@@ -124,14 +124,25 @@ class AuthController extends Controller
                 }
                 $user = Auth::user();
                 
-                // Kiểm tra role integer (Admin, Staff, Warehouse Manager)
-                if($user->role == 1 || $user->role == 2 || $user->role == 3){
+                // Admin (role = 1) - redirect về dashboard
+                if($user->role == 1){
                     return redirect()->route('admin.dashboard');
+                }
+                // Staff (role = 2) hoặc Warehouse Manager (role = 3) - redirect về trang đơn hàng
+                elseif($user->role == 2 || $user->role == 3){
+                    return redirect()->route('admin.orders.index');
                 }
                 // Kiểm tra role từ RBAC (role mới được tạo)
                 elseif($user->roles()->exists()){
-                    // Nếu user có role trong RBAC (không phải role integer chuẩn), redirect đến admin
-                    return redirect()->route('admin.dashboard');
+                    // Kiểm tra xem có role Admin không
+                    $roleNames = $user->roles()->pluck('name')->toArray();
+                    if (in_array('Admin', $roleNames)) {
+                        return redirect()->route('admin.dashboard');
+                    } elseif (in_array('Staff', $roleNames) || in_array('Warehouse Manager', $roleNames)) {
+                        return redirect()->route('admin.orders.index');
+                    }
+                    // Nếu có role khác trong RBAC, mặc định về orders
+                    return redirect()->route('admin.orders.index');
                 }
                 // User thường
                 else{

@@ -185,7 +185,6 @@ class ProductController extends Controller
                         'size_id'     => $row['size_id'] ?? null,
                         'texture_id'  => $row['texture_id'] ?? null,
                         'price'       => $row['price'] ?? 0,
-                        'quantity'    => $row['quantity'] ?? 1,
                         'status'      => $row['status'] ?? 0,
                     ];
 

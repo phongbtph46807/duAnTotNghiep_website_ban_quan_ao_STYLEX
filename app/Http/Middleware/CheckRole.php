@@ -25,8 +25,8 @@ class CheckRole
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        // Load relationships để đảm bảo có dữ liệu mới nhất
-        $user->load('roles.permissions');
+        // Refresh user từ database để đảm bảo có dữ liệu mới nhất (quan trọng khi vừa đổi role)
+        $user->refresh();
         
         // Map role integers to role names (tương thích với routes hiện tại dùng số)
         $roleNameMap = [
@@ -35,30 +35,39 @@ class CheckRole
             3 => 'Warehouse Manager',
         ];
         
+        // Convert string roles to role integers
+        $requiredRoleInts = array_map('intval', $roles);
+        
+        // Ưu tiên kiểm tra trường role (integer) trước - đây là nguồn dữ liệu chính xác nhất
+        $hasAccess = false;
+        if (in_array($user->role, $requiredRoleInts)) {
+            $hasAccess = true;
+            // Tự động đồng bộ role từ trường role sang RBAC (nếu chưa có)
+            $this->syncRoleToRBAC($user, $user->role);
+        }
+        
+        // Fallback: Nếu không tìm thấy trong role integer, kiểm tra RBAC (roles relationship)
+        if (!$hasAccess) {
+            // Load relationships với fresh query để tránh cache
+            $user->loadMissing('roles');
+        
         // Lấy tất cả roles từ database để hỗ trợ role mới
-        // Nếu role không có trong roleNameMap, thử tìm trong database theo ID hoặc tên
         $allRoles = Role::pluck('name', 'id')->toArray();
         
-        // Convert string roles to role names
+            // Convert required roles to role names
         $requiredRoleNames = [];
         $requiredRoleIds = [];
         foreach ($roles as $role) {
             $roleInt = (int) $role;
             if (isset($roleNameMap[$roleInt])) {
-                // Nếu có trong roleNameMap (Admin, Staff, Warehouse Manager)
                 $requiredRoleNames[] = $roleNameMap[$roleInt];
             } elseif (isset($allRoles[$roleInt])) {
-                // Nếu là số và có trong database (role mới được tạo) - dùng ID
                 $requiredRoleIds[] = $roleInt;
                 $requiredRoleNames[] = $allRoles[$roleInt];
             } else {
-                // Nếu không phải số, coi như là tên role trực tiếp
                 $requiredRoleNames[] = $role;
             }
         }
-            
-        // Kiểm tra role thông qua RBAC (roles relationship) trước
-        $hasAccess = false;
         
         // Kiểm tra bằng role ID (cho role mới từ database)
         if (!empty($requiredRoleIds)) {
@@ -80,15 +89,6 @@ class CheckRole
                         break;
                     }
                 }
-        }
-        
-        // Fallback: Nếu không tìm thấy trong RBAC, kiểm tra trường role cũ (backward compatibility)
-        if (!$hasAccess && !empty($roles)) {
-            $requiredRoleInts = array_map('intval', $roles);
-            if (in_array($user->role, $requiredRoleInts)) {
-                $hasAccess = true;
-                // Tự động đồng bộ role từ trường role cũ sang RBAC (nếu chưa có)
-                $this->syncRoleToRBAC($user, $user->role);
             }
         }
         

@@ -316,18 +316,7 @@
                                                             <i class="las la-eye"></i>
                                                         </button>
                                                     </div>
-                                                    <div class="delete">
-                                                        <form action="{{ route('admin.reviews.destroy', $review->id) }}" 
-                                                              method="POST" 
-                                                              style="display:inline;"
-                                                              onsubmit="return confirm('Bạn chắc chắn muốn xóa đánh giá này?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
+                                                    {{-- Không cho phép xóa đánh giá - chỉ có thể ẩn/hiện --}}
                                                 </div>
                                             </td>
 

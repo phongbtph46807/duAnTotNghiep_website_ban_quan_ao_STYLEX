@@ -4,128 +4,12 @@ namespace App\Services;
 
 use App\Models\WarehouseStock;
 use App\Models\InventoryLog;
-use App\Models\StockInRequest;
-use App\Models\StockOutRequest;
 use App\Models\TransferRequest;
-use App\Models\CountRequest;
-use App\Models\DefectAssessment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class InventoryService
 {
-    protected static $notificationService;
-
-    protected static function getNotificationService()
-    {
-        if (!self::$notificationService) {
-            self::$notificationService = app(NotificationService::class);
-        }
-        return self::$notificationService;
-    }
-    public static function confirmStockIn(int $requestId): void
-    {
-        DB::transaction(function () use ($requestId) {
-            $request = StockInRequest::findOrFail($requestId);
-            
-            if ($request->status !== 'QC_PASSED') {
-                throw new \Exception('Chi co the xac nhan nhap kho khi QC da pass');
-            }
-
-            $qcPassedQty = $request->qc_passed_qty;
-            $qcFailedQty = $request->qc_failed_qty;
-
-            $stock = WarehouseStock::where('warehouse_id', $request->warehouse_id)
-                ->where('variant_id', $request->variant_id)
-                ->firstOrFail();
-
-            // Chuyển từ QUARANTINE sang AVAILABLE (hàng QC pass) và DAMAGED (hàng QC fail)
-            $stock->update([
-                'quarantine' => $stock->quarantine - $request->quantity,
-                'available' => $stock->available + $qcPassedQty,
-                'damaged' => $stock->damaged + $qcFailedQty,
-            ]);
-
-            $request->update(['status' => 'CONFIRMED']);
-
-            // Ghi log cho hàng QC pass
-            if ($qcPassedQty > 0) {
-                InventoryLog::create([
-                    'warehouse_id' => $request->warehouse_id,
-                    'variant_id' => $request->variant_id,
-                    'action' => 'IN',
-                    'quantity_before' => $stock->available - $qcPassedQty,
-                    'quantity_change' => $qcPassedQty,
-                    'quantity_after' => $stock->available,
-                    'reference_type' => 'stock_in',
-                    'reference_id' => $requestId,
-                    'user_id' => Auth::id(),
-                    'notes' => "QC Pass - Chuyển {$qcPassedQty} từ QUARANTINE sang AVAILABLE - Lô {$request->batch_number}",
-                ]);
-            }
-            
-            // Ghi log cho hàng QC fail
-            if ($qcFailedQty > 0) {
-                InventoryLog::create([
-                    'warehouse_id' => $request->warehouse_id,
-                    'variant_id' => $request->variant_id,
-                    'action' => 'ADJUSTMENT',
-                    'quantity_before' => $stock->damaged - $qcFailedQty,
-                    'quantity_change' => $qcFailedQty,
-                    'quantity_after' => $stock->damaged,
-                    'reference_type' => 'stock_in',
-                    'reference_id' => $requestId,
-                    'user_id' => Auth::id(),
-                    'notes' => "QC Fail - Chuyển {$qcFailedQty} từ QUARANTINE sang DAMAGED - Lô {$request->batch_number}",
-                ]);
-            }
-        });
-    }
-
-    public static function confirmStockOut(int $requestId): void
-    {
-        DB::transaction(function () use ($requestId) {
-            $request = StockOutRequest::findOrFail($requestId);
-            
-            if ($request->status !== 'QC_PASSED') {
-                throw new \Exception('Chi co the xac nhan xuat kho khi QC da pass');
-            }
-
-            $quantity = $request->qc_passed_qty;
-            $stock = WarehouseStock::where('warehouse_id', $request->warehouse_id)
-                ->where('variant_id', $request->variant_id)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$stock || $stock->reserved < $quantity) {
-                throw new \Exception('Loi reserved. Khong the xuat kho');
-            }
-
-            $quantityBefore = $stock->on_hand;
-            
-            // Trừ từ on_hand và reserved (đã reserve từ lúc tạo phiếu)
-            $stock->update([
-                'on_hand' => $stock->on_hand - $quantity,
-                'reserved' => $stock->reserved - $quantity,
-            ]);
-
-            $request->update(['status' => 'CONFIRMED']);
-
-            InventoryLog::create([
-                'warehouse_id' => $request->warehouse_id,
-                'variant_id' => $request->variant_id,
-                'action' => 'OUT',
-                'quantity_before' => $quantityBefore,
-                'quantity_change' => -$quantity,
-                'quantity_after' => $stock->on_hand,
-                'reference_type' => 'stock_out',
-                'reference_id' => $requestId,
-                'user_id' => Auth::id(),
-                'notes' => "Xuat kho - Lo {$request->batch_number}",
-            ]);
-        });
-    }
-
     public static function confirmTransferOut(int $requestId): void
     {
         DB::transaction(function () use ($requestId) {
@@ -137,31 +21,36 @@ class InventoryService
 
             $stock = WarehouseStock::where('warehouse_id', $request->from_warehouse_id)
                 ->where('variant_id', $request->variant_id)
+                ->where('batch_number', $request->batch_number)
+                ->lockForUpdate()
                 ->first();
 
-            if (!$stock || $stock->available < $request->quantity) {
-                throw new \Exception('Khong du ton kho de chuyen');
+            if (!$stock) {
+                throw new \Exception('Khong tim thay lo hang trong kho');
             }
 
-            $quantityBefore = $stock->on_hand;
+            if ($stock->available < $request->quantity) {
+                throw new \Exception('Khong du ton kho. Co san: ' . $stock->available);
+            }
+
             $stock->update([
-                'on_hand' => $stock->on_hand - $request->quantity,
                 'available' => $stock->available - $request->quantity,
+                'on_hand' => $stock->on_hand - $request->quantity,
             ]);
 
-            $request->update(['status' => 'OUT_CONFIRMED']);
+            $request->update(['status' => 'OUT_CONFIRMED', 'out_confirmed_by' => Auth::id()]);
 
             InventoryLog::create([
                 'warehouse_id' => $request->from_warehouse_id,
                 'variant_id' => $request->variant_id,
                 'action' => 'TRANSFER',
-                'quantity_before' => $quantityBefore,
+                'quantity_before' => $stock->on_hand + $request->quantity,
                 'quantity_change' => -$request->quantity,
                 'quantity_after' => $stock->on_hand,
                 'reference_type' => 'transfer',
                 'reference_id' => $requestId,
                 'user_id' => Auth::id(),
-                'notes' => "Xuat tu kho {$request->from_warehouse_id}",
+                'notes' => "Xuat chuyen kho - Lo {$request->batch_number}",
             ]);
         });
     }
@@ -176,7 +65,11 @@ class InventoryService
             }
 
             $toStock = WarehouseStock::firstOrCreate(
-                ['warehouse_id' => $request->to_warehouse_id, 'variant_id' => $request->variant_id],
+                [
+                    'warehouse_id' => $request->to_warehouse_id,
+                    'variant_id' => $request->variant_id,
+                    'batch_number' => $request->batch_number
+                ],
                 [
                     'on_hand' => 0,
                     'available' => 0,
@@ -186,153 +79,78 @@ class InventoryService
                 ]
             );
 
-            $quantityBefore = $toStock->on_hand;
             $toStock->update([
                 'on_hand' => $toStock->on_hand + $request->quantity,
-                'available' => $toStock->available + $request->quantity,
+                'quarantine' => $toStock->quarantine + $request->quantity,
             ]);
 
-            $request->update(['status' => 'COMPLETED']);
+            $request->update(['status' => 'QC_CHECKING', 'in_confirmed_by' => Auth::id()]);
 
             InventoryLog::create([
                 'warehouse_id' => $request->to_warehouse_id,
                 'variant_id' => $request->variant_id,
                 'action' => 'TRANSFER',
-                'quantity_before' => $quantityBefore,
+                'quantity_before' => $toStock->on_hand - $request->quantity,
                 'quantity_change' => $request->quantity,
                 'quantity_after' => $toStock->on_hand,
                 'reference_type' => 'transfer',
                 'reference_id' => $requestId,
                 'user_id' => Auth::id(),
-                'notes' => "Nhap vao kho {$request->to_warehouse_id}",
+                'notes' => "Nhap chuyen kho vao QUARANTINE - Lo {$request->batch_number}",
             ]);
         });
     }
 
-    public static function createCount(int $warehouseId, int $variantId): CountRequest
+    public static function confirmTransferQC(int $requestId, int $qcPassedQty, int $qcFailedQty): void
     {
-        $stock = WarehouseStock::firstOrCreate(
-            ['warehouse_id' => $warehouseId, 'variant_id' => $variantId],
-            [
-                'on_hand' => 0,
-                'available' => 0,
-                'reserved' => 0,
-                'quarantine' => 0,
-                'damaged' => 0
-            ]
-        );
-
-        return CountRequest::create([
-            'warehouse_id' => $warehouseId,
-            'variant_id' => $variantId,
-            'system_qty' => $stock->on_hand,
-            'status' => 'PENDING',
-            'created_by' => Auth::id(),
-        ]);
-    }
-
-    public static function confirmCount(int $requestId, ?int $availableQty, ?int $reservedQty, ?int $quarantineQty, ?int $damagedQty, ?string $notes = null): void
-    {
-        DB::transaction(function () use ($requestId, $availableQty, $reservedQty, $quarantineQty, $damagedQty, $notes) {
-            $request = CountRequest::findOrFail($requestId);
+        DB::transaction(function () use ($requestId, $qcPassedQty, $qcFailedQty) {
+            $request = TransferRequest::findOrFail($requestId);
             
-            if ($request->status !== 'PENDING') {
-                throw new \Exception('Chi co the dem kho khi o trang thai PENDING');
+            if ($request->status !== 'QC_CHECKING') {
+                throw new \Exception('Chi co the QC chuyen kho khi o trang thai QC_CHECKING');
             }
 
-            $availableQty = $availableQty ?? 0;
-            $reservedQty = $reservedQty ?? 0;
-            $quarantineQty = $quarantineQty ?? 0;
-            $damagedQty = $damagedQty ?? 0;
-            $physicalQty = $availableQty + $reservedQty + $quarantineQty + $damagedQty;
-            $difference = $physicalQty - $request->system_qty;
-
-            $request->update([
-                'available_qty' => $availableQty,
-                'reserved_qty' => $reservedQty,
-                'quarantine_qty' => $quarantineQty,
-                'damaged_qty' => $damagedQty,
-                'physical_qty' => $physicalQty,
-                'difference' => $difference,
-                'status' => 'COUNTED',
-                'counted_by' => Auth::id(),
-                'notes' => $notes,
-            ]);
-        });
-    }
-
-    public static function confirmCountAdjustment(int $requestId, int $availableQty, int $reservedQty, int $quarantineQty, int $damagedQty, ?string $notes = null): void
-    {
-        DB::transaction(function () use ($requestId, $availableQty, $reservedQty, $quarantineQty, $damagedQty, $notes) {
-            $request = CountRequest::findOrFail($requestId);
-            
-            if ($request->status !== 'COUNTED') {
-                throw new \Exception('Chi co the xac nhan dieu chinh kho khi da dem xong');
+            if ($qcPassedQty + $qcFailedQty !== $request->quantity) {
+                throw new \Exception('Tong so luong QC khong khop. Yeu cau: ' . $request->quantity . ', Nhan: ' . ($qcPassedQty + $qcFailedQty));
             }
 
-            $stock = WarehouseStock::firstOrCreate(
-                ['warehouse_id' => $request->warehouse_id, 'variant_id' => $request->variant_id],
-                [
-                    'on_hand' => 0,
-                    'available' => 0,
-                    'reserved' => 0,
-                    'quarantine' => 0,
-                    'damaged' => 0
-                ]
-            );
+            $stock = WarehouseStock::where('warehouse_id', $request->to_warehouse_id)
+                ->where('variant_id', $request->variant_id)
+                ->where('batch_number', $request->batch_number)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$stock || $stock->quarantine < $request->quantity) {
+                throw new \Exception('Khong tim thay lo hang hoac so luong quarantine khong khop');
+            }
 
             $quantityBefore = $stock->on_hand;
-            $newTotal = $availableQty + $reservedQty + $quarantineQty + $damagedQty;
-            
             $stock->update([
-                'on_hand' => $newTotal,
-                'available' => $availableQty,
-                'reserved' => $reservedQty,
-                'quarantine' => $quarantineQty,
-                'damaged' => $damagedQty,
+                'quarantine' => $stock->quarantine - $request->quantity,
+                'available' => $stock->available + $qcPassedQty,
+                'damaged' => $stock->damaged + $qcFailedQty,
+                'on_hand' => $stock->on_hand - $qcFailedQty,
             ]);
 
             $request->update([
-                'available_qty' => $availableQty,
-                'reserved_qty' => $reservedQty,
-                'quarantine_qty' => $quarantineQty,
-                'damaged_qty' => $damagedQty,
-                'physical_qty' => $newTotal,
-                'status' => 'CONFIRMED',
-                'confirmed_by' => Auth::id(),
-                'notes' => $notes,
+                'status' => 'COMPLETED',
+                'qc_confirmed_by' => Auth::id()
             ]);
 
-            InventoryLog::create([
-                'warehouse_id' => $request->warehouse_id,
-                'variant_id' => $request->variant_id,
-                'action' => 'ADJUSTMENT',
-                'quantity_before' => $quantityBefore,
-                'quantity_change' => $newTotal - $quantityBefore,
-                'quantity_after' => $newTotal,
-                'reference_type' => 'count',
-                'reference_id' => $requestId,
-                'user_id' => Auth::id(),
-                'notes' => "Kiem ke: {$request->system_qty} -> {$newTotal}",
-            ]);
-
-            $discrepancy = $newTotal - $quantityBefore;
-            if (abs($discrepancy) >= 5) {
-                self::getNotificationService()->notifyCountDiscrepancy($request, $discrepancy);
-            }
-
-            if ($damagedQty > 0) {
-                $defect = DefectAssessment::create([
-                    'warehouse_id' => $request->warehouse_id,
+            // Chỉ ghi log nếu có hàng fail
+            if ($qcFailedQty > 0) {
+                InventoryLog::create([
+                    'warehouse_id' => $request->to_warehouse_id,
                     'variant_id' => $request->variant_id,
-                    'quantity' => $damagedQty,
-                    'defect_level' => 'MEDIUM',
-                    'description' => "Phát hiện từ kiểm kê - {$notes}",
-                    'status' => 'PENDING',
-                    'created_by' => Auth::id(),
+                    'action' => 'ADJUSTMENT',
+                    'quantity_before' => $quantityBefore,
+                    'quantity_change' => -$qcFailedQty,
+                    'quantity_after' => $stock->on_hand,
+                    'reference_type' => 'transfer_qc',
+                    'reference_id' => $requestId,
+                    'user_id' => Auth::id(),
+                    'notes' => "QC chuyen kho - Fail: {$qcFailedQty}",
                 ]);
-                
-                self::getNotificationService()->notifyDefectFound($defect, $damagedQty);
             }
         });
     }

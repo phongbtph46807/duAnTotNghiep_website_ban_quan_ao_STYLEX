@@ -67,17 +67,17 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
+                        <label class="form-label">Vị Trí Lô Hàng</label>
+                        <input type="text" name="location" class="form-control @error('location') is-invalid @enderror" 
+                               value="{{ old('location') }}" placeholder="Ví dụ: Kệ A1, Ngăn 5">
+                        @error('location') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
                         <label class="form-label">Giá Nhập <span class="text-danger">*</span></label>
                         <input type="number" name="cost_price" id="cost_price" class="form-control @error('cost_price') is-invalid @enderror" 
                                value="{{ old('cost_price') }}" min="0" step="0.01">
                         @error('cost_price') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Ngày Nhận Hàng</label>
-                        <input type="date" name="received_date" class="form-control @error('received_date') is-invalid @enderror" 
-                               value="{{ old('received_date', date('Y-m-d')) }}">
-                        @error('received_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
 

@@ -33,15 +33,15 @@
         </div>
 
         <div class="col-lg-2 col-md-4 col-sm-6">
-            <a href="{{ route('admin.inventory.stock-out.index') }}" class="text-decoration-none">
+            <a href="{{ route('admin.orders.fulfillment.index') }}" class="text-decoration-none">
                 <div class="card border-0 h-100 shadow-sm hover-lift" style="transition: all 0.3s ease;">
                     <div class="card-body text-center py-3">
                         <div class="mb-2">
-                            <i class="bx bx-upload" style="font-size: 2rem; color: #dc3545;"></i>
+                            <i class="bx bx-package" style="font-size: 2rem; color: #6f42c1;"></i>
                         </div>
-                        <h6 class="mb-1 fw-semibold">Xuất Kho</h6>
-                        <h4 class="mb-0 text-danger">{{ \App\Models\StockOutRequest::where('status', 'PENDING')->count() }}</h4>
-                        <small class="text-muted">Chờ xác nhận</small>
+                        <h6 class="mb-1 fw-semibold">Đóng Gói</h6>
+                        <h4 class="mb-0 text-primary">{{ \App\Models\Order::whereHas('picking', function($q) { $q->where('status', 'CONFIRMED'); })->count() }}</h4>
+                        <small class="text-muted">Chờ đóng gói</small>
                     </div>
                 </div>
             </a>
@@ -461,8 +461,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>
 

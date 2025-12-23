@@ -85,7 +85,7 @@ class CartController extends Controller
 
     /**
      * Group cart items by product_id + size + color
-     * 
+     *
      * @param \Illuminate\Database\Eloquent\Collection $cartItems
      * @return array
      */
@@ -102,10 +102,10 @@ class CartController extends Controller
             $color = $variant && $variant->color ? $variant->color->name : null;
             $texture = $variant && $variant->texture ? $variant->texture->name : null;
             $price = $this->resolveItemPrice($product, $variant);
-            
+
             // Create a key for grouping: product_id + size + color (mỗi màu là 1 item riêng)
             $groupKey = $product->id . '_' . ($size ?? 'no_size') . '_' . ($color ?? 'no_color');
-            
+
             if (!isset($groupedItems[$groupKey])) {
                 $groupedItems[$groupKey] = [
                     'product' => $product,
@@ -115,12 +115,12 @@ class CartController extends Controller
                     'items' => [],
                 ];
             }
-            
+
             // Add texture to the group if it exists
             if ($texture && !in_array($texture, $groupedItems[$groupKey]['textures'])) {
                 $groupedItems[$groupKey]['textures'][] = $texture;
             }
-            
+
             // Store individual item data
             $itemData = [
                 'id' => $item->id,
@@ -130,7 +130,7 @@ class CartController extends Controller
                 'color' => $color,
                 'line_total' => $price * $item->quantity,
             ];
-            
+
             $groupedItems[$groupKey]['items'][] = $itemData;
             $total += $price * $item->quantity;
             $itemCount += $item->quantity;
@@ -149,27 +149,27 @@ class CartController extends Controller
         if (!$sizeName && !$colorName && !$textureName) {
             return null;
         }
-        
+
         // Lấy tất cả variants của sản phẩm với relationships
         $variants = ProductVariant::where('product_id', $productId)
             ->with(['size', 'color', 'texture'])
             ->get();
-        
+
         if ($variants->isEmpty()) {
             return null;
         }
-        
+
         // Normalize input values
         $sizeName = $sizeName ? trim($sizeName) : null;
         $colorName = $colorName ? trim($colorName) : null;
         $textureName = $textureName ? trim($textureName) : null;
-        
+
         // Tìm variant khớp: chỉ tìm dựa trên size + color (bỏ texture vì texture không cho chọn)
         // Phải khớp CHÍNH XÁC size và color nếu đã được cung cấp
         foreach ($variants as $variant) {
             $vSize = $variant->size ? trim($variant->size->name) : '';
             $vColor = $variant->color ? trim($variant->color->name) : '';
-            
+
             // Nếu user đã chọn size, variant PHẢI có size và khớp CHÍNH XÁC
             if ($sizeName && $sizeName !== '') {
                 if ($vSize === '' || $sizeName !== $vSize) {
@@ -182,7 +182,7 @@ class CartController extends Controller
                     continue; // Variant có size nhưng user không chọn, không khớp
                 }
             }
-            
+
             // Nếu user đã chọn color, variant PHẢI có color và khớp CHÍNH XÁC
             if ($colorName && $colorName !== '') {
                 if ($vColor === '' || $colorName !== $vColor) {
@@ -195,11 +195,11 @@ class CartController extends Controller
                     continue; // Variant có color nhưng user không chọn, không khớp
                 }
             }
-            
+
             // Nếu đến đây thì đã khớp size và color
             return $variant;
         }
-        
+
         return null;
     }
 
@@ -220,7 +220,7 @@ class CartController extends Controller
         $groupedItems = $grouped['groupedItems'];
         $total = $grouped['total'];
         $itemCount = $grouped['itemCount'];
-        
+
         // Convert grouped items to display format
         $cartData = [];
         foreach ($groupedItems as $group) {
@@ -228,20 +228,20 @@ class CartController extends Controller
             $totalLine = 0;
             $minPrice = PHP_INT_MAX;
             $maxPrice = 0;
-            
+
             foreach ($group['items'] as $item) {
                 $totalQty += $item['quantity'];
                 $totalLine += $item['line_total'];
                 if ($item['price'] < $minPrice) $minPrice = $item['price'];
                 if ($item['price'] > $maxPrice) $maxPrice = $item['price'];
             }
-            
+
             $firstItem = $group['items'][0];
             $avgPrice = $totalQty > 0 ? $totalLine / $totalQty : $firstItem['price'];
-            
+
             // For mini cart, we'll use the first variant for display
             $firstVariant = ProductVariant::with(['size', 'color', 'texture'])->find($firstItem['variant_id']);
-            
+
             $cartData[] = [
                 'id' => $firstItem['id'],
                 'ids' => array_column($group['items'], 'id'),
@@ -281,14 +281,14 @@ class CartController extends Controller
             $grouped = $this->groupCartItems($cartItems);
             $total = $grouped['total'];
             $discountData = $this->voucherService->recalculateDiscount($total);
-            
+
             return response()->json([
                 'subtotal' => $total,
                 'discount' => $discountData['discount'],
                 'total' => $discountData['total']
             ]);
         }
-        
+
         $cartItems = $this->baseCartQuery()
             ->with([
                 'product.productImages',
@@ -305,7 +305,7 @@ class CartController extends Controller
         $grouped = $this->groupCartItems($cartItems);
         $groupedItems = $grouped['groupedItems'];
         $total = $grouped['total'];
-        
+
         // Convert grouped items to display format
         $cartData = [];
         foreach ($groupedItems as $group) {
@@ -313,24 +313,24 @@ class CartController extends Controller
             $totalLine = 0;
             $minPrice = PHP_INT_MAX;
             $maxPrice = 0;
-            
+
             foreach ($group['items'] as $item) {
                 $totalQty += $item['quantity'];
                 $totalLine += $item['line_total'];
                 if ($item['price'] < $minPrice) $minPrice = $item['price'];
                 if ($item['price'] > $maxPrice) $maxPrice = $item['price'];
             }
-            
+
             $firstItem = $group['items'][0];
             $avgPrice = $totalQty > 0 ? $totalLine / $totalQty : $firstItem['price'];
-            
+
             // Get ALL textures from ALL variants of this product (not just from cart items)
             $allTextures = [];
             $productVariants = ProductVariant::where('product_id', $group['product']->id)
                 ->whereHas('texture')
                 ->with('texture')
                 ->get();
-            
+
             foreach ($productVariants as $pv) {
                 if ($pv->texture && $pv->texture->name) {
                     $textureName = $pv->texture->name;
@@ -339,10 +339,20 @@ class CartController extends Controller
                     }
                 }
             }
-            
+
             // Merge with textures from cart items (in case there are textures not in variants)
             $allTextures = array_unique(array_merge($allTextures, $group['textures'] ?? []));
-            
+
+            // Lấy tồn kho từ variant đầu tiên (tất cả variants trong group có cùng tồn kho)
+            $firstVariantId = $firstItem['variant_id'] ?? null;
+            $availableStock = 0;
+            if ($firstVariantId) {
+                $firstVariant = ProductVariant::find($firstVariantId);
+                if ($firstVariant) {
+                    $availableStock = $firstVariant->getTotalAvailableStock();
+                }
+            }
+
             $cartData[] = [
                 'id' => $firstItem['id'],
                 'ids' => array_column($group['items'], 'id'),
@@ -358,6 +368,7 @@ class CartController extends Controller
                 'image_url' => $group['product']->default_image_url,
                 'line_total' => $totalLine,
                 'items' => $group['items'],
+                'available_stock' => $availableStock, // Thêm tồn kho vào cart data
             ];
         }
 
@@ -367,7 +378,7 @@ class CartController extends Controller
 
         // Get available vouchers for user
         $availableVouchers = $this->getAvailableVouchers($total);
-        
+
         // Get all active shipping carriers
         $shippingCarriers = ShippingCarrier::where('active', true)
             ->orderBy('name', 'asc')
@@ -383,12 +394,12 @@ class CartController extends Controller
             'shippingCarriers' => $shippingCarriers
         ]);
     }
-    
+
     /** Get available vouchers for current user */
     private function getAvailableVouchers(float $subtotal): array
     {
         $now = now();
-        
+
         // Get all active vouchers that are valid
         $vouchers = Voucher::where('is_active', true)
             ->where(function($query) use ($now) {
@@ -409,7 +420,7 @@ class CartController extends Controller
             })
             ->orderBy('value', 'desc')
             ->get();
-        
+
         $availableVouchers = [];
         foreach ($vouchers as $voucher) {
             $discount = $this->voucherService->calculateDiscount($voucher, $subtotal);
@@ -422,12 +433,12 @@ class CartController extends Controller
                 'max_discount_amount' => $voucher->max_discount_amount,
                 'min_order_amount' => $voucher->min_order_amount,
                 'discount_amount' => $discount,
-                'discount_display' => $voucher->type === 'percent' 
-                    ? $voucher->value . '%' 
+                'discount_display' => $voucher->type === 'percent'
+                    ? $voucher->value . '%'
                     : number_format($voucher->value, 0, ',', '.') . ' ₫'
             ];
         }
-        
+
         return $availableVouchers;
     }
 
@@ -443,20 +454,20 @@ class CartController extends Controller
         Log::info('Texture Name: ' . ($request->input('texture_name', '') ?: 'empty'));
         Log::info('Quantity: ' . ($request->quantity ?? 1));
         Log::info('All Request Data: ' . json_encode($request->all()));
-        
+
         $product = Product::findOrFail($request->product_id);
         $variant = null;
-        
+
         // Get attribute values from request
         $sizeNameIn = trim((string) $request->input('size_name', ''));
         $colorNameIn = trim((string) $request->input('color_name', ''));
         $textureNameIn = trim((string) $request->input('texture_name', ''));
-        
+
         // Nếu có size_name hoặc color_name, luôn tìm variant mới dựa trên attributes (không dùng variant_id cũ)
         // Điều này đảm bảo khi user chọn màu mới, nó sẽ tìm variant mới thay vì dùng variant_id cũ
         if (!empty($sizeNameIn) || !empty($colorNameIn) || !empty($textureNameIn)) {
             Log::info('Finding variant by attributes - Size: ' . $sizeNameIn . ', Color: ' . $colorNameIn . ', Texture: ' . $textureNameIn);
-            
+
             // Tìm variant dựa trên attributes
             $variant = $this->resolveVariantByAttributes(
                 (int) $request->product_id,
@@ -464,26 +475,26 @@ class CartController extends Controller
                 !empty($colorNameIn) ? $colorNameIn : null,
                 !empty($textureNameIn) ? $textureNameIn : null
             );
-            
+
             if ($variant) {
                 Log::info('Variant found by attributes - ID: ' . $variant->id . ', Size: ' . ($variant->size ? $variant->size->name : 'null') . ', Color: ' . ($variant->color ? $variant->color->name : 'null'));
             } else {
                 Log::warning('Variant NOT found by attributes');
             }
-            
+
             if (!$variant) {
                 // Nếu không tìm thấy variant, kiểm tra xem có variant nào không
                 $allVariants = ProductVariant::where('product_id', (int) $request->product_id)
                     ->with(['size', 'color', 'texture'])
                     ->get();
-                
+
                 // Log tất cả variants có sẵn để debug
                 Log::warning('Variant NOT found. Available variants for product ' . $request->product_id . ':');
                 foreach ($allVariants as $v) {
                     Log::warning('  - Variant ID: ' . $v->id . ', Size: ' . ($v->size ? $v->size->name : 'null') . ', Color: ' . ($v->color ? $v->color->name : 'null') . ', Texture: ' . ($v->texture ? $v->texture->name : 'null'));
                 }
                 Log::warning('  - Requested: Size=' . $sizeNameIn . ', Color=' . $colorNameIn . ', Texture=' . $textureNameIn);
-                
+
                 if ($allVariants->isEmpty()) {
                     $variant = null;
                 } else {
@@ -517,37 +528,62 @@ class CartController extends Controller
             }
             return back()->with('error', 'Không tìm thấy biến thể phù hợp.')->withInput();
         }
-        
+
         $variantId = $variant->id;
 
         $owner = $this->getOwnerKeys();
-        
+
         Log::info('Final Variant ID: ' . $variantId);
         Log::info('Owner: User ID=' . ($owner['user_id'] ?? 'null') . ', Session ID=' . ($owner['session_id'] ?? 'null'));
-        
+
         // Kiểm tra xem đã có variant này chưa
         $existingItem = $this->baseCartQuery()
             ->where('product_id', $request->product_id)
             ->where('variant_id', $variantId)
             ->first();
 
+        // Kiểm tra tồn kho trước khi thêm vào giỏ hàng
+        $availableStock = $variant->getTotalAvailableStock();
+        $requestedQty = (int) $request->quantity;
+        
         if ($existingItem) {
-            Log::info('Existing item found - ID: ' . $existingItem->id . ', Current Qty: ' . $existingItem->quantity . ', Adding: ' . $request->quantity);
-            // Nếu đã có variant này, tăng quantity
-            $existingItem->quantity += (int) $request->quantity;
+            Log::info('Existing item found - ID: ' . $existingItem->id . ', Current Qty: ' . $existingItem->quantity . ', Adding: ' . $requestedQty);
+            // Tổng số lượng sau khi thêm
+            $totalQty = $existingItem->quantity + $requestedQty;
+            
+            // Kiểm tra tồn kho và điều chỉnh nếu cần
+            $adjusted = false;
+            if ($totalQty > $availableStock) {
+                // Điều chỉnh về số lượng tối đa
+                $totalQty = $availableStock;
+                $adjusted = true;
+            }
+            
+            // Cập nhật quantity
+            $existingItem->quantity = $totalQty;
             $existingItem->save();
             Log::info('Updated Qty: ' . $existingItem->quantity);
         } else {
-            Log::info('Creating new cart item - Product ID: ' . $request->product_id . ', Variant ID: ' . $variantId . ', Qty: ' . $request->quantity);
-            // Nếu chưa có variant này, tạo mới
+            Log::info('Creating new cart item - Product ID: ' . $request->product_id . ', Variant ID: ' . $variantId . ', Qty: ' . $requestedQty);
+            
+            // Kiểm tra tồn kho và điều chỉnh nếu cần
+            $finalQty = $requestedQty;
+            $adjusted = false;
+            if ($requestedQty > $availableStock) {
+                // Điều chỉnh về số lượng tối đa
+                $finalQty = $availableStock;
+                $adjusted = true;
+            }
+            
+            // Tạo mới với số lượng đã điều chỉnh
             $newCartItem = Cart::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
                 'product_id' => $request->product_id,
                 'variant_id' => $variantId,
-                'quantity' => (int) $request->quantity,
+                'quantity' => $finalQty,
             ]);
-            Log::info('New cart item created - ID: ' . $newCartItem->id);
+            Log::info('New cart item created - ID: ' . $newCartItem->id . ', Qty: ' . $finalQty);
         }
 
         if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
@@ -558,7 +594,8 @@ class CartController extends Controller
                 ->with(['product', 'variant.size', 'variant.color', 'variant.texture'])
                 ->first();
             $price = $this->resolveItemPrice($product, $variant);
-            return response()->json([
+            
+            $response = [
                 'success' => true,
                 'message' => 'Đã thêm vào giỏ hàng',
                 'cart_count' => (int) $count,
@@ -574,7 +611,23 @@ class CartController extends Controller
                     'quantity' => (int) $item->quantity,
                     'price' => $price,
                 ] : null,
-            ]);
+            ];
+            
+            // Thêm thông báo nếu số lượng đã được điều chỉnh
+            if (isset($adjusted) && $adjusted) {
+                $finalQty = $item ? $item->quantity : ($existingItem ? $existingItem->quantity : $finalQty);
+                $response['message'] = 'Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' . $finalQty . ' sản phẩm.';
+                $response['adjusted'] = true;
+                $response['available_stock'] = $availableStock;
+            }
+            
+            return response()->json($response);
+        }
+
+        // Redirect với thông báo nếu có điều chỉnh
+        if (isset($adjusted) && $adjusted) {
+            $finalQty = $existingItem ? $existingItem->quantity : ($newCartItem ? $newCartItem->quantity : $finalQty);
+            return redirect()->route('client.cart.index')->with('warning', 'Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' . $finalQty . ' sản phẩm.');
         }
 
         return redirect()->route('client.cart.index')->with('success', 'Đã thêm vào giỏ hàng');
@@ -585,11 +638,11 @@ class CartController extends Controller
     {
         $owner = $this->getOwnerKeys();
         $cart = $this->baseCartQuery()->where('id', $id)->first();
-        
+
         if ($cart) {
             $cart->delete();
         }
-        
+
         $count = (int) $this->baseCartQuery()->sum('quantity');
         return response()->json(['success' => true, 'cart_count' => $count]);
     }
@@ -599,20 +652,22 @@ class CartController extends Controller
         $qty = max(1, (int)($request->input('quantity', 1)));
         $owner = $this->getOwnerKeys();
         $item = $this->baseCartQuery()->where('id', $id)->with('variant')->first();
-        
-        if ($item) {
-            // Nếu có variant gắn với cart item thì giới hạn số lượng theo tồn kho của variant
-            $maxQty = $item->variant && isset($item->variant->quantity)
-                ? max(0, (int) $item->variant->quantity)
-                : null;
 
+        if ($item) {
+            // Lấy tồn kho từ warehouse stocks nếu có variant
+            $maxQty = null;
+            if ($item->variant) {
+                $maxQty = $item->variant->getTotalAvailableStock();
+            }
+
+            // Kiểm tra và điều chỉnh số lượng nếu vượt quá tồn kho
             if ($maxQty !== null && $qty > $maxQty) {
                 $qty = $maxQty;
             }
 
             $item->quantity = $qty;
             $item->save();
-            
+
             // If AJAX request, return updated cart data
             if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
                 // Recalculate totals
@@ -628,13 +683,13 @@ class CartController extends Controller
                         'variant.texture'
                     ])
                     ->get();
-                
+
                 $grouped = $this->groupCartItems($cartItems);
                 $total = $grouped['total'];
-                
+
                 // Calculate discount
                 $discountData = $this->voucherService->recalculateDiscount($total);
-                
+
                 $response = [
                     'success' => true,
                     'subtotal' => $total,
@@ -646,18 +701,26 @@ class CartController extends Controller
                 if ($maxQty !== null) {
                     $response['max_quantity'] = $maxQty;
                     $response['current_quantity'] = $qty;
+                    $response['available_stock'] = $maxQty;
+                    
+                    // Nếu số lượng đã được điều chỉnh, thêm thông báo
+                    $requestedQty = max(1, (int)($request->input('quantity', 1)));
+                    if ($requestedQty > $maxQty) {
+                        $response['message'] = 'Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' . $maxQty . ' sản phẩm.';
+                        $response['adjusted'] = true;
+                    }
                 }
 
                 return response()->json($response);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'current_quantity' => $qty,
                 'max_quantity' => $maxQty,
             ]);
         }
-        
+
         return response()->json(['success' => false], 404);
     }
 
@@ -691,7 +754,7 @@ class CartController extends Controller
             'shipping_fee' => (float) ($carrier->fee ?? 0),
         ]);
     }
-    
+
     /** Get cart table HTML (for AJAX reload) */
     public function getCartTable(Request $request)
     {
@@ -711,7 +774,7 @@ class CartController extends Controller
         $grouped = $this->groupCartItems($cartItems);
         $groupedItems = $grouped['groupedItems'];
         $total = $grouped['total'];
-        
+
         // Convert grouped items to display format
         $cartData = [];
         foreach ($groupedItems as $group) {
@@ -719,24 +782,24 @@ class CartController extends Controller
             $totalLine = 0;
             $minPrice = PHP_INT_MAX;
             $maxPrice = 0;
-            
+
             foreach ($group['items'] as $item) {
                 $totalQty += $item['quantity'];
                 $totalLine += $item['line_total'];
                 if ($item['price'] < $minPrice) $minPrice = $item['price'];
                 if ($item['price'] > $maxPrice) $maxPrice = $item['price'];
             }
-            
+
             $firstItem = $group['items'][0];
             $avgPrice = $totalQty > 0 ? $totalLine / $totalQty : $firstItem['price'];
-            
+
             // Get ALL textures from ALL variants of this product (not just from cart items)
             $allTextures = [];
             $productVariants = ProductVariant::where('product_id', $group['product']->id)
                 ->whereHas('texture')
                 ->with('texture')
                 ->get();
-            
+
             foreach ($productVariants as $pv) {
                 if ($pv->texture && $pv->texture->name) {
                     $textureName = $pv->texture->name;
@@ -745,10 +808,20 @@ class CartController extends Controller
                     }
                 }
             }
-            
+
             // Merge with textures from cart items (in case there are textures not in variants)
             $allTextures = array_unique(array_merge($allTextures, $group['textures'] ?? []));
-            
+
+            // Lấy tồn kho từ variant đầu tiên (tất cả variants trong group có cùng tồn kho)
+            $firstVariantId = $firstItem['variant_id'] ?? null;
+            $availableStock = 0;
+            if ($firstVariantId) {
+                $firstVariant = ProductVariant::find($firstVariantId);
+                if ($firstVariant) {
+                    $availableStock = $firstVariant->getTotalAvailableStock();
+                }
+            }
+
             $cartData[] = [
                 'id' => $firstItem['id'],
                 'ids' => array_column($group['items'], 'id'),
@@ -764,6 +837,7 @@ class CartController extends Controller
                 'image_url' => $group['product']->default_image_url,
                 'line_total' => $totalLine,
                 'items' => $group['items'],
+                'available_stock' => $availableStock, // Thêm tồn kho vào cart data
             ];
         }
 
@@ -773,7 +847,7 @@ class CartController extends Controller
 
         // Get available vouchers for user
         $availableVouchers = $this->getAvailableVouchers($total);
-        
+
         // Get all active shipping carriers
         $shippingCarriers = ShippingCarrier::where('active', true)
             ->orderBy('name', 'asc')
@@ -798,7 +872,7 @@ class CartController extends Controller
 
         // Validate voucher
         $validation = $this->voucherService->validateVoucher($code, $subtotal);
-        
+
         if (!$validation['valid']) {
             return response()->json([
                 'success' => false,

@@ -44,10 +44,11 @@
             <table class="table table-hover mb-0 table-sm">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 12%">SKU</th>
-                        <th style="width: 50%">Sản Phẩm</th>
-                        <th style="width: 18%" class="text-center">Tồn Kho</th>
-                        <th style="width: 20%" class="text-center">Hành Động</th>
+                        <th style="width: 10%">SKU</th>
+                        <th style="width: 35%">Sản Phẩm</th>
+                        <th style="width: 15%">Màu / Size</th>
+                        <th style="width: 15%" class="text-center">Tồn Kho</th>
+                        <th style="width: 15%" class="text-center">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,6 +68,16 @@
                                     <span class="text-truncate">{{ $variant->product->name }}</span>
                                 </div>
                             </td>
+                            <td>
+                                <small>
+                                    @if($variant->color)
+                                        <span class="badge bg-info">{{ $variant->color->name }}</span>
+                                    @endif
+                                    @if($variant->size)
+                                        <span class="badge bg-secondary">{{ $variant->size->name }}</span>
+                                    @endif
+                                </small>
+                            </td>
                             <td class="text-center">
                                 <span class="badge bg-{{ $variant->total_on_hand_stock > 10 ? 'success' : ($variant->total_on_hand_stock > 0 ? 'warning' : 'danger') }}">
                                     {{ number_format($variant->total_on_hand_stock) }}
@@ -80,7 +91,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-3">
+                            <td colspan="5" class="text-center text-muted py-3">
                                 <i class="bx bx-inbox"></i> Không có sản phẩm cảnh báo
                             </td>
                         </tr>

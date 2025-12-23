@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class CountRequest extends Model
 {
     protected $fillable = [
-        'warehouse_id', 'variant_id', 'system_qty', 'physical_qty', 'difference', 'status',
+        'warehouse_id', 'variant_id', 'batch_number', 'location', 'system_qty', 'physical_qty', 'difference', 'status',
         'available_qty', 'reserved_qty', 'quarantine_qty', 'damaged_qty', 'created_by', 'counted_by', 'confirmed_by', 'notes'
     ];
 

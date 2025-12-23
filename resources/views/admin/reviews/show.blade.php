@@ -131,14 +131,18 @@
                     <a href="{{ route('admin.reviews.index') }}" class="btn btn-secondary">
                         <i class="ri-arrow-left-line"></i> Quay lại
                     </a>
-                    <form action="{{ route('admin.reviews.destroy', $review->id) }}" 
+                    {{-- Không cho phép xóa đánh giá - chỉ có thể ẩn/hiện --}}
+                    <form action="{{ route('admin.reviews.toggleStatus', $review->id) }}" 
                           method="POST" 
-                          style="display:inline;"
-                          onsubmit="return confirm('Bạn chắc chắn muốn xóa đánh giá này?');">
+                          style="display:inline;">
                         @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="ri-delete-bin-line"></i> Xóa đánh giá
+                        @method('PATCH')
+                        <button type="submit" class="btn btn-{{ $review->status === 'public' ? 'warning' : 'success' }}">
+                            @if($review->status === 'public')
+                                <i class="ri-eye-off-line"></i> Ẩn đánh giá
+                            @else
+                                <i class="ri-eye-line"></i> Hiển thị đánh giá
+                            @endif
                         </button>
                     </form>
                 </div>

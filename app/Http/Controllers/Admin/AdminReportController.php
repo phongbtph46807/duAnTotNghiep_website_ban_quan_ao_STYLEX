@@ -26,7 +26,7 @@ class AdminReportController extends Controller
     private function getSalesReport($startDate, $endDate)
     {
         $orders = Order::whereBetween('created_at', [$startDate, $endDate])->get();
-        
+
         return [
             'total_revenue' => $orders->sum('total'),
             'total_orders' => $orders->count(),
@@ -66,7 +66,7 @@ class AdminReportController extends Controller
     private function getOrderStats($startDate, $endDate)
     {
         $orders = Order::whereBetween('created_at', [$startDate, $endDate])->get();
-        
+
         return [
             'pending' => $orders->where('status', 'pending')->count(),
             'processing' => $orders->where('status', 'processing')->count(),
@@ -81,11 +81,11 @@ class AdminReportController extends Controller
         $totalRevenue = Order::whereBetween('orders.created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->sum('total');
-        
+
         $shippingRevenue = Order::whereBetween('orders.created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->sum('shipping_fee');
-            
+
         // 2. CHI PHÍ HÀNG HÓA (COGS - Cost of Goods Sold)
         $productCost = OrderItem::whereBetween('order_items.created_at', [$startDate, $endDate])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
@@ -93,17 +93,17 @@ class AdminReportController extends Controller
             ->join('warehouse_stocks', 'product_variants.id', '=', 'warehouse_stocks.variant_id')
             ->where('orders.status', '!=', 'cancelled')
             ->sum(DB::raw('order_items.quantity * warehouse_stocks.cost_price'));
-        
+
         // 3. CHI PHÍ NHÂN VIÊN
         $salaryData = EmployeeSalary::whereBetween('employee_salaries.created_at', [$startDate, $endDate])
             ->selectRaw('SUM(base_salary) as total_base_salary, SUM(bonus) as total_bonus, SUM(deduction) as total_deduction')
             ->first();
-            
+
         $totalSalary = ($salaryData->total_base_salary ?? 0) + ($salaryData->total_bonus ?? 0) - ($salaryData->total_deduction ?? 0);
-        
+
         // 4. CHI PHÍ VẬN HÀNH (Giả định 5% doanh thu)
         $operatingCost = $totalRevenue * 0.05;
-        
+
         // 5. TÍNH TOÁN LỢI NHUẬN
         $grossProfit = $totalRevenue - $productCost; // Lợi nhuận gộp
         $totalExpenses = $totalSalary + $operatingCost; // Tổng chi phí
@@ -114,7 +114,7 @@ class AdminReportController extends Controller
             'total_revenue' => $totalRevenue,
             'shipping_revenue' => $shippingRevenue,
             'product_revenue' => $totalRevenue - $shippingRevenue,
-            
+
             // Chi phí
             'product_cost' => $productCost,
             'total_salary' => $totalSalary,
@@ -123,7 +123,7 @@ class AdminReportController extends Controller
             'deduction' => $salaryData->total_deduction ?? 0,
             'operating_cost' => $operatingCost,
             'total_expenses' => $totalExpenses,
-            
+
             // Lợi nhuận
             'gross_profit' => $grossProfit,
             'net_profit' => $netProfit,

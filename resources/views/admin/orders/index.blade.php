@@ -152,11 +152,27 @@
         }
         /* Giữ dropdown trạng thái không bị che theo chiều dọc nhưng vẫn cho phép bảng scroll ngang trên màn nhỏ */
         .order-table-wrapper {
-            overflow-x: auto;
-            overflow-y: visible;
+            position: relative; /* làm gốc cho dropdown */
+            overflow-x: auto !important;
+            overflow-y: visible !important;
         }
+        /* Dropdown trạng thái hiển thị dạng overlay, nằm trên các dòng khác nhưng không bị cắt */
         .order-table-wrapper .dropdown-menu {
-            z-index: 2000;
+            z-index: 99999 !important; /* rất cao để luôn nổi trên tất cả card */
+            position: fixed !important; /* dùng fixed để luôn nổi trên mọi thứ */
+        }
+        /* Card Danh sách đơn hàng không cắt dropdown và nằm trên card Yêu cầu hủy/trả hàng */
+        .orders-list-card {
+            position: relative;
+            z-index: 100;
+        }
+        .orders-list-card .card-body {
+            overflow: visible;
+        }
+        /* Card Yêu cầu hủy/trả hàng có z-index thấp hơn để không che dropdown */
+        .request-orders-card {
+            position: relative;
+            z-index: 1;
         }
     </style>
 @endpush
@@ -307,7 +323,7 @@
     {{-- Yêu cầu hủy / trả hàng --}}
     <div class="row mt-3">
         <div class="col-12">
-            <div class="card">
+            <div class="card request-orders-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <h5 class="mb-0"><i class="ri-error-warning-line me-2"></i>Yêu cầu hủy / trả hàng</h5>
@@ -379,7 +395,7 @@
     </div>
 
     {{-- 🔎 Bộ lọc --}}
-    <div class="card">
+    <div class="card orders-list-card" style="position: relative; z-index: 100;">
         <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
             <div>
                 <h4 class="card-title mb-0"><i class="ri-file-list-3-line me-2"></i>Danh sách đơn hàng</h4>
@@ -601,9 +617,25 @@
                                         'tax_amount' => number_format($order->tax_amount ?? 0, 0, ',', '.'),
                                         'shipping_fee' => number_format($order->shipping_fee ?? 0, 0, ',', '.'),
                                         'items' => $order->items->map(function ($item) {
+                                            // Lấy thông tin biến thể
+                                            $variantInfo = [];
+                                            if ($item->variant) {
+                                                if ($item->variant->size) {
+                                                    $variantInfo[] = 'Size: ' . $item->variant->size->name;
+                                                }
+                                                if ($item->variant->color) {
+                                                    $variantInfo[] = 'Màu: ' . $item->variant->color->name;
+                                                }
+                                                if ($item->variant->texture) {
+                                                    $variantInfo[] = 'Chất liệu: ' . $item->variant->texture->name;
+                                                }
+                                            }
+                                            $variantText = !empty($variantInfo) ? implode(' - ', $variantInfo) : '';
+                                            
                                             return [
                                                 'name' => $item->product->name ?? 'Sản phẩm',
-                                                'sku' => $item->product->sku ?? 'N/A',
+                                                'sku' => $item->variant->sku ?? ($item->product->sku ?? 'N/A'),
+                                                'variant' => $variantText,
                                                 'quantity' => $item->quantity,
                                                 'price' => number_format($item->price ?? 0, 0, ',', '.'),
                                                 'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
@@ -644,7 +676,7 @@
                                                     <i class="{{ $currentStatus['icon'] }} me-1"></i>
                                                     {{ $currentStatus['label'] }}
                                                 </span>
-                                                <div class="dropdown">
+                                                <div class="dropdown dropup">
                                                     <button class="btn btn-light btn-icon btn-sm status-toggle" type="button"
                                                             data-bs-toggle="dropdown" aria-expanded="false">
                                                         <i class="ri-arrow-down-s-line"></i>
@@ -779,9 +811,25 @@
                                             'updated_at' => $order->updated_at ? $order->updated_at->format('d/m/Y H:i') : '',
                                             'notes' => $order->note ?? 'Không có ghi chú',
                                             'items' => $order->items->map(function ($item) {
+                                                // Lấy thông tin biến thể
+                                                $variantInfo = [];
+                                                if ($item->variant) {
+                                                    if ($item->variant->size) {
+                                                        $variantInfo[] = 'Size: ' . $item->variant->size->name;
+                                                    }
+                                                    if ($item->variant->color) {
+                                                        $variantInfo[] = 'Màu: ' . $item->variant->color->name;
+                                                    }
+                                                    if ($item->variant->texture) {
+                                                        $variantInfo[] = 'Chất liệu: ' . $item->variant->texture->name;
+                                                    }
+                                                }
+                                                $variantText = !empty($variantInfo) ? implode(' - ', $variantInfo) : '';
+                                                
                                                 return [
                                                     'name' => $item->product->name ?? 'Sản phẩm',
-                                                    'sku' => $item->product->sku ?? 'N/A',
+                                                    'sku' => $item->variant->sku ?? ($item->product->sku ?? 'N/A'),
+                                                    'variant' => $variantText,
                                                     'quantity' => $item->quantity,
                                                     'price' => number_format($item->price ?? 0, 0, ',', '.'),
                                                     'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
@@ -963,9 +1011,25 @@
                                         'tax_amount' => number_format($order->tax_amount ?? 0, 0, ',', '.'),
                                         'shipping_fee' => number_format($order->shipping_fee ?? 0, 0, ',', '.'),
                                         'items' => $order->items->map(function ($item) {
+                                            // Lấy thông tin biến thể
+                                            $variantInfo = [];
+                                            if ($item->variant) {
+                                                if ($item->variant->size) {
+                                                    $variantInfo[] = 'Size: ' . $item->variant->size->name;
+                                                }
+                                                if ($item->variant->color) {
+                                                    $variantInfo[] = 'Màu: ' . $item->variant->color->name;
+                                                }
+                                                if ($item->variant->texture) {
+                                                    $variantInfo[] = 'Chất liệu: ' . $item->variant->texture->name;
+                                                }
+                                            }
+                                            $variantText = !empty($variantInfo) ? implode(' - ', $variantInfo) : '';
+                                            
                                             return [
                                                 'name' => $item->product->name ?? 'Sản phẩm',
-                                                'sku' => $item->product->sku ?? 'N/A',
+                                                'sku' => $item->variant->sku ?? ($item->product->sku ?? 'N/A'),
+                                                'variant' => $variantText,
                                                 'quantity' => $item->quantity,
                                                 'price' => number_format($item->price ?? 0, 0, ',', '.'),
                                                 'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
@@ -1151,9 +1215,25 @@
                                         'tax_amount' => number_format($order->tax_amount ?? 0, 0, ',', '.'),
                                         'shipping_fee' => number_format($order->shipping_fee ?? 0, 0, ',', '.'),
                                         'items' => $order->items->map(function ($item) {
+                                            // Lấy thông tin biến thể
+                                            $variantInfo = [];
+                                            if ($item->variant) {
+                                                if ($item->variant->size) {
+                                                    $variantInfo[] = 'Size: ' . $item->variant->size->name;
+                                                }
+                                                if ($item->variant->color) {
+                                                    $variantInfo[] = 'Màu: ' . $item->variant->color->name;
+                                                }
+                                                if ($item->variant->texture) {
+                                                    $variantInfo[] = 'Chất liệu: ' . $item->variant->texture->name;
+                                                }
+                                            }
+                                            $variantText = !empty($variantInfo) ? implode(' - ', $variantInfo) : '';
+                                            
                                             return [
                                                 'name' => $item->product->name ?? 'Sản phẩm',
-                                                'sku' => $item->product->sku ?? 'N/A',
+                                                'sku' => $item->variant->sku ?? ($item->product->sku ?? 'N/A'),
+                                                'variant' => $variantText,
                                                 'quantity' => $item->quantity,
                                                 'price' => number_format($item->price ?? 0, 0, ',', '.'),
                                                 'total' => number_format(($item->price ?? 0) * $item->quantity, 0, ',', '.'),
@@ -1466,6 +1546,33 @@
     {{-- Load Laravel Echo và Pusher --}}
     @vite(['resources/js/app.js'])
     <script>
+        // Force dropdown trạng thái luôn render với z-index cao và position fixed
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lắng nghe tất cả dropdown show event
+            document.addEventListener('show.bs.dropdown', function(e) {
+                const button = e.target.closest('.status-toggle');
+                if (button) {
+                    setTimeout(() => {
+                        // Tìm dropdown menu (có thể là nextElementSibling hoặc trong dropdown container)
+                        const dropdown = button.closest('.dropdown');
+                        if (dropdown) {
+                            const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+                            if (dropdownMenu) {
+                                dropdownMenu.style.zIndex = '99999';
+                                dropdownMenu.style.position = 'fixed';
+                                // Đảm bảo nó không bị che bởi bất kỳ card nào
+                                const rect = button.getBoundingClientRect();
+                                const menuRect = dropdownMenu.getBoundingClientRect();
+                                // Nếu dropdown bị che ở trên, điều chỉnh top
+                                if (menuRect.top < 0) {
+                                    dropdownMenu.style.top = (rect.top - menuRect.height) + 'px';
+                                }
+                            }
+                        }
+                    }, 50);
+                }
+            });
+        });
         function updateStatus(orderId, status) {
             // Validate inputs
             if (!orderId || !status) {
@@ -1658,11 +1765,7 @@
 
                     updateStatus(control.dataset.orderId, targetStatus)
                         .then(() => {
-                            applyStatusUI(control, targetStatus);
-                            if (toggleBtn) {
-                                const dropdownInstance = bootstrap.Dropdown.getInstance(toggleBtn);
-                                dropdownInstance && dropdownInstance.hide();
-                            }
+                            setTimeout(() => window.location.reload(), 800);
                         })
                         .finally(() => {
                             toggleBtn && (toggleBtn.disabled = false);
@@ -1755,7 +1858,8 @@
                                     <img src="${item.image}" class="product-thumb" alt="${item.name}">
                                     <div>
                                         <div class="fw-semibold">${item.name}</div>
-                                        <small class="text-muted">SKU: ${item.sku}</small>
+                                        <small class="text-muted">SKU: ${item.sku || 'N/A'}</small>
+                                        ${item.variant ? `<div class="text-muted small mt-1" style="font-size: 11px; color: #6c757d;">${item.variant}</div>` : ''}
                                     </div>
                                 </div>
                             </td>
@@ -1869,6 +1973,88 @@
         function getStatusLabel(status) {
             return getStatusMeta(status).label;
         }
+        
+        // Hàm cập nhật số lượng trong các tab
+        function updateTabCounts() {
+            // Đếm số đơn hàng trong mỗi tab
+            const shippingTab = document.getElementById('pane-shipping-orders');
+            const completedTab = document.getElementById('pane-completed-orders');
+            const cancelTab = document.getElementById('pane-cancel-orders');
+            const returnTab = document.getElementById('pane-return-orders');
+            
+            const shippingCount = shippingTab ? shippingTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            const completedCount = completedTab ? completedTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            const cancelCount = cancelTab ? cancelTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            const returnCount = returnTab ? returnTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            
+            // Cập nhật badge trong các tab button
+            const shippingBadge = document.querySelector('#tab-shipping-orders .badge');
+            const completedBadge = document.querySelector('#tab-completed-orders .badge');
+            const cancelBadge = document.querySelector('#tab-cancel-orders .badge');
+            const returnBadge = document.querySelector('#tab-return-orders .badge');
+            
+            if (shippingBadge) shippingBadge.textContent = shippingCount;
+            if (completedBadge) completedBadge.textContent = completedCount;
+            if (cancelBadge) cancelBadge.textContent = cancelCount;
+            if (returnBadge) returnBadge.textContent = returnCount;
+        }
+        
+        // Hàm cập nhật thống kê
+        function updateOrderStats() {
+            // Đếm số đơn hàng trong các tab
+            const shippingTab = document.getElementById('pane-shipping-orders');
+            const completedTab = document.getElementById('pane-completed-orders');
+            const cancelTab = document.getElementById('pane-cancel-orders');
+            const returnTab = document.getElementById('pane-return-orders');
+            
+            const shippingCount = shippingTab ? shippingTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            const completedCount = completedTab ? completedTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            const cancelCount = cancelTab ? cancelTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            const returnCount = returnTab ? returnTab.querySelectorAll('tbody tr[data-order-id]').length : 0;
+            
+            const totalOrders = shippingCount + completedCount + cancelCount + returnCount;
+            const processingCount = shippingCount;
+            const cancelledReturnedCount = cancelCount + returnCount;
+            
+            // Cập nhật thống kê
+            const totalOrdersEl = document.querySelector('.stat-card .stat-value');
+            const processingEl = document.querySelectorAll('.stat-card .stat-value.text-warning');
+            const completedEl = document.querySelectorAll('.stat-card .stat-value.text-success');
+            const cancelledEl = document.querySelectorAll('.stat-card .stat-value.text-danger');
+            
+            // Cập nhật tổng đơn (card đầu tiên)
+            if (totalOrdersEl && document.querySelector('.stat-card:first-child .stat-value') === totalOrdersEl) {
+                totalOrdersEl.textContent = totalOrders;
+            }
+            
+            // Cập nhật đang xử lý (card thứ 2)
+            if (processingEl.length > 0) {
+                processingEl[0].textContent = processingCount;
+                // Cập nhật progress bar
+                const progressBar = processingEl[0].closest('.stat-card')?.querySelector('.progress-bar');
+                if (progressBar && totalOrders > 0) {
+                    const percent = Math.max(5, Math.min(100, (processingCount / totalOrders) * 100));
+                    progressBar.style.width = percent + '%';
+                    progressBar.setAttribute('aria-valuenow', percent);
+                }
+            }
+            
+            // Cập nhật hoàn tất (card thứ 3)
+            if (completedEl.length > 0) {
+                completedEl[0].textContent = completedCount;
+                // Cập nhật tỉ lệ hoàn tất
+                const trendEl = completedEl[0].closest('.stat-card')?.querySelector('.stat-trend');
+                if (trendEl && totalOrders > 0) {
+                    const percent = Math.round((completedCount / totalOrders) * 100);
+                    trendEl.innerHTML = `<i class="ri-check-line me-1"></i>Tỉ lệ hoàn tất ${percent}%`;
+                }
+            }
+            
+            // Cập nhật hủy/hoàn tiền (card thứ 4)
+            if (cancelledEl.length > 0) {
+                cancelledEl[0].textContent = cancelledReturnedCount;
+            }
+        }
 
         // ========== REALTIME ORDER UPDATES ==========
         // Chỉ chạy khi window.Echo đã được load (từ bootstrap.js)
@@ -1891,6 +2077,10 @@
                         toastr.info(`Đơn hàng #${orderData.code} đã được cập nhật trạng thái: ${getStatusLabel(newStatus)}`);
                         return;
                     }
+                    
+                    // Lưu trạng thái cũ để xác định tab cũ
+                    const oldStatus = orderRows.length > 0 ? 
+                        (orderRows[0].querySelector('.order-status-badge')?.textContent?.trim() || '') : '';
                     
                     // Cập nhật từng row
                     orderRows.forEach(row => {
@@ -1944,6 +2134,54 @@
                             }
                         }
                     });
+                    
+                    // Xác định tab mới dựa trên status mới
+                    let targetTab = null;
+                    let targetPane = null;
+                    if (['pending', 'processing', 'shipping'].includes(newStatus)) {
+                        targetTab = 'tab-shipping-orders';
+                        targetPane = 'pane-shipping-orders';
+                    } else if (['completed', 'delivered'].includes(newStatus)) {
+                        targetTab = 'tab-completed-orders';
+                        targetPane = 'pane-completed-orders';
+                    } else if (newStatus === 'cancelled' || newStatus === 'cancel_request') {
+                        targetTab = 'tab-cancel-orders';
+                        targetPane = 'pane-cancel-orders';
+                    } else if (newStatus === 'returned' || newStatus === 'return_request') {
+                        targetTab = 'tab-return-orders';
+                        targetPane = 'pane-return-orders';
+                    }
+                    
+                    // Nếu status thay đổi và cần di chuyển tab, thực hiện di chuyển
+                    if (targetTab && orderRows.length > 0) {
+                        const currentTab = orderRows[0].closest('.tab-pane');
+                        const targetTabPane = document.getElementById(targetPane);
+                        
+                        if (currentTab && targetTabPane && currentTab.id !== targetPane) {
+                            // Di chuyển row sang tab mới
+                            orderRows.forEach(row => {
+                                const tbody = targetTabPane.querySelector('tbody');
+                                if (tbody) {
+                                    tbody.appendChild(row);
+                                }
+                            });
+                            
+                            // Cập nhật số lượng trong các tab
+                            updateTabCounts();
+                            
+                            // Highlight tab mới
+                            const newTabButton = document.getElementById(targetTab);
+                            if (newTabButton) {
+                                newTabButton.classList.add('border-primary', 'border-2');
+                                setTimeout(() => {
+                                    newTabButton.classList.remove('border-primary', 'border-2');
+                                }, 3000);
+                            }
+                        }
+                    }
+                    
+                    // Cập nhật thống kê
+                    updateOrderStats();
                     
                     // Hiển thị thông báo đặc biệt cho yêu cầu hủy/trả hàng
                     const statusMeta = getStatusMeta(newStatus);

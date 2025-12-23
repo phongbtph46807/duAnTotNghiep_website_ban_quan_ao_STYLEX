@@ -22,7 +22,7 @@ class ProductController extends Controller
                 $query->where('status', 1);
             }])
             ->get();
-        
+
         // Lấy danh sách chất liệu đang hoạt động để lọc
         $textures = Texture::query()
             ->where('status', 1)
@@ -44,7 +44,7 @@ class ProductController extends Controller
             'textures'         => $textures,
         ]);
     }
-    
+
     /**
      * Hiển thị trang chi tiết sản phẩm.
      */
@@ -56,13 +56,22 @@ class ProductController extends Controller
             'productVariants.color',
             'productVariants.size',
             'productVariants.texture',
-            'reviews.user',
-            'reviews.media',
-            'reviews.experiences',
+            'productVariants.warehouseStocks' => function($query) {
+                // Chỉ load warehouse stocks từ các kho đang hoạt động
+                $query->whereHas('warehouse', function($q) {
+                    $q->where('operational_status', 'ACTIVE')
+                      ->where('type', 'PHYSICAL');
+                });
+            },
+            // Chỉ load reviews có status = 'public' để đảm bảo tính toán rating chính xác
+            'reviews' => function($query) {
+                $query->where('status', 'public')
+                    ->with(['user', 'productVariant', 'media', 'experiences']);
+            },
         ])
             ->where('is_active', 1)
             ->findOrFail($id);
-        
+
         // Lấy sản phẩm liên quan (cùng danh mục)
         $relatedProducts = Product::with(['category', 'primaryImage'])
             ->where('is_active', 1)
@@ -70,17 +79,17 @@ class ProductController extends Controller
             ->where('id', '!=', $product->id)
             ->limit(8)
             ->get();
-        
+
         // === Lấy tất cả review của sản phẩm (chỉ public) ===
         $reviews = $product->reviews()
             ->where('status', 'public')
             ->with(['user', 'productVariant', 'media', 'experiences'])
             ->get()
             ->sortByDesc('created_at');
-        
+
         // Tính trung bình rating
         $avgRating = round($reviews->avg('rating') ?? 0, 1);
-        
+
         // === Lấy một vài đánh giá gần nhất ===
         $latestReviews = $reviews->take(5)->map(function ($review) {
             // Hỗ trợ cả quan hệ media (ReviewMedia) và cột json media mới

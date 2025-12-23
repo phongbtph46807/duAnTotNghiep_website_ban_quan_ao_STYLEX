@@ -35,7 +35,8 @@
 			data-cart-ids="{{ json_encode($item['ids'] ?? [$item['id']]) }}" 
 			data-price="{{ $price }}" 
 			data-qty="{{ $qty }}"
-			data-item-data="{{ json_encode($item['items'] ?? []) }}">
+			data-item-data="{{ json_encode($item['items'] ?? []) }}"
+			data-available-stock="{{ $item['available_stock'] ?? 0 }}">
 			<td class="column-0">
 				<input type="checkbox" class="item-checkbox" data-cart-ids="{{ json_encode($item['ids'] ?? [$item['id']]) }}">
 			</td>
@@ -81,11 +82,20 @@
 					<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-action="dec" data-cart-ids="{{ json_encode($item['ids'] ?? [$item['id']]) }}">
 						<i class="fs-16 zmdi zmdi-minus"></i>
 					</div>
-					<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product-{{ $item['id'] }}" value="{{ $qty }}" min="1" data-cart-ids="{{ json_encode($item['ids'] ?? [$item['id']]) }}">
+					<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product-{{ $item['id'] }}" value="{{ $qty }}" min="1" max="{{ $item['available_stock'] ?? 9999 }}" data-cart-ids="{{ json_encode($item['ids'] ?? [$item['id']]) }}" data-max-stock="{{ $item['available_stock'] ?? 0 }}">
 					<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-action="inc" data-cart-ids="{{ json_encode($item['ids'] ?? [$item['id']]) }}">
 						<i class="fs-16 zmdi zmdi-plus"></i>
 					</div>
 				</div>
+				@if(isset($item['available_stock']) && $item['available_stock'] > 0)
+					<div class="stock-info" style="font-size: 11px; color: #666; margin-top: 4px; text-align: center;">
+						Còn {{ number_format($item['available_stock'], 0, ',', '.') }} sản phẩm
+					</div>
+				@elseif(isset($item['available_stock']) && $item['available_stock'] == 0)
+					<div class="stock-info" style="font-size: 11px; color: #dc3545; margin-top: 4px; text-align: center; font-weight: 600;">
+						Hết hàng
+					</div>
+				@endif
 			</td>
 			<td class="column-6 line-total">{{ number_format($line, 0, ',', '.') }} ₫</td>
 			<td class="column-7">

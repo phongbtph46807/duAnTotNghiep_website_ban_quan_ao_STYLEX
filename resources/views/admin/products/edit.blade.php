@@ -85,7 +85,6 @@
                         'size_id' => $v->size_id,
                         'texture_id' => $v->texture_id,
                         'price' => $v->price,
-                        'quantity' => $v->quantity ?? 1,
                         'status' => $v->status,
                         'image_url' => $v->image ? Storage::url($v->image) : null,
                     ];
@@ -186,7 +185,7 @@
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" name="is_featured" value="1"
                                 {{ old('is_featured', $product->is_featured) == 1 ? 'checked' : '' }}>
-                            <label class="form-check-label">Gắn “Đặc biệt”</label>
+                            <label class="form-check-label">Gắn "Đặc biệt"</label>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -211,7 +210,6 @@
                 <div>
                     <button type="button" id="btn-generate-variants" class="btn btn-primary btn-sm">Sinh biến
                         thể</button>
-                    {{-- YÊU CẦU: KHÔNG cho xoá, nên bỏ nút Xoá tất cả --}}
                 </div>
             </div>
             <div class="card-body">
@@ -261,19 +259,15 @@
                                 <th>Màu</th>
                                 <th>Size</th>
                                 <th>Chất liệu</th>
-                                {{-- <th>SKU</th> --}}
                                 <th>Giá (VND)</th>
-                                <th>Số lượng</th>
                                 <th>Ảnh</th>
                                 <th>Trạng thái</th>
-                                {{-- KHÔNG có cột thao tác xoá --}}
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($oldVariants ?? [] as $i => $v)
                                 @php
                                     $vPrice = $v['price'] ?? 0;
-                                    $qty = $v['quantity'] ?? 1;
                                     $status = (int) ($v['status'] ?? 1);
                                     $cName = optional($colors->firstWhere('id', $v['color_id'] ?? null))->name;
                                     $sName = optional($sizes->firstWhere('id', $v['size_id'] ?? null))->name;
@@ -302,15 +296,10 @@
                                             value="{{ $v['texture_id'] ?? '' }}">
                                         <span class="badge bg-light text-dark">{{ $tName ?? '—' }}</span>
                                     </td>
-                                    {{-- <td><input type="text" class="form-control form-control-sm" value="{{ $v['sku'] ?? '' }}" disabled></td> --}}
                                     <td>
                                         <input type="text" class="form-control form-control-sm input-price"
                                             name="variants[{{ $i }}][price]"
                                             value="{{ is_numeric($vPrice) ? number_format((int) $vPrice, 0, ',', '.') : $vPrice }}">
-                                    </td>
-                                    <td>
-                                        <input type="number" step="1" class="form-control form-control-sm"
-                                            name="variants[{{ $i }}][quantity]" value="{{ $qty }}">
                                     </td>
                                     <td>
                                         @if ($imgUrl)
@@ -332,7 +321,6 @@
                                                 {{ $status == 1 ? 'checked' : '' }}>
                                         </div>
                                     </td>
-                                    {{-- KHÔNG có nút xoá dòng --}}
                                 </tr>
                             @endforeach
                         </tbody>
@@ -484,7 +472,6 @@
           <td><input type="hidden" name="variants[${i}][size_id]" value="${s.id}"><span class="badge bg-light text-dark">${s.name}</span></td>
           <td><input type="hidden" name="variants[${i}][texture_id]" value="${t.id}"><span class="badge bg-light text-dark">${t.name}</span></td>
           <td><input type="text" class="form-control form-control-sm input-price" name="variants[${i}][price]" value="0"></td>
-          <td><input type="number" step="1" class="form-control form-control-sm" name="variants[${i}][quantity]" value="1"></td>
           <td><input type="file" class="form-control form-control-sm" name="variants[${i}][image]" accept="image/*"></td>
           <td class="text-center">
             <input type="hidden" name="variants[${i}][status]" value="0">
@@ -499,8 +486,6 @@
                     i++;
                 })));
             });
-
-            /* === KHÔNG có xoá dòng, KHÔNG có xoá tất cả theo yêu cầu === */
 
             // Chỉ validate khi có biến thể trong bảng và khi sinh biến thể mới
             $('#product-form').on('submit', function(e) {

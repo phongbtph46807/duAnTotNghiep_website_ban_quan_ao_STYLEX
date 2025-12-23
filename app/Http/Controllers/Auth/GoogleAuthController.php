@@ -89,8 +89,12 @@ class GoogleAuthController extends Controller
                 $this->mergeSessionCart($user);
 
                 // Redirect dựa trên role
-                if ($user->role == 1 || $user->role == 2 || $user->role == 3) {
+                if ($user->role == 1) {
+                    // Admin - redirect về dashboard
                     return redirect()->route('admin.dashboard')->with('success', 'Đăng nhập thành công!');
+                } elseif ($user->role == 2 || $user->role == 3) {
+                    // Staff hoặc Warehouse Manager - redirect về trang đơn hàng
+                    return redirect()->route('admin.orders.index')->with('success', 'Đăng nhập thành công!');
                 }
 
                 return redirect()->route('home')->with('success', 'Đăng nhập thành công!');

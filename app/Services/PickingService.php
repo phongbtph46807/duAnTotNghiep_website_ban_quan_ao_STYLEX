@@ -47,10 +47,10 @@ class PickingService
             if ($remainingQty <= 0) break;
 
             $warehouseStock = $batch->getWarehouseStock($warehouseId);
-            
+
             // Debug log
             error_log("Batch {$batch->id}: warehouse stock = {$warehouseStock}");
-            
+
             if ($warehouseStock <= 0) continue;
 
             $qtyToAllocate = min($remainingQty, $warehouseStock);
