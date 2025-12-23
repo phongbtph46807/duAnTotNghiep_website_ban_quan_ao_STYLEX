@@ -545,7 +545,7 @@ class CartController extends Controller
         // Kiểm tra tồn kho trước khi thêm vào giỏ hàng
         $availableStock = $variant->getTotalAvailableStock();
         $requestedQty = (int) $request->quantity;
-        
+
         if ($existingItem) {
             Log::info('Existing item found - ID: ' . $existingItem->id . ', Current Qty: ' . $existingItem->quantity . ', Adding: ' . $requestedQty);
             // Tổng số lượng sau khi thêm

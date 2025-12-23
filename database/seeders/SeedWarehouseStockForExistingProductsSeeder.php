@@ -57,20 +57,41 @@ class SeedWarehouseStockForExistingProductsSeeder extends Seeder
                     $oldOnHand = $existingStock->on_hand;
                     $oldAvailable = $existingStock->available;
                     
-                    $newQuantity = $this->generateStockQuantity($variant);
-                    $newOnHand = $oldOnHand + $newQuantity;
-                    $newAvailable = $oldAvailable + $newQuantity;
-                    
-                    // Giữ nguyên reserved, quarantine, damaged, clearance
-                    $existingStock->update([
-                        'on_hand' => $newOnHand,
-                        'available' => $newAvailable,
-                        // Giữ nguyên các giá trị khác
-                    ]);
+                    // Nếu tồn kho hiện tại = 0, đặt lại thành số lượng mới thay vì cộng thêm
+                    if ($oldAvailable == 0 && $oldOnHand == 0) {
+                        $newQuantity = $this->generateStockQuantity($variant);
+                        $newOnHand = $newQuantity;
+                        $newAvailable = $newQuantity;
+                        
+                        $existingStock->update([
+                            'on_hand' => $newOnHand,
+                            'available' => $newAvailable,
+                            'reserved' => 0,
+                            'quarantine' => 0,
+                            'damaged' => 0,
+                            'clearance' => 0,
+                        ]);
+                        
+                        $totalUpdated++;
+                        $productName = $variant->product->name ?? 'N/A';
+                        $this->command->info("✓ Đặt lại tồn kho (từ 0): {$productName} - {$variant->sku} tại {$warehouse->name} (0 → {$newOnHand})");
+                    } else {
+                        // Nếu đã có tồn kho > 0, cộng thêm
+                        $newQuantity = $this->generateStockQuantity($variant);
+                        $newOnHand = $oldOnHand + $newQuantity;
+                        $newAvailable = $oldAvailable + $newQuantity;
+                        
+                        // Giữ nguyên reserved, quarantine, damaged, clearance
+                        $existingStock->update([
+                            'on_hand' => $newOnHand,
+                            'available' => $newAvailable,
+                            // Giữ nguyên các giá trị khác
+                        ]);
 
-                    $totalUpdated++;
-                    $productName = $variant->product->name ?? 'N/A';
-                    $this->command->info("✓ Cập nhật tồn kho: {$productName} - {$variant->sku} tại {$warehouse->name} ({$oldOnHand} + {$newQuantity} = {$newOnHand})");
+                        $totalUpdated++;
+                        $productName = $variant->product->name ?? 'N/A';
+                        $this->command->info("✓ Cập nhật tồn kho: {$productName} - {$variant->sku} tại {$warehouse->name} ({$oldOnHand} + {$newQuantity} = {$newOnHand})");
+                    }
                 } else {
                     // Nếu chưa có tồn kho, tạo mới
                     $onHand = $this->generateStockQuantity($variant);

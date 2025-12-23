@@ -1,5 +1,9 @@
 @extends('client.layouts.app')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('title', $product->name . ' - ' . env('APP_NAME'))
 
 @push('styles')
@@ -132,7 +136,7 @@
 									$textures = $product->productVariants->pluck('texture.name')->unique()->filter();
 
 									// Tạo map variant_id => variant data để JavaScript dùng
-									$variantsMap = $product->productVariants->mapWithKeys(function($variant) {
+									$variantsMap = $product->productVariants->mapWithKeys(function($variant) use ($product) {
 										$key = '';
 										$parts = [];
 										if ($variant->size) $parts[] = 'size:' . $variant->size->name;
@@ -146,10 +150,22 @@
 										} else {
 											$totalStock = $variant->getTotalAvailableStock();
 										}
+										// Lấy ảnh của variant, nếu không có thì dùng ảnh sản phẩm chính
+										$variantImage = null;
+										if ($variant->image) {
+											if (str_starts_with($variant->image, 'client/images/')) {
+												$variantImage = asset($variant->image);
+											} else {
+												$variantImage = Storage::url($variant->image);
+											}
+										} else {
+											$variantImage = $product->default_image_url;
+										}
 										return [$key => [
 											'id' => $variant->id,
 											'price' => $variant->price,
 											'stock' => $totalStock,
+											'image' => $variantImage,
 										]];
 									})->toArray();
 								@endphp
@@ -219,13 +235,24 @@
 
 							@php
 								// Tạo map variant để JavaScript tìm variant_id nhanh
-								$variantsData = $product->productVariants->map(function($variant) {
+								$variantsData = $product->productVariants->map(function($variant) use ($product) {
 									// Tính tồn kho từ warehouse stocks đã được load
 									$totalStock = 0;
 									if ($variant->relationLoaded('warehouseStocks')) {
 										$totalStock = $variant->warehouseStocks->sum('available');
 									} else {
 										$totalStock = $variant->getTotalAvailableStock();
+									}
+									// Lấy ảnh của variant, nếu không có thì dùng ảnh sản phẩm chính
+									$variantImage = null;
+									if ($variant->image) {
+										if (str_starts_with($variant->image, 'client/images/')) {
+											$variantImage = asset($variant->image);
+										} else {
+											$variantImage = Storage::url($variant->image);
+										}
+									} else {
+										$variantImage = $product->default_image_url;
 									}
 									return [
 										'id' => $variant->id,
@@ -234,6 +261,7 @@
 										'color' => $variant->color ? $variant->color->name : '',
 										'texture' => $variant->texture ? $variant->texture->name : '',
 										'stock' => $totalStock,
+										'image' => $variantImage,
 									];
 								})->toArray();
 								
@@ -732,6 +760,46 @@ $(document).ready(function() {
         }
     }
 
+    // Function để cập nhật ảnh variant
+    function updateVariantImage(imageUrl) {
+        if (!imageUrl) return;
+        
+        // Tìm tất cả các ảnh trong gallery
+        const $gallery = $('.slick3.gallery-lb');
+        const $firstItem = $gallery.find('.item-slick3').first();
+        
+        if ($firstItem.length) {
+            // Cập nhật ảnh chính
+            const $img = $firstItem.find('img.product-image');
+            const $link = $firstItem.find('a.flex-c-m');
+            
+            if ($img.length) {
+                // Thêm hiệu ứng fade khi thay đổi ảnh
+                $img.fadeOut(200, function() {
+                    $img.attr('src', imageUrl);
+                    $img.attr('alt', $img.attr('alt') || '');
+                    $img.fadeIn(200);
+                });
+            }
+            
+            // Cập nhật link zoom
+            if ($link.length) {
+                $link.attr('href', imageUrl);
+            }
+            
+            // Cập nhật thumbnail
+            $firstItem.attr('data-thumb', imageUrl);
+            
+            // Nếu chỉ có 1 ảnh, cập nhật luôn
+            if ($gallery.find('.item-slick3').length === 1) {
+                // Đã cập nhật ở trên
+            } else {
+                // Nếu có nhiều ảnh, chỉ cập nhật ảnh đầu tiên (ảnh chính)
+                // Có thể mở rộng để cập nhật tất cả ảnh nếu cần
+            }
+        }
+    }
+
     // Function để cập nhật giá và variant_id khi chọn variant
     function updateVariant() {
         let size = '';
@@ -796,6 +864,11 @@ $(document).ready(function() {
             // DEBUG: Log variant found
             console.log('Variant found - ID:', variant.id, 'Size:', size, 'Color:', color, 'Texture:', texture);
 
+            // Cập nhật ảnh của variant
+            if (variant.image) {
+                updateVariantImage(variant.image);
+            }
+
             // Cập nhật giá hiển thị - chỉ cập nhật giá sản phẩm, không ảnh hưởng đến mini cart
             if (variant.price && parseFloat(variant.price) > 0) {
                 $('#product-price-display').html('<span class="fw-bold">' +
@@ -827,6 +900,12 @@ $(document).ready(function() {
             $('input[name="variant_id"]').val('');
             $('input[name="texture_name"]').val('');
             
+            // Reset ảnh về ảnh sản phẩm chính
+            const defaultImage = '{{ $product->default_image_url }}';
+            if (defaultImage) {
+                updateVariantImage(defaultImage);
+            }
+            
             // Reset tồn kho
             const $stockDisplay = $('#stock-display');
             if ($stockDisplay.length) {
@@ -854,6 +933,17 @@ $(document).ready(function() {
     // Khởi tạo: lọc button màu và cập nhật variant khi trang load
     filterColorButtons();
     updateVariant();
+    
+    // Cập nhật ảnh mặc định cho variant đầu tiên
+    if (variants.length > 0) {
+        const firstVariant = variants[0];
+        if (firstVariant && firstVariant.image) {
+            // Delay một chút để đảm bảo gallery đã được khởi tạo
+            setTimeout(function() {
+                updateVariantImage(firstVariant.image);
+            }, 300);
+        }
+    }
 
     // Event listener cho button size (click)
     $(document).on('click', '.size-variant-btn', function() {

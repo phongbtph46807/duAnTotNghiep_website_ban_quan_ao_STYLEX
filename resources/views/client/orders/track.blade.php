@@ -128,19 +128,19 @@
                     @endif
                     
                     <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
-                        <strong>Phương thức thanh toán:</strong>
-                        @if($order->payment_method === 'cod')
-                            COD
-                        @else
-                            Online
-                        @endif
-                        &nbsp;|&nbsp;
-                        <strong>Trạng thái thanh toán:</strong>
-                        @switch($order->payment_status)
-                            @case('paid') Đã thanh toán @break
-                            @case('refunded') Đã hoàn tiền @break
-                            @default Chưa thanh toán
-                        @endswitch
+                    <strong>Phương thức thanh toán:</strong>
+                    @if($order->payment_method === 'cod')
+                        COD
+                    @else
+                        Online
+                    @endif
+                    &nbsp;|&nbsp;
+                    <strong>Trạng thái thanh toán:</strong>
+                    @switch($order->payment_status)
+                        @case('paid') Đã thanh toán @break
+                        @case('refunded') Đã hoàn tiền @break
+                        @default Chưa thanh toán
+                    @endswitch
                     </div>
                     
                     {{-- Lý do hủy/trả hàng --}}

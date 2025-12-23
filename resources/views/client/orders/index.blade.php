@@ -232,14 +232,15 @@
 </div>
 
 {{-- Modal trả hàng --}}
-<div id="returnModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;padding:15px;">
+<div id="returnModal" style="display:none !important;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;padding:15px;">
     <div style="background:#fff;border-radius:12px;padding:20px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.15);">
         <button type="button" id="closeReturnModal" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
         <h5 style="margin-bottom:16px;font-weight:700;">Yêu cầu trả hàng</h5>
         <p id="returnOrderCode" style="margin-top:-6px;color:#666;font-size:13px;"></p>
 
-        <form id="returnForm" method="POST" enctype="multipart/form-data">
+        <form id="returnForm" method="POST" action="#" enctype="multipart/form-data">
             @csrf
+            <input type="hidden" name="order_id" id="returnOrderId" value="">
             <div style="margin-bottom:14px;">
                 <label style="font-weight:600;display:block;margin-bottom:6px;">Lý do trả hàng *</label>
                 <textarea name="return_reason" class="co-textarea" rows="3" placeholder="Ví dụ: Sản phẩm lỗi, thiếu phụ kiện, giao nhầm..." required></textarea>
@@ -301,27 +302,112 @@
 
 // Return modal
 (function(){
-    const modal = document.getElementById('returnModal');
-    if (!modal) return;
-    const form = document.getElementById('returnForm');
-    const codeEl = document.getElementById('returnOrderCode');
+    function initReturnModal() {
+        const modal = document.getElementById('returnModal');
+        if (!modal) return;
+        const form = document.getElementById('returnForm');
+        const codeEl = document.getElementById('returnOrderCode');
+        let currentOrderId = null; // Lưu order ID hiện tại
 
-    function openModal(orderId, orderCode) {
-        if (form) form.action = "{{ url('/order') }}/" + orderId + "/return";
-        if (codeEl) codeEl.textContent = orderCode ? ('Mã đơn: ' + orderCode) : '';
-        modal.style.display = 'flex';
-    }
-    function closeModal() { modal.style.display = 'none'; }
+        function openModal(orderId, orderCode) {
+            if (!orderId) {
+                console.error('Order ID is required');
+                return;
+            }
+            // Lưu order ID vào biến, form data attribute và hidden input
+            currentOrderId = orderId;
+            if (form) {
+                form.setAttribute('data-order-id', orderId);
+                // Set form action trước khi hiển thị modal
+                const baseUrl = "{{ url('/order') }}";
+                const returnUrl = baseUrl + "/" + orderId + "/return";
+                form.action = returnUrl;
+                console.log('Form action set to:', form.action); // Debug
+                
+                // Set hidden input
+                const orderIdInput = document.getElementById('returnOrderId');
+                if (orderIdInput) {
+                    orderIdInput.value = orderId;
+                }
+            }
+            if (codeEl) codeEl.textContent = orderCode ? ('Mã đơn: ' + orderCode) : '';
+            modal.style.setProperty('display', 'flex', 'important');
+        }
+        function closeModal() { 
+            modal.style.display = 'none';
+            modal.style.setProperty('display', 'none', 'important');
+            // Reset form khi đóng
+            if (form) {
+                form.reset();
+                const preview = document.getElementById('returnPreview');
+                if (preview) preview.innerHTML = '';
+            }
+        }
 
-    document.querySelectorAll('.btn-return-order').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.preventDefault();
-            openModal(btn.dataset.orderId, btn.dataset.orderCode);
+        // Gắn event listener cho các nút return (cả nút có sẵn và nút được tạo động)
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('btn-return-order')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const orderId = e.target.dataset.orderId;
+                const orderCode = e.target.dataset.orderCode || '';
+                if (orderId) {
+                    openModal(orderId, orderCode);
+                } else {
+                    console.error('Order ID is missing from button');
+                }
+            }
         });
-    });
-    document.getElementById('closeReturnModal')?.addEventListener('click', closeModal);
-    document.getElementById('returnModalCloseBtn')?.addEventListener('click', closeModal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+        document.getElementById('closeReturnModal')?.addEventListener('click', closeModal);
+        document.getElementById('returnModalCloseBtn')?.addEventListener('click', closeModal);
+        modal.addEventListener('click', e => { 
+            if (e.target === modal) closeModal(); 
+        });
+
+        // Validate và set form action trước khi submit
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // Lấy order ID từ data attribute hoặc biến
+                const orderId = form.getAttribute('data-order-id') || currentOrderId;
+                
+                if (!orderId) {
+                    e.preventDefault();
+                    console.error('Order ID is missing');
+                    alert('Có lỗi xảy ra. Vui lòng đóng và mở lại form.');
+                    return false;
+                }
+
+                // Đảm bảo action được set đúng
+                const baseUrl = "{{ url('/order') }}";
+                const returnUrl = baseUrl + "/" + orderId + "/return";
+                
+                // Kiểm tra action hiện tại
+                if (!form.action || form.action === '#' || form.action.includes('/history') || !form.action.includes('/return')) {
+                    // Set lại action nếu chưa đúng
+                    form.action = returnUrl;
+                    console.log('Form action corrected to:', form.action);
+                }
+
+                // Kiểm tra lại một lần nữa
+                if (!form.action.includes('/return') || form.action.includes('/history')) {
+                    e.preventDefault();
+                    console.error('Invalid form action after correction:', form.action);
+                    alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                    return false;
+                }
+
+                console.log('Form submitting to:', form.action);
+            });
+        }
+    }
+
+    // Khởi tạo khi DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initReturnModal);
+    } else {
+        initReturnModal();
+    }
 })();
 
 // Preview & limit images (max 3) for cancel/return
@@ -487,17 +573,7 @@
                         returnBtn.setAttribute('data-order-code', orderData.code);
                         returnBtn.style.cssText = 'border-color:#f59e0b;color:#f59e0b;';
                         returnBtn.textContent = 'Yêu cầu trả hàng';
-                        returnBtn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const orderId = returnBtn.dataset.orderId;
-                            const orderCode = returnBtn.dataset.orderCode;
-                            // Trigger modal mở (code đã có ở trên)
-                            document.querySelectorAll('.btn-return-order').forEach(btn => {
-                                if (btn.dataset.orderId === orderId) {
-                                    btn.click();
-                                }
-                            });
-                        });
+                        // Không cần gắn event listener riêng vì đã dùng event delegation
                         const buyAgainBtn = document.createElement('a');
                         buyAgainBtn.className = 'btn-primary-x';
                         buyAgainBtn.href = "{{ route('client.products.index') }}";
@@ -676,8 +752,8 @@
             console.log('✅ Fallback polling enabled');
         }
     } else if (!userId) {
-        // User chưa đăng nhập, không có realtime
-        console.log('User not authenticated, realtime disabled');
+    // User chưa đăng nhập, không có realtime
+    console.log('User not authenticated, realtime disabled');
     }
 })();
 </script>

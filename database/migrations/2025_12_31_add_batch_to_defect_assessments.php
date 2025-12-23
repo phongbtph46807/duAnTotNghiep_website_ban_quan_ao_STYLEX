@@ -9,8 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('defect_assessments', function (Blueprint $table) {
-            $table->string('batch_number')->nullable()->after('variant_id')->comment('Lô hàng');
-            $table->integer('batch_cost_price')->nullable()->after('batch_number')->comment('Giá gốc của lô');
+            if (!Schema::hasColumn('defect_assessments', 'batch_number')) {
+                $table->string('batch_number')->nullable()->after('variant_id')->comment('Lô hàng');
+            }
+            if (!Schema::hasColumn('defect_assessments', 'batch_cost_price')) {
+                $table->integer('batch_cost_price')->nullable()->after('batch_number')->comment('Giá gốc của lô');
+            }
         });
     }
 

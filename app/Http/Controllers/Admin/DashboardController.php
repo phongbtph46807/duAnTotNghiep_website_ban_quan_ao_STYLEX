@@ -24,11 +24,11 @@ class DashboardController extends Controller
 
         $dashboardData = $this->getDashboardKPIs($dateFrom, $period);
 
-        return view('admin.dashboard', array_merge($dashboardData, [
-            'userRole' => 'admin',
-            'dashboardTitle' => 'Admin Dashboard',
-            'period' => $period,
-        ]));
+            return view('admin.dashboard', array_merge($dashboardData, [
+                'userRole' => 'admin',
+                'dashboardTitle' => 'Admin Dashboard',
+                'period' => $period,
+            ]));
     }
 
     private function getDashboardKPIs($dateFrom, $period)

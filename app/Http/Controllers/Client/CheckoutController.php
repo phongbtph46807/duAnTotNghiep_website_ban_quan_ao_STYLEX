@@ -396,7 +396,7 @@ class CheckoutController extends Controller
         // Broadcast event để cập nhật badge realtime cho admin với error handling
         // Dùng fresh() để đảm bảo có dữ liệu mới nhất, nhưng không load relationships nặng
         try {
-            broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
         } catch (\Exception $e) {
             \Log::warning('Failed to broadcast order cancel request: ' . $e->getMessage(), [
                 'order_id' => $order->id,
@@ -442,7 +442,7 @@ class CheckoutController extends Controller
         // Broadcast event để cập nhật badge realtime cho admin với error handling
         // Dùng fresh() để đảm bảo có dữ liệu mới nhất, nhưng không load relationships nặng
         try {
-            broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
         } catch (\Exception $e) {
             \Log::warning('Failed to broadcast order return request: ' . $e->getMessage(), [
                 'order_id' => $order->id,

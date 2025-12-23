@@ -137,7 +137,7 @@ class AuthController extends Controller
                     // Kiểm tra xem có role Admin không
                     $roleNames = $user->roles()->pluck('name')->toArray();
                     if (in_array('Admin', $roleNames)) {
-                        return redirect()->route('admin.dashboard');
+                    return redirect()->route('admin.dashboard');
                     } elseif (in_array('Staff', $roleNames) || in_array('Warehouse Manager', $roleNames)) {
                         return redirect()->route('admin.orders.index');
                     }

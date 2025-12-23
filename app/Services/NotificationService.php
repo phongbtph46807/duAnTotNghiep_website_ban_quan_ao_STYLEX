@@ -154,7 +154,7 @@ class NotificationService
         // Broadcast event để cập nhật realtime với error handling
         // Không làm gián đoạn quá trình checkout nếu broadcast thất bại
         try {
-            broadcast(new NewOrderCreated($order->fresh()))->toOthers();
+        broadcast(new NewOrderCreated($order->fresh()))->toOthers();
         } catch (\Exception $e) {
             // Log lỗi nhưng không throw exception để không làm gián đoạn checkout
             Log::warning('Failed to broadcast new order event: ' . $e->getMessage(), [

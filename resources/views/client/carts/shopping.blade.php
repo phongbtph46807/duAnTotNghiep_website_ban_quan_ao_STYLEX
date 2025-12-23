@@ -729,9 +729,9 @@
 						$row.attr('data-qty', xhr.responseJSON.current_quantity);
 					}
 				} else {
-					// Revert quantity on error
-					var oldQty = $row.data('qty') || 1;
-					$row.find('input.num-product').val(oldQty);
+				// Revert quantity on error
+				var oldQty = $row.data('qty') || 1;
+				$row.find('input.num-product').val(oldQty);
 				}
 			}).always(function(){
 				ajaxCount--;
