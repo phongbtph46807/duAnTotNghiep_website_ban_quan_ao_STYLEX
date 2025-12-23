@@ -593,9 +593,9 @@
                                     $detailPayload = [
                                         'id' => $order->id,
                                         'code' => $order->code,
-                                        'buyer_name' => $order->buyer_name,
-                                        'buyer_email' => $order->buyer_email,
-                                        'buyer_phone' => $order->buyer_phone,
+                                        'buyer_name' => $order->buyer_name ?: $order->full_name,
+                                        'buyer_email' => $order->buyer_email ?: $order->email,
+                                        'buyer_phone' => $order->buyer_phone ?: $order->phone,
                                         'full_name' => $order->full_name,
                                         'email' => $order->email,
                                         'phone' => $order->phone,
@@ -987,9 +987,9 @@
                                     $detailPayload = [
                                         'id' => $order->id,
                                         'code' => $order->code,
-                                        'buyer_name' => $order->buyer_name,
-                                        'buyer_email' => $order->buyer_email,
-                                        'buyer_phone' => $order->buyer_phone,
+                                        'buyer_name' => $order->buyer_name ?: $order->full_name,
+                                        'buyer_email' => $order->buyer_email ?: $order->email,
+                                        'buyer_phone' => $order->buyer_phone ?: $order->phone,
                                         'full_name' => $order->full_name,
                                         'email' => $order->email,
                                         'phone' => $order->phone,
@@ -1191,9 +1191,9 @@
                                     $detailPayload = [
                                         'id' => $order->id,
                                         'code' => $order->code,
-                                        'buyer_name' => $order->buyer_name,
-                                        'buyer_email' => $order->buyer_email,
-                                        'buyer_phone' => $order->buyer_phone,
+                                        'buyer_name' => $order->buyer_name ?: $order->full_name,
+                                        'buyer_email' => $order->buyer_email ?: $order->email,
+                                        'buyer_phone' => $order->buyer_phone ?: $order->phone,
                                         'full_name' => $order->full_name,
                                         'email' => $order->email,
                                         'phone' => $order->phone,
@@ -1420,8 +1420,8 @@
                                 <div class="mb-3">
                                     <div class="order-detail-label">Thông tin người đặt</div>
                                     <div class="order-detail-value" id="detailBuyerName">-</div>
-                                    <div class="text-muted" id="detailBuyerEmail">-</div>
-                                    <div class="text-muted" id="detailBuyerPhone">-</div>
+                                    <div class="text-muted" id="detailBuyerPhone" style="margin-top: 4px;">-</div>
+                                    <div class="text-muted" id="detailBuyerEmail" style="margin-top: 4px;">-</div>
                                 </div>
                                 <div class="mb-3">
                                     <div class="order-detail-label">Thông tin người nhận</div>
@@ -1470,11 +1470,39 @@
                                         <small class="text-muted">Chuẩn bị hàng & đóng gói</small>
                                     </div>
                                 </div>
+                                <div class="timeline-step" data-step="shipping">
+                                    <span class="dot"></span>
+                                    <div>
+                                        <div class="fw-semibold">Chờ giao hàng</div>
+                                        <small class="text-muted">Đã bàn giao cho đơn vị vận chuyển</small>
+                                    </div>
+                                </div>
+                                <div class="timeline-step" data-step="delivered">
+                                    <span class="dot"></span>
+                                    <div>
+                                        <div class="fw-semibold">Đã giao</div>
+                                        <small class="text-muted">Đơn đã giao đến khách hàng</small>
+                                    </div>
+                                </div>
                                 <div class="timeline-step" data-step="completed">
                                     <span class="dot"></span>
                                     <div>
                                         <div class="fw-semibold">Hoàn tất</div>
                                         <small class="text-muted">Đơn đã giao thành công</small>
+                                    </div>
+                                </div>
+                                <div class="timeline-step" data-step="return_request">
+                                    <span class="dot"></span>
+                                    <div>
+                                        <div class="fw-semibold text-warning">Yêu cầu trả hàng</div>
+                                        <small class="text-muted">Khách yêu cầu trả hàng, chờ duyệt</small>
+                                    </div>
+                                </div>
+                                <div class="timeline-step" data-step="returned">
+                                    <span class="dot"></span>
+                                    <div>
+                                        <div class="fw-semibold text-warning">Trả hàng/Hoàn tiền</div>
+                                        <small class="text-muted">Đơn đã được trả lại hoặc hoàn tiền</small>
                                     </div>
                                 </div>
                                 <div class="timeline-step" data-step="cancelled">
@@ -1689,11 +1717,33 @@
         function resetTimeline(status) {
             document.querySelectorAll('.timeline-step').forEach(step => {
                 step.classList.remove('active');
-                if (step.dataset.step === status || (status === 'cancelled' && step.dataset.step === 'cancelled')) {
-                    step.classList.add('active');
-                } else if (status === 'completed' && (step.dataset.step === 'pending' || step.dataset.step === 'processing' || step.dataset.step === 'completed')) {
-                    step.classList.add('active');
-                } else if (status === 'processing' && (step.dataset.step === 'pending' || step.dataset.step === 'processing')) {
+            });
+            
+            // Xác định các bước cần active dựa trên status
+            const activeSteps = [];
+            
+            if (status === 'pending') {
+                activeSteps.push('pending');
+            } else if (status === 'processing') {
+                activeSteps.push('pending', 'processing');
+            } else if (status === 'shipping') {
+                activeSteps.push('pending', 'processing', 'shipping');
+            } else if (status === 'delivered') {
+                activeSteps.push('pending', 'processing', 'shipping', 'delivered');
+            } else if (status === 'completed') {
+                activeSteps.push('pending', 'processing', 'shipping', 'delivered', 'completed');
+            } else if (status === 'return_request') {
+                activeSteps.push('return_request');
+            } else if (status === 'returned') {
+                activeSteps.push('return_request', 'returned');
+            } else if (status === 'cancelled' || status === 'cancel_request') {
+                activeSteps.push('cancelled');
+            }
+            
+            // Áp dụng active class cho các bước tương ứng
+            activeSteps.forEach(stepName => {
+                const step = document.querySelector(`.timeline-step[data-step="${stepName}"]`);
+                if (step) {
                     step.classList.add('active');
                 }
             });
@@ -1786,9 +1836,13 @@
                 document.getElementById('detailCode').textContent = data.code;
                 
                 // Thông tin người đặt
-                document.getElementById('detailBuyerName').textContent = data.buyer_name || '—';
-                document.getElementById('detailBuyerEmail').textContent = data.buyer_email || '—';
-                document.getElementById('detailBuyerPhone').textContent = data.buyer_phone ? 'ĐT: ' + data.buyer_phone : '—';
+                const buyerName = data.buyer_name || data.full_name || '—';
+                const buyerPhone = data.buyer_phone || data.phone || null;
+                const buyerEmail = data.buyer_email || data.email || null;
+                
+                document.getElementById('detailBuyerName').textContent = buyerName;
+                document.getElementById('detailBuyerPhone').textContent = buyerPhone ? 'ĐT: ' + buyerPhone : '—';
+                document.getElementById('detailBuyerEmail').textContent = buyerEmail || '—';
                 
                 // Thông tin người nhận
                 document.getElementById('detailReceiverName').textContent = data.full_name || '—';
