@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Events\OrderStatusUpdated;
+use App\Services\NotificationService;
 
 class OrderController extends Controller
 {
@@ -70,7 +71,13 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         // Base query dùng chung cho hai bảng (đơn đang giao & đơn đã hoàn thành/hủy)
-        $baseQuery = Order::with(['items.product', 'updatedByUser.roles']);
+        $baseQuery = Order::with([
+            'items.product', 
+            'items.variant.size',
+            'items.variant.color',
+            'items.variant.texture',
+            'updatedByUser.roles'
+        ]);
 
         // 🔍 Tìm kiếm theo tên, email hoặc mã đơn
         if ($request->filled('search')) {
@@ -267,6 +274,8 @@ class OrderController extends Controller
                 ], 400);
             }
 
+            // Lưu status cũ để thông báo cho user
+            $oldStatus = $order->status;
             $order->status = $newStatus;
             // Lưu người cập nhật trạng thái
             $order->updated_by = Auth::id();
@@ -292,7 +301,29 @@ class OrderController extends Controller
                     $order->picking->update(['status' => 'SHIPPED']);
                 }
             }
-            broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+            // Refresh order để đảm bảo có dữ liệu mới nhất
+            $order->refresh();
+            
+            // Thông báo cho user nếu có user_id
+            if ($order->user_id) {
+                try {
+                    $this->notificationService->notifyOrderStatusChanged($order, $oldStatus);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to notify user about order status change: ' . $e->getMessage(), [
+                        'order_id' => $order->id,
+                    ]);
+                }
+            }
+            
+            // Broadcast ngay lập tức - không cần load relationships nặng
+            // Event sẽ tự load khi cần trong broadcastWith()
+            try {
+                broadcast(new OrderStatusUpdated($order))->toOthers();
+            } catch (\Exception $e) {
+                Log::warning('Failed to broadcast order status update: ' . $e->getMessage(), [
+                    'order_id' => $order->id,
+                ]);
+            }
 
             return response()->json([
                 'message' => 'Cập nhật trạng thái đơn hàng thành công!',
@@ -351,6 +382,8 @@ $after  = $before + $amount;
                 $user->save();
             }
 
+            // Lưu status cũ
+            $oldStatus = $order->status;
             $order->status = 'cancelled';
             // Optional: lưu trạng thái refund cho dễ kiểm soát
             $order->payment_status = 'refunded';
@@ -360,9 +393,27 @@ $after  = $before + $amount;
             $order->save();
         });
 
-        // Broadcast event sau khi transaction commit
+        // Broadcast event sau khi transaction commit - không cần load relationships nặng
         $order->refresh();
-        broadcast(new OrderStatusUpdated($order->load(['items.product', 'updatedByUser.roles'])))->toOthers();
+        
+        // Thông báo cho user nếu có user_id
+        if ($order->user_id) {
+            try {
+                $this->notificationService->notifyOrderStatusChanged($order, $oldStatus);
+            } catch (\Exception $e) {
+                Log::warning('Failed to notify user about order status change: ' . $e->getMessage(), [
+                    'order_id' => $order->id,
+                ]);
+            }
+        }
+        
+        try {
+            broadcast(new OrderStatusUpdated($order))->toOthers();
+        } catch (\Exception $e) {
+            Log::warning('Failed to broadcast order status update: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+            ]);
+        }
 
         // Trả về JSON nếu là AJAX request, ngược lại redirect back
         if ($request->wantsJson() || $request->ajax()) {
@@ -414,6 +465,8 @@ $after  = $before + $amount;
                 $user->save();
             }
 
+            // Lưu status cũ
+            $oldStatus = $order->status;
             $order->status = 'returned';
             // Optional: lưu trạng thái refund cho dễ kiểm soát
             $order->payment_status = 'refunded';
@@ -423,9 +476,27 @@ $after  = $before + $amount;
             $order->save();
         });
 
-        // Broadcast event sau khi transaction commit
+        // Broadcast event sau khi transaction commit - không cần load relationships nặng
         $order->refresh();
-        broadcast(new OrderStatusUpdated($order->load(['items.product', 'updatedByUser.roles'])))->toOthers();
+        
+        // Thông báo cho user nếu có user_id
+        if ($order->user_id) {
+            try {
+                $this->notificationService->notifyOrderStatusChanged($order, $oldStatus);
+            } catch (\Exception $e) {
+                Log::warning('Failed to notify user about order status change: ' . $e->getMessage(), [
+                    'order_id' => $order->id,
+                ]);
+            }
+        }
+        
+        try {
+            broadcast(new OrderStatusUpdated($order))->toOthers();
+        } catch (\Exception $e) {
+            Log::warning('Failed to broadcast order status update: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+            ]);
+        }
 
         // Trả về JSON nếu là AJAX request, ngược lại redirect back
         if ($request->wantsJson() || $request->ajax()) {

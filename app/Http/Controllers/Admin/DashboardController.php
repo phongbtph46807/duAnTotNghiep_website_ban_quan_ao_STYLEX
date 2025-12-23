@@ -13,26 +13,22 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        
+        // Chỉ Admin mới được truy cập dashboard
+        if (!$user->isAdmin()) {
+            return redirect()->route('admin.orders.index')->with('error', 'Bạn không có quyền truy cập trang này. Chỉ Admin mới được xem thống kê.');
+        }
+        
         $period = $request->get('period', 30);
         $dateFrom = Carbon::now()->subDays($period);
 
         $dashboardData = $this->getDashboardKPIs($dateFrom, $period);
 
-        if ($user->isAdmin()) {
-            return view('admin.dashboard', array_merge($dashboardData, [
-                'userRole' => 'admin',
-                'dashboardTitle' => 'Admin Dashboard',
-                'period' => $period,
-            ]));
-        } elseif ($user->isStaff()) {
-            return view('admin.dashboard', array_merge($dashboardData, [
-                'userRole' => 'staff',
-                'dashboardTitle' => 'Staff Dashboard',
-                'period' => $period,
-            ]));
-        }
-
-        return redirect()->route('loginView')->with('error', 'Không có quyền truy cập');
+        return view('admin.dashboard', array_merge($dashboardData, [
+            'userRole' => 'admin',
+            'dashboardTitle' => 'Admin Dashboard',
+            'period' => $period,
+        ]));
     }
 
     private function getDashboardKPIs($dateFrom, $period)

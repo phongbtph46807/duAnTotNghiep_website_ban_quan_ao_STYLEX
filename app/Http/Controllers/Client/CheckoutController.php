@@ -220,7 +220,9 @@ class CheckoutController extends Controller
                 'items.variant.size',
                 'items.variant.color',
                 'items.variant.texture',
-                'reviews' // Load reviews để kiểm tra đã đánh giá chưa
+                'reviews', // Load reviews để kiểm tra đã đánh giá chưa
+                'shippingCarrier', // Đơn vị vận chuyển
+                'updatedByUser' // Người cập nhật trạng thái
             ])
                 ->where('code', $request->code)->orWhere('id', $request->code)
                 ->orWhere('phone', $request->code)->latest()->first();
@@ -391,8 +393,15 @@ class CheckoutController extends Controller
         $order->cancel_images = $storedImages ?: null;
         $order->save();
 
-        // Broadcast event để cập nhật badge realtime cho admin
-        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+        // Broadcast event để cập nhật badge realtime cho admin với error handling
+        // Dùng fresh() để đảm bảo có dữ liệu mới nhất, nhưng không load relationships nặng
+        try {
+            broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast order cancel request: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+            ]);
+        }
 
         return back()->with('success', 'Yêu cầu hủy đã được gửi. Vui lòng đợi admin duyệt.');
     }
@@ -430,8 +439,15 @@ class CheckoutController extends Controller
         $order->return_images = $storedImages ?: null;
         $order->save();
 
-        // Broadcast event để cập nhật badge realtime cho admin
-        broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+        // Broadcast event để cập nhật badge realtime cho admin với error handling
+        // Dùng fresh() để đảm bảo có dữ liệu mới nhất, nhưng không load relationships nặng
+        try {
+            broadcast(new OrderStatusUpdated($order->fresh()))->toOthers();
+        } catch (\Exception $e) {
+            \Log::warning('Failed to broadcast order return request: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+            ]);
+        }
 
         return back()->with('success', 'Yêu cầu trả hàng đã được gửi. Vui lòng đợi admin duyệt.');
     }

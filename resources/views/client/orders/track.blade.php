@@ -99,21 +99,92 @@
                     <span class="order-badge {{ $statusClass }}">{{ $statusLabel }}</span>
                 </div>
                 <div style="margin-top:6px;">
-                    <strong>Người nhận:</strong> {{ $order->full_name }} - {{ $order->phone }}<br>
-                    <strong>Địa chỉ:</strong> {{ $order->address }}, {{ $order->city }}<br>
-                    <strong>Phương thức thanh toán:</strong>
-                    @if($order->payment_method === 'cod')
-                        COD
-                    @else
-                        Online
+                    {{-- Thông tin người đặt (nếu khác người nhận) --}}
+                    @if($order->buyer_name && ($order->buyer_name !== $order->full_name || $order->buyer_phone !== $order->phone))
+                        <div style="margin-bottom:8px;padding:8px;background:#f8f9fa;border-radius:6px;">
+                            <strong style="color:#6777ef;">Người đặt hàng:</strong><br>
+                            {{ $order->buyer_name }}
+                            @if($order->buyer_phone) - {{ $order->buyer_phone }} @endif
+                            @if($order->buyer_email) <br><small style="color:#666;">{{ $order->buyer_email }}</small> @endif
+                        </div>
                     @endif
-                    &nbsp;|&nbsp;
-                    <strong>Trạng thái thanh toán:</strong>
-                    @switch($order->payment_status)
-                        @case('paid') Đã thanh toán @break
-                        @case('refunded') Đã hoàn tiền @break
-                        @default Chưa thanh toán
-                    @endswitch
+                    
+                    <strong>Người nhận:</strong> {{ $order->full_name }} - {{ $order->phone }}<br>
+                    @if($order->email)
+                        <strong>Email người nhận:</strong> {{ $order->email }}<br>
+                    @endif
+                    <strong>Địa chỉ:</strong> {{ $order->address }}, {{ $order->city }}<br>
+                    
+                    {{-- Đơn vị vận chuyển --}}
+                    @if($order->shippingCarrier)
+                        <strong>Đơn vị vận chuyển:</strong> {{ $order->shippingCarrier->name }}<br>
+                    @endif
+                    
+                    {{-- Ghi chú đơn hàng --}}
+                    @if($order->note)
+                        <div style="margin-top:6px;padding:8px;background:#fff7e6;border-left:3px solid #ffc107;border-radius:4px;">
+                            <strong>Ghi chú:</strong> {{ $order->note }}
+                        </div>
+                    @endif
+                    
+                    <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;">
+                        <strong>Phương thức thanh toán:</strong>
+                        @if($order->payment_method === 'cod')
+                            COD
+                        @else
+                            Online
+                        @endif
+                        &nbsp;|&nbsp;
+                        <strong>Trạng thái thanh toán:</strong>
+                        @switch($order->payment_status)
+                            @case('paid') Đã thanh toán @break
+                            @case('refunded') Đã hoàn tiền @break
+                            @default Chưa thanh toán
+                        @endswitch
+                    </div>
+                    
+                    {{-- Lý do hủy/trả hàng --}}
+                    @if($order->status === 'cancelled' && $order->cancel_reason)
+                        <div style="margin-top:8px;padding:10px;background:#fff1f0;border-left:3px solid #ff4d4f;border-radius:4px;">
+                            <strong style="color:#cf1322;">Lý do hủy đơn:</strong><br>
+                            <div style="margin-top:4px;color:#666;">{{ $order->cancel_reason }}</div>
+                            @if($order->cancel_images && count($order->cancel_images) > 0)
+                                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                                    @foreach($order->cancel_images as $img)
+                                        <a href="{{ asset('storage/' . $img) }}" target="_blank" style="display:block;">
+                                            <img src="{{ asset('storage/' . $img) }}" alt="Ảnh hủy đơn" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                    
+                    @if($order->status === 'returned' && $order->return_reason)
+                        <div style="margin-top:8px;padding:10px;background:#fff7e6;border-left:3px solid #f59e0b;border-radius:4px;">
+                            <strong style="color:#d48806;">Lý do trả hàng:</strong><br>
+                            <div style="margin-top:4px;color:#666;">{{ $order->return_reason }}</div>
+                            @if($order->return_images && count($order->return_images) > 0)
+                                <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                                    @foreach($order->return_images as $img)
+                                        <a href="{{ asset('storage/' . $img) }}" target="_blank" style="display:block;">
+                                            <img src="{{ asset('storage/' . $img) }}" alt="Ảnh trả hàng" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                    
+                    {{-- Thông tin cập nhật --}}
+                    @if($order->updated_at && $order->updated_at != $order->created_at)
+                        <div style="margin-top:8px;font-size:12px;color:#999;">
+                            <strong>Cập nhật lần cuối:</strong> {{ $order->updated_at->format('d/m/Y H:i') }}
+                            @if($order->updatedByUser)
+                                <br><small>Bởi: {{ $order->updatedByUser->name }}</small>
+                            @endif
+                        </div>
+                    @endif
       </div>
       </div>
 
@@ -199,56 +270,6 @@
                     </div>
             @endforeach
 
-                {{-- Hiển thị form đánh giá nếu đơn hàng đã hoàn thành --}}
-                @if($order && in_array($order->status, ['completed', 'delivered']))
-                    <div class="m-t-30" style="border-top:2px solid #eee;padding-top:20px;">
-                        <h5 style="font-weight:700;margin-bottom:16px;">Đánh giá sản phẩm</h5>
-                        @foreach($order->items as $item)
-                            @if(!isset($item->is_reviewed) || !$item->is_reviewed)
-                                <div class="review-item-card" data-item-id="{{ $item->id }}" style="background:#f9f9f9;border-radius:8px;padding:16px;margin-bottom:12px;">
-                                    <div class="d-flex gap-3 align-items-start">
-                                        <img src="{{ $item->product->default_image_url ?? asset('client/images/product/product-01.jpg') }}"
-                                             alt="{{ $item->product->name }}"
-                                             style="width:60px;height:60px;border-radius:8px;object-fit:cover;">
-                                        <div style="flex:1;">
-                                            <div style="font-weight:600;margin-bottom:4px;">{{ $item->product->name }}</div>
-                                            <div style="font-size:12px;color:#666;">Số lượng: {{ $item->quantity }}</div>
-
-                                            <div class="review-form" style="margin-top:12px;">
-                                                <div style="margin-bottom:8px;">
-                                                    <label style="font-size:13px;font-weight:600;margin-bottom:4px;display:block;">Đánh giá của bạn:</label>
-                                                    <div class="star-rating" data-item-id="{{ $item->id }}">
-                                                        @for($i = 1; $i <= 5; $i++)
-                                                            <span class="star" data-rating="{{ $i }}" style="font-size:20px;color:#ddd;cursor:pointer;margin-right:4px;">★</span>
-                                                        @endfor
-                                                    </div>
-                                                </div>
-                                                <textarea class="review-content"
-                                                          data-item-id="{{ $item->id }}"
-                                                          placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..."
-                                                          style="width:100%;min-height:80px;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;"></textarea>
-                                                <button type="button"
-                                                        class="submit-review-btn"
-                                                        data-order-id="{{ $order->id }}"
-                                                        data-item-id="{{ $item->id }}"
-                                                        data-product-id="{{ $item->product_id }}"
-                                                        data-variant-id="{{ $item->variant_id }}"
-                                                        style="margin-top:8px;padding:8px 16px;background:#6777ef;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">
-                                                    Gửi đánh giá
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @else
-                                <div style="background:#f0f9ff;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#1677ff;">
-                                    ✓ Bạn đã đánh giá sản phẩm: <strong>{{ $item->product->name }}</strong>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
-
                 <div class="order-summary">
                     <div class="order-summary-line">
                         <span>Tạm tính</span>
@@ -299,99 +320,6 @@
   </div>
 </div>
 
-@if($order && in_array($order->status, ['completed', 'delivered']))
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Xử lý đánh giá sao
-    document.querySelectorAll('.star-rating').forEach(function(ratingEl) {
-        const stars = ratingEl.querySelectorAll('.star');
-        let selectedRating = 0;
-
-        stars.forEach(function(star, index) {
-            star.addEventListener('mouseenter', function() {
-                const rating = parseInt(this.dataset.rating);
-                highlightStars(stars, rating);
-            });
-
-            star.addEventListener('click', function() {
-                selectedRating = parseInt(this.dataset.rating);
-                highlightStars(stars, selectedRating);
-                ratingEl.dataset.selectedRating = selectedRating;
-            });
-        });
-
-        ratingEl.addEventListener('mouseleave', function() {
-            highlightStars(stars, selectedRating);
-        });
-    });
-
-    function highlightStars(stars, rating) {
-        stars.forEach(function(star, index) {
-            if (index < rating) {
-                star.style.color = '#ffc107';
-            } else {
-                star.style.color = '#ddd';
-            }
-        });
-    }
-
-    // Xử lý submit review
-    document.querySelectorAll('.submit-review-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const orderId = this.dataset.orderId;
-            const itemId = this.dataset.itemId;
-            const ratingEl = document.querySelector(`.star-rating[data-item-id="${itemId}"]`);
-            const contentEl = document.querySelector(`.review-content[data-item-id="${itemId}"]`);
-            const rating = ratingEl ? parseInt(ratingEl.dataset.selectedRating || 0) : 0;
-            const content = contentEl ? contentEl.value.trim() : '';
-
-            if (rating === 0) {
-                alert('Vui lòng chọn số sao đánh giá!');
-                return;
-            }
-
-            // Disable button
-            this.disabled = true;
-            this.textContent = 'Đang gửi...';
-
-            // Gửi request
-            fetch('/api/reviews', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
-                body: JSON.stringify({
-                    _token: document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    order_id: parseInt(orderId),
-                    order_item_id: parseInt(itemId),
-                    rating: parseInt(rating),
-                    content: content
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message || 'Cảm ơn bạn đã đánh giá!');
-                    location.reload();
-                } else {
-                    alert(data.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
-                    this.disabled = false;
-                    this.textContent = 'Gửi đánh giá';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi xảy ra. Vui lòng thử lại.');
-                this.disabled = false;
-                this.textContent = 'Gửi đánh giá';
-            });
-        });
-    });
-});
-</script>
-@endif
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Xử lý form hủy đơn hàng
@@ -425,4 +353,239 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+@if($order)
+@push('scripts')
+{{-- Load Laravel Echo và Pusher --}}
+@vite(['resources/js/app.js'])
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderId = {{ $order->id }};
+    const orderCode = '{{ $order->code }}';
+    @if(auth()->check())
+    const userId = {{ auth()->id() }};
+    @else
+    const userId = null;
+    @endif
+    
+    // Chỉ chạy khi window.Echo đã được load
+    if (typeof window.Echo !== 'undefined') {
+        // Listen trên public channel cho order tracking (không cần auth)
+        window.Echo.channel(`order.${orderCode}.track`)
+            .listen('.order.status.updated', (e) => {
+                // Chỉ xử lý nếu là order hiện tại
+                if (e.id === orderId || e.code === orderCode) {
+                    updateOrderStatus(e);
+                }
+            });
+        
+        // Nếu user đã đăng nhập, cũng listen trên private channel để đảm bảo nhận được event
+        if (userId !== null) {
+            window.Echo.private(`user.${userId}.orders`)
+                .listen('.order.status.updated', (e) => {
+                    // Chỉ xử lý nếu là order hiện tại
+                    if (e.id === orderId || e.code === orderCode) {
+                        updateOrderStatus(e);
+                    }
+                });
+        }
+        
+        console.log('✅ Realtime order tracking enabled for order:', orderCode);
+    } else {
+        console.warn('⚠️ Laravel Echo not loaded. Realtime updates disabled.');
+        
+        // Fallback: polling mỗi 10 giây để cập nhật status
+        setInterval(function() {
+            fetch('{{ route("client.order.track") }}?code={{ $order->code }}&ajax=1', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.status && data.status !== '{{ $order->status }}') {
+                    location.reload(); // Reload nếu status thay đổi
+                }
+            })
+            .catch(err => console.error('Polling error:', err));
+        }, 10000);
+    }
+    
+    function updateOrderStatus(orderData) {
+        const newStatus = orderData.status;
+        const currentStatus = '{{ $order->status }}';
+        
+        if (newStatus === currentStatus) {
+            return; // Không cần cập nhật nếu status không đổi
+        }
+        
+        // Cập nhật status badge
+        const statusLabels = {
+            'pending': 'Chờ xác nhận',
+            'processing': 'Vận chuyển',
+            'shipping': 'Chờ giao hàng',
+            'completed': 'Hoàn thành',
+            'delivered': 'Đã giao',
+            'cancelled': 'Đã hủy',
+            'returned': 'Trả hàng/Hoàn tiền',
+            'cancel_request': 'Yêu cầu hủy',
+            'return_request': 'Yêu cầu trả hàng',
+        };
+        
+        const statusClasses = {
+            'pending': 'status-pending',
+            'processing': 'status-processing',
+            'shipping': 'status-processing',
+            'completed': 'status-completed',
+            'delivered': 'status-completed',
+            'cancelled': 'status-cancelled',
+            'returned': 'status-cancelled',
+            'cancel_request': 'status-cancelled',
+            'return_request': 'status-cancelled',
+        };
+        
+        // Cập nhật badge
+        const statusBadge = document.querySelector('.order-badge');
+        if (statusBadge) {
+            statusBadge.textContent = statusLabels[newStatus] || newStatus;
+            statusBadge.className = 'order-badge ' + (statusClasses[newStatus] || 'status-pending');
+        }
+        
+        // Cập nhật timeline
+        const statusRank = {
+            'pending': 1,
+            'processing': 2,
+            'shipping': 3,
+            'completed': 4,
+            'delivered': 4,
+        }[newStatus] || 0;
+        
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        timelineItems.forEach((item, index) => {
+            if (index + 1 <= statusRank) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        
+        // Thêm timeline item cho cancelled/returned nếu cần
+        if (['cancelled', 'returned'].includes(newStatus)) {
+            const timeline = document.querySelector('.timeline');
+            if (timeline && !timeline.querySelector('.timeline-item:last-child .timeline-title')?.textContent.includes('hủy') && 
+                !timeline.querySelector('.timeline-item:last-child .timeline-title')?.textContent.includes('trả')) {
+                const newItem = document.createElement('li');
+                newItem.className = 'timeline-item active';
+                newItem.innerHTML = `
+                    <span class="timeline-dot"></span>
+                    <div class="timeline-title">
+                        ${newStatus === 'returned' ? 'Đơn hàng đã trả/hoàn tiền' : 'Đơn hàng đã hủy'}
+                    </div>
+                    <div class="timeline-time">Vui lòng liên hệ chăm sóc khách hàng nếu cần hỗ trợ.</div>
+                `;
+                timeline.appendChild(newItem);
+            }
+        }
+        
+        // Cập nhật payment status nếu có
+        if (orderData.payment_status) {
+            const paymentStatusEl = document.querySelector('[data-payment-status]');
+            if (paymentStatusEl) {
+                const paymentLabels = {
+                    'paid': 'Đã thanh toán',
+                    'refunded': 'Đã hoàn tiền',
+                    'pending': 'Chưa thanh toán',
+                };
+                paymentStatusEl.textContent = paymentLabels[orderData.payment_status] || orderData.payment_status;
+            }
+        }
+        
+        // Hiển thị thông báo
+        showStatusUpdateNotification(orderData.code, statusLabels[newStatus] || newStatus);
+        
+        // Cập nhật action buttons
+        updateActionButtons(newStatus);
+    }
+    
+    function showStatusUpdateNotification(orderCode, statusLabel) {
+        // Tạo notification element
+        const notification = document.createElement('div');
+        notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:14px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:99999;font-weight:600;max-width:350px;animation:slideInRight 0.3s ease;';
+        notification.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;">
+                <i class="zmdi zmdi-check-circle" style="font-size:20px;"></i>
+                <div>
+                    <div style="font-size:14px;font-weight:700;">Đơn hàng đã được cập nhật</div>
+                    <div style="font-size:12px;margin-top:4px;opacity:0.9;">Đơn #${orderCode}: ${statusLabel}</div>
+                </div>
+            </div>
+        `;
+        
+        // Thêm animation CSS nếu chưa có
+        if (!document.querySelector('#statusUpdateAnimation')) {
+            const style = document.createElement('style');
+            style.id = 'statusUpdateAnimation';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Tự động ẩn sau 5 giây
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+    
+    function updateActionButtons(newStatus) {
+        const actionsContainer = document.querySelector('.d-flex.justify-content-between.flex-wrap');
+        if (!actionsContainer) return;
+        
+        // Xóa button hủy đơn nếu không còn pending
+        if (newStatus !== 'pending') {
+            const cancelForm = actionsContainer.querySelector('.cancel-order-form');
+            if (cancelForm) {
+                cancelForm.remove();
+            }
+        }
+        
+        // Thêm button hủy đơn nếu chuyển về pending (ít khi xảy ra)
+        if (newStatus === 'pending') {
+            const existingCancelForm = actionsContainer.querySelector('.cancel-order-form');
+            if (!existingCancelForm) {
+                const cancelForm = document.createElement('form');
+                cancelForm.method = 'POST';
+                cancelForm.action = '{{ route("client.order.cancel", $order) }}';
+                cancelForm.className = 'cancel-order-form';
+                cancelForm.innerHTML = `
+                    @csrf
+                    <button type="submit" class="btn-outline cancel-order-btn" style="border:1px solid #ff4d4f;color:#ff4d4f;background:#fff;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;transition:all 0.3s;">
+                        Hủy đơn hàng
+                    </button>
+                `;
+                const buttonsDiv = actionsContainer.querySelector('.d-flex.gap-2');
+                if (buttonsDiv) {
+                    buttonsDiv.insertBefore(cancelForm, buttonsDiv.firstChild);
+                }
+            }
+        }
+    }
+});
+</script>
+@endpush
+@endif
 @endsection

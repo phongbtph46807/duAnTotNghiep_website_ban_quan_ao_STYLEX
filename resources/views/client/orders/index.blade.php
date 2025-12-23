@@ -365,11 +365,13 @@
 // ========== REALTIME ORDER STATUS UPDATES ==========
 // Lắng nghe event cập nhật trạng thái đơn hàng từ admin
 (function(){
-    @auth
-    const userId = {{ Auth::id() }};
+    @php
+        $userId = auth()->check() ? auth()->id() : null;
+    @endphp
+    const userId = @json($userId);
     
-    // Chỉ chạy khi window.Echo đã được load (từ bootstrap.js)
-    if (typeof window.Echo !== 'undefined') {
+    // Chỉ chạy khi window.Echo đã được load (từ bootstrap.js) và user đã đăng nhập
+    if (typeof window.Echo !== 'undefined' && userId) {
         // Lắng nghe trên private channel của user
         window.Echo.private(`user.${userId}.orders`)
             .listen('.order.status.updated', (e) => {
@@ -539,6 +541,108 @@
                 }
             });
         
+        // Lắng nghe thông báo về đơn hàng
+        window.Echo.private(`user.${userId}.notifications`)
+            .listen('.notification.created', (e) => {
+                console.log('Notification received (order history):', e);
+                
+                const notif = e.notification || e;
+                // Chỉ hiển thị thông báo về đơn hàng
+                if (notif.type === 'order_status_changed') {
+                    // Cập nhật badge icon thông báo
+                    updateNotificationBadge();
+                    
+                    // Hiển thị toast notification
+                    const toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:#fff;padding:14px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:99999;font-weight:600;max-width:350px;animation:slideInRight 0.3s ease;cursor:pointer;';
+                    toast.innerHTML = `
+                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">${escapeHtml(notif.title || 'Cập nhật đơn hàng')}</div>
+                        <div style="font-size: 12px; opacity: 0.95;">${escapeHtml(notif.message || '')}</div>
+                    `;
+                    
+                    // Click để đi đến trang chi tiết đơn hàng
+                    if (notif.data && notif.data.url) {
+                        toast.addEventListener('click', () => {
+                            window.location.href = notif.data.url;
+                        });
+                    }
+                    
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        toast.style.transform = 'translateX(100%)';
+                        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 5000);
+                }
+            });
+        
+        // Hàm cập nhật badge icon thông báo
+        function updateNotificationBadge() {
+            const notificationIcon = document.querySelector('.js-show-notifications');
+            if (!notificationIcon) return;
+            
+            // Fetch số lượng thông báo chưa đọc
+            fetch('{{ route("client.notifications.index") }}?limit=1', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const unreadCount = data.unread_count || 0;
+                
+                // Cập nhật badge
+                notificationIcon.setAttribute('data-notify', unreadCount);
+                let badgeEl = notificationIcon.querySelector('.notification-badge');
+                
+                if (unreadCount > 0) {
+                    if (!badgeEl) {
+                        badgeEl = document.createElement('span');
+                        badgeEl.className = 'notification-badge';
+                        badgeEl.style.cssText = 'position: absolute; top: -5px; right: -5px; background: #ff4d4f; color: #fff; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: 600; min-width: 18px; text-align: center; z-index: 1;';
+                        notificationIcon.appendChild(badgeEl);
+                    }
+                    badgeEl.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                    badgeEl.style.display = 'block';
+                    
+                    // Thêm animation để thu hút sự chú ý
+                    badgeEl.style.animation = 'pulse 0.5s ease';
+                    setTimeout(() => {
+                        badgeEl.style.animation = '';
+                    }, 500);
+                } else {
+                    if (badgeEl) badgeEl.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error('Error updating notification badge:', err);
+            });
+        }
+        
+        // Helper function để escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Thêm CSS animation cho badge pulse
+        if (!document.querySelector('#notificationBadgeAnimation')) {
+            const style = document.createElement('style');
+            style.id = 'notificationBadgeAnimation';
+            style.textContent = `
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.2); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
         console.log('✅ Realtime order updates enabled for client');
     } else {
         console.warn('⚠️ Laravel Echo not loaded. Realtime updates disabled.');
@@ -571,11 +675,10 @@
             setInterval(poll, 10000); // 10s
             console.log('✅ Fallback polling enabled');
         }
+    } else if (!userId) {
+        // User chưa đăng nhập, không có realtime
+        console.log('User not authenticated, realtime disabled');
     }
-    @else
-    // User chưa đăng nhập, không có realtime
-    console.log('User not authenticated, realtime disabled');
-    @endauth
 })();
 </script>
 @endpush

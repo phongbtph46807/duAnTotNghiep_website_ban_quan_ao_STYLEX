@@ -147,10 +147,35 @@ class RoleController extends Controller
                 }
             }
 
+            DB::transaction(function () use ($request, $user) {
+                // Cập nhật role integer
             $user->update([
                 'role' => $request->role,
                 'is_admin' => $request->role == 1 ? 1 : 0
             ]);
+
+                // Map role integer sang role name và sync vào bảng role_user (RBAC)
+                $roleName = match($request->role) {
+                    User::ROLE_ADMIN => 'Admin',
+                    User::ROLE_STAFF => 'Staff',
+                    User::ROLE_WAREHOUSE_MANAGER => 'Warehouse Manager',
+                    default => null
+                };
+
+                if ($roleName) {
+                    $role = Role::where('name', $roleName)->first();
+                    if ($role) {
+                        try {
+                            // Sync role vào bảng pivot role_user để navbar hiển thị đúng
+                            $user->roles()->sync([$role->id]);
+                            // Refresh relationship để đảm bảo dữ liệu mới nhất
+                            $user->load('roles');
+                        } catch (\Exception $e) {
+                            Log::warning('Cannot sync roles in updateRole: ' . $e->getMessage());
+                        }
+                    }
+                }
+            });
 
             return response()->json([
                 'success' => true,
@@ -176,11 +201,37 @@ class RoleController extends Controller
             ]);
 
             DB::transaction(function () use ($request) {
+                // Cập nhật role integer
                 User::whereIn('id', $request->user_ids)
                     ->update([
                         'role' => $request->role,
                         'is_admin' => $request->role == 1 ? 1 : 0
                     ]);
+
+                // Map role integer sang role name và sync vào bảng role_user (RBAC)
+                $roleName = match($request->role) {
+                    User::ROLE_ADMIN => 'Admin',
+                    User::ROLE_STAFF => 'Staff',
+                    User::ROLE_WAREHOUSE_MANAGER => 'Warehouse Manager',
+                    User::ROLE_USER => 'User',
+                    default => null
+                };
+
+                if ($roleName) {
+                    $role = Role::where('name', $roleName)->first();
+                    if ($role) {
+                        // Lấy tất cả users đã được cập nhật
+                        $users = User::whereIn('id', $request->user_ids)->get();
+                        foreach ($users as $user) {
+                            try {
+                                // Sync role vào bảng pivot role_user để navbar hiển thị đúng
+                                $user->roles()->sync([$role->id]);
+                            } catch (\Exception $e) {
+                                Log::warning('Cannot sync roles in bulkUpdateRoles for user ' . $user->id . ': ' . $e->getMessage());
+                            }
+                        }
+                    }
+                }
             });
 
             return response()->json([

@@ -7,6 +7,7 @@ use App\Models\Setting;
 use App\Events\NotificationCreated;
 use App\Events\NewOrderCreated;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
@@ -112,7 +113,18 @@ class NotificationService
                 'updated_at' => now(),
             ];
             DB::table('notifications')->insert($notification);
-            broadcast(new NotificationCreated($notification));
+            
+            // Broadcast event với error handling
+            try {
+                broadcast(new NotificationCreated($notification))->toOthers();
+            } catch (\Exception $e) {
+                // Log lỗi nhưng không làm gián đoạn flow
+                Log::warning('Failed to broadcast notification: ' . $e->getMessage(), [
+                    'type' => 'pending_approval',
+                    'request_type' => $requestType,
+                    'request_id' => $requestId,
+                ]);
+            }
         }
     }
 
@@ -139,8 +151,90 @@ class NotificationService
             ]);
         }
         
-        // Broadcast event để cập nhật realtime
-        broadcast(new NewOrderCreated($order->fresh()))->toOthers();
+        // Broadcast event để cập nhật realtime với error handling
+        // Không làm gián đoạn quá trình checkout nếu broadcast thất bại
+        try {
+            broadcast(new NewOrderCreated($order->fresh()))->toOthers();
+        } catch (\Exception $e) {
+            // Log lỗi nhưng không throw exception để không làm gián đoạn checkout
+            Log::warning('Failed to broadcast new order event: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'error' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    // Thông báo cho user khi trạng thái đơn hàng thay đổi
+    public function notifyOrderStatusChanged($order, $oldStatus = null)
+    {
+        // Chỉ gửi thông báo cho user sở hữu đơn hàng
+        if (!$order->user_id) {
+            return; // Không có user_id thì không gửi
+        }
+
+        $statusLabels = [
+            'pending' => 'Chờ xác nhận',
+            'processing' => 'Đang xử lý',
+            'shipping' => 'Đang giao hàng',
+            'delivered' => 'Đã giao',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+            'returned' => 'Trả hàng/Hoàn tiền',
+            'cancel_request' => 'Yêu cầu hủy',
+            'return_request' => 'Yêu cầu trả hàng',
+        ];
+
+        $statusLabel = $statusLabels[$order->status] ?? $order->status;
+        
+        // Tạo message rõ ràng hơn cho user
+        $message = "Đơn hàng #{$order->code} của bạn đã chuyển sang trạng thái: {$statusLabel}";
+        
+        // Thêm thông tin chi tiết nếu có
+        if ($oldStatus && isset($statusLabels[$oldStatus])) {
+            $oldStatusLabel = $statusLabels[$oldStatus];
+            $message = "Đơn hàng #{$order->code} của bạn đã được cập nhật từ '{$oldStatusLabel}' sang '{$statusLabel}'";
+        }
+
+        DB::table('notifications')->insert([
+            'user_id' => $order->user_id,
+            'type' => 'order_status_changed',
+            'title' => 'Cập nhật đơn hàng',
+            'message' => $message,
+            'data' => json_encode([
+                'order_id' => $order->id,
+                'order_code' => $order->code,
+                'status' => $order->status,
+                'old_status' => $oldStatus,
+                'url' => route('client.order.track', ['code' => $order->code])
+            ]),
+            'read_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Broadcast notification event cho user
+        try {
+            $notificationData = [
+                'user_id' => $order->user_id,
+                'type' => 'order_status_changed',
+                'title' => 'Cập nhật đơn hàng',
+                'message' => $message, // Sử dụng message đã tạo ở trên
+                'data' => [
+                    'order_id' => $order->id,
+                    'order_code' => $order->code,
+                    'status' => $order->status,
+                    'status_label' => $statusLabel,
+                    'old_status' => $oldStatus,
+                    'url' => route('client.order.track', ['code' => $order->code])
+                ],
+            ];
+            broadcast(new NotificationCreated($notificationData))->toOthers();
+        } catch (\Exception $e) {
+            Log::warning('Failed to broadcast order status notification: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+            ]);
+        }
     }
 
     // Thông báo QC failed

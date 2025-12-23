@@ -7,15 +7,16 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 /**
  * Event broadcast khi trạng thái đơn hàng được cập nhật
  * Tuân theo chuẩn Laravel Broadcasting
+ * Dùng ShouldBroadcastNow để broadcast ngay lập tức, không qua queue
  */
-class OrderStatusUpdated implements ShouldBroadcast
+class OrderStatusUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -31,8 +32,9 @@ class OrderStatusUpdated implements ShouldBroadcast
      */
     public function __construct(Order $order)
     {
-        // Load relationships để gửi đầy đủ thông tin khi broadcast
-        $this->order = $order->load(['items.product', 'updatedByUser.roles']);
+        // Chỉ load relationships cần thiết để giảm delay
+        // Không load toàn bộ để tăng tốc độ broadcast
+        $this->order = $order;
     }
 
     /**
@@ -49,6 +51,8 @@ class OrderStatusUpdated implements ShouldBroadcast
         $channels = [
             // Public channel cho admin/staff (được authorize trong routes/channels.php)
             new Channel('orders'),
+            // Public channel cho order tracking - không cần auth
+            new Channel('order.' . $this->order->code . '.track'),
         ];
         
         // Nếu order có user_id, broadcast trên private channel cho user đó
@@ -78,11 +82,24 @@ class OrderStatusUpdated implements ShouldBroadcast
      * 
      * Chỉ broadcast dữ liệu cần thiết, không broadcast toàn bộ model
      * để tránh lộ thông tin nhạy cảm và giảm kích thước payload
+     * Load relationships chỉ khi cần để tăng tốc độ broadcast
      * 
      * @return array<string, mixed>
      */
     public function broadcastWith(): array
     {
+        // Chỉ load relationships khi cần thiết để giảm delay
+        $updatedByUser = null;
+        $updatedByRoles = [];
+        if ($this->order->updated_by) {
+            $updatedByUser = \App\Models\User::with('roles')->find($this->order->updated_by);
+            if ($updatedByUser && $updatedByUser->roles) {
+                $updatedByRoles = $updatedByUser->roles->map(function($role) {
+                    return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
+                })->toArray();
+            }
+        }
+        
         return [
             'id' => $this->order->id,
             'code' => $this->order->code,
@@ -95,28 +112,12 @@ class OrderStatusUpdated implements ShouldBroadcast
             'created_at' => $this->order->created_at?->toDateTimeString(),
             'updated_at' => $this->order->updated_at?->toDateTimeString(),
             'updated_by' => $this->order->updated_by,
-            'updated_by_name' => $this->order->updatedByUser?->name,
-            'updated_by_roles' => $this->order->updatedByUser?->roles 
-                ? $this->order->updatedByUser->roles->map(function($role) {
-                    return ['name' => $role->name, 'color' => $role->color ?? '#6c757d'];
-                })->toArray() 
-                : [],
-            'items_count' => $this->order->items->count(),
+            'updated_by_name' => $updatedByUser?->name,
+            'updated_by_roles' => $updatedByRoles,
+            'items_count' => $this->order->items()->count(), // Dùng query thay vì load collection
         ];
     }
 
-    /**
-     * Determine if this event should be queued.
-     * 
-     * Trả về false để broadcast ngay lập tức (realtime)
-     * Nếu muốn queue để tăng performance, có thể return true
-     * và implement ShouldBroadcast với queue connection
-     * 
-     * @return bool
-     */
-    public function shouldQueue(): bool
-    {
-        return false; // Broadcast ngay lập tức cho realtime
-    }
+    // ShouldBroadcastNow tự động broadcast ngay lập tức, không cần shouldQueue()
 }
 

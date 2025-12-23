@@ -34,11 +34,16 @@ use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\SalaryController;
 use App\Http\Controllers\Admin\WithdrawRequestController;
 
-// Dashboard và Profile - cho phép Admin, Staff và Warehouse Manager
-Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {
+// Dashboard - CHỈ ADMIN
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function () {
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    });
+});
 
+// Profile - cho phép Admin, Staff và Warehouse Manager
+Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], function () {
+    Route::prefix('admin')->as('admin.')->group(function () {
         // Profile routes
         Route::get('/profile', [UserController::class, 'profile'])->name('profile');
         Route::get('/profile/edit', [UserController::class, 'editProfile'])->name('profile.edit');
@@ -115,7 +120,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], functio
             Route::get('/', [ReviewController::class, 'index'])->name('index');
             Route::get('/{review}', [ReviewController::class, 'show'])->name('show');
             Route::patch('/{id}/toggle-status', [ReviewController::class, 'toggleStatus'])->name('toggleStatus');
-            Route::delete('/{id}', [ReviewController::class, 'destroy'])->name('destroy');
+            // Không cho phép xóa đánh giá - chỉ có thể ẩn/hiện
         });
         // Orders list: allow Admin, Staff và Warehouse Manager to view orders
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
@@ -130,7 +135,7 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1,2,3']], functio
             Route::post('/{order}/approve-return', [OrderController::class, 'approveReturn'])->name('approveReturn');
         });
 
-        // Order Fulfillment - Admin & Staff
+        // Order Fulfillment - Admin, Staff và Warehouse Manager
         Route::prefix('orders/fulfillment')->as('orders.fulfillment.')->group(function () {
             Route::get('/', [OrderFulfillmentController::class, 'index'])->name('index');
             Route::get('{order}', [OrderFulfillmentController::class, 'show'])->name('show');
@@ -274,14 +279,6 @@ Route::group(['middleware' => ['onlyAuthenticated', 'checkRole:1']], function ()
             Route::post('{order}/ship', [OrderController::class, 'ship'])->name('ship');
             Route::post('{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
             Route::post('{itemId}/return', [OrderController::class, 'returnItem'])->name('returnItem');
-
-            Route::prefix('fulfillment')->as('fulfillment.')->group(function () {
-                Route::get('/', [OrderFulfillmentController::class, 'index'])->name('index');
-                Route::get('{order}', [OrderFulfillmentController::class, 'show'])->name('show');
-                Route::post('{order}/confirm', [OrderFulfillmentController::class, 'confirm'])->name('confirm');
-                Route::post('{picking}/pack', [OrderFulfillmentController::class, 'completePacking'])->name('pack');
-                Route::post('{order}/ship', [OrderFulfillmentController::class, 'completeShipping'])->name('ship');
-            });
         });
 
         // Orders management - CHỈ ADMIN

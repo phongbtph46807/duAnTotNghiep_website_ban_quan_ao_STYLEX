@@ -139,9 +139,17 @@
 										if ($variant->color) $parts[] = 'color:' . $variant->color->name;
 										if ($variant->texture) $parts[] = 'texture:' . $variant->texture->name;
 										$key = implode('|', $parts);
+										// Tính tồn kho từ warehouse stocks đã được load
+										$totalStock = 0;
+										if ($variant->relationLoaded('warehouseStocks')) {
+											$totalStock = $variant->warehouseStocks->sum('available');
+										} else {
+											$totalStock = $variant->getTotalAvailableStock();
+										}
 										return [$key => [
 											'id' => $variant->id,
 											'price' => $variant->price,
+											'stock' => $totalStock,
 										]];
 									})->toArray();
 								@endphp
@@ -212,15 +220,51 @@
 							@php
 								// Tạo map variant để JavaScript tìm variant_id nhanh
 								$variantsData = $product->productVariants->map(function($variant) {
+									// Tính tồn kho từ warehouse stocks đã được load
+									$totalStock = 0;
+									if ($variant->relationLoaded('warehouseStocks')) {
+										$totalStock = $variant->warehouseStocks->sum('available');
+									} else {
+										$totalStock = $variant->getTotalAvailableStock();
+									}
 									return [
 										'id' => $variant->id,
 										'price' => $variant->price,
 										'size' => $variant->size ? $variant->size->name : '',
 										'color' => $variant->color ? $variant->color->name : '',
 										'texture' => $variant->texture ? $variant->texture->name : '',
+										'stock' => $totalStock,
 									];
 								})->toArray();
+								
+								// Lấy tồn kho của variant mặc định
+								$defaultVariant = isset($defaultVariantId) ? $product->productVariants->firstWhere('id', $defaultVariantId) : null;
+								$defaultStock = 0;
+								if ($defaultVariant) {
+									if ($defaultVariant->relationLoaded('warehouseStocks')) {
+										$defaultStock = $defaultVariant->warehouseStocks->sum('available');
+									} else {
+										$defaultStock = $defaultVariant->getTotalAvailableStock();
+									}
+								}
 							@endphp
+							
+							<!-- Hiển thị tồn kho -->
+							<div class="flex-w flex-r-m p-b-10" id="stock-display-container">
+								<div class="size-203 flex-c-m respon6">
+									Tồn kho
+								</div>
+								<div class="size-204 respon6-next">
+									<span id="stock-display" class="stext-102 cl3" style="font-weight: 600;">
+										@if($defaultStock > 0)
+											<span style="color: #28a745;">Còn {{ number_format($defaultStock, 0, ',', '.') }} sản phẩm</span>
+										@else
+											<span style="color: #dc3545;">Hết hàng</span>
+										@endif
+									</span>
+								</div>
+							</div>
+							
 							<div class="flex-w flex-r-m p-b-10"
 								 data-product-id="{{ $product->id }}"
 								 data-original-price="{{ $product->price }}"
@@ -766,10 +810,28 @@ $(document).ready(function() {
                     $('#product-price-display').html(new Intl.NumberFormat('vi-VN').format(originalPrice) + 'đ');
                 }
             }
+            
+            // Cập nhật tồn kho
+            const stock = variant.stock || 0;
+            const $stockDisplay = $('#stock-display');
+            if ($stockDisplay.length) {
+                if (stock > 0) {
+                    $stockDisplay.html('<span style="color: #28a745;">Còn ' + 
+                        new Intl.NumberFormat('vi-VN').format(stock) + ' sản phẩm</span>');
+                } else {
+                    $stockDisplay.html('<span style="color: #dc3545;">Hết hàng</span>');
+                }
+            }
         } else {
             // Nếu không tìm thấy variant, reset variant_id và texture_name
             $('input[name="variant_id"]').val('');
             $('input[name="texture_name"]').val('');
+            
+            // Reset tồn kho
+            const $stockDisplay = $('#stock-display');
+            if ($stockDisplay.length) {
+                $stockDisplay.html('<span style="color: #6c757d;">Vui lòng chọn biến thể</span>');
+            }
 
             // DEBUG: Log variant not found
             console.log('Variant NOT found for Size:', size, 'Color:', color);

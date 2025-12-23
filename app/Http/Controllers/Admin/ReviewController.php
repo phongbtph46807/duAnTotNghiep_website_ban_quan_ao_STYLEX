@@ -85,11 +85,5 @@ class ReviewController extends Controller
             ->with('success', 'Đã cập nhật trạng thái đánh giá thành công');
     }
 
-    public function destroy($id)
-    {
-        $review = Review::findOrFail($id);
-        $review->delete();
-
-        return redirect()->route('admin.reviews.index')->with('success', 'Đã xóa đánh giá thành công');
-    }
+    // Không cho phép xóa đánh giá - chỉ có thể ẩn/hiện đánh giá
 }

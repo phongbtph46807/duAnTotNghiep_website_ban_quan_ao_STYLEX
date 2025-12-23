@@ -84,6 +84,33 @@
 							<a href="{{ route('client.wishlist.index') }}" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="{{ Auth::user()->wishlistProducts()->count() }}">
 								<i class="zmdi zmdi-favorite-outline"></i>
 							</a>
+							
+							@php
+								// Chỉ đếm thông báo về đơn hàng của user
+								$unreadCount = DB::table('notifications')
+									->where('user_id', Auth::id())
+									->where('type', 'order_status_changed')
+									->whereNull('read_at')
+									->count();
+							@endphp
+							<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-notifications" data-notify="{{ $unreadCount }}" style="position: relative; cursor: pointer;">
+								<i class="zmdi zmdi-notifications"></i>
+								<!-- Notification Dropdown -->
+								<div class="notification-dropdown" style="display: none; position: absolute; top: 100%; right: 0; width: 350px; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border-radius: 8px; z-index: 10000; margin-top: 10px; max-height: 500px; overflow-y: auto;">
+									<div class="notification-header" style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+										<h6 style="margin: 0; font-weight: 600; font-size: 14px;">Thông báo</h6>
+										<button class="mark-all-read-btn" style="background: none; border: none; color: #6777ef; cursor: pointer; font-size: 12px; padding: 0;">Đánh dấu tất cả đã đọc</button>
+									</div>
+									<div class="notification-list" style="padding: 0;">
+										<div class="notification-loading" style="padding: 20px; text-align: center; color: #999;">
+											<i class="zmdi zmdi-spinner zmdi-hc-spin" style="font-size: 24px;"></i>
+										</div>
+									</div>
+									<div class="notification-footer" style="padding: 10px; text-align: center; border-top: 1px solid #eee;">
+										<a href="{{ route('client.notifications.index') }}" style="color: #6777ef; text-decoration: none; font-size: 12px;">Xem tất cả</a>
+									</div>
+								</div>
+							</div>
 						@else
 							<a href="{{ route('loginView') }}" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
 								<i class="zmdi zmdi-favorite-outline"></i>
@@ -224,3 +251,226 @@
 				</form>
 			</div>
 		</div>
+
+		@auth
+		@push('scripts')
+		@vite(['resources/js/app.js'])
+		<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const notificationIcon = document.querySelector('.js-show-notifications');
+			const notificationDropdown = document.querySelector('.notification-dropdown');
+			const notificationList = document.querySelector('.notification-list');
+			const markAllReadBtn = document.querySelector('.mark-all-read-btn');
+			let isDropdownOpen = false;
+			let isLoading = false;
+
+			// Toggle dropdown
+			if (notificationIcon) {
+				notificationIcon.addEventListener('click', function(e) {
+					e.stopPropagation();
+					isDropdownOpen = !isDropdownOpen;
+					if (isDropdownOpen) {
+						notificationDropdown.style.display = 'block';
+						loadNotifications();
+					} else {
+						notificationDropdown.style.display = 'none';
+					}
+				});
+
+				// Đóng dropdown khi click bên ngoài
+				document.addEventListener('click', function(e) {
+					if (!notificationIcon.contains(e.target) && !notificationDropdown.contains(e.target)) {
+						isDropdownOpen = false;
+						notificationDropdown.style.display = 'none';
+					}
+				});
+			}
+
+			// Load notifications
+			function loadNotifications() {
+				if (isLoading) return;
+				isLoading = true;
+				
+				fetch('{{ route("client.notifications.index") }}?limit=10', {
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+						'Accept': 'application/json'
+					}
+				})
+				.then(res => res.json())
+				.then(data => {
+					isLoading = false;
+					renderNotifications(data.notifications);
+					updateBadge(data.unread_count);
+				})
+				.catch(err => {
+					isLoading = false;
+					console.error('Error loading notifications:', err);
+					notificationList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Không thể tải thông báo</div>';
+				});
+			}
+
+			// Render notifications
+			function renderNotifications(notifications) {
+				if (!notifications || notifications.length === 0) {
+					notificationList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Không có thông báo</div>';
+					return;
+				}
+
+				let html = '';
+				notifications.forEach(notif => {
+					const isRead = notif.read_at !== null;
+					const bgColor = isRead ? '#fff' : '#f8f9ff';
+					html += `
+						<div class="notification-item" data-id="${notif.id}" style="padding: 12px 15px; border-bottom: 1px solid #eee; background: ${bgColor}; cursor: pointer; transition: background 0.2s;">
+							<div style="display: flex; align-items: start; gap: 10px;">
+								<div style="flex: 1;">
+									<div style="font-weight: ${isRead ? '400' : '600'}; font-size: 13px; color: #333; margin-bottom: 4px;">${escapeHtml(notif.title)}</div>
+									<div style="font-size: 12px; color: #666; line-height: 1.4;">${escapeHtml(notif.message)}</div>
+									<div style="font-size: 11px; color: #999; margin-top: 4px;">${notif.created_at_formatted || 'Vừa xong'}</div>
+								</div>
+								${!isRead ? '<div style="width: 8px; height: 8px; background: #6777ef; border-radius: 50%; margin-top: 6px; flex-shrink: 0;"></div>' : ''}
+							</div>
+						</div>
+					`;
+				});
+				notificationList.innerHTML = html;
+
+				// Add click handlers
+				notificationList.querySelectorAll('.notification-item').forEach(item => {
+					item.addEventListener('click', function() {
+						const notifId = this.dataset.id;
+						const notif = notifications.find(n => n.id == notifId);
+						if (notif && notif.data && notif.data.url) {
+							window.location.href = notif.data.url;
+						}
+					});
+				});
+			}
+
+			// Update badge
+			function updateBadge(count) {
+				if (notificationIcon) {
+					notificationIcon.setAttribute('data-notify', count);
+					let badgeEl = notificationIcon.querySelector('.notification-badge');
+					if (count > 0) {
+						if (!badgeEl) {
+							badgeEl = document.createElement('span');
+							badgeEl.className = 'notification-badge';
+							badgeEl.style.cssText = 'position: absolute; top: -5px; right: -5px; background: #ff4d4f; color: #fff; border-radius: 10px; padding: 2px 6px; font-size: 10px; font-weight: 600; min-width: 18px; text-align: center; z-index: 1;';
+							notificationIcon.appendChild(badgeEl);
+						}
+						badgeEl.textContent = count > 99 ? '99+' : count;
+						badgeEl.style.display = 'block';
+					} else {
+						if (badgeEl) badgeEl.style.display = 'none';
+					}
+				}
+			}
+
+			// Mark as read
+			window.markAsRead = function(notifId) {
+				fetch('{{ route("client.notifications.mark-read", ["id" => ":id"]) }}'.replace(':id', notifId), {
+					method: 'POST',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest',
+						'Accept': 'application/json',
+						'X-CSRF-TOKEN': '{{ csrf_token() }}'
+					}
+				})
+				.then(res => res.json())
+				.then(data => {
+					if (data.success) {
+						updateBadge(data.unread_count);
+						loadNotifications();
+					}
+				})
+				.catch(err => console.error('Error marking as read:', err));
+			};
+
+			// Mark all as read
+			if (markAllReadBtn) {
+				markAllReadBtn.addEventListener('click', function(e) {
+					e.stopPropagation();
+					fetch('{{ route("client.notifications.mark-read") }}', {
+						method: 'POST',
+						headers: {
+							'X-Requested-With': 'XMLHttpRequest',
+							'Accept': 'application/json',
+							'X-CSRF-TOKEN': '{{ csrf_token() }}'
+						}
+					})
+					.then(res => res.json())
+					.then(data => {
+						if (data.success) {
+							updateBadge(0);
+							loadNotifications();
+						}
+					})
+					.catch(err => console.error('Error marking all as read:', err));
+				});
+			}
+
+			// Escape HTML
+			function escapeHtml(text) {
+				const div = document.createElement('div');
+				div.textContent = text;
+				return div.innerHTML;
+			}
+
+			// Listen for realtime notifications
+			if (typeof window.Echo !== 'undefined') {
+				const userId = {{ auth()->id() }};
+				
+				// Listen on private channel for notifications
+				window.Echo.private(`user.${userId}.notifications`)
+					.listen('.notification.created', (e) => {
+						const notif = e.notification || e;
+						// Show toast notification
+						showNotificationToast(notif.title || 'Thông báo', notif.message || '', notif.data?.url);
+						// Reload notifications
+						if (isDropdownOpen) {
+							loadNotifications();
+						} else {
+							loadNotifications(); // Update badge
+						}
+					});
+
+				// Listen for order status updates
+				window.Echo.private(`user.${userId}.orders`)
+					.listen('.order.status.updated', (e) => {
+						// Reload notifications when order status changes
+						loadNotifications();
+					});
+			}
+
+			// Show toast notification
+			function showNotificationToast(title, message, url) {
+				const toast = document.createElement('div');
+				toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #10b981; color: #fff; padding: 14px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 99999; font-weight: 600; max-width: 350px; animation: slideInRight 0.3s ease; cursor: pointer;';
+				toast.innerHTML = `
+					<div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">${escapeHtml(title)}</div>
+					<div style="font-size: 12px; opacity: 0.95;">${escapeHtml(message)}</div>
+				`;
+				
+				if (url) {
+					toast.addEventListener('click', () => {
+						window.location.href = url;
+					});
+				}
+
+				document.body.appendChild(toast);
+
+				setTimeout(() => {
+					toast.style.opacity = '0';
+					toast.style.transform = 'translateX(100%)';
+					setTimeout(() => toast.remove(), 300);
+				}, 5000);
+			}
+
+			// Initial load
+			loadNotifications();
+		});
+		</script>
+		@endpush
+		@endauth

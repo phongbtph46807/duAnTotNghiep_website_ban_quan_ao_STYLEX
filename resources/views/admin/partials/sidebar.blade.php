@@ -1,7 +1,11 @@
 <div class="app-menu navbar-menu">
     <!-- LOGO -->
     <div class="navbar-brand-box">
-        <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
+        @php
+            // Admin link đến dashboard, Staff và Warehouse Manager link đến orders
+            $homeRoute = auth()->user()->isAdmin() ? route('admin.dashboard') : route('admin.orders.index');
+        @endphp
+        <a href="{{ $homeRoute }}" class="logo logo-dark">
             <span class="logo-sm">
                 <div class="style-x-logo-sm">
                     <span class="style-text">S</span>
@@ -15,7 +19,7 @@
                 </div>
             </span>
         </a>
-        <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
+        <a href="{{ $homeRoute }}" class="logo logo-light">
             <span class="logo-sm">
                 <div class="style-x-logo-sm">
                     <span class="style-text">S</span>
@@ -197,6 +201,7 @@
                     </li>
 
                 <!-- ===== QUẢN LÝ KHO ===== -->
+                @if (auth()->user()->role == \App\Models\User::ROLE_ADMIN || auth()->user()->role == \App\Models\User::ROLE_WAREHOUSE_MANAGER)
                 <li class="menu-title"><span>Kho Hàng (WMS)</span></li>
 
                 <li class="nav-item">
@@ -294,7 +299,9 @@
                         </ul>
                     </div>
                 </li>
+                @endif
 
+                @if (auth()->user()->role == \App\Models\User::ROLE_ADMIN || auth()->user()->role == \App\Models\User::ROLE_WAREHOUSE_MANAGER)
                 <li class="nav-item">
                     <a href="{{ route('admin.notifications.index') }}" class="nav-link">
                         <i class="ri-notification-badge-line me-1"></i> Thông báo
@@ -308,6 +315,7 @@
                         @endif
                     </a>
                 </li>
+                @endif
 
                 <!-- ===== GIAO DIỆN & TRUYỀN THÔNG ===== -->
                 @if (auth()->user()->role != \App\Models\User::ROLE_WAREHOUSE_MANAGER)

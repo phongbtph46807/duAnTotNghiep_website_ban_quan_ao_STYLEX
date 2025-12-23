@@ -10,7 +10,8 @@ Route::get('/products/filter', [ProductController::class, 'index'])->name('api.p
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('api.products.show');
 
 // Review routes
-Route::post('/reviews', [ReviewController::class, 'store'])->name('api.reviews.store');
+// Đã vô hiệu hóa chức năng tạo đánh giá - chỉ cho phép xem đánh giá
+// Route::post('/reviews', [ReviewController::class, 'store'])->name('api.reviews.store');
 Route::get('/products/{productId}/reviews', [ReviewController::class, 'getProductReviews'])->name('api.reviews.product');
 
 

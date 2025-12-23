@@ -343,6 +343,16 @@ class CartController extends Controller
             // Merge with textures from cart items (in case there are textures not in variants)
             $allTextures = array_unique(array_merge($allTextures, $group['textures'] ?? []));
 
+            // Lấy tồn kho từ variant đầu tiên (tất cả variants trong group có cùng tồn kho)
+            $firstVariantId = $firstItem['variant_id'] ?? null;
+            $availableStock = 0;
+            if ($firstVariantId) {
+                $firstVariant = ProductVariant::find($firstVariantId);
+                if ($firstVariant) {
+                    $availableStock = $firstVariant->getTotalAvailableStock();
+                }
+            }
+
             $cartData[] = [
                 'id' => $firstItem['id'],
                 'ids' => array_column($group['items'], 'id'),
@@ -358,6 +368,7 @@ class CartController extends Controller
                 'image_url' => $group['product']->default_image_url,
                 'line_total' => $totalLine,
                 'items' => $group['items'],
+                'available_stock' => $availableStock, // Thêm tồn kho vào cart data
             ];
         }
 
@@ -531,23 +542,48 @@ class CartController extends Controller
             ->where('variant_id', $variantId)
             ->first();
 
+        // Kiểm tra tồn kho trước khi thêm vào giỏ hàng
+        $availableStock = $variant->getTotalAvailableStock();
+        $requestedQty = (int) $request->quantity;
+        
         if ($existingItem) {
-            Log::info('Existing item found - ID: ' . $existingItem->id . ', Current Qty: ' . $existingItem->quantity . ', Adding: ' . $request->quantity);
-            // Nếu đã có variant này, tăng quantity
-            $existingItem->quantity += (int) $request->quantity;
+            Log::info('Existing item found - ID: ' . $existingItem->id . ', Current Qty: ' . $existingItem->quantity . ', Adding: ' . $requestedQty);
+            // Tổng số lượng sau khi thêm
+            $totalQty = $existingItem->quantity + $requestedQty;
+            
+            // Kiểm tra tồn kho và điều chỉnh nếu cần
+            $adjusted = false;
+            if ($totalQty > $availableStock) {
+                // Điều chỉnh về số lượng tối đa
+                $totalQty = $availableStock;
+                $adjusted = true;
+            }
+            
+            // Cập nhật quantity
+            $existingItem->quantity = $totalQty;
             $existingItem->save();
             Log::info('Updated Qty: ' . $existingItem->quantity);
         } else {
-            Log::info('Creating new cart item - Product ID: ' . $request->product_id . ', Variant ID: ' . $variantId . ', Qty: ' . $request->quantity);
-            // Nếu chưa có variant này, tạo mới
+            Log::info('Creating new cart item - Product ID: ' . $request->product_id . ', Variant ID: ' . $variantId . ', Qty: ' . $requestedQty);
+            
+            // Kiểm tra tồn kho và điều chỉnh nếu cần
+            $finalQty = $requestedQty;
+            $adjusted = false;
+            if ($requestedQty > $availableStock) {
+                // Điều chỉnh về số lượng tối đa
+                $finalQty = $availableStock;
+                $adjusted = true;
+            }
+            
+            // Tạo mới với số lượng đã điều chỉnh
             $newCartItem = Cart::create([
                 'user_id' => $owner['user_id'],
                 'session_id' => $owner['session_id'],
                 'product_id' => $request->product_id,
                 'variant_id' => $variantId,
-                'quantity' => (int) $request->quantity,
+                'quantity' => $finalQty,
             ]);
-            Log::info('New cart item created - ID: ' . $newCartItem->id);
+            Log::info('New cart item created - ID: ' . $newCartItem->id . ', Qty: ' . $finalQty);
         }
 
         if ($request->ajax() || $request->wantsJson() || $request->boolean('ajax')) {
@@ -558,7 +594,8 @@ class CartController extends Controller
                 ->with(['product', 'variant.size', 'variant.color', 'variant.texture'])
                 ->first();
             $price = $this->resolveItemPrice($product, $variant);
-            return response()->json([
+            
+            $response = [
                 'success' => true,
                 'message' => 'Đã thêm vào giỏ hàng',
                 'cart_count' => (int) $count,
@@ -574,7 +611,23 @@ class CartController extends Controller
                     'quantity' => (int) $item->quantity,
                     'price' => $price,
                 ] : null,
-            ]);
+            ];
+            
+            // Thêm thông báo nếu số lượng đã được điều chỉnh
+            if (isset($adjusted) && $adjusted) {
+                $finalQty = $item ? $item->quantity : ($existingItem ? $existingItem->quantity : $finalQty);
+                $response['message'] = 'Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' . $finalQty . ' sản phẩm.';
+                $response['adjusted'] = true;
+                $response['available_stock'] = $availableStock;
+            }
+            
+            return response()->json($response);
+        }
+
+        // Redirect với thông báo nếu có điều chỉnh
+        if (isset($adjusted) && $adjusted) {
+            $finalQty = $existingItem ? $existingItem->quantity : ($newCartItem ? $newCartItem->quantity : $finalQty);
+            return redirect()->route('client.cart.index')->with('warning', 'Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' . $finalQty . ' sản phẩm.');
         }
 
         return redirect()->route('client.cart.index')->with('success', 'Đã thêm vào giỏ hàng');
@@ -601,11 +654,13 @@ class CartController extends Controller
         $item = $this->baseCartQuery()->where('id', $id)->with('variant')->first();
 
         if ($item) {
-            // Nếu có variant gắn với cart item thì giới hạn số lượng theo tồn kho của variant
-            $maxQty = $item->variant && isset($item->variant->quantity)
-                ? max(0, (int) $item->variant->quantity)
-                : null;
+            // Lấy tồn kho từ warehouse stocks nếu có variant
+            $maxQty = null;
+            if ($item->variant) {
+                $maxQty = $item->variant->getTotalAvailableStock();
+            }
 
+            // Kiểm tra và điều chỉnh số lượng nếu vượt quá tồn kho
             if ($maxQty !== null && $qty > $maxQty) {
                 $qty = $maxQty;
             }
@@ -646,6 +701,14 @@ class CartController extends Controller
                 if ($maxQty !== null) {
                     $response['max_quantity'] = $maxQty;
                     $response['current_quantity'] = $qty;
+                    $response['available_stock'] = $maxQty;
+                    
+                    // Nếu số lượng đã được điều chỉnh, thêm thông báo
+                    $requestedQty = max(1, (int)($request->input('quantity', 1)));
+                    if ($requestedQty > $maxQty) {
+                        $response['message'] = 'Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' . $maxQty . ' sản phẩm.';
+                        $response['adjusted'] = true;
+                    }
                 }
 
                 return response()->json($response);
@@ -749,6 +812,16 @@ class CartController extends Controller
             // Merge with textures from cart items (in case there are textures not in variants)
             $allTextures = array_unique(array_merge($allTextures, $group['textures'] ?? []));
 
+            // Lấy tồn kho từ variant đầu tiên (tất cả variants trong group có cùng tồn kho)
+            $firstVariantId = $firstItem['variant_id'] ?? null;
+            $availableStock = 0;
+            if ($firstVariantId) {
+                $firstVariant = ProductVariant::find($firstVariantId);
+                if ($firstVariant) {
+                    $availableStock = $firstVariant->getTotalAvailableStock();
+                }
+            }
+
             $cartData[] = [
                 'id' => $firstItem['id'],
                 'ids' => array_column($group['items'], 'id'),
@@ -764,6 +837,7 @@ class CartController extends Controller
                 'image_url' => $group['product']->default_image_url,
                 'line_total' => $totalLine,
                 'items' => $group['items'],
+                'available_stock' => $availableStock, // Thêm tồn kho vào cart data
             ];
         }
 

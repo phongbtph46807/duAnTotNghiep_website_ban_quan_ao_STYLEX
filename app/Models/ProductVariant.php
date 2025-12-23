@@ -50,6 +50,12 @@ class ProductVariant extends Model
 
     public function getTotalAvailableStock(): int
     {
-        return (int) $this->warehouseStocks()->sum('available');
+        // Chỉ tính tồn kho từ các kho vật lý đang hoạt động
+        return (int) $this->warehouseStocks()
+            ->whereHas('warehouse', function($query) {
+                $query->where('operational_status', 'ACTIVE')
+                      ->where('type', 'PHYSICAL');
+            })
+            ->sum('available');
     }
 }

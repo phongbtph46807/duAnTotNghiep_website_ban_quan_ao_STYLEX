@@ -638,9 +638,20 @@
 	// Function to update cart automatically
 	function updateCartItem($row) {
 		var qty = parseInt($row.find('input.num-product').val(), 10);
+		var maxStock = parseInt($row.data('available-stock') || $row.find('input.num-product').data('max-stock') || 9999, 10);
+		
 		if (isNaN(qty) || qty < 1) {
 			qty = 1;
 			$row.find('input.num-product').val(1);
+		}
+		
+		// Kiểm tra tồn kho
+		if (maxStock > 0 && qty > maxStock) {
+			qty = maxStock;
+			$row.find('input.num-product').val(maxStock);
+			
+			// Hiển thị thông báo
+			showStockWarning('Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' + maxStock + ' sản phẩm.');
 		}
 		
 		// Check if this row has multiple cart IDs (grouped items)
@@ -686,6 +697,18 @@
 				data: { quantity: itemQty, _token: $('meta[name="csrf-token"]').attr('content'), ajax: 1 }
 			}).done(function(res){
 				successCount++;
+				
+				// Kiểm tra nếu có thông báo về tồn kho
+				if (res && res.message) {
+					showStockWarning(res.message);
+				}
+				
+				// Nếu số lượng đã được điều chỉnh, cập nhật lại input
+				if (res && res.adjusted && res.current_quantity) {
+					$row.find('input.num-product').val(res.current_quantity);
+					$row.attr('data-qty', res.current_quantity);
+				}
+				
 				// Update totals from response if available
 				if (res && res.subtotal !== undefined) {
 					$('#cart-subtotal').text(format(res.subtotal));
@@ -697,10 +720,19 @@
 					}
 					$('#cart-grandtotal').text(format(res.total || res.subtotal));
 				}
-			}).fail(function(){ 
-				// Revert quantity on error
-				var oldQty = $row.data('qty') || 1;
-				$row.find('input.num-product').val(oldQty);
+			}).fail(function(xhr){
+				// Kiểm tra nếu có thông báo lỗi từ server
+				if (xhr.responseJSON && xhr.responseJSON.message) {
+					showStockWarning(xhr.responseJSON.message);
+					if (xhr.responseJSON.current_quantity) {
+						$row.find('input.num-product').val(xhr.responseJSON.current_quantity);
+						$row.attr('data-qty', xhr.responseJSON.current_quantity);
+					}
+				} else {
+					// Revert quantity on error
+					var oldQty = $row.data('qty') || 1;
+					$row.find('input.num-product').val(oldQty);
+				}
 			}).always(function(){
 				ajaxCount--;
 				if (ajaxCount === 0) {
@@ -724,8 +756,15 @@
 		var $input = $row.find('input.num-product');
 		var currentValue = parseInt($input.val(), 10) || 1;
 		
+		var maxStock = parseInt($input.data('max-stock') || $row.data('available-stock') || 9999, 10);
+		
 		if ($btn.data('action') === 'inc') {
-			$input.val(currentValue + 1);
+			var newValue = currentValue + 1;
+			if (maxStock > 0 && newValue > maxStock) {
+				showStockWarning('Số lượng vượt quá tồn kho hiện tại (' + maxStock + ' sản phẩm).');
+				newValue = maxStock;
+			}
+			$input.val(newValue);
 		} else if ($btn.data('action') === 'dec' && currentValue > 1) {
 			$input.val(currentValue - 1);
 		}
@@ -735,15 +774,42 @@
 		return false;
 	});
 	
+	// Function to show stock warning
+	function showStockWarning(message) {
+		// Tạo hoặc cập nhật thông báo
+		var $warning = $('#stock-warning-message');
+		if ($warning.length === 0) {
+			$warning = $('<div id="stock-warning-message" style="position: fixed; top: 20px; right: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10000; max-width: 400px; font-size: 14px; color: #856404;"></div>');
+			$('body').append($warning);
+		}
+		$warning.html('<i class="zmdi zmdi-alert-triangle" style="margin-right: 8px;"></i>' + message).fadeIn();
+		
+		// Tự động ẩn sau 5 giây
+		setTimeout(function() {
+			$warning.fadeOut(function() {
+				$(this).remove();
+			});
+		}, 5000);
+	}
+	
 	// Auto-update when quantity input changes (with debounce)
 	var updateTimeout;
 	$(document).on('change', 'table.table-shopping-cart input.num-product', function(e){
 		var $input = $(this);
 		var $row = $input.closest('tr.table_row');
 		var val = parseInt($input.val(), 10);
+		var maxStock = parseInt($input.data('max-stock') || $row.data('available-stock') || 9999, 10);
+		
 		if (isNaN(val) || val < 1) { 
 			val = 1; 
 			$input.val(val); 
+		}
+		
+		// Kiểm tra tồn kho
+		if (maxStock > 0 && val > maxStock) {
+			val = maxStock;
+			$input.val(val);
+			showStockWarning('Số lượng vượt quá tồn kho hiện tại. Đã tự động điều chỉnh về ' + maxStock + ' sản phẩm.');
 		}
 		
 		clearTimeout(updateTimeout);

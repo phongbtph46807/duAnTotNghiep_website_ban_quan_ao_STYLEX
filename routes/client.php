@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Client\ContactController;
 use App\Http\Controllers\Client\WishlistController;
+use App\Http\Controllers\Client\NotificationController;
 
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -90,6 +91,12 @@ Route::group(['middleware' => ['onlyAuthenticated']], function(){
     // Wishlist routes
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('client.wishlist.index');
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('client.wishlist.toggle');
+    
+    // Notification routes
+    Route::prefix('notifications')->as('client.notifications.')->group(function(){
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/mark-read/{id?}', [NotificationController::class, 'markAsRead'])->name('mark-read');
+    });
     
     // Profile routes
     Route::prefix('profile')->as('client.profile.')->group(function(){

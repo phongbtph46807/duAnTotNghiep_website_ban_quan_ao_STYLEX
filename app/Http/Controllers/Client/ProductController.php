@@ -56,9 +56,18 @@ class ProductController extends Controller
             'productVariants.color',
             'productVariants.size',
             'productVariants.texture',
-            'reviews.user',
-            'reviews.media',
-            'reviews.experiences',
+            'productVariants.warehouseStocks' => function($query) {
+                // Chỉ load warehouse stocks từ các kho đang hoạt động
+                $query->whereHas('warehouse', function($q) {
+                    $q->where('operational_status', 'ACTIVE')
+                      ->where('type', 'PHYSICAL');
+                });
+            },
+            // Chỉ load reviews có status = 'public' để đảm bảo tính toán rating chính xác
+            'reviews' => function($query) {
+                $query->where('status', 'public')
+                    ->with(['user', 'productVariant', 'media', 'experiences']);
+            },
         ])
             ->where('is_active', 1)
             ->findOrFail($id);
